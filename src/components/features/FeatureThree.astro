@@ -1,83 +1,92 @@
-<section aria-labelledby="intro" class="relative">
-  <h2 class="sr-only" id="intro">intro</h2><div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 my-24 items-center"
-  >
-    <div class="lg:text-center">
-      <h2
-        class="ttext-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
-      >
-        Prototype your <span class="lg:block"
-          >website with <span>monoqrom</span>
-        </span>
-      </h2><div class="mx-auto max-w-xl mt-6">
-        <p class="text-tangaroa-400">
-          Design quicker and don't waste time with cluttered wireframes. Combine
-          layouts and customize them as you wish.
+---
+import { Code } from "astro/components";
+---
+
+<section aria-labelledby="feature-Three" id="feature-Three" class="bg-white">
+  <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-36">
+    <div class="grid grid-cols-1 items-start md:grid-cols-2">
+      <div class="lg:pl-24 md:pl-12">
+        <span class="text-orange uppercase text-xs font-semibold"
+          >Feature Three</span
+        ><h2 class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl">
+          Includes Astro.js prismic
+        </h2>
+        <p class="text-tangaroa-400 mt-5">
+          Receive dividends bull investment mutual funds rise federal funds
+          strategy substantially treasury municipal public index funds.
+        </p>
+        <p class="text-tangaroa-400 mt-3">
+          Fall volatile rates funds Standard & Poor's market index upswing
+          financial health growth bear. Treasury 401k potential.
         </p>
       </div>
-    </div>
-    <div class="mx-auto max-w-xl lg:max-w-7xl prose pt-12 text-left">
-      ´<h2 class="sr-only">intro.</h2><div>
-        <div
-          class="text-sm gap-x-2 gap-y-14 grid grid-cols-1 leading-6 lg:grid-cols-4 mt-12 sm:grid-cols-2"
-        >
-          <article>
-            <div
-              class="relative overflow-hidden aspect-[280/190] bg-white rounded-xl"
+      <div
+        class="lg:mt-0 mt-12 md:pr-12 md:border-r lg:pr-24 border-mercury-400 h-full lg:order-first"
+      >
+        <!-- Include these scripts somewhere on the page: -->
+        <div x-data x-tabs class="mx-auto">
+          <div x-tabs:list class="-mb-px flex items-stretch gap-1">
+            <button
+              x-tabs:tab
+              type="button"
+              :class="$tab.isSelected ? ' bg-mint focus:bg-mint' : 'bg-transparent'"
+              class="inline-flex rounded-full text-tangaroa-500 font-semibold px-3 py-2 text-xs"
+              >Open accounts</button
             >
-              <img
-                alt="color palettes"
-                src="https://d33wubrfki0l68.cloudfront.net/3b09be81ce4c1ac97d96ccd102f8988d273ec769/0aadf/images/color.webp"
+            <button
+              x-tabs:tab
+              type="button"
+              :class="$tab.isSelected ? ' bg-mint focus:bg-mint' : 'bg-transparent'"
+              class="inline-flex rounded-full text-tangaroa-500 font-semibold px-3 py-2 text-xs"
+              >Create cards
+            </button>
+          </div>
+          <div x-tabs:panels class="rounded-b-md bg-white mt-6">
+            <section
+              x-tabs:panel
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card"
+            >
+              <Code
+                code={`import { defineConfig } from 'astro/config';
+import tailwind from "@astrojs/tailwind";
+import image from "@astrojs/image";
+import compress from "astro-compress";
+import partytown from "@astrojs/partytown";
+import sitemap from "@astrojs/sitemap";
+// https://astro.build/config
+export default defineConfig({
+   site: 'https://supremeuikits.com',
+  integrations: [tailwind(), image(), sitemap()]
+});}'`}
+                lang="js"
+                theme="poimandres"
               />
-              <div class="rounded-xl absolute inset-0"></div>
-            </div><p class="text-tangaroa-600 lg:px-6 mt-6">
-              <strong class="font-semibold text-tangaroa-900"
-                >Global styles</strong
-              >
-              – Personalize your zinc and states colors in click.
-            </p>
-          </article><article>
-            <div
-              class="relative overflow-hidden aspect-[280/190] bg-white rounded-xl"
+            </section>
+            <section
+              x-tabs:panel
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card"
             >
-              <img
-                alt="color palettes"
-                src="https://d33wubrfki0l68.cloudfront.net/04739ebce6fa06c3b0236b3ca458595c0f04fabf/927e8/images/text.webp"
-              /><div class="rounded-xl absolute inset-0"></div>
-            </div><p class="text-tangaroa-600 lg:px-6 mt-6">
-              <strong class="font-semibold text-tangaroa-900"
-                >The typography
-              </strong>– Is using Inter font well structured to follow an
-              effective typographic hierarchy.
-            </p>
-          </article><article>
-            <div
-              class="relative overflow-hidden aspect-[280/190] bg-white rounded-xl"
-            >
-              <img
-                alt="figma ui"
-                src="https://d33wubrfki0l68.cloudfront.net/a105e256d57451c21cec1b992aadb33b0596f123/2e55d/images/grids.webp"
-              /><div class="rounded-xl absolute inset-0"></div>
-            </div><p class="text-tangaroa-600 lg:px-6 mt-6">
-              <strong class="font-semibold text-tangaroa-900"
-                >1440px and 320px
-              </strong>– full-width components with pre-set resizing constrains
-              for Desktop resolution.
-            </p>
-          </article><article>
-            <div
-              class="relative overflow-hidden aspect-[280/190] bg-white rounded-xl"
-            >
-              <img
-                alt="light and dark mode"
-                src="https://d33wubrfki0l68.cloudfront.net/be0087ad9d6a82d1f0d5c1a379c3e03ec0a85421/c3d4e/images/devices.webp"
-              /><div class="rounded-xl absolute inset-0"></div>
-            </div><p class="text-tangaroa-600 lg:px-6 mt-6">
-              <strong class="font-semibold text-tangaroa-900"
-                >Pre-set Resizing Constraints
-              </strong>– All the layouts are using Figma's Auto-Layout.
-            </p>
-          </article>
+              <Code
+                code={`import { defineConfig } from 'astro/config';
+import tailwind from "@astrojs/tailwind";
+import image from "@astrojs/image";
+import compress from "astro-compress";
+import partytown from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import image from "@astrojs/image";
+import compress from "astro-vue";
+import partytown from "@astrojs/partytown";
+import sitemap from "@astrojs/sitemap";
+// https://astro.build/config
+export default defineConfig({
+   site: 'https://supremeuikits.com',
+  integrations: [tailwind(),  sitemap()]
+});}'`}
+                lang="js"
+                theme="poimandres"
+              />
+            </section>
+          </div>
         </div>
       </div>
     </div>

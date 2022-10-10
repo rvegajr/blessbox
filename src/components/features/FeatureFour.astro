@@ -1,0 +1,127 @@
+---
+import creditcard from "/public/images/creditcard.svg";
+import notification from "/public/images/notification.svg";
+import payments from "/public/images/payments.svg";
+import balance from "/public/images/balance.svg";
+import miniNotification from "/public/images/miniNotification.svg";
+import { Image } from "@astrojs/image/components";
+---
+
+<section aria-labelledby="feature-four" id="feature-four">
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center my-24"
+  >
+    <div>
+      <span class="text-tangaroa-400 uppercase text-xs font-semibold"
+        >Feature Four</span
+      >
+      <h2
+        class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+      >
+        Spaziobianco is a well crafted
+        <span class="lg:block"> and consistent UI Kit for your SaaS.</span>
+      </h2>
+      <div class="mx-auto text-left mt-12">
+        <h2 class="sr-only">intro.</h2><div>
+          <div
+            class="text-sm gap-x-2 gap-y-14 lg:gap-36 grid grid-cols-1 lg:grid-cols-2"
+          >
+            <article>
+              <div class="space-y-3">
+                <p class="text-base text-tangaroa-400">
+                  Upswing securities passively index inverse bondholders
+                  capitalization financial health Moody's debt managed. Receive
+                  bondholders called capitalization investment grade bonds bills
+                  management district stocks. Potential funds consulting
+                  expenses.
+                </p>
+              </div>
+            </article>
+            <article>
+              <div class="space-y-3">
+                <p class="text-base text-tangaroa-400">
+                  Debt bills lucrative capitalization municipal bonds government
+                  401k bear bull credit corporate bonds called NYSE finance.
+                  Managed prices bondholders federal risk NASDAQ hedge fund
+                  expenses municipal bonds management.
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+      <div class="mt-10 flex gap-x-6">
+        <a
+          class="group inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-tangaroa-500 text-white hover:bg-mint hover:text-tangaroa-500 active:bg-tangaroa-600 active:text-white focus-visible:outline-tangaroa-900"
+          href="/overview"
+        >
+          Explora all pages
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-5 h-5 ml-3"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+        </a>
+      </div>
+      <div class="grid lg:grid-cols-4 grid-cols-2 mt-12 gap-3">
+        <div>
+          <Image
+            src={creditcard}
+            alt="supreme thumbnail"
+            class="rounded-2xl shadow-card"
+            width={1011}
+            height={638}
+          />
+          <Image
+            src={balance}
+            alt="supreme thumbnail"
+            class="rounded-3xl sm:rounded-4xl shadow-card mt-6"
+            width={382}
+            height={822}
+          />
+        </div>
+        <div class="lg:col-span-2">
+          <Image
+            src={notification}
+            alt="supreme thumbnail"
+            class="rounded-lg lg:rounded-4xl shadow-card object-cover"
+            width={899}
+            height={800}
+          />
+          <Image
+            src={miniNotification}
+            alt="supreme thumbnail"
+            class="rounded-lg lg:rounded-4xl shadow-card object-cover mt-6"
+            width={899}
+            height={266}
+          />
+          <Image
+            src={payments}
+            alt="supreme thumbnail"
+            class="rounded-3xl sm:rounded-4xl shadow-card object-cover mt-6 lg:hidden block"
+            width={382}
+            height={822}
+          />
+        </div>
+        <div class="hidden lg:block">
+          <Image
+            src={payments}
+            alt="supreme thumbnail"
+            class="rounded-3xl sm:rounded-4xl shadow-card object-cover"
+            width={382}
+            height={822}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
