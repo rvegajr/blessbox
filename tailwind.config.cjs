@@ -103,7 +103,6 @@ module.exports = {
       },
       colors: {
         black: '#111213',
-        tangaroa: '#1a2b3b',
         mint: '#31f2cc',
         lime: '#df3',
         orange: '#fa6d3e',

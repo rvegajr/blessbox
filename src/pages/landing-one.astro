@@ -2,8 +2,12 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Nav from "../components/navigation/NavigationOne.astro";
 import HeaderOne from "../components/headers/HeaderOne.astro";
+import LogoCloudOne from "../components/testimonials/LogoCloudOne.astro";
 import FeatureOne from "../components/features/FeatureOne.astro";
 import FeatureTwo from "../components/features/FeatureTwo.astro";
+import FeatureThree from "../components/features/FeatureThree.astro";
+import FeatureFour from "../components/features/FeatureFour.astro";
+import FeatureFive from "../components/features/FeatureFive.astro";
 import FooterOne from "../components/footers/FooterOne.astro";
 import { AstroSeo } from "@astrolib/seo";
 ---
@@ -48,7 +52,11 @@ Use AstroSeo in all the pages you want different Seo than the index page
 <BaseLayout>
   <Nav />
   <HeaderOne />
+  <LogoCloudOne />
   <FeatureOne />
+  <FeatureThree />
   <FeatureTwo />
+  <FeatureFour />
+  <FeatureFive />
   <FooterOne />
 </BaseLayout>
