@@ -1,15 +1,21 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import NavigationOne from "../components/navigation/NavigationOne.astro";
-import Privacy from "../components/infopages/Privacy.astro";
+import Nav from "../components/navigation/NavigationOne.astro";
+import PricingThree from "../components/pricing/PricingThree.astro";
+import PricingThreeExtended from "../components/pricing/PricingThreeExtended.astro";
+import TestimonialThree from "../components/testimonials/TestimonialThree.astro";
+import FaqOne from "../components/infopages/FaqOne.astro";
+import CtaOne from "../components/cta/CtaOne.astro";
+import FooterOne from "../components/footers/FooterOne.astro";
 import { AstroSeo } from "@astrolib/seo";
+import TestimonialOne from "../components/testimonials/TestimonialOne.astro";
 ---
 
 <!---
 Use AstroSeo in all the pages you want different Seo than the index page
 -->
 <AstroSeo
-  title="Privacy"
+  title="Pricing One"
   description="Your site description goes here"
   canonical="https://www.supremeuikits.com"
   openGraph={{
@@ -43,6 +49,11 @@ Use AstroSeo in all the pages you want different Seo than the index page
   }}
 />
 <BaseLayout>
-  <NavigationOne />
-  <Privacy />
+  <Nav />
+  <PricingThree />
+  <PricingThreeExtended />
+  <TestimonialThree />
+  <FaqOne />
+  <CtaOne />
+  <FooterOne />
 </BaseLayout>

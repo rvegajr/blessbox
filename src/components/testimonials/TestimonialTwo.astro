@@ -1,0 +1,591 @@
+<section aria-labelledby="feature-four" id="feature-four">
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center my-24"
+  >
+    <div>
+      <span class="text-tangaroa-400 uppercase text-xs font-semibold"
+        >Testimonial Two</span
+      >
+      <h2
+        class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+      >
+        Spaziobianco is a well crafted
+        <span class="lg:block"> and consistent UI Kit for your SaaS.</span>
+      </h2>
+    </div>
+    <div
+      x-data="{
+        skip: 1,
+        atBeginning: false,
+        atEnd: false,
+        next() {
+            this.to((current, offset) => current + (offset * this.skip))
+        },
+        prev() {
+            this.to((current, offset) => current - (offset * this.skip))
+        },
+        to(strategy) {
+            let slider = this.$refs.slider
+            let current = slider.scrollLeft
+            let offset = slider.firstElementChild.getBoundingClientRect().width
+            slider.scrollTo({ left: strategy(current, offset), behavior: 'smooth' })
+        },
+        focusableWhenVisible: {
+            'x-intersect:enter'() {
+                this.$el.removeAttribute('tabindex')
+            },
+            'x-intersect:leave'() {
+                this.$el.setAttribute('tabindex', '-1')
+            },
+        },
+        disableNextAndPreviousButtons: {
+            'x-intersect:enter.threshold.05'() {
+                let slideEls = this.$el.parentElement.children
+
+                // If this is the first slide.
+                if (slideEls[0] === this.$el) {
+                    this.atBeginning = true
+                // If this is the last slide.
+                } else if (slideEls[slideEls.length-1] === this.$el) {
+                    this.atEnd = true
+                }
+            },
+            'x-intersect:leave.threshold.05'() {
+                let slideEls = this.$el.parentElement.children
+
+                // If this is the first slide.
+                if (slideEls[0] === this.$el) {
+                    this.atBeginning = false
+                // If this is the last slide.
+                } else if (slideEls[slideEls.length-1] === this.$el) {
+                    this.atEnd = false
+                }
+            },
+        },
+    }"
+      class="flex w-full flex-col"
+    >
+      <div
+        x-on:keydown.right="next"
+        x-on:keydown.left="prev"
+        tabindex="0"
+        role="region"
+        aria-labelledby="carousel-label"
+        class="flex flex-col mt-12 w-full"
+      >
+        <h2 id="carousel-label" class="sr-only" hidden>Carousel</h2>
+
+        <span id="carousel-content-label" class="sr-only" hidden>Carousel</span>
+        <!-- Buttons -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 mb-4 border-mercury-400">
+          <div
+            class="inline-flex items-center space-x-2 order-last mb-4 lg:col-start-4 lg:ml-auto lg:px-2"
+          >
+            <button
+              x-on:click="prev"
+              class="hover:bg-white focus:border-mint border border-mercury-300 text-tangaroa-500 rounded-xl inline-flex items-center text-center hover:text-tangaroa-400 py-2 px-4"
+              :aria-disabled="atBeginning"
+              :tabindex="atEnd ? -1 : 0"
+              :class="{ 'opacity-50 cursor-not-allowed': atBeginning }"
+            >
+              <span aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 19.5L8.25 12l7.5-7.5"></path>
+                </svg>
+              </span>
+              <span class="sr-only">Skip to previous slide page</span>
+            </button>
+            <button
+              x-on:click="next"
+              class="hover:bg-white focus:border-mint border border-mercury-300 text-tangaroa-500 rounded-xl inline-flex items-center text-center hover:text-tangaroa-400 py-2 px-4"
+              :aria-disabled="atEnd"
+              :tabindex="atEnd ? -1 : 0"
+              :class="{ 'opacity-50 cursor-not-allowed': atEnd }"
+            >
+              <span aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5"></path>
+                </svg>
+              </span>
+              <span class="sr-only">Skip to next slide page</span>
+            </button>
+          </div>
+        </div>
+        <ul
+          x-ref="slider"
+          tabindex="0"
+          role="listbox"
+          aria-labelledby="carousel-content-label"
+          class="flex w-full snap-x snap-mandatory overflow-x-scroll scrollbar-hide pb-24 gap-12"
+        >
+          <li
+            x-bind="disableNextAndPreviousButtons"
+            class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
+            role="option"
+          >
+            <figure>
+              <div
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12"
+              >
+                <div>
+                  <ul
+                    role="list"
+                    class="grid grid-cols-1 gap-4 list-none lg:pr-12"
+                  >
+                    <li>
+                      <div>
+                        <p
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
+                        >
+                          Weeks <span class="lg:block">to minutes</span>
+                        </p>
+                      </div>
+                      <div class="mt-2 text-tangaroa-400 text-sm">
+                        Reduction in customer onboarding time
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <p
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
+                        >
+                          2-5x <span class="lg:block">faster</span>
+                        </p>
+                      </div>
+                      <div class="mt-2 text-tangaroa-400 text-sm">
+                        Fast reconciliation with a single report
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <p class="font-semibold text-tangaroa-500 text-sm">
+                          Products used
+                        </p>
+                      </div>
+                      <div
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 mr-3"
+                        >
+                          <path
+                            class="stroke-tangaroa-500"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+                          >
+                          </path>
+                        </svg>
+
+                        Deployments
+                      </div>
+                      <div
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 mr-3"
+                        >
+                          <path
+                            class="stroke-tangaroa-500"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525"
+                          ></path>
+                        </svg>
+
+                        Analytics
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="relative lg:col-span-3">
+                  <div
+                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 z-50 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8"
+                  >
+                    <div
+                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
+                        alt=""
+                        class="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div class="relative lg:col-span-1">
+                      <svg
+                        fill="none"
+                        viewBox="0 0 135 48"
+                        height="48"
+                        width="80"
+                        xmlns="http://www.w3.org/2000/svg"
+                        ><path
+                          d="M0 2H29.1427V16.5713H14.5713L0 2ZM0 16.5713H14.5713L29.1427 31.1427H0V16.5713ZM0 31.1427H14.5713V45.714L0 31.1427Z"
+                          fill="#ffffff"></path><path
+                          d="M45.5859 13.4954H57.3659V17.2387H50.0446V22.4407H57.3659V26.1014H50.0446V32.762H45.5859V13.4954ZM59.7879 19.4954H63.9993V22.2754C64.2193 21.32 64.6693 20.5867 65.3479 20.0734C66.0439 19.5407 66.8166 19.2754 67.6599 19.2754C68.1006 19.2754 68.4679 19.3127 68.7606 19.3854V23.294C68.3406 23.2434 67.9179 23.216 67.4946 23.2114C66.3386 23.2114 65.4679 23.5867 64.8799 24.3394C64.2939 25.0734 63.9993 26.174 63.9993 27.6427V32.762H59.7899V19.4954H59.7879ZM75.4086 33.12C74.1246 33.12 73.0046 32.8167 72.0506 32.2114C71.1146 31.606 70.3706 30.7467 69.9039 29.734C69.4086 28.6707 69.1593 27.4674 69.1593 26.1287C69.1593 24.8074 69.4179 23.614 69.9313 22.5507C70.4126 21.5234 71.1766 20.6547 72.1333 20.046C73.1046 19.4407 74.2153 19.1374 75.4639 19.1374C76.3993 19.1374 77.2353 19.34 77.9686 19.7434C78.7019 20.148 79.2526 20.6987 79.6199 21.3947V19.4954H83.8033V32.762H79.6199V30.89C79.2526 31.5507 78.6839 32.0914 77.9133 32.514C77.1426 32.9227 76.2813 33.1307 75.4086 33.12ZM76.6199 29.624C77.6286 29.624 78.4086 29.294 78.9593 28.6334C79.5099 27.9727 79.7853 27.1374 79.7853 26.1287C79.7853 25.138 79.5099 24.312 78.9593 23.6514C78.4086 22.9907 77.6286 22.6607 76.6199 22.6607C75.6646 22.6607 74.8953 22.9814 74.3079 23.624C73.7393 24.2667 73.4546 25.1007 73.4546 26.1287C73.4546 27.1567 73.7393 28 74.3079 28.6607C74.8953 29.3034 75.6659 29.624 76.6199 29.624ZM86.7486 19.4954H90.9599V21.422C91.2546 20.742 91.7306 20.1914 92.3906 19.7707C93.0706 19.35 93.8593 19.1374 94.7579 19.1374C96.8499 19.1374 98.2359 19.9534 98.9139 21.5874C99.2873 20.8467 99.8713 20.234 100.593 19.826C101.365 19.3614 102.252 19.1234 103.153 19.1374C106.291 19.1374 107.859 20.9347 107.859 24.532V32.762H103.621V25.3027C103.621 24.4047 103.455 23.744 103.125 23.3214C102.795 22.9 102.299 22.688 101.639 22.688C100.923 22.688 100.373 22.936 99.9873 23.4314C99.6019 23.9087 99.4093 24.7427 99.4093 25.936V32.762H95.1706V25.2754C95.1706 24.3767 95.0059 23.7247 94.6753 23.3214C94.3646 22.9 93.8773 22.688 93.2179 22.688C92.4833 22.688 91.9233 22.936 91.5379 23.4314C91.1526 23.9087 90.9599 24.7427 90.9599 25.936V32.762H86.7499V19.4954H86.7486ZM123.679 25.4407C123.679 26.0087 123.642 26.624 123.567 27.2847H113.771C113.808 28.1474 114.101 28.8067 114.651 29.2667C115.202 29.7247 115.947 29.9547 116.881 29.9547C118.184 29.9547 119.01 29.5594 119.358 28.7707H123.487C123.284 30.074 122.569 31.128 121.339 31.936C120.129 32.7247 118.642 33.12 116.881 33.12C114.606 33.12 112.817 32.5047 111.513 31.2754C110.229 30.0454 109.587 28.3307 109.587 26.1287C109.587 24.6974 109.88 23.4587 110.467 22.4127C111.035 21.368 111.909 20.5227 112.972 19.9907C114.055 19.4227 115.312 19.1374 116.745 19.1374C118.101 19.1374 119.303 19.4034 120.349 19.936C121.413 20.4687 122.23 21.2114 122.798 22.1654C123.386 23.1207 123.679 24.212 123.679 25.4407ZM119.521 24.67C119.503 23.7894 119.256 23.1187 118.778 22.6607C118.302 22.2027 117.613 21.9727 116.714 21.9727C115.815 21.9727 115.1 22.22 114.567 22.716C114.054 23.1934 113.788 23.844 113.769 24.67H119.521ZM125.536 19.4954H129.747V22.2754C129.967 21.32 130.417 20.5867 131.096 20.0734C131.755 19.5547 132.569 19.2734 133.408 19.2754C133.848 19.2754 134.216 19.3127 134.509 19.3854V23.294C134.089 23.2434 133.666 23.216 133.243 23.2114C132.087 23.2114 131.216 23.5867 130.628 24.3394C130.04 25.0734 129.747 26.174 129.747 27.6427V32.762H125.536V19.4954Z"
+                          fill="#ffffff"></path>
+                      </svg>
+                      <blockquote class="mt-6 text-white lg:mt-24">
+                        <p class="font-medium">
+                          Spaziobianco Public rollover performance exchange
+                          traded funds junk bonds passively NASDAQ bills upswing
+                          retirement corporate market exposure.
+                        </p>
+                        <p class="mt-6">
+                          <a
+                            href=""
+                            class="text-mint hover:text-white inline-flex items-center group"
+                          >
+                            Read case study
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                clip-rule="evenodd"></path>
+                            </svg>
+                          </a>
+                        </p>
+                      </blockquote>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </figure>
+          </li>
+
+          <li
+            x-bind="disableNextAndPreviousButtons"
+            class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
+            role="option"
+          >
+            <figure>
+              <div
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12"
+              >
+                <div>
+                  <ul
+                    role="list"
+                    class="grid grid-cols-1 gap-4 list-none lg:pr-12"
+                  >
+                    <li>
+                      <div>
+                        <p
+                          class="font-semibold text-mint-500 text-lg lg:text-xl"
+                        >
+                          1
+                        </p>
+                      </div>
+                      <div class="mt-2 text-tangaroa-400 text-sm">
+                        Processor for all credit card payments
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <p
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
+                        >
+                          $2 million
+                        </p>
+                      </div>
+                      <div class="mt-2 text-tangaroa-400 text-sm">
+                        Additional revenue from Card Account Updater
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <p class="font-semibold text-tangaroa-500 text-sm">
+                          Products used
+                        </p>
+                      </div>
+                      <div
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 mr-3"
+                        >
+                          <path
+                            class="stroke-tangaroa-500"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+                          >
+                          </path>
+                        </svg>
+
+                        Deployments
+                      </div>
+                      <div
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 mr-3"
+                        >
+                          <path
+                            class="stroke-tangaroa-500"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525"
+                          ></path>
+                        </svg>
+
+                        Analytics
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="relative lg:col-span-3">
+                  <div
+                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8"
+                  >
+                    <div
+                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"
+                        alt=""
+                        class="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div class="relative lg:col-span-1">
+                      <svg
+                        fill="none"
+                        viewBox="0 0 112 48"
+                        height="48"
+                        width="80"
+                        xmlns="http://www.w3.org/2000/svg"
+                        ><path
+                          d="M111.294 30.5633C106.636 38.4606 99.259 36.1691 97.0435 34.3749C96.1005 35.0147 94.4472 36.417 92.2425 36.255C87.5472 35.9104 85.8659 29.2007 85.8659 29.2007C85.8996 29.2275 84.4672 29.6949 83.6931 29.6866C83.6832 31.6542 81.9823 36.3546 77.3919 36.2945C72.2408 36.2273 71.1936 28.5531 71.1936 28.5531C71.1936 28.5531 70.681 29.2649 68.732 29.9739C68.8301 28.4622 68.7584 36.0644 62.5846 36.1761C57.7038 36.2646 56.3863 28.4348 56.3863 28.4348C56.3863 28.4348 55.5396 29.3143 53.8987 29.6194C54.003 28.0831 53.8334 36.2019 47.6589 36.1761C43.4862 36.1588 42.0603 31.353 42.1712 30.686C42.3127 29.8359 40.761 36.2957 36.7079 36.195C35.0353 36.1459 33.7883 34.9349 33.0059 33.3204C31.9584 34.5189 30.4376 36.195 28.7316 36.195C25.6692 36.195 24.3191 33.6337 24.5477 26.3179C24.5673 25.4502 24.5046 25.109 23.6421 24.9792C23.1243 24.8928 22.5941 24.7292 22.0331 24.643C21.8533 25.243 20.3283 35.9998 15.0842 36.204C13.3249 36.2725 12.363 34.7485 11.573 33.6174C10.362 35.2194 8.76335 36.255 6.486 36.255C2.62834 36.255 0 33.1365 0 29.2895C0 25.4425 2.62834 22.3242 6.486 22.3242C7.16807 22.3242 7.35954 22.422 7.98266 22.6038C6.7012 10.9365 9.72749 9.11303 12.3748 9.11303C14.9164 9.11303 19.2585 15.012 13.1488 29.9751C14.5053 34.4381 17.4296 34.1857 18.8348 24.9982C19.1208 23.1307 18.3561 20.6105 19.5455 20.2588C21.7199 19.616 21.9506 21.5446 22.9701 21.866C24.0481 22.2056 24.6773 22.1724 25.7121 22.3885C27.4805 22.7339 28.1706 23.6838 27.9551 25.7996C27.6964 28.4767 27.2438 32.3732 28.6238 32.8481C29.6189 33.1931 31.4358 31.1293 31.7547 30.0001C32.0734 28.871 32.1399 28.4845 32.1683 27.6563C32.2114 25.8861 32.2655 24.5886 32.5673 23.2499C32.6965 22.7319 32.8438 22.3888 33.4299 22.3654C33.9121 22.3531 34.794 22.2079 35.1823 22.51C35.6997 22.8988 35.635 23.2933 35.5756 24.3316C34.9738 39.1353 39.6056 31.7452 40.9866 25.8279C40.4948 19.1369 40.8324 9.23555 45.0253 9.06949C47.206 8.98313 48.17 10.7301 48.2761 12.034C48.576 15.7168 46.8959 21.8172 44.6864 25.9197C43.4236 34.2907 50.2077 35.9459 51.2926 29.2642C49.5176 28.4202 47.5993 25.0044 49.1603 23.3397C50.0362 22.4055 53.6822 23.7476 53.7419 26.6748C55.5303 26.1965 55.7691 25.1867 55.7939 25.354C55.3023 18.663 55.7583 9.23564 59.9515 9.06957C62.1318 8.98321 63.0957 10.7301 63.2017 12.0341C63.5017 15.7168 61.8216 21.8173 59.6124 25.9199C58.3494 34.2907 65.1336 35.946 66.2182 29.2643C64.9041 29.0107 62.1301 25.3775 63.7306 23.3398C64.586 22.2509 68.2186 24.5154 68.6253 26.7717C70.3434 26.2855 70.5767 25.3078 70.6014 25.4724C70.1096 18.7816 70.5656 9.35422 74.7588 9.18815C76.9391 9.10179 77.903 10.8487 78.0091 12.1527C78.309 15.8354 76.6289 21.936 74.4194 26.0385C73.1568 34.4095 79.9408 36.0644 81.0257 29.3827C79.2198 29.082 76.6533 25.2458 78.7189 23.2833C79.5442 22.4992 82.6977 24.5346 83.4359 26.8568C84.4615 26.8173 85.1 26.4636 85.2368 26.4279C83.5994 18.573 84.8184 9.14836 89.3291 9.06969C91.7671 9.02721 94.1506 10.3877 93.1044 17.8606C92.1058 24.9906 88.5161 27.9827 88.5245 28.0285C88.7333 28.8827 90.5753 36.0312 95.2138 32.2594C94.9737 31.7157 94.7333 31.1603 94.599 30.4874C93.8301 26.5677 95.3402 22.1404 99.4447 21.4249C101.796 21.0149 104.012 22.1598 104.362 24.741C104.938 28.9645 101.124 32.0233 99.6741 32.6868C99.0245 32.3178 105.562 36.5107 109.442 28.108C109.667 27.6282 109.938 27.6689 110.29 27.9162C110.538 28.0908 111.951 29.4299 111.294 30.5633ZM9.2921 28.2517C9.09468 27.6615 8.68955 26.361 8.54628 25.7976C7.75727 25.1114 7.1941 25 6.18134 25C3.93067 25 2.60596 27.0809 2.60596 29.3247C2.60596 31.5684 4.04913 33.6496 6.29982 33.6496C8.25029 33.6496 9.73478 32.3235 10.1877 30.4462C9.87068 29.7143 9.55621 29.0417 9.2921 28.2517ZM12.3197 12.2015C10.7382 12.2015 10.2018 15.974 10.3059 19.1924C10.398 22.0378 11.1931 24.5428 11.6055 25.6653C11.7102 25.8059 11.6908 25.7144 11.7843 25.8636C14.5302 19.8472 13.3913 12.2015 12.3197 12.2015ZM45.2512 12.32C43.2073 12.0855 43.2205 20.6001 43.4742 22.51C44.5358 20.8118 46.3798 12.7772 45.2512 12.32ZM60.1769 12.32C58.1329 12.0855 58.1461 20.6001 58.4 22.51C59.4615 20.8118 61.3056 12.7772 60.1769 12.32ZM74.9844 12.4384C72.9403 12.204 72.9535 20.7186 73.2073 22.6287C74.2688 20.9303 76.113 12.8956 74.9844 12.4384ZM89.5547 11.8215C86.3701 12.461 87.1116 23.0789 87.5953 24.9412C91.3465 19.789 91.4238 11.628 89.5547 11.8215ZM101.49 25.0903C101.328 24.4133 100.518 24.0515 99.9593 24.1407C98.3604 24.359 96.8095 26.3505 97.4098 29.3824C97.5435 30.0576 97.8779 30.6792 97.8724 30.6585C101.451 28.2577 101.755 26.3659 101.49 25.0903ZM34.0567 20.0218C33.5997 20.0219 33.153 19.8864 32.773 19.6326C32.3929 19.3787 32.0967 19.0179 31.9217 18.5957C31.7467 18.1735 31.701 17.7089 31.7901 17.2607C31.8792 16.8124 32.0993 16.4007 32.4224 16.0775C32.7455 15.7543 33.1572 15.5342 33.6054 15.4451C34.0537 15.3559 34.5183 15.4016 34.9405 15.5765C35.3628 15.7514 35.7236 16.0476 35.9775 16.4276C36.2314 16.8076 36.3669 17.2544 36.3669 17.7114C36.3669 18.0148 36.3072 18.3152 36.191 18.5955C36.075 18.8758 35.9049 19.1305 35.6903 19.345C35.4757 19.5596 35.2211 19.7298 34.9408 19.8459C34.6606 19.962 34.3602 20.0218 34.0567 20.0218Z"
+                          fill="#ffffff"
+                          clip-rule="evenodd"
+                          fill-rule="evenodd"></path>
+                      </svg>
+                      <blockquote class="mt-6 text-white lg:mt-24">
+                        <p class="font-medium">
+                          Spaziobianco has Economy growth upswing market index
+                          funds capitalization corporate bonds mutual.
+                        </p>
+                        <p class="mt-6">
+                          <a
+                            href=""
+                            class="text-mint hover:text-white inline-flex items-center group"
+                          >
+                            Read case study
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                clip-rule="evenodd"></path>
+                            </svg>
+                          </a>
+                        </p>
+                      </blockquote>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </figure>
+          </li>
+
+          <li
+            x-bind="disableNextAndPreviousButtons"
+            class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
+            role="option"
+          >
+            <figure>
+              <div
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12"
+              >
+                <div>
+                  <ul
+                    role="list"
+                    class="grid grid-cols-1 gap-4 list-none lg:pr-12"
+                  >
+                    <li>
+                      <div>
+                        <p
+                          class="font-semibold text-mint-500 text-lg lg:text-xl"
+                        >
+                          3,000×
+                        </p>
+                      </div>
+                      <div class="mt-2 text-tangaroa-400 text-sm">
+                        growth in online payments volume in just 6 months
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <p
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
+                        >
+                          3 weeks
+                        </p>
+                      </div>
+                      <div class="mt-2 text-tangaroa-400 text-sm">
+                        of development work to go live
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <p class="font-semibold text-tangaroa-500 text-sm">
+                          Products used
+                        </p>
+                      </div>
+                      <div
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 mr-3"
+                        >
+                          <path
+                            class="stroke-tangaroa-500"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
+                          >
+                          </path>
+                        </svg>
+
+                        Deployments
+                      </div>
+                      <div
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="w-4 h-4 mr-3"
+                        >
+                          <path
+                            class="stroke-tangaroa-500"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525"
+                          ></path>
+                        </svg>
+
+                        Analytics
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="relative lg:col-span-3">
+                  <div
+                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8"
+                  >
+                    <div
+                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter"
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"
+                        alt=""
+                        class="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div class="relative lg:col-span-1">
+                      <svg
+                        fill="none"
+                        viewBox="0 0 129 48"
+                        height="48"
+                        width="80"
+                        xmlns="http://www.w3.org/2000/svg"
+                        ><path
+                          d="M44.9356 34.7749V20.2199H45.1949L55.7896 34.7749H59.1236V13.4006H55.4192V27.919H55.1598L44.5652 13.4006H41.2312V34.7749H44.9356ZM69.6071 35.1049C74.497 35.1049 77.4976 31.9519 77.4976 26.6725C77.4976 21.4297 74.497 18.2401 69.6071 18.2401C64.7543 18.2401 61.7167 21.4297 61.7167 26.6725C61.7537 31.9519 64.7173 35.1049 69.6071 35.1049ZM69.6071 32.0252C67.014 32.0252 65.5322 30.0821 65.5322 26.6725C65.5322 23.2995 67.014 21.3198 69.6071 21.3198C72.2002 21.3198 73.682 23.2995 73.682 26.6725C73.682 30.0821 72.2002 32.0252 69.6071 32.0252ZM80.8686 14.6105V18.6801H78.2755V21.6131H80.8686V30.4487C80.8686 33.6017 82.3504 34.8483 86.1289 34.8483C86.8327 34.8483 87.5366 34.7749 88.0922 34.6649V31.8053C87.6477 31.8419 87.3513 31.8786 86.8327 31.8786C85.2769 31.8786 84.573 31.182 84.573 29.5688V21.6131H88.0922V18.6801H84.573V14.6105H80.8686ZM90.3149 34.7749H94.0193V18.5701H90.3149V34.7749ZM92.1671 15.8937C93.3896 15.8937 94.3898 14.9038 94.3898 13.6939C94.3898 12.4474 93.3896 11.4575 92.1671 11.4575C90.9446 11.4575 89.9444 12.4474 89.9444 13.6939C89.9444 14.9038 90.9446 15.8937 92.1671 15.8937ZM104.169 35.1049C109.059 35.1049 112.06 31.9519 112.06 26.6725C112.06 21.4297 109.059 18.2401 104.169 18.2401C99.3166 18.2401 96.279 21.4297 96.279 26.6725C96.279 31.9519 99.2426 35.1049 104.169 35.1049ZM104.169 32.0252C101.576 32.0252 100.095 30.0821 100.095 26.6725C100.095 23.2995 101.576 21.3198 104.169 21.3198C106.726 21.3198 108.244 23.2995 108.244 26.6725C108.207 30.0821 106.726 32.0252 104.169 32.0252ZM114.245 34.7749H117.95V25.3526C117.95 22.9696 119.358 21.4664 121.543 21.4664C123.803 21.4664 124.84 22.7129 124.84 25.1693V34.7749H128.545V24.2894C128.545 20.4032 126.544 18.2401 122.914 18.2401C120.469 18.2401 118.839 19.34 118.061 21.1731H117.802V18.5701H114.208C114.245 18.5701 114.245 34.7749 114.245 34.7749Z"
+                          fill="#ffffff"></path><path
+                          d="M5.71206 12.0326C6.79023 12.9024 7.18021 12.8337 9.19893 12.6964L28.2162 11.5519C28.6291 11.5519 28.285 11.1399 28.1474 11.0941L24.9816 8.82806C24.3852 8.37028 23.5594 7.82093 22.0224 7.95826L3.62452 9.30874C2.95926 9.37741 2.82162 9.72075 3.0969 9.97254L5.71206 12.0326ZM6.85905 16.4502V36.4098C6.85905 37.4857 7.38667 37.8748 8.60249 37.8061L29.5008 36.593C30.7166 36.5243 30.8543 35.7918 30.8543 34.922V15.0998C30.8543 14.23 30.5102 13.7493 29.7761 13.818L7.93723 15.0998C7.13433 15.1684 6.85905 15.5804 6.85905 16.4502ZM27.4821 17.5261C27.6197 18.1212 27.4821 18.7392 26.8857 18.8079L25.8763 19.0139V33.7547C25.0046 34.2125 24.2017 34.4871 23.5135 34.4871C22.4353 34.4871 22.16 34.1438 21.3571 33.1367L14.7733 22.8135V32.7933L16.8609 33.2511C16.8609 33.2511 16.8609 34.4642 15.1863 34.4642L10.5524 34.7389C10.4148 34.4642 10.5524 33.8005 11.0112 33.6631L12.227 33.3198V20.1354L10.5524 19.9981C10.4148 19.403 10.7589 18.5332 11.6994 18.4645L16.6774 18.1212L23.5364 28.5588V19.3343L21.793 19.1283C21.6553 18.3959 22.2059 17.8465 22.8712 17.7778L27.4821 17.5261ZM2.08754 7.47759L21.2424 6.08133C23.5823 5.87532 24.2017 6.01266 25.6698 7.08847L31.7719 11.3688C32.7812 12.1013 33.1253 12.3073 33.1253 13.1084V36.6159C33.1253 38.0808 32.5977 38.9506 30.7166 39.0879L8.48779 40.4384C7.06552 40.5071 6.40026 40.3011 5.66618 39.3626L1.147 33.5258C0.3441 32.45 0 31.6488 0 30.7104V9.81231C0 8.59917 0.550559 7.61492 2.08754 7.47759Z"
+                          fill="#ffffff"
+                          clip-rule="evenodd"
+                          fill-rule="evenodd"></path>
+                      </svg>
+                      <blockquote class="mt-6 text-white lg:mt-24">
+                        <p class="font-medium">
+                          Spaziobianco has Economy growth upswing market index
+                          funds capitalization corporate bonds mutual.
+                        </p>
+                        <p class="mt-6">
+                          <a
+                            href=""
+                            class="text-mint hover:text-white inline-flex items-center group"
+                          >
+                            Read case study
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                                clip-rule="evenodd"></path>
+                            </svg>
+                          </a>
+                        </p>
+                      </blockquote>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </figure>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

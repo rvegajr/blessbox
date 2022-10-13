@@ -1,0 +1,84 @@
+---
+import creditcard from "/public/images/creditcard.svg";
+import notification from "/public/images/notification.svg";
+
+import miniNotification from "/public/images/miniNotification.svg";
+import { Image } from "@astrojs/image/components";
+---
+
+<section
+  aria-labelledby="header-one"
+  id="header-one"
+  class="relative overflow-hidden"
+>
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 my-24 items-center"
+  >
+    <div class="items-start gap-12 grid grid-cols-1 md:grid-cols-2">
+      <div>
+        <div class="lg:pr-24 md:pr-12">
+          <span class="text-orange uppercase text-xs font-semibold"
+            >Header Two</span
+          >
+          <h2
+            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl"
+          >
+            Swap sections and create your landing page in minutes, not hours.
+          </h2>
+          <p class="text-tangaroa-400 mt-5">
+            Receive dividends bull investment mutual funds rise federal funds
+            strategy substantially treasury municipal public index funds.
+          </p>
+        </div>
+        <div class="mt-10 flex flex-col lg:flex-row gap-3 lg:gap-6">
+          <a
+            class="group w-full lg:w-auto inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-tangaroa-500 text-white hover:bg-tangaroa-700 hover:text-tangaroa-100 active:bg-tangaroa-800 active:text-tangaroa-300 focus-visible:outline-tangaroa-900"
+            href="/overview"
+          >
+            Explora all pages
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5 ml-3"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="lg:mt-0 mt-12 lg:ml-auto">
+        <div class="max-w-[366px]">
+          <Image
+            src={miniNotification}
+            alt="supreme thumbnail"
+            class="rounded-3xl shadow-card object-cover -mb-8 -ml-24"
+            width={899}
+            height={266}
+          />
+          <Image
+            src={creditcard}
+            alt="supreme thumbnail"
+            class="rounded-2xl shadow-card skew-y-12 transform"
+            width={1011}
+            height={638}
+          />
+          <Image
+            src={notification}
+            alt="supreme thumbnail"
+            class="rounded-2xl lg:rounded-3xl shadow-card object-cover lg:-mt-32 lg:-ml-12"
+            width={899}
+            height={800}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
