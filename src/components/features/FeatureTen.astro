@@ -1,0 +1,144 @@
+---
+import ModalOne from "/public/images/ModalOne.svg";
+import notification from "/public/images/notification.svg";
+
+import { Image } from "@astrojs/image/components";
+import { Code } from "astro/components";
+---
+
+<section
+  aria-labelledby="feature-ten"
+  id="feature-ten"
+  class="bg-tangaroa-600 transform skew-y-6 -mt-72"
+>
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 lg:pt-42 pb-52 items-center transform -skew-y-6"
+  >
+    <div>
+      <span class="text-white uppercase text-xs font-semibold">Feature ten</span
+      >
+      <h2
+        class="text-white font-display font-semibold mt-6 text-3xl lg:mx-auto"
+      >
+        Sapziobianco includes everything you need to <span class="lg:block"
+          >build a beautiful website for your SaaS</span
+        >
+      </h2>
+      <div class="max-w-xl mt-6">
+        <p class="text-mercury-400">
+          Spaziobianco allows you to create different
+        </p>
+      </div>
+    </div>
+    <div class="mx-auto text-left mt-12">
+      <div x-data x-tabs class="mx-auto">
+        <div x-tabs:list class="-mb-px flex items-stretch gap-1">
+          <button
+            x-tabs:tab
+            type="button"
+            :class="$tab.isSelected ? ' bg-orange focus:bg-orange' : 'bg-transparent'"
+            class="inline-flex rounded-full text-white font-semibold px-3 py-2 text-xs"
+            >Open accounts</button
+          >
+          <button
+            x-tabs:tab
+            type="button"
+            :class="$tab.isSelected ? ' bg-orange focus:bg-orange' : 'bg-transparent'"
+            class="inline-flex rounded-full text-white font-semibold px-3 py-2 text-xs"
+            >Create cards
+          </button>
+        </div>
+        <div x-tabs:panels class="rounded-b-md mt-6">
+          <section
+            x-tabs:panel
+            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#1c1e28] lg:p-10 rounded-3xl"
+          >
+            <div
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card"
+            >
+              <Code
+                code={`import { defineConfig } from 'astro/config';
+  import tailwind from "@astrojs/tailwind";
+  import image from "@astrojs/image";
+  import compress from "astro-compress";
+  import partytown from "@astrojs/partytown";
+  import sitemap from "@astrojs/sitemap";
+  import tailwind from "@astrojs/tailwind";
+  import image from "@astrojs/image";
+  import compress from "astro-compress";
+  import partytown from "@astrojs/partytown";
+  import sitemap from "@astrojs/sitemap";
+  import tailwind from "@astrojs/tailwind";
+  import image from "@astrojs/image";
+  import image from "@astrojs/image";
+  import compress from "astro-compress";
+  import partytown from "@astrojs/partytown";
+  import sitemap from "@astrojs/sitemap";
+  import tailwind from "@astrojs/tailwind";
+  import image from "@astrojs/image";
+  import compress from "astro-compress";
+  import partytown from "@astrojs/partytown";
+  import sitemap from "@astrojs/sitemap";
+  // https://astro.build/config
+  export default defineConfig({
+     site: 'https://supremeuikits.com',
+    integrations: [tailwind(), image(), sitemap()]
+  });}'`}
+                lang="js"
+                theme="poimandres"
+              />
+            </div>
+            <div class="h-full lg:ml-auto">
+              <Image
+                src={ModalOne}
+                alt="supreme thumbnail"
+                class="rounded-2xl shadow-card"
+                width={400}
+                height={420}
+              />
+            </div>
+          </section>
+          <section
+            x-tabs:panel
+            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#1c1e28] lg:p-10 rounded-3xl"
+          >
+            <div
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card"
+            >
+              <Code
+                code={`import { defineConfig } from 'astro/config';
+  import tailwind from "@astrojs/tailwind";
+  import image from "@astrojs/image";
+  import compress from "astro-compress";
+  import partytown from "@astrojs/partytown";
+  import sitemap from "@astrojs/sitemap";
+  import tailwind from "@astrojs/tailwind";
+  import image from "@astrojs/image";
+  import compress from "astro-compress";
+  import partytown from "@astrojs/partytown";
+  import sitemap from "@astrojs/sitemap";
+
+  // https://astro.build/config
+  export default defineConfig({
+     site: 'https://supremeuikits.com',
+    integrations: [tailwind(), image(), sitemap()]
+  });}'`}
+                lang="js"
+                theme="poimandres"
+              />
+            </div>
+            <div class="h-full lg:ml-auto">
+              <Image
+                src={notification}
+                alt="supreme thumbnail"
+                class="rounded-2xl shadow-card"
+                width={899}
+                height={800}
+              />
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

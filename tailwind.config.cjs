@@ -101,6 +101,7 @@ module.exports = {
         card: '0 50px 60px rgb(12 25 39 / 10%), 0 16px 20px rgb(12 25 39 / 6%), 0 6px 8px rgb(12 25 39 / 5%)',
         largeShadow: '0 192px 136px rgba(26,43,59,0.23),0 70px 50px rgba(26,43,59,0.16),0 34px 24px rgba(26,43,59,0.13),0 17px 12px rgba(26,43,59,0.1),0 7px 5px rgba(26,43,59,0.07);',
       },
+
       colors: {
         black: '#111213',
         mint: '#31f2cc',

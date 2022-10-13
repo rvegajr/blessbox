@@ -1,7 +1,17 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import NavigationOne from "../components/navigation/NavigationOne.astro";
-import Privacy from "../components/infopages/Privacy.astro";
+import Nav from "../components/navigation/NavigationOne.astro";
+import Headerthree from "../components/headers/Headerthree.astro";
+import StatsOne from "../components/stats/StatsOne.astro";
+import FeatureEight from "../components/features/FeatureEight.astro";
+import FeatureNine from "../components/features/FeatureNine.astro";
+import FeatureTen from "../components/features/FeatureTen.astro";
+import TestimonialThree from "../components/testimonials/TestimonialThree.astro";
+import PricingThree from "../components/pricing/PricingThree.astro";
+import PricingThreeExtended from "../components/pricing/PricingThreeExtended.astro";
+import FaqTwo from "../components/infopages/FaqTwo.astro";
+import CtaTwo from "../components/cta/CtaTwo.astro";
+import FooterOne from "../components/footers/FooterOne.astro";
 import { AstroSeo } from "@astrolib/seo";
 ---
 
@@ -9,7 +19,7 @@ import { AstroSeo } from "@astrolib/seo";
 Use AstroSeo in all the pages you want different Seo than the index page
 -->
 <AstroSeo
-  title="Privacy"
+  title="Landing 03"
   description="Your site description goes here"
   canonical="https://www.supremeuikits.com"
   openGraph={{
@@ -43,6 +53,17 @@ Use AstroSeo in all the pages you want different Seo than the index page
   }}
 />
 <BaseLayout>
-  <NavigationOne />
-  <Privacy />
+  <Nav />
+  <Headerthree />
+  <StatsOne />
+  <FeatureEight />
+  <FeatureNine />
+  <FeatureTen />
+  <TestimonialThree />
+  <PricingThree />
+  <PricingThreeExtended />
+  <FaqTwo />
+  <CtaTwo />
+
+  <FooterOne />
 </BaseLayout>
