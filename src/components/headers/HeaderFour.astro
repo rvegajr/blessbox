@@ -1,0 +1,38 @@
+---
+import notification from "/public/images/notification.svg";
+import { Image } from "@astrojs/image/components";
+---
+
+<section aria-labelledby="Header-Four" id="Header-Four">
+  <div
+    class="mx-auto 2xl:max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 my-12 lg:my-32 items-center"
+  >
+    <div class="lg:text-center">
+      <span class="text-tangaroa-400 uppercase text-xs font-semibold"
+        >Header Four</span
+      >
+      <h2
+        class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+      >
+        Spaziobianco is loved all aorund
+        <span class="lg:block"> and consistent UI Kit for your SaaS.</span>
+      </h2>
+    </div>
+    <div class="pt-12">
+      <div class="mx-auto lg:max-w-7xl justify-center">
+        <h2 class="sr-only">
+          This title is for accessibility only, make it descriptive, Jhonny
+        </h2>
+        <div class="mx-auto justify-center lg:p-10 lg:rounded-6xl">
+          <Image
+            src={notification}
+            alt="supreme thumbnail"
+            class="object-cover mx-auto"
+            width={899}
+            height={800}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
