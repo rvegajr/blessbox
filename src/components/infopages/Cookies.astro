@@ -1,0 +1,217 @@
+<section aria-labelledby="blogentries-one" id="blogentries-one">
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center"
+  >
+    <div class="max-w-xl">
+      <h2 class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl">
+        Cookie settings
+      </h2>
+      <div class="mt-6">
+        <p class="text-tangaroa-400">
+          supreme uses cookies to improve your experience and for marketing.
+          Review and manage your cookie settings below to control your privacy.
+        </p>
+      </div>
+    </div>
+    <div class="space-y-24 mt-24">
+      <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
+        <div class="lg:col-span-3">
+          <h2
+            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+          >
+            Preferences
+          </h2>
+          <p class="text-base text-tangaroa-400 mt-6">
+            Preference cookies let us save your preferences and recognize you
+            when you return to our Services.
+          </p>
+        </div>
+        <div class="lg:ml-auto">
+          <!-- Toggle -->
+          <div
+            x-data="{ value: false }"
+            class="flex items-center justify-center"
+            x-id="['toggle-label']"
+          >
+            <input type="hidden" name="sendNotifications" :value="value" />
+
+            <!-- Label -->
+            <label
+              @click="$refs.toggle.click(); $refs.toggle.focus()"
+              :id="$id('toggle-label')"
+              class="text-orange font-medium"
+            >
+              Enable
+            </label>
+
+            <!-- Button -->
+            <button
+              x-ref="toggle"
+              @click="value = ! value"
+              type="button"
+              role="switch"
+              :aria-checked="value"
+              :aria-labelledby="$id('toggle-label')"
+              :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
+            >
+              <span
+                :class="value ? 'translate-x-7' : 'translate-x-1'"
+                class="bg-white h-6 w-6 rounded-full transition shadow-md"
+                aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
+        <div class="lg:col-span-3">
+          <h2
+            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+          >
+            Advertising
+          </h2>
+          <p class="text-base text-tangaroa-400 mt-6">
+            Advertising cookies and similar technologies on supreme allow us to
+            place targeted supreme advertisements on other sites you visit and
+            measure your engagement with those ads.
+          </p>
+        </div>
+        <div class="lg:ml-auto">
+          <!-- Toggle -->
+          <div
+            x-data="{ value: false }"
+            class="flex items-center justify-center"
+            x-id="['toggle-label']"
+          >
+            <input type="hidden" name="sendNotifications" :value="value" />
+
+            <!-- Label -->
+            <label
+              @click="$refs.toggle.click(); $refs.toggle.focus()"
+              :id="$id('toggle-label')"
+              class="text-orange font-medium"
+            >
+              Enable
+            </label>
+
+            <!-- Button -->
+            <button
+              x-ref="toggle"
+              @click="value = ! value"
+              type="button"
+              role="switch"
+              :aria-checked="value"
+              :aria-labelledby="$id('toggle-label')"
+              :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
+            >
+              <span
+                :class="value ? 'translate-x-7' : 'translate-x-1'"
+                class="bg-white h-6 w-6 rounded-full transition shadow-md"
+                aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
+        <div class="lg:col-span-3">
+          <h2
+            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+          >
+            Analytics
+          </h2>
+          <p class="text-base text-tangaroa-400 mt-6">
+            Analytics cookies help us understand how visitors interact with our
+            Services, allowing us to analyze and improve our Services (also
+            through third party analytics).
+          </p>
+        </div>
+        <div class="lg:ml-auto">
+          <!-- Toggle -->
+          <div
+            x-data="{ value: false }"
+            class="flex items-center justify-center"
+            x-id="['toggle-label']"
+          >
+            <input type="hidden" name="sendNotifications" :value="value" />
+
+            <!-- Label -->
+            <label
+              @click="$refs.toggle.click(); $refs.toggle.focus()"
+              :id="$id('toggle-label')"
+              class="text-orange font-medium"
+            >
+              Enable
+            </label>
+
+            <!-- Button -->
+            <button
+              x-ref="toggle"
+              @click="value = ! value"
+              type="button"
+              role="switch"
+              :aria-checked="value"
+              :aria-labelledby="$id('toggle-label')"
+              :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
+            >
+              <span
+                :class="value ? 'translate-x-7' : 'translate-x-1'"
+                class="bg-white h-6 w-6 rounded-full transition shadow-md"
+                aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
+        <div class="lg:col-span-3">
+          <h2
+            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
+          >
+            Authentication
+          </h2>
+          <p class="text-base text-tangaroa-400 mt-6">
+            Authentication cookies enable Spaziobianco to remember you so you
+            don’t have to log in as you use our Services.
+          </p>
+        </div>
+        <div class="lg:ml-auto">
+          <!-- Toggle -->
+          <div
+            x-data="{ value: false }"
+            class="flex items-center justify-center"
+            x-id="['toggle-label']"
+          >
+            <input type="hidden" name="sendNotifications" :value="value" />
+
+            <!-- Label -->
+            <label
+              @click="$refs.toggle.click(); $refs.toggle.focus()"
+              :id="$id('toggle-label')"
+              class="text-orange font-medium"
+            >
+              Enable
+            </label>
+
+            <!-- Button -->
+            <button
+              x-ref="toggle"
+              @click="value = ! value"
+              type="button"
+              role="switch"
+              :aria-checked="value"
+              :aria-labelledby="$id('toggle-label')"
+              :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
+            >
+              <span
+                :class="value ? 'translate-x-7' : 'translate-x-1'"
+                class="bg-white h-6 w-6 rounded-full transition shadow-md"
+                aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

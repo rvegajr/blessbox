@@ -1,25 +1,33 @@
-<main aria-labelledby="header" class="relative overflow-hidden">
-  <h2 class="sr-only" id="header">Header</h2><div
-    class="mx-auto relative px-8 my-24 max-w-7xl lg:my-36 lg:px-36 md:px-12"
+---
+import payments from "/public/images/payments.svg";
+import one from "/public/images/one.png";
+import { Image } from "@astrojs/image/components";
+---
+
+<section
+  aria-labelledby="header-one"
+  id="header-one"
+  class="relative overflow-hidden"
+>
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 my-24 items-center"
   >
-    <div>
-      <div class="mx-auto text-center">
-        <h1
-          class="text-tangaroa-500 mt-4 font-bold lg:text-9xl sm:text-5xl text-5xl tracking-tighter font-display"
-        >
-          spaziobianco.
-        </h1>
-        <div class="mx-auto max-w-xl lg:mt-8">
-          <p class="text-tangaroa-400">
+    <div class="items-start">
+      <div>
+        <div class="max-w-xl">
+          <h2
+            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl"
+          >
+            Spaziobianco UI Kit
+          </h2>
+          <p class="text-tangaroa-400 mt-5">
             Spaziobianco. is a beautifully design UI Kit that allows you to put
             togheter pages from different categories and customize them to your
             needs to create a landing page or a whole website in hours, not
             months.
           </p>
         </div>
-        <div
-          class="mt-10 flex flex-col lg:flex-row gap-3 lg:gap-6 lg:justify-center"
-        >
+        <div class="mt-10 flex flex-col lg:flex-row gap-3 lg:gap-6">
           <a
             class="group w-full lg:w-auto inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-tangaroa-500 text-white hover:bg-tangaroa-700 hover:text-tangaroa-100 active:bg-tangaroa-800 active:text-tangaroa-300 focus-visible:outline-tangaroa-900"
             href="/overview"
@@ -40,28 +48,94 @@
               ></path>
             </svg>
           </a>
-          <a
-            class="group w-full lg:w-auto inline-flex ring-1 items-center justify-center rounded-full py-2 px-4 text-sm focus:outline-none ring-tangaroa-200 text-tangaroa-500 hover:text-tangaroa-900 hover:ring-tangaroa-300 active:bg-tangaroa-100 active:text-tangaroa-600 focus-visible:outline-blue-600 focus-visible:ring-tangaroa-300"
-            href="#"
-          >
-            <span>Buy spaziobianco for $89</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="w-4 h-4 ml-3"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-              ></path>
-            </svg>
-          </a>
+        </div>
+      </div>
+    </div>
+    <div>
+      <ul
+        role="list"
+        class="grid grid-cols-2 lg:grid-cols-3 gap-4 list-none lg:gap-12 mt-24"
+      >
+        <li>
+          <div>
+            <p class="font-semibold text-tangaroa-500 text-sm">
+              Developer Experience
+            </p>
+          </div>
+          <div class="mt-2 text-tangaroa-400 text-sm">
+            Spaziobianco has been built with Astro and Tailwind, and the most
+            useful integrations for SEO, Compression and performance.
+          </div>
+        </li>
+
+        <li>
+          <div>
+            <p class="font-semibold text-tangaroa-500 text-sm">Stand out</p>
+          </div>
+          <div class="mt-2 text-tangaroa-400 text-sm">
+            Make any design stand out by using a combination of the 100+
+            elements. 30+ pages, 70+ sections
+          </div>
+        </li>
+        <li>
+          <div>
+            <p class="font-semibold text-tangaroa-500 text-sm">Support</p>
+          </div>
+          <div class="mt-2 text-tangaroa-400 text-sm">
+            For any questions you can send an email to michael @ andreuzza.com.
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="mx-auto lg:flex px-8 md:px-12 lg:px-16 xl:px-36 max-w-7xl mb-24">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div>
+        <div class="px-4 overflow-hidden rounded-2xl bg-white pt-6">
+          <Image
+            class="rounded-t-xl"
+            src={one}
+            alt="#"
+            width={768}
+            height={588}
+          />
+        </div>
+      </div><div>
+        <div class="px-4 overflow-hidden rounded-2xl bg-white pt-6">
+          <Image
+            class="rounded-t-xl"
+            src={one}
+            alt="#"
+            width={768}
+            height={588}
+          />
+        </div>
+      </div><div>
+        <div class="px-4 overflow-hidden rounded-2xl bg-white pt-6">
+          <Image
+            class="rounded-t-xl"
+            src={one}
+            alt="#"
+            width={768}
+            height={588}
+          />
+        </div>
+      </div><div>
+        <div class="px-4 overflow-hidden rounded-2xl bg-white pt-6">
+          <Image
+            class="rounded-t-xl"
+            src={one}
+            alt="#"
+            width={768}
+            height={588}
+          />
         </div>
       </div>
     </div>
   </div>
-</main>
+</section>
+
+

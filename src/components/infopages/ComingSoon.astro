@@ -14,30 +14,22 @@
             Subscribe and we will let you know when we are up and running
           </p>
         </div>
-        <form
-          action=""
-          class="lg:mx-auto duration-500 ease-in-out bg-white mt-8 p-1 rounded-2xl sm:flex sm:max-w-lg transform transition"
-          id="revue-form"
-          method="post"
-          name="revue-form"
-          target="_blank"
-        >
-          <div class="flex-1 lg:border-0 min-w-0">
-            <label class="sr-only" for="member_email">Email address</label>
-            <input
-              class="ease-in-out transform transition duration-500 focus:ring-2 focus:ring-white py-3 w-full bg-transparent block border border-transparent focus:border-transparent focus:outline-none text-tangaroa-500 focus:ring-offset-2 focus:ring-offset-gray-300 placeholder-tangaroa-500 px-5 rounded-xl text-base"
-              id="cta-email"
-              placeholder="Enter your best email..."
-              type="email"
-            />
-          </div>
-          <div class="mt-4 revue-form-actions sm:ml-3 sm:mt-0">
+        <form class="mt-8 sm:flex max-w-xl mx-auto">
+          <label for="email-address" class="sr-only">Email address</label>
+          <input
+            id="email-address"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+            class="w-full focus:outline-none border py-2 appearance-none block border-mint focus:bg-white bg-mercury-50 focus:border-mint focus:shadow-xl focus:shadow-mint/20 focus:ring-tangaroa-500 placeholder-mercury-500 px-3 rounded-xl sm:text-sm text-tangaroa-500"
+            placeholder="Enter your email"
+          />
+          <div class="mt-3 rounded-md sm:mt-0 sm:ml-3 sm:flex-shrink-0">
             <button
-              class="text-white duration-500 ease-in-out focus:ring-2 focus:ring-offset-4 focus:ring-white lg:mt-0 lg:text-base mt-2 px-6 py-3 rounded-xl text-xs transform transition bg-black hover:bg-tangaroa-600 lg:w-auto w-full"
               type="submit"
-              id="member_submit"
-              name="member[subscribe]"
-              value="Subscribe">Subscribe me</button
+              class="inline-flex items-center justify-center rounded-xl w-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-tangaroa-500 text-white hover:bg-orange hover:text-tangaroa-500 active:bg-tangaroa-600 active:text-white focus-visible:outline-tangaroa-900"
+              >Notify me</button
             >
           </div>
         </form>
