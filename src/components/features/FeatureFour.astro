@@ -1,11 +1,4 @@
----
-import creditcard from "/public/images/creditcard.svg";
-import notification from "/public/images/notification.svg";
-import payments from "/public/images/payments.svg";
-import balance from "/public/images/balance.svg";
-import miniNotification from "/public/images/miniNotification.svg";
-import { Image } from "@astrojs/image/components";
----
+
 
 <section aria-labelledby="feature-four" id="feature-four">
   <div
@@ -74,15 +67,15 @@ import { Image } from "@astrojs/image/components";
       </div>
       <div class="grid lg:grid-cols-4 grid-cols-2 mt-12 gap-3">
         <div>
-          <Image
-            src={creditcard}
+          <img
+            src="/public/images/creditcard.svg"
             alt="supreme thumbnail"
             class="rounded-2xl shadow-card"
             width={1011}
             height={638}
           />
-          <Image
-            src={balance}
+          <img
+            src="/public/images/balance.svg"
             alt="supreme thumbnail"
             class="rounded-3xl sm:rounded-4xl shadow-card mt-6"
             width={382}
@@ -90,22 +83,22 @@ import { Image } from "@astrojs/image/components";
           />
         </div>
         <div class="lg:col-span-2">
-          <Image
-            src={notification}
+          <img
+            src="/public/images/notification.svg"
             alt="supreme thumbnail"
             class="rounded-lg lg:rounded-4xl shadow-card object-cover"
             width={899}
             height={800}
           />
-          <Image
-            src={miniNotification}
+          <img
+            src="/public/images/miniNotification.svg"
             alt="supreme thumbnail"
             class="rounded-lg lg:rounded-4xl shadow-card object-cover mt-6"
             width={899}
             height={266}
           />
-          <Image
-            src={payments}
+          <img
+            src="/public/images/payments.svg"
             alt="supreme thumbnail"
             class="rounded-3xl sm:rounded-4xl shadow-card object-cover mt-6 lg:hidden block"
             width={382}
@@ -113,8 +106,8 @@ import { Image } from "@astrojs/image/components";
           />
         </div>
         <div class="hidden lg:block">
-          <Image
-            src={payments}
+          <img
+            src="/public/images/payments.svg"
             alt="supreme thumbnail"
             class="rounded-3xl sm:rounded-4xl shadow-card object-cover"
             width={382}
@@ -127,7 +120,7 @@ import { Image } from "@astrojs/image/components";
 </section>
 <section class="bg-tangaroa-600 transform skew-y-6 -mt-72">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 lg:pt-42 pb-52 items-center transform -skew-y-6 "
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 lg:pt-42 pb-52 items-center transform -skew-y-6"
   >
     <div>
       <span class="text-white uppercase text-xs font-semibold"
