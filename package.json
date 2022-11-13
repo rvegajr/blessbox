@@ -23,6 +23,7 @@
     "@astrojs/sitemap": "^1.0.0",
     "@astrolib/seo": "^0.2.1",
     "astro-compress": "^1.0.8",
+    "sharp": "^0.31.2",
     "shiki": "^0.11.1",
     "tailwind-scrollbar-hide": "^1.1.7"
   }
