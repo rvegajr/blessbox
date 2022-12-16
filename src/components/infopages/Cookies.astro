@@ -1,9 +1,8 @@
 <section aria-labelledby="blogentries-one" id="blogentries-one">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center"
-  >
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center">
     <div class="max-w-xl">
-      <h2 class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl">
+      <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl">
         Cookie settings
       </h2>
       <div class="mt-6">
@@ -16,9 +15,7 @@
     <div class="space-y-24 mt-24">
       <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
         <div class="lg:col-span-3">
-          <h2
-            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
-          >
+          <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl lg:mx-auto">
             Preferences
           </h2>
           <p class="text-base text-tangaroa-400 mt-6">
@@ -31,16 +28,14 @@
           <div
             x-data="{ value: false }"
             class="flex items-center justify-center"
-            x-id="['toggle-label']"
-          >
+            x-id="['toggle-label']">
             <input type="hidden" name="sendNotifications" :value="value" />
 
             <!-- Label -->
             <label
               @click="$refs.toggle.click(); $refs.toggle.focus()"
               :id="$id('toggle-label')"
-              class="text-orange font-medium"
-            >
+              class="text-orange font-medium">
               Enable
             </label>
 
@@ -53,8 +48,7 @@
               :aria-checked="value"
               :aria-labelledby="$id('toggle-label')"
               :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
-              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
-            >
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition">
               <span
                 :class="value ? 'translate-x-7' : 'translate-x-1'"
                 class="bg-white h-6 w-6 rounded-full transition shadow-md"
@@ -65,9 +59,7 @@
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
         <div class="lg:col-span-3">
-          <h2
-            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
-          >
+          <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl lg:mx-auto">
             Advertising
           </h2>
           <p class="text-base text-tangaroa-400 mt-6">
@@ -81,16 +73,14 @@
           <div
             x-data="{ value: false }"
             class="flex items-center justify-center"
-            x-id="['toggle-label']"
-          >
+            x-id="['toggle-label']">
             <input type="hidden" name="sendNotifications" :value="value" />
 
             <!-- Label -->
             <label
               @click="$refs.toggle.click(); $refs.toggle.focus()"
               :id="$id('toggle-label')"
-              class="text-orange font-medium"
-            >
+              class="text-orange font-medium">
               Enable
             </label>
 
@@ -103,8 +93,7 @@
               :aria-checked="value"
               :aria-labelledby="$id('toggle-label')"
               :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
-              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
-            >
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition">
               <span
                 :class="value ? 'translate-x-7' : 'translate-x-1'"
                 class="bg-white h-6 w-6 rounded-full transition shadow-md"
@@ -115,9 +104,7 @@
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
         <div class="lg:col-span-3">
-          <h2
-            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
-          >
+          <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl lg:mx-auto">
             Analytics
           </h2>
           <p class="text-base text-tangaroa-400 mt-6">
@@ -131,16 +118,14 @@
           <div
             x-data="{ value: false }"
             class="flex items-center justify-center"
-            x-id="['toggle-label']"
-          >
+            x-id="['toggle-label']">
             <input type="hidden" name="sendNotifications" :value="value" />
 
             <!-- Label -->
             <label
               @click="$refs.toggle.click(); $refs.toggle.focus()"
               :id="$id('toggle-label')"
-              class="text-orange font-medium"
-            >
+              class="text-orange font-medium">
               Enable
             </label>
 
@@ -153,8 +138,7 @@
               :aria-checked="value"
               :aria-labelledby="$id('toggle-label')"
               :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
-              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
-            >
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition">
               <span
                 :class="value ? 'translate-x-7' : 'translate-x-1'"
                 class="bg-white h-6 w-6 rounded-full transition shadow-md"
@@ -165,9 +149,7 @@
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-4 items-center">
         <div class="lg:col-span-3">
-          <h2
-            class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
-          >
+          <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl lg:mx-auto">
             Authentication
           </h2>
           <p class="text-base text-tangaroa-400 mt-6">
@@ -180,16 +162,14 @@
           <div
             x-data="{ value: false }"
             class="flex items-center justify-center"
-            x-id="['toggle-label']"
-          >
+            x-id="['toggle-label']">
             <input type="hidden" name="sendNotifications" :value="value" />
 
             <!-- Label -->
             <label
               @click="$refs.toggle.click(); $refs.toggle.focus()"
               :id="$id('toggle-label')"
-              class="text-orange font-medium"
-            >
+              class="text-orange font-medium">
               Enable
             </label>
 
@@ -202,8 +182,7 @@
               :aria-checked="value"
               :aria-labelledby="$id('toggle-label')"
               :class="value ? 'bg-mint' : 'bg-tangaroa-500'"
-              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition"
-            >
+              class="relative ml-4 inline-flex w-14 rounded-full py-1 transition">
               <span
                 :class="value ? 'translate-x-7' : 'translate-x-1'"
                 class="bg-white h-6 w-6 rounded-full transition shadow-md"

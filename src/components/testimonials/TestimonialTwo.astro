@@ -1,14 +1,11 @@
 <section aria-labelledby="estimonials-two" id="estimonials-two">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center my-24"
-  >
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center my-24">
     <div>
       <span class="text-tangaroa-400 uppercase text-xs font-semibold"
         >Testimonial Two</span
       >
-      <h2
-        class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl lg:mx-auto"
-      >
+      <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl lg:mx-auto">
         Spaziobianco is loved all aorund
         <span class="lg:block"> and consistent UI Kit for your SaaS.</span>
       </h2>
@@ -63,31 +60,27 @@
             },
         },
     }"
-      class="flex w-full flex-col"
-    >
+      class="flex w-full flex-col">
       <div
         x-on:keydown.right="next"
         x-on:keydown.left="prev"
         tabindex="0"
         role="region"
         aria-labelledby="carousel-label"
-        class="flex flex-col mt-12 w-full"
-      >
+        class="flex flex-col mt-12 w-full">
         <h2 id="carousel-label" class="sr-only" hidden>Carousel</h2>
 
         <span id="carousel-content-label" class="sr-only" hidden>Carousel</span>
         <!-- Buttons -->
         <div class="grid grid-cols-1 lg:grid-cols-4 mb-4 border-mercury-400">
           <div
-            class="inline-flex items-center space-x-2 order-last mb-4 lg:col-start-4 lg:ml-auto lg:px-2"
-          >
+            class="inline-flex items-center space-x-2 order-last mb-4 lg:col-start-4 lg:ml-auto lg:px-2">
             <button
               x-on:click="prev"
               class="hover:bg-white focus:border-mint border border-mercury-300 text-tangaroa-500 rounded-xl inline-flex items-center text-center hover:text-tangaroa-400 py-2 px-4"
               :aria-disabled="atBeginning"
               :tabindex="atEnd ? -1 : 0"
-              :class="{ 'opacity-50 cursor-not-allowed': atBeginning }"
-            >
+              :class="{ 'opacity-50 cursor-not-allowed': atBeginning }">
               <span aria-hidden="true">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -95,8 +88,7 @@
                   viewBox="0 0 24 24"
                   stroke-width="2"
                   stroke="currentColor"
-                  class="w-4 h-4"
-                >
+                  class="w-4 h-4">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -110,8 +102,7 @@
               class="hover:bg-white focus:border-mint border border-mercury-300 text-tangaroa-500 rounded-xl inline-flex items-center text-center hover:text-tangaroa-400 py-2 px-4"
               :aria-disabled="atEnd"
               :tabindex="atEnd ? -1 : 0"
-              :class="{ 'opacity-50 cursor-not-allowed': atEnd }"
-            >
+              :class="{ 'opacity-50 cursor-not-allowed': atEnd }">
               <span aria-hidden="true">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -119,8 +110,7 @@
                   viewBox="0 0 24 24"
                   stroke-width="2"
                   stroke="currentColor"
-                  class="w-4 h-4"
-                >
+                  class="w-4 h-4">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -136,27 +126,22 @@
           tabindex="0"
           role="listbox"
           aria-labelledby="carousel-content-label"
-          class="flex w-full snap-x snap-mandatory overflow-x-scroll scrollbar-hide pb-24 gap-12"
-        >
+          class="flex w-full snap-x snap-mandatory overflow-x-scroll scrollbar-hide pb-24 gap-12">
           <li
             x-bind="disableNextAndPreviousButtons"
             class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
-            role="option"
-          >
+            role="option">
             <figure>
               <div
-                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12"
-              >
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12">
                 <div>
                   <ul
                     role="list"
-                    class="grid grid-cols-1 gap-4 list-none lg:pr-12"
-                  >
+                    class="grid grid-cols-1 gap-4 list-none lg:pr-12">
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
-                        >
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
                           Weeks <span class="lg:block">to minutes</span>
                         </p>
                       </div>
@@ -167,8 +152,7 @@
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
-                        >
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
                           2-5x <span class="lg:block">faster</span>
                         </p>
                       </div>
@@ -183,38 +167,33 @@
                         </p>
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
-                      >
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-4 h-4 mr-3"
-                        >
+                          class="w-4 h-4 mr-3">
                           <path
                             class="stroke-tangaroa-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                          >
+                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
                           </path>
                         </svg>
 
                         Deployments
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
-                      >
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-4 h-4 mr-3"
-                        >
+                          class="w-4 h-4 mr-3">
                           <path
                             class="stroke-tangaroa-500"
                             stroke-linecap="round"
@@ -230,11 +209,9 @@
                 </div>
                 <div class="relative lg:col-span-3">
                   <div
-                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 z-50 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8"
-                  >
+                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 z-50 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
                     <div
-                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter"
-                    >
+                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                       <img
                         src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
                         alt=""
@@ -263,15 +240,13 @@
                         <p class="mt-6">
                           <a
                             href=""
-                            class="text-mint hover:text-white inline-flex items-center group"
-                          >
+                            class="text-mint hover:text-white inline-flex items-center group">
                             Read case study
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 20 20"
                               fill="currentColor"
-                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
-                            >
+                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
                               <path
                                 fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
@@ -290,22 +265,18 @@
           <li
             x-bind="disableNextAndPreviousButtons"
             class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
-            role="option"
-          >
+            role="option">
             <figure>
               <div
-                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12"
-              >
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12">
                 <div>
                   <ul
                     role="list"
-                    class="grid grid-cols-1 gap-4 list-none lg:pr-12"
-                  >
+                    class="grid grid-cols-1 gap-4 list-none lg:pr-12">
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-mint-500 text-lg lg:text-xl"
-                        >
+                          class="font-semibold text-mint-500 text-lg lg:text-xl">
                           1
                         </p>
                       </div>
@@ -316,8 +287,7 @@
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
-                        >
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
                           $2 million
                         </p>
                       </div>
@@ -332,38 +302,33 @@
                         </p>
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
-                      >
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-4 h-4 mr-3"
-                        >
+                          class="w-4 h-4 mr-3">
                           <path
                             class="stroke-tangaroa-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                          >
+                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
                           </path>
                         </svg>
 
                         Deployments
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
-                      >
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-4 h-4 mr-3"
-                        >
+                          class="w-4 h-4 mr-3">
                           <path
                             class="stroke-tangaroa-500"
                             stroke-linecap="round"
@@ -379,11 +344,9 @@
                 </div>
                 <div class="relative lg:col-span-3">
                   <div
-                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8"
-                  >
+                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
                     <div
-                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter"
-                    >
+                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                       <img
                         src="https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"
                         alt=""
@@ -411,15 +374,13 @@
                         <p class="mt-6">
                           <a
                             href=""
-                            class="text-mint hover:text-white inline-flex items-center group"
-                          >
+                            class="text-mint hover:text-white inline-flex items-center group">
                             Read case study
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 20 20"
                               fill="currentColor"
-                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
-                            >
+                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
                               <path
                                 fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
@@ -438,22 +399,18 @@
           <li
             x-bind="disableNextAndPreviousButtons"
             class="flex w-full shrink-0 snap-start flex-col items-center justify-center"
-            role="option"
-          >
+            role="option">
             <figure>
               <div
-                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12"
-              >
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12">
                 <div>
                   <ul
                     role="list"
-                    class="grid grid-cols-1 gap-4 list-none lg:pr-12"
-                  >
+                    class="grid grid-cols-1 gap-4 list-none lg:pr-12">
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-mint-500 text-lg lg:text-xl"
-                        >
+                          class="font-semibold text-mint-500 text-lg lg:text-xl">
                           3,000×
                         </p>
                       </div>
@@ -464,8 +421,7 @@
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl"
-                        >
+                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
                           3 weeks
                         </p>
                       </div>
@@ -480,38 +436,33 @@
                         </p>
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
-                      >
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-4 h-4 mr-3"
-                        >
+                          class="w-4 h-4 mr-3">
                           <path
                             class="stroke-tangaroa-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"
-                          >
+                            d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
                           </path>
                         </svg>
 
                         Deployments
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center"
-                      >
+                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke-width="1.5"
                           stroke="currentColor"
-                          class="w-4 h-4 mr-3"
-                        >
+                          class="w-4 h-4 mr-3">
                           <path
                             class="stroke-tangaroa-500"
                             stroke-linecap="round"
@@ -527,11 +478,9 @@
                 </div>
                 <div class="relative lg:col-span-3">
                   <div
-                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8"
-                  >
+                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
                     <div
-                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter"
-                    >
+                      class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                       <img
                         src="https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80"
                         alt=""
@@ -561,15 +510,13 @@
                         <p class="mt-6">
                           <a
                             href=""
-                            class="text-mint hover:text-white inline-flex items-center group"
-                          >
+                            class="text-mint hover:text-white inline-flex items-center group">
                             Read case study
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 20 20"
                               fill="currentColor"
-                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
-                            >
+                              class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
                               <path
                                 fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
