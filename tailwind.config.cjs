@@ -136,7 +136,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
-        display: ['Inter Tight', ...defaultTheme.fontFamily.sans],
+       
         mono: ['IBM Plex Mono', ...defaultTheme.fontFamily.mono],
       },
     },

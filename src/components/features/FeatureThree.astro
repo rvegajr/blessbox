@@ -8,7 +8,7 @@ import { Code } from "astro/components";
       <div class="lg:pl-24 md:pl-12">
         <span class="text-orange uppercase text-xs font-semibold"
           >Feature Three</span
-        ><h2 class="text-tangaroa-500 font-display font-semibold mt-6 text-3xl">
+        ><h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl">
           Includes Astro.js prismic
         </h2>
         <p class="text-tangaroa-400 mt-5">
@@ -21,8 +21,7 @@ import { Code } from "astro/components";
         </p>
       </div>
       <div
-        class="lg:mt-0 mt-12 md:pr-12 md:border-r lg:pr-24 border-mercury-400 h-full lg:order-first"
-      >
+        class="lg:mt-0 mt-12 md:pr-12 md:border-r lg:pr-24 border-mercury-400 h-full lg:order-first">
         <!-- Include these scripts somewhere on the page: -->
         <div x-data x-tabs class="mx-auto">
           <div x-tabs:list class="-mb-px flex items-stretch gap-1">
@@ -44,8 +43,7 @@ import { Code } from "astro/components";
           <div x-tabs:panels class="rounded-b-md bg-white mt-6">
             <section
               x-tabs:panel
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card"
-            >
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card">
               <Code
                 code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
@@ -64,8 +62,7 @@ export default defineConfig({
             </section>
             <section
               x-tabs:panel
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card"
-            >
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card">
               <Code
                 code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
