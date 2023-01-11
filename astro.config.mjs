@@ -6,6 +6,6 @@ import partytown from "@astrojs/partytown";
 import sitemap from "@astrojs/sitemap";
 // https://astro.build/config
 export default defineConfig({
-   site: 'https://supremeui.dev',
+   site: 'https://lexingtonthemes.com',
   integrations: [tailwind(), image(), compress(), partytown(), sitemap()]
 });
