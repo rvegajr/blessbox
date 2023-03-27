@@ -1,9 +1,17 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Nav from "../components/navigation/NavigationOne.astro";
-import Hero from "../components/landing/Hero.astro";
-import Info from "../components/landing/Info.astro";
+import HeaderOne from "../components/headers/HeaderOne.astro";
+import LogoCloudOne from "../components/testimonials/LogoCloudOne.astro";
+import FeatureOne from "../components/features/FeatureOne.astro";
+import FeatureThree from "../components/features/FeatureThree.astro";
+import FeatureFour from "../components/features/FeatureFour.astro";
 
+import TestimonialTwo from "../components/testimonials/TestimonialTwo.astro";
+import PricingOne from "../components/pricing/PricingOne.astro";
+import PricingOneExtended from "../components/pricing/PricingOneExtended.astro";
+import FaqOne from "../components/infopages/FaqOne.astro";
+import CtaOne from "../components/cta/CtaOne.astro";
 import FooterOne from "../components/footers/FooterOne.astro";
 import { AstroSeo } from "@astrolib/seo";
 ---
@@ -12,7 +20,7 @@ import { AstroSeo } from "@astrolib/seo";
 Use AstroSeo in all the pages you want different Seo than the index page
 -->
 <AstroSeo
-  title="Home"
+  title="Landing 01"
   description="Your site description goes here"
   canonical="https://www.lexingtonthemes.com"
   openGraph={{
@@ -47,7 +55,16 @@ Use AstroSeo in all the pages you want different Seo than the index page
 />
 <BaseLayout>
   <Nav />
-  <Hero />
-  <Info />
+  <HeaderOne />
+  <LogoCloudOne />
+  <FeatureOne />
+  <FeatureThree />
+  <FeatureFour />
+
+  <TestimonialTwo />
+  <PricingOne />
+  <PricingOneExtended />
+  <FaqOne />
+  <CtaOne />
   <FooterOne />
 </BaseLayout>

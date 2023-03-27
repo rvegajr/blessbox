@@ -1,13 +1,19 @@
 <section aria-labelledby="estimonials-two" id="estimonials-two">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 items-center my-24">
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
     <div>
-      <span class="text-tangaroa-400 uppercase text-xs font-semibold"
-        >Testimonial Two</span
-      >
-      <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl lg:mx-auto">
-        Spaziobianco is loved all aorund
-        <span class="lg:block"> and consistent UI Kit for your SaaS.</span>
+      <h2
+        class="inline-flex items-center text-blue-600"
+        id="table-of-contents-title">
+        <span class="font-mono text-sm" aria-hidden="true">02</span><span
+          class="ml-3 h-3.5 w-px bg-blue-600/20"></span><span
+          class="ml-3 text-base font-medium tracking-tight">Testimonial</span
+        >
+      </h2>
+
+      <h2
+        class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
+        Our customers and their experiences
       </h2>
     </div>
     <div
@@ -72,12 +78,12 @@
 
         <span id="carousel-content-label" class="sr-only" hidden>Carousel</span>
         <!-- Buttons -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 mb-4 border-mercury-400">
+        <div class="grid grid-cols-1 lg:grid-cols-4 mb-4">
           <div
             class="inline-flex items-center space-x-2 order-last mb-4 lg:col-start-4 lg:ml-auto lg:px-2">
             <button
               x-on:click="prev"
-              class="hover:bg-white focus:border-mint border border-mercury-300 text-tangaroa-500 rounded-xl inline-flex items-center text-center hover:text-tangaroa-400 py-2 px-4"
+              class="hover:bg-white focus:border-blue-500 border text-purple-900 rounded-xl inline-flex items-center text-center hover:text-slate-500 py-2 px-4"
               :aria-disabled="atBeginning"
               :tabindex="atEnd ? -1 : 0"
               :class="{ 'opacity-50 cursor-not-allowed': atBeginning }">
@@ -99,7 +105,7 @@
             </button>
             <button
               x-on:click="next"
-              class="hover:bg-white focus:border-mint border border-mercury-300 text-tangaroa-500 rounded-xl inline-flex items-center text-center hover:text-tangaroa-400 py-2 px-4"
+              class="hover:bg-white focus:border-blue-500 border text-purple-900 rounded-xl inline-flex items-center text-center hover:text-slate-500 py-2 px-4"
               :aria-disabled="atEnd"
               :tabindex="atEnd ? -1 : 0"
               :class="{ 'opacity-50 cursor-not-allowed': atEnd }">
@@ -133,41 +139,41 @@
             role="option">
             <figure>
               <div
-                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12">
-                <div>
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-3">
+                <div class="bg-slate-50 p-4 rounded-2xl">
                   <ul
                     role="list"
                     class="grid grid-cols-1 gap-4 list-none lg:pr-12">
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
+                          class="font-semibold text-purple-900 text-lg lg:text-xl">
                           Weeks <span class="lg:block">to minutes</span>
                         </p>
                       </div>
-                      <div class="mt-2 text-tangaroa-400 text-sm">
+                      <div class="mt-2 text-slate-500 text-sm">
                         Reduction in customer onboarding time
                       </div>
                     </li>
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
+                          class="font-semibold text-purple-900 text-lg lg:text-xl">
                           2-5x <span class="lg:block">faster</span>
                         </p>
                       </div>
-                      <div class="mt-2 text-tangaroa-400 text-sm">
+                      <div class="mt-2 text-slate-500 text-sm">
                         Fast reconciliation with a single report
                       </div>
                     </li>
                     <li>
                       <div>
-                        <p class="font-semibold text-tangaroa-500 text-sm">
+                        <p class="font-semibold text-purple-900 text-sm">
                           Products used
                         </p>
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
+                        class="mt-2 text-slate-500 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -176,7 +182,7 @@
                           stroke="currentColor"
                           class="w-4 h-4 mr-3">
                           <path
-                            class="stroke-tangaroa-500"
+                            class="stroke-purple-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
@@ -186,7 +192,7 @@
                         Deployments
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
+                        class="mt-2 text-slate-500 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -195,7 +201,7 @@
                           stroke="currentColor"
                           class="w-4 h-4 mr-3">
                           <path
-                            class="stroke-tangaroa-500"
+                            class="stroke-purple-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525"
@@ -209,7 +215,7 @@
                 </div>
                 <div class="relative lg:col-span-3">
                   <div
-                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 z-50 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
+                    class="relative overflow-hidden rounded-2xl bg-blue-600 p-8 z-50 shadow-xl lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
                     <div
                       class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                       <img
@@ -240,7 +246,7 @@
                         <p class="mt-6">
                           <a
                             href=""
-                            class="text-mint hover:text-white inline-flex items-center group">
+                            class="text-white hover:text-blue-100 inline-flex items-center group">
                             Read case study
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -268,41 +274,41 @@
             role="option">
             <figure>
               <div
-                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12">
-                <div>
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-3">
+                <div class="bg-slate-50 p-4 rounded-2xl">
                   <ul
                     role="list"
                     class="grid grid-cols-1 gap-4 list-none lg:pr-12">
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-mint-500 text-lg lg:text-xl">
+                          class="font-semibold text-blue-500-500 text-lg lg:text-xl">
                           1
                         </p>
                       </div>
-                      <div class="mt-2 text-tangaroa-400 text-sm">
+                      <div class="mt-2 text-slate-500 text-sm">
                         Processor for all credit card payments
                       </div>
                     </li>
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
+                          class="font-semibold text-purple-900 text-lg lg:text-xl">
                           $2 million
                         </p>
                       </div>
-                      <div class="mt-2 text-tangaroa-400 text-sm">
+                      <div class="mt-2 text-slate-500 text-sm">
                         Additional revenue from Card Account Updater
                       </div>
                     </li>
                     <li>
                       <div>
-                        <p class="font-semibold text-tangaroa-500 text-sm">
+                        <p class="font-semibold text-purple-900 text-sm">
                           Products used
                         </p>
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
+                        class="mt-2 text-slate-500 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -311,7 +317,7 @@
                           stroke="currentColor"
                           class="w-4 h-4 mr-3">
                           <path
-                            class="stroke-tangaroa-500"
+                            class="stroke-purple-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
@@ -321,7 +327,7 @@
                         Deployments
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
+                        class="mt-2 text-slate-500 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -330,7 +336,7 @@
                           stroke="currentColor"
                           class="w-4 h-4 mr-3">
                           <path
-                            class="stroke-tangaroa-500"
+                            class="stroke-purple-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525"
@@ -344,7 +350,7 @@
                 </div>
                 <div class="relative lg:col-span-3">
                   <div
-                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
+                    class="relative overflow-hidden rounded-2xl bg-blue-600 p-8 shadow-xl lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
                     <div
                       class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                       <img
@@ -374,7 +380,7 @@
                         <p class="mt-6">
                           <a
                             href=""
-                            class="text-mint hover:text-white inline-flex items-center group">
+                            class="text-white hover:text-blue-100 inline-flex items-center group">
                             Read case study
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -402,41 +408,41 @@
             role="option">
             <figure>
               <div
-                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-12">
-                <div>
+                class="h-full group grid grid-cols-1 gap-3 lg:grid-cols-4 lg:gap-3">
+                <div class="bg-slate-50 p-4 rounded-2xl">
                   <ul
                     role="list"
                     class="grid grid-cols-1 gap-4 list-none lg:pr-12">
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-mint-500 text-lg lg:text-xl">
-                          3,000×
+                          class="font-semibold text-blue-500-500 text-lg lg:text-xl">
+                          3,000x
                         </p>
                       </div>
-                      <div class="mt-2 text-tangaroa-400 text-sm">
+                      <div class="mt-2 text-slate-500 text-sm">
                         growth in online payments volume in just 6 months
                       </div>
                     </li>
                     <li>
                       <div>
                         <p
-                          class="font-semibold text-tangaroa-500 text-lg lg:text-xl">
+                          class="font-semibold text-purple-900 text-lg lg:text-xl">
                           3 weeks
                         </p>
                       </div>
-                      <div class="mt-2 text-tangaroa-400 text-sm">
+                      <div class="mt-2 text-slate-500 text-sm">
                         of development work to go live
                       </div>
                     </li>
                     <li>
                       <div>
-                        <p class="font-semibold text-tangaroa-500 text-sm">
+                        <p class="font-semibold text-purple-900 text-sm">
                           Products used
                         </p>
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
+                        class="mt-2 text-slate-500 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -445,7 +451,7 @@
                           stroke="currentColor"
                           class="w-4 h-4 mr-3">
                           <path
-                            class="stroke-tangaroa-500"
+                            class="stroke-purple-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z">
@@ -455,7 +461,7 @@
                         Deployments
                       </div>
                       <div
-                        class="mt-2 text-tangaroa-400 text-sm inline-flex items-center">
+                        class="mt-2 text-slate-500 text-sm inline-flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
@@ -464,7 +470,7 @@
                           stroke="currentColor"
                           class="w-4 h-4 mr-3">
                           <path
-                            class="stroke-tangaroa-500"
+                            class="stroke-purple-500"
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 01-.421-.585l-1.08-2.16a.414.414 0 00-.663-.107.827.827 0 01-.812.21l-1.273-.363a.89.89 0 00-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 01-1.81 1.025 1.055 1.055 0 01-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 01-1.383-2.46l.007-.042a2.25 2.25 0 01.29-.787l.09-.15a2.25 2.25 0 012.37-1.048l1.178.236a1.125 1.125 0 001.302-.795l.208-.73a1.125 1.125 0 00-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 01-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 01-1.458-1.137l1.411-2.353a2.25 2.25 0 00.286-.76m11.928 9.869A9 9 0 008.965 3.525m11.928 9.868A9 9 0 118.965 3.525"
@@ -478,7 +484,7 @@
                 </div>
                 <div class="relative lg:col-span-3">
                   <div
-                    class="relative overflow-hidden rounded-xl bg-tangaroa-400 p-8 shadow-card lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
+                    class="relative overflow-hidden rounded-2xl bg-blue-600 p-8 shadow-xl lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8">
                     <div
                       class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                       <img
@@ -510,7 +516,7 @@
                         <p class="mt-6">
                           <a
                             href=""
-                            class="text-mint hover:text-white inline-flex items-center group">
+                            class="text-white hover:text-blue-100 inline-flex items-center group">
                             Read case study
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

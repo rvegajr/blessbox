@@ -3,47 +3,52 @@ import { Code } from "astro/components";
 ---
 
 <section aria-labelledby="feature-Three" id="feature-Three" class="bg-white">
-  <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-36">
-    <div class="grid grid-cols-1 items-start md:grid-cols-2">
-      <div class="lg:pl-24 md:pl-12">
-        <span class="text-orange uppercase text-xs font-semibold"
-          >Feature Three</span
-        ><h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl">
-          Includes Astro.js prismic
+  <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-36">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
+      <div>
+        <h2
+          class="inline-flex items-center  text-blue-600"
+          id="table-of-contents-title">
+          <span class="font-mono text-sm" aria-hidden="true">03</span><span
+            class="ml-3 h-3.5 w-px bg-blue-600/20"></span><span
+            class="ml-3 text-base font-medium tracking-tight">Feature</span
+          >
+        </h2><h2
+          class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
+          You can also style it with VSCode themes
         </h2>
-        <p class="text-tangaroa-400 mt-5">
+        <p class="text-slate-500 mt-5">
           Receive dividends bull investment mutual funds rise federal funds
           strategy substantially treasury municipal public index funds.
         </p>
-        <p class="text-tangaroa-400 mt-3">
+        <p class="text-slate-500 mt-3">
           Fall volatile rates funds Standard & Poor's market index upswing
           financial health growth bear. Treasury 401k potential.
         </p>
       </div>
-      <div
-        class="lg:mt-0 mt-12 md:pr-12 md:border-r lg:pr-24 border-mercury-400 h-full lg:order-first">
+      <div class="lg:mt-0 mt-12 h-full lg:order-first">
         <!-- Include these scripts somewhere on the page: -->
         <div x-data x-tabs class="mx-auto">
           <div x-tabs:list class="-mb-px flex items-stretch gap-1">
             <button
               x-tabs:tab
               type="button"
-              :class="$tab.isSelected ? ' bg-mint focus:bg-mint' : 'bg-transparent'"
-              class="inline-flex rounded-full text-tangaroa-500 font-semibold px-3 py-2 text-xs"
+              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
+              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
               >Open accounts</button
             >
             <button
               x-tabs:tab
               type="button"
-              :class="$tab.isSelected ? ' bg-mint focus:bg-mint' : 'bg-transparent'"
-              class="inline-flex rounded-full text-tangaroa-500 font-semibold px-3 py-2 text-xs"
+              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
+              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
               >Create cards
             </button>
           </div>
           <div x-tabs:panels class="rounded-b-md bg-white mt-6">
             <section
               x-tabs:panel
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card">
+              class="text-xs leading-relaxed font-mono mt-4 rounded-2xl p-4 bg-purple-800">
               <Code
                 code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
@@ -57,12 +62,12 @@ export default defineConfig({
   integrations: [tailwind(), image(), sitemap()]
 });}'`}
                 lang="js"
-                theme="poimandres"
+                theme="css-variables"
               />
             </section>
             <section
               x-tabs:panel
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card">
+              class="text-xs leading-relaxed font-mono mt-4 rounded-2xl p-4 bg-purple-800">
               <Code
                 code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
@@ -80,7 +85,7 @@ export default defineConfig({
   integrations: [tailwind(),  sitemap()]
 });}'`}
                 lang="js"
-                theme="poimandres"
+                theme="css-variables"
               />
             </section>
           </div>
