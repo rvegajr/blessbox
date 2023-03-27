@@ -1,29 +1,30 @@
 ---
-import ModalOne from "/public/images/ModalOne.png";
-import notification from "/public/images/notification.png";
-
-import { Image } from "@astrojs/image/components";
 import { Code } from "astro/components";
 ---
 
 <section
   aria-labelledby="feature-ten"
   id="feature-ten"
-  class="bg-tangaroa-600 transform skew-y-6 -mt-72">
+  class="bg-purple-900 transform skew-y-6 -mt-72">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 py-24 lg:pt-42 pb-52 items-center transform -skew-y-6">
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:pt-42 pb-52 items-center transform -skew-y-6">
     <div>
-      <span class="text-white uppercase text-xs font-semibold">Feature ten</span
-      >
-      <h2 class="text-white font-semibold mt-6 text-3xl lg:mx-auto">
+      <h2
+        class="inline-flex items-center rounded-full text-white"
+        id="table-of-contents-title">
+        <span class="font-mono text-sm" aria-hidden="true">10</span><span
+          class="ml-3 h-3.5 w-px bg-white"></span><span
+          class="ml-3 text-base font-medium tracking-tight">Feature</span
+        >
+      </h2>
+      <h2
+        class="text-white font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
         Sapziobianco includes everything you need to <span class="lg:block"
           >build a beautiful website for your SaaS</span
         >
       </h2>
       <div class="max-w-xl mt-6">
-        <p class="text-mercury-400">
-          Spaziobianco allows you to create different
-        </p>
+        <p class="text-white">Spaziobianco allows you to create different</p>
       </div>
     </div>
     <div class="mx-auto text-left mt-12">
@@ -32,100 +33,92 @@ import { Code } from "astro/components";
           <button
             x-tabs:tab
             type="button"
-            :class="$tab.isSelected ? ' bg-orange focus:bg-orange' : 'bg-transparent'"
-            class="inline-flex rounded-full text-white font-semibold px-3 py-2 text-xs"
+            :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
+            class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
             >Open accounts</button
           >
           <button
             x-tabs:tab
             type="button"
-            :class="$tab.isSelected ? ' bg-orange focus:bg-orange' : 'bg-transparent'"
-            class="inline-flex rounded-full text-white font-semibold px-3 py-2 text-xs"
+            :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
+            class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
             >Create cards
           </button>
         </div>
         <div x-tabs:panels class="rounded-b-md mt-6">
           <section
             x-tabs:panel
-            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#1c1e28] lg:p-10 rounded-3xl">
+            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#14162E] lg:p-10 rounded-3xl">
             <div
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card">
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#14162E] 00">
               <Code
                 code={`import { defineConfig } from 'astro/config';
-  import tailwind from "@astrojs/tailwind";
-  import image from "@astrojs/image";
-  import compress from "astro-compress";
-  import partytown from "@astrojs/partytown";
-  import sitemap from "@astrojs/sitemap";
-  import tailwind from "@astrojs/tailwind";
-  import image from "@astrojs/image";
-  import compress from "astro-compress";
-  import partytown from "@astrojs/partytown";
-  import sitemap from "@astrojs/sitemap";
-  import tailwind from "@astrojs/tailwind";
-  import image from "@astrojs/image";
-  import image from "@astrojs/image";
-  import compress from "astro-compress";
-  import partytown from "@astrojs/partytown";
-  import sitemap from "@astrojs/sitemap";
-  import tailwind from "@astrojs/tailwind";
-  import image from "@astrojs/image";
-  import compress from "astro-compress";
-  import partytown from "@astrojs/partytown";
-  import sitemap from "@astrojs/sitemap";
-  // https://astro.build/config
-  export default defineConfig({
-     site: 'https://lexingtonthemes.com',
-    integrations: [tailwind(), image(), sitemap()]
-  });}'`}
+import tailwind from "@astrojs/tailwind";
+import image from "@astrojs/image";
+import compress from "astro-compress";
+import sitemap from "@astrojs/sitemap";
+import mdx from "@astrojs/mdx";
+export default defineConfig({
+markdown: {
+    drafts: true,
+    shikiConfig: { theme: "css-variables" }
+  },
+  shikiConfig: {
+    wrap: true,
+    skipInline: false,
+    drafts: true,
+  },
+   site: 'https://lexingtonthemes.com',
+  integrations: [tailwind(), image(),
+  compress(), sitemap(), mdx()]
+});`}
                 lang="js"
-                theme="poimandres"
+                theme="css-variables"
               />
             </div>
-            <div class="h-full lg:ml-auto">
-              <Image
-                src={ModalOne}
+            <div class="h-full lg:ml-auto lg:-m-24">
+              <img
+                src="/images/ModalOne.png"
                 alt="thumbnail"
-                class="rounded-2xl shadow-card"
-                width={400}
-                height={420}
+                class="rounded-3xl"
               />
             </div>
           </section>
           <section
             x-tabs:panel
-            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#1c1e28] lg:p-10 rounded-3xl">
+            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#14162E] lg:p-10 rounded-3xl">
             <div
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#1c1e28] shadow-card">
+              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#14162E] 00">
               <Code
                 code={`import { defineConfig } from 'astro/config';
-  import tailwind from "@astrojs/tailwind";
-  import image from "@astrojs/image";
-  import compress from "astro-compress";
-  import partytown from "@astrojs/partytown";
-  import sitemap from "@astrojs/sitemap";
-  import tailwind from "@astrojs/tailwind";
-  import image from "@astrojs/image";
-  import compress from "astro-compress";
-  import partytown from "@astrojs/partytown";
-  import sitemap from "@astrojs/sitemap";
-
-  // https://astro.build/config
-  export default defineConfig({
-     site: 'https://lexingtonthemes.com',
-    integrations: [tailwind(), image(), sitemap()]
-  });}'`}
+import tailwind from "@astrojs/tailwind";
+import image from "@astrojs/image";
+import compress from "astro-compress";
+import sitemap from "@astrojs/sitemap";
+import mdx from "@astrojs/mdx";
+export default defineConfig({
+markdown: {
+    drafts: true,
+    shikiConfig: { theme: "css-variables" }
+  },
+  shikiConfig: {
+    wrap: true,
+    skipInline: false,
+    drafts: true,
+  },
+   site: 'https://lexingtonthemes.com',
+  integrations: [tailwind(), image(),
+  compress(), sitemap(), mdx()]
+});`}
                 lang="js"
-                theme="poimandres"
+                theme="css-variables"
               />
             </div>
-            <div class="h-full lg:ml-auto">
-              <Image
-                src={notification}
+            <div class="h-full lg:ml-auto lg:-m-24">
+              <img
+                src="/images/ModalTwo.png"
                 alt="thumbnail"
-                class="rounded-2xl shadow-card"
-                width={899}
-                height={800}
+                class="rounded-3xl"
               />
             </div>
           </section>
