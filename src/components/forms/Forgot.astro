@@ -1,73 +1,43 @@
 <section>
-  <div
-    class="flex relative justify-center lg:px-0 max-h-full md:px-12 overflow-hidden"
-  >
-    <div
-      class="backdrop-blur-xl bg-mercury-50 hidden lg:block lg:flex-1 lg:relative sm:contents"
-    >
-      <div
-        class="w-full absolute backdrop-blur-xl bg-mercury-50 h-full inset-0 object-cover"
-        height="1866"
-        loading="lazy"
-        width="1664"
-      >
-        <video
-          autoplay=""
-          class="backdrop-blur-xl bg-mercury-50 absolute max-w-none min-h-full min-w-full w-auto z-10"
-          loop=""
-          muted=""
-          ><source src="/images/gradientB.mp4" type="video/mp4" />Your browser
-          does not support the video tag.</video
-        >
+  <div class="flex justify-center h-screen items-center">
+    <div class="w-full mx-auto max-w-md md:max-w-sm md:px-0 md:w-96 px-8">
+      <div class="flex flex-col">
+        <div>
+          <h2
+            class="inline-flex items-center text-blue-600"
+            id="table-of-contents-title">
+            <span class="font-mono text-sm" aria-hidden="true">01</span><span
+              class="ml-3 h-3.5 w-px bg-blue-600/20"></span><span
+              class="ml-3 text-base font-medium tracking-tight"
+              >Forgot passowrd</span
+            >
+          </h2>
+          <h2
+            class="text-purple-900 font-semibold mt-6 text-4xl tracking-tighter">
+            Forgot passowrd
+          </h2>
+        </div>
       </div>
-    </div>
-    <div
-      class="backdrop-blur-xl bg-mercury-50/70 px-4 relative flex flex-1 flex-col h-screen lg:py-24 md:flex-none md:px-28 py-10 shadow-card shadow-[#49d6d2] border-l border-mint sm:justify-center xl:py-36 z-10"
-    >
-      <div
-        class="w-full lg:h-screen flex flex-col lg:px-12 justify-center max-w-md md:max-w-sm md:px-0 md:w-96 mx-auto sm:px-4"
-      >
-        <div class="flex flex-col">
-          <div>
-            <p class="font-medium text-sm leading-tight text-orange">
-              <a href="/">spaziobianco.</a>
-            </p>
-            <h2 class="font-medium leading-tight text-tangaroa-500 mt-6">
-              Forgot password.
-            </h2>
+      <form class="space-y-3">
+        <div class="mt-4 space-y-6">
+          <div class="col-span-full">
+            <label class="sr-only" name="email">Your email</label>
+            <input
+              type="email"
+              class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
+              placeholder="Email"
+            />
+          </div>
+
+          <div class="col-span-full">
+            <button
+              class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-full"
+              type="submit"
+              >Submit
+            </button>
           </div>
         </div>
-        <form action="https://submit-form.com/r4PIGvAB" class="mt-12">
-          <input name="hidden" autocomplete="false" style="display:none" />
-          <input name="_redirect" type="hidden" value="#" /><div
-            class="space-y-6"
-          >
-            <div class="col-span-full">
-              <label class="sr-only" name="company">Password</label>
-              <input
-                class="w-full focus:outline-none border py-2 appearance-none block border-mint focus:bg-white bg-mercury-50 focus:border-mint focus:shadow-xl focus:shadow-mint/20 focus:ring-tangaroa-500 placeholder-mercury-500 px-3 rounded-xl sm:text-sm text-tangaroa-500"
-                placeholder="Password"
-                type="password"
-              />
-            </div>
-
-            <div class="col-span-full">
-              <button
-                class="inline-flex items-center justify-center rounded-full w-full py-3 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-tangaroa-500 text-white hover:bg-orange hover:text-tangaroa-500 active:bg-tangaroa-600 active:text-white focus-visible:outline-tangaroa-900"
-                type="submit">Submit your request</button
-              >
-            </div>
-            <div>
-              <p class="font-medium text-sm leading-tight text-tangaroa-500">
-                Already have a password? <a
-                  class="text-tangaroa-500 hover:text-orange ml-3"
-                  href="/login">Log in</a
-                >
-              </p>
-            </div>
-          </div>
-        </form>
-      </div>
+      </form>
     </div>
   </div>
 </section>

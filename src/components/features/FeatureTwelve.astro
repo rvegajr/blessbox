@@ -1,59 +1,44 @@
----
-import creditcard from "/public/images/creditcard.png";
-import miniNotification from "/public/images/miniNotification.png";
-
-import { Image } from "@astrojs/image/components";
----
-
 <section
   aria-labelledby="feature-twelve"
   id="feature-twelve"
   class="relative overflow-hidden">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-36 my-24 items-center">
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
     <div class="items-start gap-12 grid grid-cols-1 md:grid-cols-2">
       <div>
-        <div class="lg:pr-24 md:pr-12">
-          <span class="text-orange uppercase text-xs font-semibold"
-            >feature twelve</span
-          >
-          <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl">
-            Our company culture is top notch with 100s of benefits
+        <div>
+          <h2
+            class="inline-flex items-center text-blue-600"
+            id="table-of-contents-title">
+            <span class="font-mono text-sm" aria-hidden="true">12</span><span
+              class="ml-3 h-3.5 w-px bg-blue-600/20"></span><span
+              class="ml-3 text-base font-medium tracking-tight">Feature</span
+            >
           </h2>
-          <p class="text-tangaroa-400 mt-5">
+
+          <h2
+            class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
+            Top notch company
+          </h2>
+          <p class="text-slate-500 mt-5">
             Receive dividends bull investment mutual funds rise federal funds
             strategy substantially treasury municipal public index funds.
           </p>
         </div>
-        <div class="mt-10 flex flex-col lg:flex-row gap-3 lg:gap-6">
+        <div class="mt-10">
           <a
-            class="group w-full lg:w-auto inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-tangaroa-500 text-white hover:bg-tangaroa-700 hover:text-tangaroa-100 active:bg-tangaroa-800 active:text-tangaroa-300 focus-visible:outline-tangaroa-900"
+            class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
             href="/overview">
-            Apply
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              class="w-5 h-5 ml-3">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
+            Apply now &nbsp; &rarr;
           </a>
         </div>
       </div>
       <div class="lg:mt-0 mt-12 lg:ml-auto">
-        <div class="max-w-[366px]">
-          <Image
-            src={creditcard}
+        <div class="">
+          <img
+            src="/images/creditcardTwo.png"
             alt="thumbnail"
-            class="rounded-2xl shadow-card"
-            width={1011}
-            height={638}
+            class="drop-shadow-2xl"
           />
         </div>
       </div>
@@ -65,91 +50,69 @@ import { Image } from "@astrojs/image/components";
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              1
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Tools for every stack
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Corporate bonds debt fiat risk return municipal bonds retirement
-            interest rate benchmark.
+            interest.
           </div>
         </li>
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              2
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Prebuilt integrations
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Municipal management performance corporate investment grade bonds.
           </div>
         </li>
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              3
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Tools for every stack
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Corporate bonds debt fiat risk return municipal bonds retirement
-            interest rate benchmark.
+            interest.
+          </div>
+        </li>
+        <li>
+          <div>
+            <div
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              4
+            </div>
+            <p class="mt-5 font-semibold text-purple-900">Use Shiki for code</p>
+          </div>
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
+            Corporate bonds debt fiat risk return municipal bonds retirement
+            interest.
           </div>
         </li>
       </ul>
     </div>
     <div class="mt-24">
-      <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl">
+      <h2
+        class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
         A more efficient way to accept wire transfers and ACH
       </h2>
       <div>
-        <p class="text-tangaroa-400 mt-6">
+        <p class="text-slate-500 mt-6">
           While often more effective for larger invoice amounts, supporting
           payment methods like ACH and wires can require tedious and manual
           accounts receivable efforts. LexingtonBilling automates how businesses
@@ -157,25 +120,34 @@ import { Image } from "@astrojs/image/components";
         </p>
       </div>
     </div>
-    <div class="grid grid-cols-1 items-start md:grid-cols-2 mt-12 lg:mt-24">
-      <div class="lg:pr-24 md:pr-12">
-        <h2 class="text-tangaroa-500 font-semibold mt-6 text-3xl">
-          Stunning layouts
+    <div
+      class="grid grid-cols-1 gap-12 lg:gap-24 items-start md:grid-cols-2 mt-12 lg:mt-24">
+      <div>
+        <h2
+          class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
+          Premium creditcards
         </h2>
-        <p class="text-tangaroa-400 mt-5">
+        <p class="text-slate-500 mt-5">
           Your implementation includes relevant deep dive workshops so we can
           understand your requirements and create tailored integration guides
           for your teams to build faster.
         </p>
+        <p class="text-slate-500 mt-5">
+          LexingtonBilling automates how businesses support B2B payment.
+        </p>
+        <div class="mt-10">
+          <a
+            class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
+            href="/overview">
+            Explor all pages
+          </a>
+        </div>
       </div>
-      <div
-        class="lg:mt-0 mt-12 md:pl-12 md:border-l lg:pl-24 border-mercury-400 h-full">
-        <Image
-          src={miniNotification}
+      <div class="lg:mt-0 mt-12 h-full">
+        <img
+          src="/images/creditcardTwo.png"
           alt="thumbnail"
-          class="rounded-3xl shadow-card object-cover"
-          width={899}
-          height={266}
+          class="drop-shadow-2xl"
         />
       </div>
     </div>
@@ -186,108 +158,60 @@ import { Image } from "@astrojs/image/components";
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              5
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Tools for every stack
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Corporate bonds debt fiat risk return municipal bonds retirement
-            interest rate benchmark.
+            interest.
           </div>
         </li>
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              6
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Prebuilt integrations
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Municipal management performance corporate investment grade bonds.
           </div>
         </li>
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              7
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Tools for every stack
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Corporate bonds debt fiat risk return municipal bonds retirement
-            interest rate benchmark.
+            interest.
           </div>
         </li>
         <li>
           <div>
             <div
-              class="flex items-center justify-center w-8 h-8 text-tangaroa-500 rounded-full bg-mint">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="w-5 h-5">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M21 7.5l-2.25-1.313M21 7.5v2.25m0-2.25l-2.25 1.313M3 7.5l2.25-1.313M3 7.5l2.25 1.313M3 7.5v2.25m9 3l2.25-1.313M12 12.75l-2.25-1.313M12 12.75V15m0 6.75l2.25-1.313M12 21.75V19.5m0 2.25l-2.25-1.313m0-16.875L12 2.25l2.25 1.313M21 14.25v2.25l-2.25 1.313m-13.5 0L3 16.5v-2.25"
-                ></path>
-              </svg>
+              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
+              8
             </div>
-            <p class="mt-5 font-semibold text-tangaroa-500 text-sm">
+            <p class="mt-5 font-semibold text-purple-900">
               Tools for every stack
             </p>
           </div>
-          <div class="mt-2 text-tangaroa-400 text-sm">
+          <div class="mt-6 text-slate-500 text-sm border-l-4 pl-4">
             Corporate bonds debt fiat risk return municipal bonds retirement
-            interest rate benchmark.
+            interest.
           </div>
         </li>
       </ul>
