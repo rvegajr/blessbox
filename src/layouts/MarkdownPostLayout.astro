@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
-import NavigationOne from "../components/navigation/NavigationOne.astro";
-import FooterOne from "../components/footers/FooterOne.astro";
+
 const { frontmatter } = Astro.props;
 import { AstroSeo } from "@astrolib/seo";
 ---
@@ -41,7 +40,6 @@ import { AstroSeo } from "@astrolib/seo";
   }}
 />
 <BaseLayout>
-  <NavigationOne />
   <section>
     <div
       class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 items-start">
@@ -87,5 +85,4 @@ import { AstroSeo } from "@astrolib/seo";
       </div>
     </div>
   </section>
-  <FooterOne />
 </BaseLayout>

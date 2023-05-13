@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import NavigationOne from "../components/navigation/NavigationOne.astro";
 import TestimonialOne from "../components/testimonials/TestimonialOne.astro";
 import TestimonialTwo from "../components/testimonials/TestimonialTwo.astro";
 import TestimonialThree from "../components/testimonials/TestimonialThree.astro";
@@ -8,11 +7,9 @@ import TestimonialFour from "../components/testimonials/TestimonialFour.astro";
 import TestimonialFive from "../components/testimonials/TestimonialFive.astro";
 import TestimonialSix from "../components/testimonials/TestimonialSix.astro";
 import TestimonialSeven from "../components/testimonials/TestimonialSeven.astro";
-import TestimonialEight from "../components/testimonials/TestimonialEight.astro";
-import TestimonialNine from "../components/testimonials/TestimonialNine.astro";
+
 import LogoCloudOne from "../components/testimonials/LogoCloudOne.astro";
 import LogoCloudTwo from "../components/testimonials/LogoCloudTwo.astro";
-import FooterOne from "../components/footers/FooterOne.astro";
 import { AstroSeo } from "@astrolib/seo";
 ---
 
@@ -54,7 +51,6 @@ Use AstroSeo in all the pages you want different Seo than the index page
   }}
 />
 <BaseLayout>
-  <NavigationOne />
   <TestimonialOne />
   <TestimonialTwo />
   <TestimonialThree />
@@ -62,9 +58,6 @@ Use AstroSeo in all the pages you want different Seo than the index page
   <TestimonialFive />
   <TestimonialSix />
   <TestimonialSeven />
-  <TestimonialEight />
-  <TestimonialNine />
   <LogoCloudOne />
   <LogoCloudTwo />
-  <FooterOne />
 </BaseLayout>

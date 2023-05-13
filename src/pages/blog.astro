@@ -1,9 +1,9 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import NavigationOne from "../components/navigation/NavigationOne.astro";
+
 import EntriesOne from "../components/entries/EntriesOne.astro";
-import FooterOne from "../components/footers/FooterOne.astro";
+
 const allPosts = await getCollection("posts");
 import { AstroSeo } from "@astrolib/seo";
 ---
@@ -42,8 +42,7 @@ import { AstroSeo } from "@astrolib/seo";
   }}
 />
 <BaseLayout>
-  <NavigationOne />
-  <section aria-labelledby="blogentries-one" id="blogentries-one">
+  <section>
     <div
       class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
       <div class="space-y-24">
@@ -65,6 +64,4 @@ import { AstroSeo } from "@astrolib/seo";
       </div>
     </div>
   </section>
-
-  <FooterOne />
 </BaseLayout>

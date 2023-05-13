@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Nav from "../components/navigation/NavigationOne.astro";
+
 import HeaderOne from "../components/headers/HeaderOne.astro";
 import LogoCloudOne from "../components/testimonials/LogoCloudOne.astro";
 import FeatureOne from "../components/features/FeatureOne.astro";
@@ -12,7 +12,7 @@ import PricingOne from "../components/pricing/PricingOne.astro";
 import PricingOneExtended from "../components/pricing/PricingOneExtended.astro";
 import FaqOne from "../components/infopages/FaqOne.astro";
 import CtaOne from "../components/cta/CtaOne.astro";
-import FooterOne from "../components/footers/FooterOne.astro";
+
 import { AstroSeo } from "@astrolib/seo";
 ---
 
@@ -54,7 +54,6 @@ Use AstroSeo in all the pages you want different Seo than the index page
   }}
 />
 <BaseLayout>
-  <Nav />
   <HeaderOne />
   <LogoCloudOne />
   <FeatureOne />
@@ -66,5 +65,4 @@ Use AstroSeo in all the pages you want different Seo than the index page
   <PricingOneExtended />
   <FaqOne />
   <CtaOne />
-  <FooterOne />
 </BaseLayout>
