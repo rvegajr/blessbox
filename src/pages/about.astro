@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import NavigationOne from "../components/navigation/NavigationOne.astro";
+
 import AboutOne from "../components/about/AboutOne.astro";
 import FeatureEleven from "../components/features/FeatureEleven.astro";
 import TestimonialFour from "../components/testimonials/TestimonialFour.astro";
@@ -8,7 +8,7 @@ import FeatureTwelve from "../components/features/FeatureTwelve.astro";
 import FeatureFive from "../components/features/FeatureFive.astro";
 import StatsTwo from "../components/stats/StatsTwo.astro";
 import CtaThree from "../components/cta/CtaThree.astro";
-import FooterOne from "../components/footers/FooterOne.astro";
+
 import { AstroSeo } from "@astrolib/seo";
 ---
 
@@ -50,7 +50,6 @@ Use AstroSeo in all the pages you want different Seo than the index page
   }}
 />
 <BaseLayout>
-  <NavigationOne />
   <AboutOne />
   <FeatureEleven />
   <TestimonialFour />
@@ -58,5 +57,4 @@ Use AstroSeo in all the pages you want different Seo than the index page
   <FeatureFive />
   <StatsTwo />
   <CtaThree />
-  <FooterOne />
 </BaseLayout>
