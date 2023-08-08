@@ -40,7 +40,7 @@ module.exports = {
       fontFamily: {
         sans: ['Figtree', ...defaultTheme.fontFamily.sans],
         mono: ['JetBrains Mono', ...defaultTheme.fontFamily.mono],
-        display: ['Darker Grotesque', ...defaultTheme.fontFamily.serif],
+        
       },
     },
   },
