@@ -1,6 +1,6 @@
-<section >
+<section>
   <div
-    x-data="{annual: false}"
+    x-data="{duration: 'monthly'}"
     class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
     <div class="grid grid-cols-1 lg:grid-cols-2 items-end max-w-7xl">
       <div>
@@ -9,25 +9,25 @@
         </h2>
         <h2
           class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-          Prrrricing
+          Pricing
         </h2>
       </div>
-      <div class="items-center px-8 lg:ml-auto">
-        <div
-          class="relative z-0 inline-flex mt-6 divide-x rounded-full divide-blue-500 overflow-hidden">
-          <button
-            class="transition rounded-l-xl w-full block px-8 py-2 text-sm font-medium"
-            :class="annual == false ? 'bg-blue-500 text-white ' : 'text-blue-600 bg-blue-50'"
-            @click="annual = false"
-            type="button">Monthly</button
-          >
-          <button
-            class="transition rounded-r-xl w-full block bg-white text-purple-900 px-8 py-2 text-sm font-medium"
-            :class="annual == true ? 'bg-blue-500 text-white' : 'text-blue-600 bg-blue-50'"
-            @click="annual = true"
-            type="button">Annual</button
-          >
-        </div>
+      <div
+        class="w-full border bg-white overflow-hidden inline-flex mt-6 p-0.5 rounded-full max-w-xs shadow-sm z-0 ml-auto">
+        <button
+          id="monthly-pricing-button"
+          class="block w-full px-8 py-2 text-xs font-medium transition border border-transparent rounded-full text-purple-900"
+          @click="duration = 'monthly'"
+          :class="duration == 'monthly' ? 'bg-gray-100 border text-purple-900 ' : ''"
+          type="button">Monthly</button
+        >
+        <button
+          id="annual-pricing-button"
+          class="block w-full px-8 py-2 text-xs font-medium transition border border-transparent rounded-full text-purple-900"
+          @click="duration = 'annual'"
+          :class="duration == 'annual' ? 'bg-gray-100 border text-purple-900 ' : ''"
+          type="button">Annual</button
+        >
       </div>
     </div>
     <div class="mt-12 grid sm:grid-cols-2 gap-6 lg:grid-cols-2">
