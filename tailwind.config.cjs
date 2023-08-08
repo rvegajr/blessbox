@@ -40,13 +40,12 @@ module.exports = {
       fontFamily: {
         sans: ['Figtree', ...defaultTheme.fontFamily.sans],
         mono: ['JetBrains Mono', ...defaultTheme.fontFamily.mono],
-        
+
       },
     },
   },
   plugins: [
     require('tailwind-scrollbar-hide'),
-    require('tailwindcss-textshadow'),
     require('@tailwindcss/typography'),
     // ...
   ],

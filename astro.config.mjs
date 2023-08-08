@@ -1,9 +1,7 @@
 import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
-import image from "@astrojs/image";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
-// https://astro.build/config
 export default defineConfig({
 markdown: {
     drafts: true,
@@ -15,5 +13,5 @@ markdown: {
     drafts: true,
   },
    site: 'https://lexingtonthemes.com',
-  integrations: [tailwind(), image(),  sitemap(), mdx()]
+  integrations: [tailwind(),   sitemap(), mdx()]
 });
