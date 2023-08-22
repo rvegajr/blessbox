@@ -2,9 +2,7 @@
 import { Code } from "astro/components";
 ---
 
-<section
-
-  class="bg-purple-900 transform skew-y-6 -mt-72">
+<section class="bg-purple-900 transform skew-y-6 -mt-72">
   <div
     class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:pt-42 pb-52 items-center transform -skew-y-6">
     <div>
@@ -24,31 +22,61 @@ import { Code } from "astro/components";
       </div>
     </div>
     <div class="mx-auto text-left mt-12">
-      <div x-data x-tabs class="mx-auto">
-        <div x-tabs:list class="-mb-px flex items-stretch gap-1">
+      <div
+        x-data="{
+        tabSelected: 1,
+        tabId: $id('tabs'),
+        tabButtonClicked(tabButton){
+            this.tabSelected = tabButton.id.replace(this.tabId + '-', '');
+            this.tabRepositionMarker(tabButton);
+        },
+        tabRepositionMarker(tabButton){
+            this.$refs.tabMarker.style.width=tabButton.offsetWidth + 'px';
+            this.$refs.tabMarker.style.height=tabButton.offsetHeight + 'px';
+            this.$refs.tabMarker.style.left=tabButton.offsetLeft + 'px';
+        },
+        tabContentActive(tabContent){
+            return this.tabSelected == tabContent.id.replace(this.tabId + '-content-', '');
+        }
+    }"
+        x-init="tabRepositionMarker($refs.tabButtons.firstElementChild);"
+        class="relative lg:rounded-3xl lg:p-10 text-white">
+        <div
+          x-ref="tabButtons"
+          class="relative inline-grid items-center justify-center h-10 grid-cols-2 p-1 bg-purple-900 rounded-full select-none">
           <button
-            x-tabs:tab
+            :id="$id(tabId)"
+            @click="tabButtonClicked($el);"
             type="button"
-            :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-            class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-            >Open accounts</button
+            class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-full cursor-pointer whitespace-nowrap"
+            >Open Accounts</button
           >
           <button
-            x-tabs:tab
+            :id="$id(tabId)"
+            @click="tabButtonClicked($el);"
             type="button"
-            :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-            class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-            >Create cards
-          </button>
+            class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-md cursor-pointer whitespace-nowrap"
+            >Create cards</button
+          >
+          <div
+            x-ref="tabMarker"
+            class="absolute left-0 z-10 w-1/2 h-full duration-300 ease-out"
+            x-cloak>
+            <div class="w-full h-full bg-white/10 rounded-full shadow-sm"></div>
+          </div>
         </div>
-        <div x-tabs:panels class="rounded-b-md mt-6">
-          <section
-            x-tabs:panel
-            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#14162E] lg:p-10 rounded-3xl">
-            <div
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#14162E] 00">
-              <Code
-                code={`import { defineConfig } from 'astro/config';
+        <div class="relative w-full mt-2 content">
+          <div
+            :id="$id(tabId + '-content')"
+            x-show="tabContentActive($el)"
+            class="relative">
+            <!-- Tab Content 1 - Replace with your content -->
+            <section
+              class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#14162c] lg:p-10 rounded-3xl">
+              <div
+                class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#14162c] 00">
+                <Code
+                  code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import image from "@astrojs/image";
 import compress from "astro-compress";
@@ -68,25 +96,32 @@ markdown: {
   integrations: [tailwind(), image(),
   compress(), sitemap(), mdx()]
 });`}
-                lang="js"
-                theme="css-variables"
-              />
-            </div>
-            <div class="h-full lg:ml-auto lg:-m-24">
-              <img
-                src="/images/ModalOne.png"
-                alt="thumbnail"
-                class="rounded-3xl"
-              />
-            </div>
-          </section>
-          <section
-            x-tabs:panel
-            class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#14162E] lg:p-10 rounded-3xl">
-            <div
-              class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#14162E] 00">
-              <Code
-                code={`import { defineConfig } from 'astro/config';
+                  lang="js"
+                  theme="css-variables"
+                />
+              </div>
+              <div class="h-full lg:ml-auto lg:-m-24">
+                <img
+                  src="/images/ModalOne.png"
+                  alt="thumbnail"
+                  class="rounded-3xl"
+                />
+              </div>
+            </section>
+            <!-- End Tab Content 1 -->
+          </div>
+
+          <div
+            :id="$id(tabId + '-content')"
+            x-show="tabContentActive($el)"
+            class="relative"
+            x-cloak>
+            <section
+              class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-24 lg:bg-[#14162c] lg:p-10 rounded-3xl">
+              <div
+                class="text-xs font-mono mt-4 rounded-2xl overflowhidden p-4 bg-[#14162c] 00">
+                <Code
+                  code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import image from "@astrojs/image";
 import compress from "astro-compress";
@@ -106,18 +141,19 @@ markdown: {
   integrations: [tailwind(), image(),
   compress(), sitemap(), mdx()]
 });`}
-                lang="js"
-                theme="css-variables"
-              />
-            </div>
-            <div class="h-full lg:ml-auto lg:-m-24">
-              <img
-                src="/images/ModalTwo.png"
-                alt="thumbnail"
-                class="rounded-3xl"
-              />
-            </div>
-          </section>
+                  lang="js"
+                  theme="css-variables"
+                />
+              </div>
+              <div class="h-full lg:ml-auto lg:-m-24">
+                <img
+                  src="/images/ModalTwo.png"
+                  alt="thumbnail"
+                  class="rounded-3xl"
+                />
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </div>
