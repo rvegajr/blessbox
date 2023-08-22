@@ -2,7 +2,7 @@
 import { Code } from "astro/components";
 ---
 
-<section  class="bg-white">
+<section class="bg-white">
   <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-36">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
       <div>
@@ -23,29 +23,72 @@ import { Code } from "astro/components";
       </div>
       <div class="lg:mt-0 mt-12 h-full lg:order-first">
         <!-- Include these scripts somewhere on the page: -->
-        <div x-data x-tabs class="mx-auto">
-          <div x-tabs:list class="-mb-px flex items-stretch gap-1">
-            <button
-              x-tabs:tab
-              type="button"
-              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-              >Open accounts</button
-            >
-            <button
-              x-tabs:tab
-              type="button"
-              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-              >Create cards
-            </button>
-          </div>
-          <div x-tabs:panels class="rounded-b-md bg-white mt-6">
-            <section
-              x-tabs:panel
-              class="text-xs leading-relaxed font-mono mt-4 rounded-2xl p-4 bg-purple-800">
-              <Code
-                code={`import { defineConfig } from 'astro/config';
+        <div class="lg:mt-0 mt-12 h-full">
+          <div
+            x-data="{
+        tabSelected: 1,
+        tabId: $id('tabs'),
+        tabButtonClicked(tabButton){
+            this.tabSelected = tabButton.id.replace(this.tabId + '-', '');
+            this.tabRepositionMarker(tabButton);
+        },
+        tabRepositionMarker(tabButton){
+            this.$refs.tabMarker.style.width=tabButton.offsetWidth + 'px';
+            this.$refs.tabMarker.style.height=tabButton.offsetHeight + 'px';
+            this.$refs.tabMarker.style.left=tabButton.offsetLeft + 'px';
+        },
+        tabContentActive(tabContent){
+            return this.tabSelected == tabContent.id.replace(this.tabId + '-content-', '');
+        }
+    }"
+            x-init="tabRepositionMarker($refs.tabButtons.firstElementChild);"
+            class="relative lg:rounded-3xl lg:p-10 text-purple-900">
+            <div
+              x-ref="tabButtons"
+              class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-slate-100 rounded-full select-none">
+              <button
+                :id="$id(tabId)"
+                @click="tabButtonClicked($el);"
+                type="button"
+                class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-full cursor-pointer whitespace-nowrap"
+                >Account</button
+              >
+              <button
+                :id="$id(tabId)"
+                @click="tabButtonClicked($el);"
+                type="button"
+                class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-md cursor-pointer whitespace-nowrap"
+                >Password</button
+              >
+              <div
+                x-ref="tabMarker"
+                class="absolute left-0 z-10 w-1/2 h-full duration-300 ease-out"
+                x-cloak>
+                <div class="w-full h-full bg-white rounded-full shadow-sm">
+                </div>
+              </div>
+            </div>
+            <div
+              class="relative w-full mt-2 content p-4 bg-purple-900 rounded-3xl">
+              <div
+                :id="$id(tabId + '-content')"
+                x-show="tabContentActive($el)"
+                class="relative">
+                <!-- Tab Content 1 - Replace with your content -->
+                <section
+                  class="text-xs font-mono shadow-3xl mt-4 rounded-2xl overflowhidden h-full">
+                  <Code
+                    code={`
+import { defineConfig } from 'astro/config';
+import compress from "astro-compress";
+import partytown from "@astrojs/partytown";
+import sitemap from "@astrojs/sitemap";
+import tailwind from "@astrojs/tailwind";
+import image from "@astrojs/image";
+import image from "@astrojs/image";
+import compress from "astro-compress";
+import partytown from "@astrojs/partytown";
+import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
 import image from "@astrojs/image";
 import compress from "astro-compress";
@@ -56,15 +99,23 @@ export default defineConfig({
    site: 'https://lexingtonthemes.com',
   integrations: [tailwind(), image(), sitemap()]
 });}'`}
-                lang="js"
-                theme="css-variables"
-              />
-            </section>
-            <section
-              x-tabs:panel
-              class="text-xs leading-relaxed font-mono mt-4 rounded-2xl p-4 bg-purple-800">
-              <Code
-                code={`import { defineConfig } from 'astro/config';
+                    lang="js"
+                    theme="css-variables"
+                  />
+                </section>
+                <!-- End Tab Content 1 -->
+              </div>
+
+              <div
+                :id="$id(tabId + '-content')"
+                x-show="tabContentActive($el)"
+                class="relative"
+                x-cloak>
+                <section
+                  class="text-xs font-mono mt-4 rounded-3xl hadow-2xl overflow-hidden h-full p-4">
+                  <Code
+                    code={`
+import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import image from "@astrojs/image";
 import compress from "astro-compress";
@@ -79,10 +130,12 @@ export default defineConfig({
    site: 'https://lexingtonthemes.com',
   integrations: [tailwind(),  sitemap()]
 });}'`}
-                lang="js"
-                theme="css-variables"
-              />
-            </section>
+                    lang="js"
+                    theme="css-variables"
+                  />
+                </section>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -52,74 +52,81 @@
       </div>
       <div
         class="lg:mt-0 mt-12 md:pl-12 md:border-l lg:pl-24 border-slate-200 h-full">
-        <div x-data x-tabs class="mx-auto">
-          <div x-tabs:list class="-mb-px flex items-stretch gap-1">
-            <button
-              x-tabs:tab
-              type="button"
-              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-              >Blogs</button
-            >
-            <button
-              x-tabs:tab
-              type="button"
-              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-              >Email
-            </button>
-            <button
-              x-tabs:tab
-              type="button"
-              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-              >Pricing
-            </button>
-            <button
-              x-tabs:tab
-              type="button"
-              :class="$tab.isSelected ? ' bg-blue-500 focus:bg-blue-500 text-white' : 'bg-blue-50 text-blue-600'"
-              class="inline-flex rounded-full font-semibold px-6 py-2 text-xs"
-              >Seats
-            </button>
-          </div>
-          <div x-tabs:panels class="rounded-b-md bg-white mt-6">
-            <section
-              x-tabs:panel
-              class="mt-4 rounded-2xl h-full drop-shadow-xl">
-              <img
-                src="/images/ModalOne.png"
-                alt="thumbnail"
-                class="ring-1 ring-slate-300 rounded-2xl"
-              />
-            </section>
-            <section
-              x-tabs:panel
-              class="mt-4 rounded-2xl h-full drop-shadow-xl">
-              <img
-                src="/images/ModalTwo.png"
-                alt="thumbnail"
-                class="ring-1 ring-slate-300 rounded-2xl"
-              />
-            </section>
-            <section
-              x-tabs:panel
-              class="mt-4 rounded-2xl h-fulll drop-shadow-2xl">
-              <img
-                src="/images/ModalThree.png"
-                alt="thumbnail"
-                class="ring-1 ring-slate-300 rounded-2xl"
-              />
-            </section>
-            <section
-              x-tabs:panel
-              class="mt-4 rounded-2xl h-fulll drop-shadow-2xl">
-              <img
-                src="/images/ModalFour.png"
-                alt="thumbnail"
-                class="ring-1 ring-slate-300 rounded-2xl"
-              />
-            </section>
+        <div class="lg:mt-0 mt-12 h-full">
+          <div
+            x-data="{
+        tabSelected: 1,
+        tabId: $id('tabs'),
+        tabButtonClicked(tabButton){
+            this.tabSelected = tabButton.id.replace(this.tabId + '-', '');
+            this.tabRepositionMarker(tabButton);
+        },
+        tabRepositionMarker(tabButton){
+            this.$refs.tabMarker.style.width=tabButton.offsetWidth + 'px';
+            this.$refs.tabMarker.style.height=tabButton.offsetHeight + 'px';
+            this.$refs.tabMarker.style.left=tabButton.offsetLeft + 'px';
+        },
+        tabContentActive(tabContent){
+            return this.tabSelected == tabContent.id.replace(this.tabId + '-content-', '');
+        }
+    }"
+            x-init="tabRepositionMarker($refs.tabButtons.firstElementChild);"
+            class="relative lg:rounded-3xl lg:p-10 text-purple-900">
+            <div
+              x-ref="tabButtons"
+              class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-slate-100 rounded-full select-none">
+              <button
+                :id="$id(tabId)"
+                @click="tabButtonClicked($el);"
+                type="button"
+                class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-full cursor-pointer whitespace-nowrap"
+                >Account</button
+              >
+              <button
+                :id="$id(tabId)"
+                @click="tabButtonClicked($el);"
+                type="button"
+                class="relative z-20 inline-flex items-center justify-center w-full h-8 px-3 text-sm font-medium transition-all rounded-md cursor-pointer whitespace-nowrap"
+                >Password</button
+              >
+              <div
+                x-ref="tabMarker"
+                class="absolute left-0 z-10 w-1/2 h-full duration-300 ease-out"
+                x-cloak>
+                <div class="w-full h-full bg-white rounded-full shadow-sm">
+                </div>
+              </div>
+            </div>
+            <div class="relative w-full mt-2 content">
+              <div
+                :id="$id(tabId + '-content')"
+                x-show="tabContentActive($el)"
+                class="relative">
+                <!-- Tab Content 1 - Replace with your content -->
+                <section class="mt-4 rounded-2xl h-full drop-shadow-xl">
+                  <img
+                    src="/images/ModalOne.png"
+                    alt="thumbnail"
+                    class="ring-1 ring-slate-300 rounded-2xl"
+                  />
+                </section>
+                <!-- End Tab Content 1 -->
+              </div>
+
+              <div
+                :id="$id(tabId + '-content')"
+                x-show="tabContentActive($el)"
+                class="relative"
+                x-cloak>
+                <section class="mt-4 rounded-2xl h-full drop-shadow-xl">
+                  <img
+                    src="/images/ModalTwo.png"
+                    alt="thumbnail"
+                    class="ring-1 ring-slate-300 rounded-2xl"
+                  />
+                </section>
+              </div>
+            </div>
           </div>
         </div>
       </div>
