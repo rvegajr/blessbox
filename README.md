@@ -2,10 +2,10 @@
 
 ## Template Integrations
 - @astrojs/tailwind - https://docs.astro.build/en/guides/integrations-guide/tailwind/
-
 - @astrojs/sitemap - https://docs.astro.build/en/guides/integrations-guide/sitemap/
-- @astrojs/partytown - https://docs.astro.build/en/guides/integrations-guide/partytown/
-- Astrolib SEO - https://github.com/onwidget/astrolib/tree/main/packages/seo
+- @astrojs/mdx - https://docs.astro.build/en/guides/markdown-content/
+- @astrojs/rss - https://docs.astro.build/en/guides/rss/
+- @astrojs/prism - https://docs.astro.build/en/reference/api-reference/#prism
 ## Template Structure
 
 Inside of your Astro project, you'll see the following folders and files:
