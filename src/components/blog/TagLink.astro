@@ -1,0 +1,11 @@
+---
+const { title, url } = Astro.props;
+---
+
+<a
+  class="text-sm font-medium text-blue-500 hover:text-purple-900"
+  title="link to your page"
+  aria-label="your label"
+  href={url}
+  >{title}</a
+>

@@ -1,53 +1,54 @@
 ---
 import { Code } from "astro/components";
+// Define the features data
+const features = [
+  {
+    title: "Prebuilt integrations",
+    description:
+      "Email marketing, newsletters, and more, all with a single click.",
+  },
+  {
+    title: "Customizable templates",
+    description: "Create your own custom templates to suit your needs.",
+  },
+];
 ---
-
 <section class="relative overflow-hidden bg-white">
   <div class="bg-purple-900 max-w-7xl mx-auto rounded-3xl">
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
         <div>
-          <h2 class="inline-flex items-center text-white">
-            <span class="text-base font-medium tracking-tight">Feature</span>
-          </h2>
+          <span class="text-sm font-medium text-slate-300 tracking-wide uppercase"
+            >customizable</span
+          >
           <h2
-            class="text-white font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-            Style code snippets with Shiki and CSS Variables
+            class="text-white font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+            Integrate with your existing email.
           </h2>
-          <p class="text-slate-400 mt-5">
-            Receive dividends bull investment mutual funds rise federal funds
-            strategy substantially treasury municipal public index funds.
-          </p>
-          <p class="text-slate-400 mt-3">
-            Municipal management performance corporate investment grade bonds.
-            Fall volatile rates funds Standard & Poor's market index upswing
-            financial health growth bear. Treasury 401k potential.
+          <p class="text-slate-300 mt-5 text-balance">
+            Spaziobianco is a platform for developers to send and receive email,
+            and manage their inbox. It is designed to be easy to use and
+            customizable, with a focus on speed and efficiency.
+            <br />
+            <br />
+            A simple and intuitive interface makes it easy to send and receive emails,
+            and manage your inbox.
           </p>
           <ul
             role="list"
             class="grid grid-cols-2 gap-4 list-none lg:gap-6 mt-12">
-            <li>
-              <div>
-                <p class="font-semibold text-white text-base">
-                  Prebuilt integrations
-                </p>
-              </div>
-              <div class="mt-2 text-slate-400 text-sm">
-                Municipal management performance corporate investment grade
-                bonds.
-              </div>
-            </li>
-            <li>
-              <div>
-                <p class="font-semibold text-white text-base">
-                  Tools for every stack
-                </p>
-              </div>
-              <div class="mt-2 text-slate-400 text-sm">
-                Municipal management performance corporate investment grade
-                bonds.
-              </div>
-            </li>
+            {
+              features.map((feature) => (
+                <li>
+                  <p class="font-semibold text-white text-base">
+                    {feature.title}
+                  </p>
+                  <div class="mt-2 text-slate-400 text-sm">
+                    {feature.description}
+                  </div>
+                </li>
+              ))
+            }
           </ul>
         </div>
         <div class="lg:mt-0 mt-12 h-full">
@@ -72,7 +73,7 @@ import { Code } from "astro/components";
             class="relative lg:rounded-3xl lg:p-10 text-white">
             <div
               x-ref="tabButtons"
-              class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-purple-900 rounded-full select-none">
+              class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-purple-900 border border-white/20 rounded-full select-none">
               <button
                 :id="$id(tabId)"
                 @click="tabButtonClicked($el);"
@@ -102,7 +103,7 @@ import { Code } from "astro/components";
                 class="relative">
                 <!-- Tab Content 1 - Replace with your content -->
                 <section
-                  class="text-xs font-mono shadow-3xl mt-4 rounded-2xl overflowhidden h-full bg-[#14162a] p-4 ">
+                  class="text-xs font-mono shadow-3xl mt-4 rounded-2xl overflowhidden h-full bg-[#14162a] p-4">
                   <Code
                     code={`
 import { defineConfig } from 'astro/config';
@@ -131,7 +132,6 @@ export default defineConfig({
                 </section>
                 <!-- End Tab Content 1 -->
               </div>
-
               <div
                 :id="$id(tabId + '-content')"
                 x-show="tabContentActive($el)"

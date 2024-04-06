@@ -1,318 +1,178 @@
-<section >
-  <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
+---
+const pricingPlans = [
+  {
+    name: "Hobby",
+    monthlyPrice: "15",
+    annualPrice: "8",
+    description:
+      "This plan suits individual users and hobbyists needing basic  support",
+    cardBgClass: "bg-slate-50",
+    descriptionColor: "text-slate-500",
+    buttonClass: "bg-blue-100 hover:bg-blue-50 text-blue-600",
+    features: ["5 mb/PDF", "75 pages/PDF", "10 messages/Day", "Up to 3 PDFs"],
+    unavailableFeatures: ["Gpt-3.5-turbo model", "Test mode", "Doc summary"],
+  },
+  {
+    name: "Pro",
+    monthlyPrice: "25",
+    annualPrice: "20",
+    description: "This plan is tailored for small businesses and startups",
+    cardBgClass: "bg-white",
+    descriptionColor: "text-slate-500",
+    buttonClass: "bg-blue-500 hover:bg-blue-600 text-white",
+    features: [
+      "10 mb/PDF",
+      "150 pages/PDF",
+      "25 messages/Day",
+      "Up to 5 PDFs",
+      "Gpt-3.5-turbo model",
+    ],
+    unavailableFeatures: ["Test mode", "Doc summary"],
+  },
+];
+---
+
+<section x-data="{annual: false}">
+  <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
     <div
-      class="grid items-start grid-cols-1 mx-auto lg:grid-cols-3 lg:gap-12 mt-12">
-      <div class="h-full rounded-3xl">
-        <div
-          class="flex flex-col flex-1 p-8 bg-blue-600 rounded-3xl h-full relative overflow-hidden">
-          <h2 class="inline-flex items-center text-white">
-            <span class="text-base font-medium tracking-tight">Pricing</span>
+      class="grid items-start grid-cols-1 mx-auto lg:grid-cols-3 gap-4 mt-12 p-8 bg-slate-50 rounded-3xl h-full relative overflow-hidden">
+      <div
+        class="flex flex-col justify-between flex-1 h-full md:text-center lg:text-left md:text-balance md:w-1/2 mx-auto lg:mx-0 lg:w-auto">
+        <div>
+          <span
+            class="text-sm uppercase font-medium tracking-wide text-blue-600"
+            >pricing</span
+          >
+          <h2
+            class="text-purple-600 font-semibold tracking-tight mt-6 text-3xl lg:text-5xl text-balance">
+            Always know what you'll pay.
           </h2>
-          <h2 class="text-white font-semibold tracking-tighter mt-6 text-3xl">
-            Always know what you’ll pay no matter how much your company changes.
-          </h2>
-          <div class="max-w-lg mt-3 space-y-3 relative">
-            <p class="text-sm text-white">
-              Instant bank account verifications Obtain bank names and tokenized
-              account numbers to connect a user’s bank account and verify that
-              it's open.
-            </p>
-            <p class="text-sm text-white">
-              Retrieve account balances for underwriting, financial management,
-              or preventing payment failures due to insufficient funds.
-            </p>
+        </div>
+        <div class="max-w-lg mt-3 space-y-3 relative">
+          <p class="text-base text-slate-600 text-balance">
+            Instant bank account verifications Obtain bank names and tokenized
+            account numbers to connect a user’s bank account and verify that
+            it's open.
+          </p>
+          <div class="md:max-w-xs mt-12 mx-auto lg:mx-o">
+            <div
+              class="inline-flex w-full border rounded-full mt-6 overflow-hidden bg-white p-0.5 z-0">
+              <button
+                class="text-black font-medium border rounded-full transition w-full py-2 block border-transparent px-8 text-xs"
+                @click="annual = false"
+                :class="annual == false ? 'bg-slate-100 border text-black ' : ''"
+                type="button"
+                >Monthly</button
+              >
+              <button
+                class="text-black font-medium border rounded-full transition w-full py-2 block border-transparent px-8 text-xs"
+                @click="annual = true"
+                :class="annual == true ? 'bg-slate-100 border text-black' : ''"
+                type="button"
+                >Annual</button
+              >
+            </div>
           </div>
         </div>
       </div>
-      <div
-        class="grid md:grid-cols-2 lg:col-span-2 gap-3 lg:gap-12 mt-3 lg:mt-0">
-        <div class="w-full md:col-span-2 order-first">
-          <div class="grid grid-cols-2 justify-between w-full items-end">
-            <p class="lg:text-3xl text-purple-900 tracking-tighter">
-              Start today <span>your free plan</span>
-            </p>
-            <p class="mt-5 ml-auto">
-              <a
-                href="#"
-                class="text-blue-500 hover:text-blue-600 inline-flex items-center group">
-                Contact us
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                    clip-rule="evenodd"></path>
-                </svg>
-              </a>
-            </p>
-          </div>
-        </div>
-        <section
-          class="flex flex-col px-6 rounded-3xl sm:px-8 py-8 bg-slate-50 w-full">
-          <h3 class="mt-5 text-lg text-purple-900">Hobby</h3>
-          <p class="mt-2 text-sm text-slate-500">
-            For even the biggest enterprise companies.
-          </p>
-
-          <p
-            class="order-first text-5xl font-light tracking-tight text-purple-900">
-            $29
-          </p>
-          <ul
-            role="list"
-            class="flex flex-col order-last mt-10 text-sm text-slate-500 gap-y-3">
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Connect unlimited websites</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Connect up to 15 bank accounts</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Track up to 200 credit cards</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Analytics support</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Export up to 24 months data</span>
-            </li>
-          </ul>
-          <div class="mt-8">
-            <a
-              class="text-blue-600 items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-100 hover:bg-blue-50 w-full"
-              aria-label="#"
-              href="/register">Get started</a
-            >
-          </div>
-        </section>
-        <section
-          class="flex flex-col px-6 py-8 sm:px-8 rounded-3xl lg:order-none bg-slate-50 w-full">
-          <h3 class="mt-5 text-lg text-purple-900">Bog company</h3>
-          <p class="mt-2 text-sm text-slate-500">
-            For even the biggest enterprise companies.
-          </p>
-
-          <p
-            class="order-first text-5xl font-light tracking-tight text-purple-900">
-            $99
-          </p>
-          <ul
-            role="list"
-            class="flex flex-col order-last mt-10 text-sm text-slate-500 gap-y-3">
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Connect 80 websites</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Connect up to 5 bank accounts</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Track up to 50 credit cards</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Analytics support</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Export up to 12 months data</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Cloud service 24/7</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-check"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                fill="none"
-                stroke-linecap="round"
-                stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l2 2l4 -4"></path>
-              </svg>
-              <span class="ml-4"> Track in multiple users</span>
-            </li>
-          </ul>
-          <div class="mt-8">
-            <a
-              class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-full"
-              aria-label="#"
-              href="/register">Get started</a
-            >
-          </div>
-        </section>
+      <div class="grid md:grid-cols-2 lg:col-span-2 gap-4 mt-3 lg:mt-0">
+        {
+          pricingPlans.map((plan) => (
+            <section>
+              <div
+                class={` ${plan.cardBgClass}  flex flex-col  justify-between w-full  p-8 rounded-3xl`}>
+                <div>
+                  <div class="space-y-4">
+                    <div class="flex gap-1 items-end ">
+                      <p class={` text-purple-900`}>
+                        <span class="text-5xl font-light tracking-tight    ">
+                          <span x-show="!annual">${plan.monthlyPrice}</span>
+                          <span x-show="annual">${plan.annualPrice}</span>
+                        </span>
+                      </p>
+                    </div>
+                    <span
+                      class={`text-sm font-medium block ${plan.descriptionColor}`}>
+                      Monthly
+                      <span
+                        x-show="annual"
+                        style="display: none;">
+                        (billed annually)
+                      </span>
+                    </span>
+                    <p class={`text-lg   text-purple-900`}>{plan.name}</p>
+                    <p
+                      class={`text-sm lg:text-pretty ${plan.descriptionColor}`}>
+                      {plan.description}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex mt-6">
+                  <button
+                    type="button"
+                    title={plan.name}
+                    aria-label="get started"
+                    class={`inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium ${plan.buttonClass}`}>
+                    Get started
+                  </button>
+                </div>
+                <ul
+                  class={`flex flex-col order-last mt-8 text-sm ${plan.descriptionColor} gap-y-3`}>
+                  {plan.features.map((feature) => (
+                    <li class="inline-flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon icon-tabler icon-tabler-circle-check"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        />
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                        <path d="M9 12l2 2l4 -4" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                  {plan.unavailableFeatures.map((feature) => (
+                    <li
+                      class={`inline-flex items-center gap-2 ${plan.descriptionColor} line-through opacity-50`}>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x">
+                        <path
+                          stroke="none"
+                          d="M0 0h24v24H0z"
+                          fill="none"
+                        />
+                        <path d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z" />
+                        <path d="M9 8l6 8" />
+                        <path d="M15 8l-6 8" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          ))
+        }
       </div>
     </div>
   </div>

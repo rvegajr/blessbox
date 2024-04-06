@@ -6,7 +6,7 @@
           <span class="text-base font-medium tracking-tight">Submit</span>
         </h2>
         <h2
-          class="text-purple-900 font-semibold mt-6 text-4xl lg:text-7xl tracking-tighter">
+          class="text-purple-900 font-semibold mt-6 text-4xl lg:text-6xl tracking-tight">
           Contact our sales team
         </h2>
         <p class="text-slate-500 mt-5">
@@ -14,7 +14,9 @@
           strategy substantially treasury municipal public index funds.
         </p>
 
-        <ul role="list" class="list-none mt-12">
+        <ul
+          role="list"
+          class="list-none mt-12">
           <li>
             <div>
               <p class="mt-5 font-semibold text-purple-900">
@@ -54,76 +56,91 @@
           </li>
         </ul>
       </div>
-      <div class="lg:mt-0 mt-12 md:pl-12 md:border-l lg:pl-24 border-slate-200">
-        <div class="flex flex-col">
-          <form action="https://submit-form.com/r4PIGvAB">
-            <input name="hidden" autocomplete="false" style="display:none" />
-            <input name="_redirect" type="hidden" value="#" /><div
-              class="space-y-2">
-              <div>
-                <label class="sr-only" name="name">Firist name</label>
-                <input
-                  type="text"
-                  class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
-                  placeholder="Full Name"
-                />
-              </div>
+      <form
+        class="lg:mt-0 mt-12 md:pl-12 md:border-l lg:pl-24 border-slate-200">
+        <div class="space-y-2">
+          <div>
+            <label
+              for="full_name"
+              class="sr-only"
+              >Full Name</label
+            >
+            <input
+              type="text"
+              id="full_name"
+              class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
+              placeholder="Full Name"
+              required
+            />
+          </div>
 
-              <div>
-                <label class="sr-only">Work email adress</label>
-                <input
-                  type="email"
-                  class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
-                  placeholder="Work Email"
-                />
-              </div>
-              <div>
-                <label class="sr-only">Work email adress</label>
-                <input
-                  type="tel"
-                  class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
-                  placeholder="Work Phone"
-                />
-              </div>
-              <div>
-                <label class="sr-only">Work website</label>
-                <input
-                  type="url"
-                  class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
-                  placeholder="Work website address"
-                />
-              </div>
+          <div>
+            <label
+              for="work_email"
+              class="sr-only"
+              >Work Email Address</label
+            >
+            <input
+              type="email"
+              id="work_email"
+              class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
+              placeholder="Work Email"
+              required
+            />
+          </div>
 
-              <div>
-                <div>
-                  <label class="sr-only" name="message">Project details</label
-                  ><div class="mt-1">
-                    <textarea
-                      class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
-                      placeholder="What are you working on?"
-                      rows="4"></textarea>
-                  </div>
-                </div>
-              </div>
+          <div>
+            <label
+              for="work_phone"
+              class="sr-only"
+              >Work Phone</label
+            >
+            <input
+              type="tel"
+              id="work_phone"
+              class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
+              placeholder="Work Phone"
+            />
+          </div>
 
-              <div class="col-span-full">
-                <button
-                  class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-full"
-                  type="submit">Submit your request</button
-                >
-              </div>
-              <div>
-                <p class="font-medium text-sm leading-tight text-purple-900">
-                  Not a member? <a
-                    class="text-purple-900 hover:text-blue-600 ml-3"
-                    href="/signup">Sign up now</a
-                  >
-                </p>
-              </div>
-            </div>
-          </form>
+          <div>
+            <label
+              for="work_website"
+              class="sr-only"
+              >Work Website Address</label
+            >
+            <input
+              type="url"
+              id="work_website"
+              class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
+              placeholder="Work website address"
+            />
+          </div>
+
+          <div>
+            <label
+              for="project_details"
+              class="sr-only"
+              >Project Details</label
+            >
+            <textarea
+              id="project_details"
+              class="w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-purple-900"
+              placeholder="What are you working on?"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <div class="col-span-full">
+            <button
+              class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-full"
+              type="submit">
+              Submit your request
+            </button>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </section>

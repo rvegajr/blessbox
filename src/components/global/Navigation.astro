@@ -4,10 +4,11 @@
     class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24">
     <div class="flex flex-row items-center justify-between lg:justify-start">
       <a
-        href="/"
-        class="text-xl text-purple-900 font-semibold tracking-tighter inline-flex gap-2 items-center">
+        title="link to your page"
+            aria-label="your label" href="/"
+        class="text-xl text-purple-900 font-semibold tracking-tight  inline-flex gap-2 items-center">
         <svg
-          class="w-6 h-6"
+          class="size-6"
           viewBox="0 0 50 39"
           fill="none"
           xmlns="http://www.w3.org/2000/svg">
@@ -24,9 +25,9 @@
       </a>
       <button
         @click="open = !open"
-        class="inline-flex items-center justify-center p-2 text-slate-400 hover:text-purple-900 focus:outline-none focus:text-purple-900 lg:hidden">
+        class="inline-flex items-center justify-center p-2 text-slate-400 hover:text-purple-900 focus:outline-none focus:text-purple-900 md:hidden">
         <svg
-          class="w-6 h-6"
+          class="size-6"
           stroke="currentColor"
           fill="none"
           viewBox="0 0 24 24">
@@ -51,10 +52,11 @@
       :class="{'flex': open, 'hidden': !open}"
       class="flex-col flex-grow hidden py-12 lg:py-0 md:flex md:justify-end md:flex-row">
       <ul
-        class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
+        class="gap-2 list-none  items-center md:flex-row flex-col flex">
         <li>
           <a
-            href="/system/overview"
+            title="link to your page"
+            aria-label="your label" href="/system/overview"
             class="px-2 lg:px-6 py-10 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">
             Overview
           </a>
@@ -62,14 +64,16 @@
 
         <li>
           <a
-            href="styleguide"
+            title="link to your page"
+            aria-label="your label" href="styleguide"
             class="px-2 lg:px-6 py-10 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">
-            Style guideline
+            Style guide
           </a>
         </li>
         <li>
           <a
-            href="https://lexingtonthemes.lemonsqueezy.com/checkout/buy/99afe682-cc70-4d85-b19a-debb968441b1"
+            title="link to your page"
+            aria-label="your label" href="https://lexingtonthemes.lemonsqueezy.com/checkout/buy/99afe682-cc70-4d85-b19a-debb968441b1"
             class="text-blue-600 items-center font-medium gap-3 text-sm inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-2.5 rounded-full active:bg-blue-800 active:text-white bg-blue-50 hover:bg-blue-100 w-auto">
             Buy Spazio Bianco
           </a>
