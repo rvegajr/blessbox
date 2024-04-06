@@ -1,73 +1,53 @@
-<section class="bg-white">
-  <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
-    <div>
-      <h2 class="inline-flex items-center text-blue-600">
-        <span class="text-base font-medium tracking-tight">Stats</span>
-      </h2>
+---
+// Define the stats as an array of objects
+const stats = [
+  {
+    value: "$70M",
+    description: "total increase in Lexington",
+  },
+  {
+    value: "3m faster",
+    description: "Spazio to launch a platform",
+  },
+  {
+    value: "5%",
+    description: "uplift in Unwrapped payment",
+  },
+  {
+    value: "5 days",
+    description: "Ike expansion in one lexington",
+  },
+];
+---
 
-      <h2
-        class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-        Creative layouts for your App or Saas
-      </h2>
-    </div>
-    <div class="mx-auto text-left mt-12">
-      <div>
-        <div class="gap-6 grid grid-cols-1 lg:grid-cols-4">
+<section>
+  <div
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
+    <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
+      >cool stats</span
+    >
+
+    <h2
+      class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl lg:text-balance">
+      Beyond the basics stats for the platform, we have some more interesting
+      stats.
+    </h2>
+
+    <div class="gap-6 grid grid-cols-1 lg:grid-cols-4 mt-12">
+      {
+        stats.map((stat) => (
           <div>
-            <div>
-              <div>
-                <p
-                  class="text-4xl font-light tracking-tight lg:text-5xl text-blue-500">
-                  $70M
-                </p>
-              </div>
-              <p class="text-slate-500 mt-6 border-blue-500">
-                total increase in Lexington
-              </p>
-            </div>
+            <p class="text-4xl font-medium tracking-tight  lg:text-5xl text-blue-500">
+              {stat.value}
+            </p>
+
+            <p class="text-slate-500 mt-6 border-blue-500">
+              {stat.description}
+            </p>
           </div>
-          <div>
-            <div>
-              <div>
-                <p
-                  class="text-4xl font-light tracking-tight lg:text-5xl text-blue-500">
-                  3m faster
-                </p>
-              </div>
-              <p class="text-slate-500 mt-6 border-blue-500">
-                Spazio to launch a platform
-              </p>
-            </div>
-          </div>
-          <div>
-            <div>
-              <div>
-                <p
-                  class="text-4xl font-light tracking-tight lg:text-5xl text-blue-500">
-                  5%
-                </p>
-              </div>
-              <p class="text-slate-500 mt-6 border-blue-500">
-                uplift in Unwrapped payment
-              </p>
-            </div>
-          </div>
-          <div>
-            <div>
-              <div>
-                <p
-                  class="text-4xl font-light tracking-tight lg:text-5xl text-blue-500">
-                  5 days
-                </p>
-              </div>
-              <p class="text-slate-500 mt-6 border-blue-500">
-                Ike expansion in one lexington
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+
+        ))
+      }
     </div>
   </div>
 </section>

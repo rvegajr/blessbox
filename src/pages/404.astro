@@ -1,7 +1,45 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Error404 from "../components/infopages/Error404.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
+
 <BaseLayout>
-  <Error404 />
+  <section>
+    <div
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 flex flex-col text-center lg:h-svh justify-center py-12 lg:py-48 items-center">
+      <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
+        >404</span
+      >
+
+      <h2
+        class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+        Page not found!
+      </h2>
+
+      <p class="text-slate-500 mt-5 lg:text-balance mx-auto max-w-xl">
+        Sorry, but the page you were looking for could not be found. You can
+        return to <a
+          title="link to your page"
+          aria-label="your label"
+          href="/index"
+          class="text-blue-600 hover:text-tangroa-500"
+          >our front page</a
+        >, or <a
+          title="link to your page"
+          aria-label="your label"
+          href="/contact"
+          class="text-blue-600 hover:text-tangroa-500"
+          >drop us a line</a
+        > if you can't find what you're looking for.
+      </p>
+      <div class="mt-10">
+        <a
+          class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
+          title="link to your page"
+          aria-label="your label"
+          href="/system/overview">
+          Go back home
+        </a>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

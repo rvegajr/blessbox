@@ -1,0 +1,413 @@
+---
+import { getCollection } from "astro:content";
+const allPosts = await getCollection("customers");
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Entries from "@/components/customers/Entries.astro";
+import LogoCloudOne from "@/components/testimonials/LogoCloudOne.astro";
+import TestimonialTwo from "@/components/testimonials/TestimonialTwo.astro";
+const heroCards = [
+  {
+    id: 1,
+    bgColor: "bg-pink-600",
+    imgSrc:
+      "https://images.unsplash.com/photo-1556157382-97eda2d62296?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2940&q=80",
+    iconSrc: "/images/integrations/notion.svg",
+    quote:
+      "Spaziobianco has Economy growth upswing market index funds capitalization corporate bonds mutual.",
+  },
+  {
+    id: 2,
+    bgColor: "bg-blue-600",
+    imgSrc:
+      "https://images.unsplash.com/photo-1590650153855-d9e808231d41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+    iconSrc: "/images/integrations/figma.svg",
+    quote:
+      "Spaziobianco Public rollover performance exchange traded funds junk bonds passively NASDAQ bills upswing retirement corporate market exposure.",
+  },
+  {
+    id: 3,
+    bgColor: "bg-green-600",
+    imgSrc:
+      "https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+    iconSrc: "/images/integrations/slack.svg",
+    quote:
+      "Discovering new collaboration horizons with real-time communication tools, fostering team unity and productivity enhancements.",
+  },
+  {
+    id: 4,
+    bgColor: "bg-slate-600",
+    imgSrc:
+      "https://images.unsplash.com/photo-1590650153855-d9e808231d41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90oy1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+    iconSrc: "/images/integrations/figma.svg",
+    quote:
+      "Elevating development workflows with integrated code management, enhancing productivity and efficiency across projects.",
+  },
+];
+const stats = [
+  {
+    id: 1,
+    value: "$70M",
+    description: "Total increase in failures annual count",
+  },
+  {
+    id: 2,
+    value: "3 months faster",
+    description: "Than our competence",
+  },
+  {
+    id: 3,
+    value: "1 Million workers",
+    description: "Were injured in working hours",
+  },
+  {
+    id: 4,
+    value: "50 new countries",
+    description: "That has banned our incompetence",
+  },
+];
+
+const featuresList = [
+  "Embeddable checkout",
+  "Custom UI toolkit",
+  "Invoice support",
+  "Real-time analytics",
+  "Multi-currency support",
+  "Subscription management",
+];
+
+const ctaFeatures = [
+  {
+    title: "Simple pricing",
+    description: "See how Spazio Bianco is helping businesses of all sizes.",
+    link: "/pricing/pricing-one",
+    linkText: "Pricing details",
+  },
+  {
+    title: "Integration",
+    description: "Interested in becoming one of our partners?",
+    link: "/",
+    linkText: "Learn more",
+  },
+];
+---
+
+<BaseLayout>
+  <section class="relative overflow-hidden border-b">
+    <div
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:py-44">
+      <div class="items-start gap-12 grid grid-cols-1 md:grid-cols-2">
+        <div>
+          <div class="lg:pr-24 md:pr-12">
+            <h2
+              class="text-purple-900 font-semibold text-4xl lg:text-7xl tracking-tight">
+              The platform for financial transactions.
+            </h2>
+            <p class="text-slate-500 mt-5">
+              Our goal is to create a platform that enables ambitious companies
+              worldwide to move money with the same ease, lack of borders, and
+              automation as other online activities.
+            </p>
+          </div>
+          <div class="mt-10">
+            <a
+              class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
+              title="link to your page"
+              aria-label="your label"
+              href="#all-customers">
+              See all stories
+            </a>
+          </div>
+        </div>
+        <div class="lg:mt-0 lg:ml-auto">
+          <div
+            class="absolute transform sm:left-1/2 sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8">
+            <div class="flex items-center space-x-6 lg:space-x-8">
+              <div class="grid flex-shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                {
+                  heroCards.slice(0, 2).map((card) => (
+                    <div class="h-full w-96 sm:opacity-0 lg:opacity-100">
+                      <div
+                        class={`relative overflow-hidden rounded-2xl ${card.bgColor} p-8 z-50 shadow-xl lg:py-12 lg:gap-x-8`}>
+                        <div class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
+                          <img
+                            src={card.imgSrc}
+                            alt=""
+                            class="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div class="relative">
+                          <span>
+                            <img
+                              src={card.iconSrc}
+                              alt=""
+                            />
+                          </span>
+                          <blockquote class="mt-6 text-white lg:mt-32">
+                            <p class="font-medium">{card.quote}</p>
+                          </blockquote>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+              <div class="grid flex-shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                {
+                  heroCards.slice(1, 6).map((card) => (
+                    <div class="h-full w-96 sm:opacity-0 lg:opacity-100">
+                      <div
+                        class={`relative overflow-hidden rounded-2xl ${card.bgColor} p-8 z-50 shadow-xl lg:py-12 lg:gap-x-8`}>
+                        <div class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
+                          <img
+                            src={card.imgSrc}
+                            alt=""
+                            class="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div class="relative">
+                          <span>
+                            <img
+                              src={card.iconSrc}
+                              alt=""
+                            />
+                          </span>
+                          <blockquote class="mt-6 text-white lg:mt-32">
+                            <p class="font-medium">{card.quote}</p>
+                          </blockquote>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="bg-white">
+    <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
+      <div>
+        <h2
+          class="text-purple-900 font-semibold tracking-tight lg:text-5xl text-3xl">
+          We help customers achieve stunning results
+        </h2>
+      </div>
+      <ul
+        role="list"
+        class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-6 mt-12">
+        {
+          stats.map((stat) => (
+            <li>
+              <p class="font-semibold text-purple-900">{stat.value}</p>
+              <div class="mt-2 text-slate-500 text-sm">{stat.description}</div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+  <LogoCloudOne />
+  <TestimonialTwo />
+  <section id="all-customers">
+    <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
+      <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
+        >our customers</span
+      >
+      <h2
+        class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+        We accelerate growth for all types of businesses
+      </h2>
+
+      <div class="grid lg:grid-cols-3 gap-8 mt-24">
+        {
+          allPosts.slice().map((post) => (
+            <Entries
+              url={"/customers/" + post.slug}
+              customer={post.data.customer}
+              about={post.data.about}
+              alt={post.data.customer}
+              logo={post.data.logo.url}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+  <section class="bg-slate-50">
+    <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
+      <div>
+        <h2
+          class="text-purple-900 font-semibold tracking-tight lg:text-5xl text-3xl">
+          Spaziobianco is a well crafted
+          <span class="lg:block">multipage UI Kit for your SaaS</span>
+        </h2>
+        <div class="mx-auto text-left mt-12">
+          <div>
+            <div class="lg:gap-12 grid grid-cols-1 lg:grid-cols-2">
+              <div>
+                <p class="text-slate-500">
+                  Use blockchain technology to create decentralized autonomous
+                  organizations and manage them with ease. Control and added
+                  security. With decentralization, users have more control over
+                  their data and transactions, and the platform is less
+                  susceptible.
+                </p>
+                <ul
+                  role="list"
+                  class="order-last mt-12 flex-col gap-y-2 text-sm text-slate-500 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {
+                    featuresList.map((feature) => (
+                      <li class="flex items-start gap-2 ">
+                        ⏤ <span>{feature}</span>
+                      </li>
+                    ))
+                  }
+                </ul>
+              </div>
+              <div>
+                <p class="text-slate-500">
+                  Our platform is built on blockchain technology, which allows
+                  for decentralized control and added security. With
+                  decentralization, users have more control over their data and
+                  transactions, and the platform is less susceptible to
+                  malicious attacks.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid lg:grid-cols-4 grid-cols-2 mt-24 gap-3">
+          <div>
+            <img
+              src="/images/creditcardThree.png"
+              alt="thumbnail"
+              class="rounded-2xl drop-shadow-2xl"
+            />
+            <img
+              src="/images/balance.png"
+              alt="thumbnail"
+              class="drop-shadow-2xl mt-6"
+            />
+          </div>
+          <div class="lg:col-span-2">
+            <img
+              src="/images/notification.png"
+              alt="thumbnail"
+              class="drop-shadow-2xl"
+            />
+            <img
+              src="/images/miniNotification.png"
+              alt="thumbnail"
+              class="drop-shadow-2xl mt-6"
+            />
+            <img
+              src="/images/payments.png"
+              alt="thumbnail"
+              class="drop-shadow-2xl mt-6 lg:hidden block"
+            />
+          </div>
+          <div class="hidden lg:block">
+            <img
+              src="/images/payments.png"
+              alt="thumbnail"
+              class="drop-shadow-2xl"
+            />
+            <img
+              src="/images/creditcardTwo.png"
+              alt="thumbnail"
+              class="rounded-2xl drop-shadow-2xl mt-6"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="bg-white transform skew-y-6 -mt-72 lg:-mt-[26rem]">
+    <div
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:py-52 items-center transform -skew-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div>
+          <h2 class="text-purple-900 font-semibold tracking-tight text-3xl">
+            Ready to get connected?
+          </h2>
+          <div class="max-w-xl mt-6">
+            <p class="text-slate-500">
+              Contact us to learn more about working with partners.
+            </p>
+          </div>
+          <div class="mt-10">
+            <a
+              class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
+              title="link to your page"
+              aria-label="your label"
+              href="/forms/signup">
+              Register now
+            </a>
+          </div>
+        </div>
+        <div class="gap-x-2 gap-y-14 lg:gap-12 grid grid-cols-1 lg:grid-cols-2">
+          {
+            ctaFeatures.map((section, index) => (
+              <div class="space-y-5">
+                <div class="lg:inline-flex lg:items-center gap-3">
+                  <div class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100">
+                    {index + 1}
+                  </div>
+                  <p class=" font-semibold text-purple-900 ">{section.title}</p>
+                </div>
+                <p class="text-sm text-slate-500 ">{section.description}</p>
+                <p class="mt-5">
+                  <a
+                    href={section.link}
+                    class="text-blue-500 hover:text-blue-600 inline-flex items-center group">
+                    {section.linkText}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
+                      <path
+                        fill-rule="evenodd"
+                        d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </a>
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="bg-slate-50 mt-20">
+    <div
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 items-center">
+      <div>
+        <h2 class="text-purple-900 font-semibold">
+          Help us build economic infrastructure for the internet
+        </h2>
+        <p class="text-slate-500 text-sm mt-6">
+          We embrace diverse perspectives, ideas, and backgrounds at
+          Spaziobianco. We’re committed to providing equal employment
+          opportunities for all applicants and employees. Spaziobianco doesn’t
+          discriminate on the basis of any protected characteristic, including
+          race, color, ancestry, national origin, religion (including religious
+          dress), creed, age, disability (mental and physical), sex, gender
+          (including pregnancy, childbirth, breastfeeding, or related medical
+          conditions), sexual orientation, gender identity, gender expression,
+          medical condition, genetic information, family care or medical leave
+          status, marital status, domestic partner status, military and veteran
+          status (including military spouse status).
+        </p>
+        <p class="text-slate-500 text-sm mt-3">
+          Or any other characteristic protected by US federal, state or local
+          laws, or the laws of the country or jurisdiction where you work.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

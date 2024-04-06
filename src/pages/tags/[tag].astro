@@ -1,8 +1,6 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import NavigationOne from "../../components/navigation/NavigationOne.astro";
-import BlogPost from "../../components/BlogPost.astro";
-import FooterOne from "../../components/footers/FooterOne.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BlogPost from "@/components/blog/TagLink.astro";
 import { getCollection } from "astro:content";
 
 export async function getStaticPaths() {

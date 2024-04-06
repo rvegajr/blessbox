@@ -1,0 +1,112 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+const { frontmatter } = Astro.props;
+---
+
+<BaseLayout>
+  <section >
+    <div
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 lg:flex pt-24">
+      <div class="lg:w-1/2 lg:pl-12 lg:ml-auto">
+        <div class="lg:sticker lg:sticky pb-16 pt-8 top-0">
+          <div>
+            <div class="lg:pl-36 md:pl-12">
+              <nav class="bg-slate-50 rounded-lg space-y-3 p-4 lg:p-8">
+                <img
+                  src={frontmatter.logo.url}
+                  alt={frontmatter.logo.alt}
+                />
+                <div class="mt-6 space-y-6">
+                  {
+                    Object.entries(frontmatter.details).map(([key, value]) => (
+                      <div>
+                        <p class="text-base font-medium leading-6 text-purple-900">
+                          {key}
+                        </p>
+                        <p class="text-slate-400 text-sm">{value}</p>
+                      </div>
+                    ))
+                  }
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="lg:w-1/2 lg:order-first">
+        <div class="flex-shrink-0">
+          <div>
+            <p
+              class="text-purple-900 font-semibold mt-6 text-4xl tracking-tight">
+              {frontmatter.customer}
+            </p>
+            <p class="text-slate-500 mt-5 lg:text-balance">
+              {frontmatter.about}
+            </p>
+            <dl class="flex flex-col gap-4 mt-12">
+              {
+                frontmatter.challengesAndSolutions.map((item) => (
+                  <div>
+                    <dt>
+                      <p class="text-purple-900 font-semibold mt-6 text-xl tracking-tight">
+                        {item.title}
+                      </p>
+                    </dt>
+                    <dd class="mt-4 text-sm text-slate-500 lg:text-pretty">
+                      {item.content}
+                    </dd>
+                  </div>
+                ))
+              }
+            </dl>
+            <div class="mt-12">
+              <span
+                class="text-purple-900 font-semibold mt-6 text-xl tracking-tight"
+                >Results</span
+              >
+            </div>
+            <ul
+              role="list"
+              class="flex flex-col gap-2 mt-12">
+              {
+                frontmatter.results.map((result, index) => (
+                  <li class="flex items-center gap-2">
+                    <span> {index + 1}</span>
+                    <p class="text-sm text-slate-500">{result}</p>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div class="prose-styles">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 lg:flex py-24">
+      <div
+        class="relative overflow-hidden rounded-2xl bg-blue-500 p-8 z-50 shadow-xl lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8 md:col-span-full">
+        <div
+          class="absolute inset-0 opacity-80 mix-blend-multiply saturate-0 filter">
+          <img
+            src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
+            alt=""
+            class="h-full w-full object-cover"
+          />
+        </div>
+        <div class="relative lg:col-span-1">
+          <blockquote class="text-white mt-24">
+            <p class="font-medium">
+              Spaziobianco Public rollover performance exchange traded funds
+              junk bonds passively NASDAQ bills upswing retirement corporate
+              market exposure.
+            </p>
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>

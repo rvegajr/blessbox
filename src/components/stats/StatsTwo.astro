@@ -1,79 +1,45 @@
+---
+// Define your data
+const stats = [
+  { value: "$70M", description: "Total increase in Lexington" },
+  { value: "3 months faster", description: "Spazio to launch a platform" },
+  { value: "5%", description: "Uplift in Unwrapped payment" },
+  { value: "50 new countries", description: "Ike expansion in one lexington" },
+  { value: "600 Hours", description: "Total saved by automation" },
+  {
+    value: "3 days less",
+    description: "Reduction in average project timeline",
+  },
+
+];
+---
+
 <section>
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
-    <div class="max-w-xl">
-      <h2 class="inline-flex items-center text-blue-600">
-        <span class="text-base font-medium tracking-tight">Stats</span>
-      </h2>
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
+    <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
+      >always up and up</span
+    >
+    <h2
+      class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl lg:text-balance">
+      Developing a new era for email communication
+    </h2>
+    <p class="text-slate-500 mt-6 lg:text-balance">
+      Envisioning the future of email in an ever-changing digital landscape: why
+      settle for outdated methods when innovation awaits?
+    </p>
 
-      <h2
-        class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-        A more efficient way to
-        <span class="lg:block">accept transfers and ACH</span>
-      </h2>
-      <div>
-        <p class="text-slate-500 mt-6">
-          While often more effective for larger invoice amounts, supporting
-          payment methods like ACH and wires can require tedious and manual
-          accounts receivable efforts. LexingtonBilling automates how businesses
-          support B2B payment methods.
-        </p>
-      </div>
-    </div>
-    <div class="mx-auto text-left mt-12">
-      <div>
-        <div class="gap-6 grid grid-cols-1 lg:grid-cols-4">
+    <div class="gap-6 grid grid-cols-1 lg:grid-cols-3 mt-12">
+      {
+        stats.map((stat) => (
           <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              $70M
+            <p class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
+              {stat.value}
             </p>
+            <p class="mt-2 text-slate-500">{stat.description}</p>
           </div>
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              3 months faster
-            </p>
-          </div>
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              5%
-            </p>
-          </div>
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              50 new countries
-            </p>
-          </div>
-
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              600 Hours
-            </p>
-          </div>
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              3 days less
-            </p>
-          </div>
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              1 Miliion workers
-            </p>
-          </div>
-          <div>
-            <p
-              class="border-l-4 pl-4 font-semibold border-blue-500 tracking-tight text-purple-900">
-              3 head quarters
-            </p>
-          </div>
-        </div>
-      </div>
+        ))
+      }
     </div>
   </div>
 </section>

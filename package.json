@@ -11,17 +11,18 @@
   },
   "devDependencies": {
     "@astrojs/tailwind": "^5.1.0",
-    "@tailwindcss/typography": "^0.5.10",
-    "@types/alpinejs": "^3.13.6",
-    "astro": "^4.1.1"
+    "@tailwindcss/typography": "^0.5.12",
+    "@types/alpinejs": "^3.13.10",
+    "astro": "^4.5.16"
   },
   "dependencies": {
-    "@astrojs/mdx": "^2.0.3",
+    "@astrojs/mdx": "^2.2.4",
     "@astrojs/prism": "^3.0.0",
-    "@astrojs/rss": "^4.0.1",
-    "@astrojs/sitemap": "^3.0.4",
-    "sharp": "^0.33.1",
-    "shiki": "^0.14.7",
+    "@astrojs/rss": "^4.0.5",
+    "@astrojs/sitemap": "^3.1.2",
+    "astro-devtool-breakpoints": "^0.3.0",
+    "sharp": "^0.33.3",
+    "shiki": "^1.2.4",
     "tailwind-scrollbar-hide": "^1.1.7"
   }
 }

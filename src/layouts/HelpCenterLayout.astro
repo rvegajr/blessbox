@@ -1,0 +1,36 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+const { frontmatter } = Astro.props;
+---
+
+<BaseLayout>
+  <section>
+    <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
+      <div class="max-w-3xl">
+        <p class="text-purple-900 font-semibold mt-6 text-4xl tracking-tight lg:text-balance">
+          {frontmatter.description}
+        </p>
+
+        <div class="mt-24">
+          <div class="prose-styles"><slot /></div>
+          <div class="max-w-xl mt-12 border-t pb-5 border-slate-200">
+            <div class="items-center inline-flex rounded-md py-4 w-full">
+              <p class="text-purple-900">Did this answer your question? ?</p>
+
+              <div class="items-center inline-flex gap-3 ml-auto">
+                <button
+                  class="items-center flex bg-slate-50 hover:text-blue-600 h-8 justify-center rounded-lg text-slate-500 w-12"
+                  >Yes
+                </button>
+                <button
+                  class="items-center flex bg-slate-50 hover:text-blue-600 h-8 justify-center rounded-lg text-slate-500 w-12"
+                  >No</button
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
