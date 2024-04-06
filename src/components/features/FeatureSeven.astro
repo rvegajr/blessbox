@@ -1,101 +1,72 @@
+---
+// Define your items as an array of objects
+const features = [
+  {
+    title: "Clever layouts",
+    description:
+      "Debt bills lucrative capitalization municipal bonds government 401k bear bull credit corporate bonds called NYSE finance. Managed prices bondholders federal risk NASDAQ hedge fund expenses municipal bonds management.",
+    imageUrl: "/images/creditcard.png",
+  },
+  {
+    title: "100% responsive",
+    description:
+      "Debt bills lucrative capitalization municipal bonds government 401k bear bull credit corporate bonds called NYSE finance. Managed prices bondholders federal risk NASDAQ hedge fund expenses municipal bonds management.",
+    imageUrl: "/images/creditcardTwo.png",
+  },
+  // Add more items as needed
+  {
+    title: "100% responsive",
+    description:
+      "Debt bills lucrative capitalization municipal bonds government 401k bear bull credit corporate bonds called NYSE finance. Managed prices bondholders federal risk NASDAQ hedge fund expenses municipal bonds management.",
+    imageUrl: "/images/creditcardThree.png",
+  },
+  {
+    title: "100% responsive",
+    description:
+      "Debt bills lucrative capitalization municipal bonds government 401k bear bull credit corporate bonds called NYSE finance. Managed prices bondholders federal risk NASDAQ hedge fund expenses municipal bonds management.",
+    imageUrl: "/images/creditcardFour.png",
+  },
+];
+---
+
 <section class="bg-white">
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
     <div class="max-w-xl">
-      <h2 class="inline-flex items-center text-blue-600">
-        <span class="text-base font-medium tracking-tight">Feature</span>
-      </h2>
+      <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
+        >banking</span
+      >
 
       <h2
-        class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-        Build clean clean landing pages with Spazio Bianco
+        class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+        Email for developers
       </h2>
       <div class="max-w-xl mt-6">
         <p class="text-slate-500">
           Secure access to users’ financial data enables you to streamline
           common processes, such as onboarding and creditcard, and build new
-          products to help users manage their finances. Because Financial
-          Connections is fully interoperable with the rest of lexington, it’s
-          easy to connect to users’ accounts to improve creditcard and product
-          experiences.
+          products to help users manage their finances. B
         </p>
       </div>
     </div>
-    <div>
-      <ul
-        role="list"
-        class="grid grid-cols-2 lg:grid-cols-2 gap-4 list-none lg:gap-24 mt-6 lg:mt-24">
-        <li>
-          <div>
-            <p class="font-semibold text-purple-900 text-2xl">Clever layouts</p>
-          </div>
-          <div class="mt-2 text-slate-500">
-            Debt bills lucrative capitalization municipal bonds government 401k
-            bear bull credit corporate bonds called NYSE finance. Managed prices
-            bondholders federal risk NASDAQ hedge fund expenses municipal bonds
-            management.
-          </div>
-          <img
-            src="/images/creditcard.png"
-            alt="thumbnail"
-            class="shadow-xl rounded-4xl mt-12"
-          />
-        </li>
-        <li>
-          <div>
-            <p class="font-semibold text-purple-900 text-2xl">
-              100% responsive
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500">
-            Debt bills lucrative capitalization municipal bonds government 401k
-            bear bull credit corporate bonds called NYSE finance. Managed prices
-            bondholders federal risk NASDAQ hedge fund expenses municipal bonds
-            management.
-          </div>
-          <img
-            src="/images/creditcardTwo.png"
-            alt="thumbnail"
-            class="shadow-xl rounded-4xl mt-12"
-          />
-        </li>
-        <li>
-          <div>
-            <p class="font-semibold text-purple-900 text-2xl">
-              100% responsive
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500">
-            Debt bills lucrative capitalization municipal bonds government 401k
-            bear bull credit corporate bonds called NYSE finance. Managed prices
-            bondholders federal risk NASDAQ hedge fund expenses municipal bonds
-            management.
-          </div>
-          <img
-            src="/images/creditcardThree.png"
-            alt="thumbnail"
-            class="shadow-xl rounded-4xl mt-12"
-          />
-        </li>
-        <li>
-          <div>
-            <p class="font-semibold text-purple-900 text-2xl">
-              100% responsive
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500">
-            Debt bills lucrative capitalization municipal bonds government 401k
-            bear bull credit corporate bonds called NYSE finance. Managed prices
-            bondholders federal risk NASDAQ hedge fund expenses municipal bonds
-            management.
-          </div>
-          <img
-            src="/images/creditcardFour.png"
-            alt="thumbnail"
-            class="shadow-xl rounded-4xl mt-12"
-          />
-        </li>
-      </ul>
-    </div>
+    <ul
+      role="list"
+      class="grid grid-cols-2 lg:grid-cols-2 gap-4 list-none lg:gap-24 mt-6 lg:mt-24">
+      {
+        features.map((item) => (
+          <li>
+            <div>
+              <p class="font-semibold text-purple-900 text-2xl">{item.title}</p>
+            </div>
+            <div class="mt-2 text-slate-500">{item.description}</div>
+            <img
+              src={item.imageUrl}
+              alt="thumbnail"
+              class="shadow-xl rounded-4xl mt-12"
+            />
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </section>

@@ -1,25 +1,53 @@
 ---
 import { Code } from "astro/components";
+const features = [
+  {
+    title: " Email templates",
+    description:
+      "Email marketing, newsletters, and more, all with a single click.",
+  },
+  {
+    title: "Font  customization",
+    description: "Create your own custom templates to suit your needs.",
+  },
+];
 ---
 
 <section class="bg-white">
   <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-36">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
       <div>
-        <h2 class="inline-flex items-center text-blue-600">
-          <span class="text-base font-medium tracking-tight">Feature</span>
-        </h2><h2
-          class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-          You can also style it with VSCode themes
+        <span class="text-sm font-medium tracking-wide text-blue-600 uppercase"
+          >Fonts</span
+        >
+        <h2
+          class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+          Customizable templates
         </h2>
         <p class="text-slate-500 mt-5">
-          Receive dividends bull investment mutual funds rise federal funds
-          strategy substantially treasury municipal public index funds.
+          Email templates are designed to be customizable and easy to use. You
+          can also style them with VSCode themes.
+          <br />
+          <br />
+          You can also use the templates use any font you want, and change the colors
+          to your brand, or even use your own logo.
         </p>
-        <p class="text-slate-500 mt-3">
-          Fall volatile rates funds Standard & Poor's market index upswing
-          financial health growth bear. Treasury 401k potential.
-        </p>
+        <ul
+          role="list"
+          class="grid grid-cols-2 gap-4 list-none lg:gap-6 mt-12">
+          {
+            features.map((feature) => (
+              <li>
+                <p class="font-semibold text-purple-900 text-base">
+                  {feature.title}
+                </p>
+                <div class="mt-2 text-slate-500 text-sm">
+                  {feature.description}
+                </div>
+              </li>
+            ))
+          }
+        </ul>
       </div>
       <div class="lg:mt-0 mt-12 h-full lg:order-first">
         <!-- Include these scripts somewhere on the page: -->
@@ -42,7 +70,7 @@ import { Code } from "astro/components";
         }
     }"
             x-init="tabRepositionMarker($refs.tabButtons.firstElementChild);"
-            class="relative lg:rounded-3xl lg:p-10 text-purple-900">
+            class="relative lg:rounded-3xl">
             <div
               x-ref="tabButtons"
               class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-slate-100 rounded-full select-none">
@@ -77,7 +105,8 @@ import { Code } from "astro/components";
                 <!-- Tab Content 1 - Replace with your content -->
                 <section
                   class="text-xs font-mono shadow-3xl mt-4 rounded-2xl overflowhidden h-full">
-                  <Code code={`import { defineConfig } from 'astro/config';
+                  <Code
+                    code={`import { defineConfig } from 'astro/config';
 import compress from "astro-compress";
 import partytown from "@astrojs/partytown";
 import sitemap from "@astrojs/sitemap";
@@ -103,7 +132,6 @@ export default defineConfig({
                 </section>
                 <!-- End Tab Content 1 -->
               </div>
-
               <div
                 :id="$id(tabId + '-content')"
                 x-show="tabContentActive($el)"
@@ -111,7 +139,8 @@ export default defineConfig({
                 x-cloak>
                 <section
                   class="text-xs font-mono mt-4 rounded-3xl hadow-2xl overflow-hidden h-full p-4">
-                  <Code code={`import { defineConfig } from 'astro/config';
+                  <Code
+                    code={`import { defineConfig } from 'astro/config';
 import tailwind from "@astrojs/tailwind";
 import image from "@astrojs/image";
 import compress from "astro-compress";

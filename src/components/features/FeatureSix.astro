@@ -1,87 +1,92 @@
-<section class="bg-white">
+---
+const topFeatures = [
+  {
+    title: "Prebuilt integrations",
+    description:
+      "Municipal management performance corporate investment grade bonds.",
+  },
+  {
+    title: "Tools for every stack",
+    description:
+      "Corporate bonds debt fiat risk return municipal retirement interest rate.",
+  },
+  {
+    title: "Prebuilt integrations",
+    description:
+      "Municipal management performance corporate investment grade bonds.",
+  },
+  {
+    title: "Tools for every stack",
+    description:
+      "Corporate bonds debt fiat risk return municipal retirement interest rate.",
+  },
+];
+
+const featureList = [
+  {
+    title: "Prebuilt integrations",
+    items: [
+      "Embeddable checkout",
+      "Custom UI toolkit",
+      "Invoice support",
+      "Payment optimization",
+      "Data migration",
+      "Product monetization strategy",
+    ],
+  },
+  {
+    title: "Deployable checkouts",
+    items: [
+      "Embeddable checkout",
+      "Custom UI toolkit",
+      "Invoice support",
+      "Payment optimization",
+      "Data migration",
+      "Product monetization strategy",
+    ],
+  },
+];
+---
+
+<section>
   <div
-    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center">
+    class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
     <div class="max-w-xl">
       <h2 class="inline-flex items-center text-blue-600">
         <span class="text-base font-medium tracking-tight">Feature</span>
       </h2>
 
       <h2
-        class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
-        100% responsive
+        class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+        100% responsive emails
       </h2>
-      <div class="max-w-xl mt-6">
-        <p class="text-slate-500">Because we wonder all day around</p>
-      </div>
+      <p class="text-slate-500 mt-4 lg:text-balance">
+        We have tested our platform with over 100 email clients and it works on all of them we swear.
+      </p>
+
     </div>
-    <div>
-      <ul
-        role="list"
-        class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-6 mt-12">
-        <li>
-          <div>
-            <div
-              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
-              1
+    <ul
+      role="list"
+      class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-6 mt-12">
+      {
+        topFeatures.map((item, index) => (
+          <li>
+            <div>
+              <div class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100">
+                {index + 1}
+              </div>
+              <p class="mt-5 font-semibold text-purple-900">{item.title}</p>
             </div>
-            <p class="mt-5 font-semibold text-purple-900">
-              Prebuilt integrations
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500 text-sm">
-            Municipal management performance corporate investment grade bonds.
-          </div>
-        </li>
-        <li>
-          <div>
-            <div
-              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
-              2
-            </div>
-            <p class="mt-5 font-semibold text-purple-900">
-              Tools for every stack
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500 text-sm">
-            Corporate bonds debt fiat risk return municipal retirement interest
-            rate.
-          </div>
-        </li>
-        <li>
-          <div>
-            <div
-              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
-              3
-            </div>
-            <p class="mt-5 font-semibold text-purple-900">
-              Prebuilt integrations
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500 text-sm">
-            Municipal management performance corporate investment grade bonds.
-          </div>
-        </li>
-        <li>
-          <div>
-            <div
-              class="flex items-center justify-center w-8 h-8 text-blue-500 rounded-full bg-slate-100">
-              4
-            </div>
-            <p class="mt-5 font-semibold text-purple-900">
-              Tools for every stack
-            </p>
-          </div>
-          <div class="mt-2 text-slate-500 text-sm">
-            Corporate bonds debt fiat risk return municipal retirement interest
-            rate.
-          </div>
-        </li>
-      </ul>
-    </div>
+            <div class="mt-2 text-slate-500 text-sm">{item.description}</div>
+          </li>
+        ))
+      }
+    </ul>
+
     <div class="grid grid-cols-1 items-start md:grid-cols-2 mt-12 lg:mt-24">
       <div class="lg:pr-24 md:pr-12">
         <h2
-          class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl">
+          class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
           Stunning layouts
         </h2>
         <p class="text-slate-500 mt-5">
@@ -89,81 +94,29 @@
           understand your requirements and create tailored integration guides
           for your teams to build faster.
         </p>
-        <ul role="list" class="list-none mt-12">
-          <li>
-            <div>
-              <p class="mt-12 font-semibold text-purple-900 text-2xl">
-                Prebuilt integrations
-              </p>
-            </div>
-            <div class="mt-5">
-              <ul
-                role="list"
-                class="order-last flex flex-col gap-y-2 text-sm text-slate-500">
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Embeddable checkout</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Custom UI toolkit</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Invoice support</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Payment optimization</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4">Data migration</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Product monetization strategy</span>
-                </li>
-              </ul>
-            </div>
-          </li>
-          <li>
-            <div>
-              <p class="mt-12 font-semibold text-purple-900 text-2xl">
-                Deployable checkouts
-              </p>
-            </div>
-            <div class="mt-5">
-              <ul
-                role="list"
-                class="order-last flex flex-col gap-y-2 text-sm text-slate-500">
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Embeddable checkout</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Custom UI toolkit</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Invoice support</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Payment optimization</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4">Data migration</span>
-                </li>
-                <li class="flex items-start">
-                  —
-                  <span class="ml-4"> Product monetization strategy</span>
-                </li>
-              </ul>
-            </div>
-          </li>
+        <ul
+          role="list"
+          class="list-none mt-12">
+          {
+            featureList.map((feature) => (
+              <li>
+                <p class="mt-12 font-semibold text-purple-900 text-2xl">
+                  {feature.title}
+                </p>
+                <div class="mt-5">
+                  <ul
+                    role="list"
+                    class="order-last flex flex-col gap-y-2 text-sm text-slate-500">
+                    {feature.items.map((item) => (
+                      <li class="flex items-start gap-2">
+                        <span>⏤</span> {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ))
+          }
         </ul>
       </div>
       <div class="lg:mt-0 mt-12 md:pl-12 md:border-l lg:pl-24 h-full">
