@@ -1,57 +1,61 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-:root {
-  font-family: Inter, sans-serif;
-  font-feature-settings:
-  "liga" 1,
-  "calt" 1, /* Contextual Alternates */
-  "dlig" 1, /* Discretionary Ligatures */
-  "ss07" 1, /* fSquare punctuation */
-  "ss08" 1, /* Square quotes */
-  "zero" 1, /* Slashed zero */
-  "tnum" 1, /* Tabular numbers */
-    "cv03" 1, /* Open six */
-    "cv04" 1, /* Open nine */
-    "cv01" 1, /* Alternate one */
-    "cv09", /* Flat-top three */
-    "cv02" 1; /* Open 4 */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "tailwind-scrollbar-hide";
+@layer components {
+  .prose-styles {
+    @apply prose-lg hover:prose-a:text-blue-500 prose prose-a:font-semibold prose-a:text-blue-600 prose-blockquote:text-blue-600 prose-h3:text-blue-950 text-slate-500;
+  }
 }
+@theme {
+  /* Typography */
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Colors */
+
+  --color-blue-50: #ebf2fe;
+  --color-blue-100: #d7e4fe;
+  --color-blue-200: #afc9fd;
+  --color-blue-300: #8db2fc;
+  --color-blue-400: #6597fb;
+  --color-blue-500: #3d7bfa;
+  --color-blue-600: #0655f4;
+  --color-blue-700: #0540b8;
+  --color-blue-800: #032a77;
+  --color-blue-950: #02153c;
+  --color-blue-950: #010e2a;
+  --color-blue-1000: #000c25;
+  /* Border radius */
+  --border-radius-4xl: 2rem;
+  --border-radius-5xl: 3rem;
+  --border-radius-6xl: 5rem;
+}
+
 @supports (font-variation-settings: normal) {
   /* Use variable font if supported */
   :root {
     font-family: InterVariable, sans-serif;
   }
 }
- .prose-styles {
-  @apply prose-lg hover:prose-a:text-blue-500 prose prose-a:font-semibold prose-a:text-blue-600 prose-blockquote:text-blue-600 prose-h3:text-purple-900 text-slate-500;
-}
 
 :root {
-  --astro-code-color-text: theme('colors.white');
-   --astro-code-color-background: #14162c;
-  --astro-code-token-constant: theme('colors.slate.300');
-  --astro-code-token-string: theme('colors.slate.200');
-  --astro-code-token-comment: theme('colors.slate.300');
-  --astro-code-token-keyword: theme('colors.white');
-  --astro-code-token-parameter: theme('colors.white');
-  --astro-code-token-function: theme('colors.slate.300');
-  --astro-code-token-string-expression: theme('colors.blue.300');
-  --astro-code-token-punctuation: theme('colors.slate.300');
-  --astro-code-token-link: theme('colors.slate.300');
+  font-family: Inter, sans-serif;
+  font-feature-settings: "liga" 1, "calt" 1,
+    /* Contextual Alternates */ "dlig" 1, /* Discretionary Ligatures */ "ss07" 1,
+    /* fSquare punctuation */ "ss08" 1, /* Square quotes */ "zero" 1,
+    /* Slashed zero */ "tnum" 1, /* Tabular numbers */ "cv03" 1,
+    /* Open six */ "cv04" 1, /* Open nine */ "cv01" 1,
+    /* Alternate one */ "cv09", /* Flat-top three */ "cv02" 1; /* Open 4 */
+  --astro-code-color-text: theme("colors.slate.200");
+  --astro-code-foreground: theme("colors.blue.300");
+  --astro-code-background: theme("colors.blue-950");
+  --astro-code-token-constant: theme("colors.slate.400");
+  --astro-code-token-string: theme("colors.slate.300");
+  --astro-code-token-comment: theme("colors.slate.500");
+  --astro-code-token-keyword: theme("colors.slate.400");
+  --astro-code-token-parameter: theme("colors.slate.400");
+  --astro-code-token-function: theme("colors.slate.400");
+  --astro-code-token-string-expression: theme("colors.white");
+  --astro-code-token-punctuation: theme("colors.slate.400");
+  --astro-code-token-link: theme("colors.slate.400");
 }
-
-
-/* :root {
-  --astro-code-color-text: #ffffff;
-  --astro-code-color-background: #14162c;
-  --astro-code-token-constant: #dfe3ee;
-  --astro-code-token-string: #619CFC50;
-  --astro-code-token-comment: #ffffff60;
-  --astro-code-token-keyword: #dfe3ee;
-  --astro-code-token-parameter: #ffffff;
-  --astro-code-token-function: #ffffff;
-  --astro-code-token-string-expression: #619CFC;
-  --astro-code-token-punctuation: #ffffff;
-  --astro-code-token-link: #ffffff;
-} */
