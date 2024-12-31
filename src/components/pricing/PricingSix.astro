@@ -60,7 +60,8 @@ const pricingPlans = [
           >pricing</span
         >
         <h2
-          class="text-purple-900 font-semibold tracking-tight mt-6 text-3xl lg:text-balance">
+          class="text-blue-950 font-semibold tracking-tight mt-6 text-3xl lg:text-balance"
+        >
           Always know what you'll pay, transparent pricing for everyone.
         </h2>
       </div>
@@ -71,20 +72,19 @@ const pricingPlans = [
         </p>
         <div class="md:max-w-xs mt-12 md:hidden">
           <div
-            class="inline-flex w-full border rounded-full mt-6 overflow-hidden bg-white p-0.5 z-0">
+            class="inline-flex w-full border rounded-full mt-6 overflow-hidden bg-white p-0.5 z-0 border-slate-200"
+          >
             <button
               class="text-black font-medium border rounded-full transition w-full py-2 block border-transparent px-8 text-xs"
               @click="annual = false"
               :class="annual == false ? 'bg-slate-100 border text-black ' : ''"
-              type="button"
-              >Monthly</button
+              type="button">Monthly</button
             >
             <button
               class="text-black font-medium border rounded-full transition w-full py-2 block border-transparent px-8 text-xs"
               @click="annual = true"
               :class="annual == true ? 'bg-slate-100 border text-black' : ''"
-              type="button"
-              >Annual</button
+              type="button">Annual</button
             >
           </div>
         </div>
@@ -96,11 +96,12 @@ const pricingPlans = [
         pricingPlans.map((plan) => (
           <section>
             <div
-              class={` ${plan.cardBgClass}  flex flex-col  justify-between w-full  `}>
+              class={` ${plan.cardBgClass}  flex flex-col  justify-between w-full  `}
+            >
               <div>
                 <div class="space-y-4 ">
                   <div class="flex gap-1 items-end ">
-                    <p class={` text-purple-900`}>
+                    <p class={` text-blue-950`}>
                       <span class="text-5xl font-light tracking-tight    ">
                         <span x-show="!annual">${plan.monthlyPrice}</span>
                         <span x-show="annual">${plan.annualPrice}</span>
@@ -109,16 +110,15 @@ const pricingPlans = [
                     </p>
 
                     <span
-                      class={`text-sm font-medium block ${plan.descriptionColor}`}>
+                      class={`text-sm font-medium block ${plan.descriptionColor}`}
+                    >
                       Monthly
-                      <span
-                        x-show="annual"
-                        style="display: none;">
+                      <span x-show="annual" style="display: none;">
                         (billed annually)
                       </span>
                     </span>
                   </div>
-                  <p class={`text-lg   text-purple-900`}>{plan.name}</p>
+                  <p class={`text-lg   text-blue-950`}>{plan.name}</p>
                   <p class={`text-sm lg:text-pretty ${plan.descriptionColor}`}>
                     {plan.description}
                   </p>
@@ -129,12 +129,14 @@ const pricingPlans = [
                   type="button"
                   title={plan.name}
                   aria-label="get started"
-                  class={`inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium ${plan.buttonClass}`}>
+                  class={`inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium ${plan.buttonClass}`}
+                >
                   Get started
                 </button>
               </div>
               <ul
-                class={`flex flex-col order-last mt-8 text-sm ${plan.descriptionColor} gap-y-3`}>
+                class={`flex flex-col order-last mt-8 text-sm ${plan.descriptionColor} gap-y-3`}
+              >
                 {plan.features.map((feature) => (
                   <li class="inline-flex items-center gap-2">
                     <svg
@@ -147,12 +149,9 @@ const pricingPlans = [
                       stroke="currentColor"
                       fill="none"
                       stroke-linecap="round"
-                      stroke-linejoin="round">
-                      <path
-                        stroke="none"
-                        d="M0 0h24v24H0z"
-                        fill="none"
-                      />
+                      stroke-linejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
                       <path d="M9 12l2 2l4 -4" />
                     </svg>
@@ -161,7 +160,8 @@ const pricingPlans = [
                 ))}
                 {plan.unavailableFeatures.map((feature) => (
                   <li
-                    class={`inline-flex items-center gap-2 ${plan.descriptionColor} line-through opacity-50`}>
+                    class={`inline-flex items-center gap-2 ${plan.descriptionColor} line-through opacity-50`}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -172,12 +172,9 @@ const pricingPlans = [
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x">
-                      <path
-                        stroke="none"
-                        d="M0 0h24v24H0z"
-                        fill="none"
-                      />
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z" />
                       <path d="M9 8l6 8" />
                       <path d="M15 8l-6 8" />
@@ -192,16 +189,19 @@ const pricingPlans = [
       }
     </div>
     <!---- Here starts the Desktop pricing table -->
-    <div class="hidden md:block relative mx-auto mt-12 pt-12 border-t">
+    <div
+      class="hidden md:block relative mx-auto mt-12 pt-12 border-t border-slate-200"
+    >
       <table class="mx-auto w-full text-center">
         <thead>
           <tr class="text-left align-top">
             <th class=""></th>
             <th class="w-1/4 px-2">
-              <div class="text-lg font-medium leading-6 text-purple-900">
+              <div class="text-lg font-medium leading-6 text-blue-950">
                 Hobby
                 <span
-                  class="inline-flex items-center ml-3 px-2.5 py-0.5 rounded text-xs font-medium bg-white text-blue-500 float-right">
+                  class="inline-flex items-center ml-3 px-2.5 py-0.5 rounded text-xs font-medium bg-white text-blue-500 float-right"
+                >
                   -20%
                 </span>
               </div>
@@ -220,7 +220,7 @@ const pricingPlans = [
               </div>
             </th>
             <th class="w-1/4 px-2">
-              <div class="text-lg font-medium leading-6 text-purple-900">
+              <div class="text-lg font-medium leading-6 text-blue-950">
                 Enterprise
               </div>
               <div class="pr-2 mt-4 mb-2">
@@ -236,11 +236,10 @@ const pricingPlans = [
             <th class="w-1/4 px-2">
               <div>
                 <div class="flex mt-4 mb-6">
-                  <div
-                    class="flex-shrink-0 text-5xl font-normal text-purple-900">
+                  <div class="flex-shrink-0 text-5xl font-normal text-blue-950">
                     $16
                   </div>
-                  <div class="mt-auto ml-2 text-sm font-normal text-purple-900">
+                  <div class="mt-auto ml-2 text-sm font-normal text-blue-950">
                     per user
                     <br />
                     per month
@@ -251,11 +250,10 @@ const pricingPlans = [
             <th class="w-1/4 px-2">
               <div>
                 <div class="flex mt-4 mb-6">
-                  <div
-                    class="flex-shrink-0 text-5xl font-normal text-purple-900">
+                  <div class="flex-shrink-0 text-5xl font-normal text-blue-950">
                     $20
                   </div>
-                  <div class="mt-auto ml-2 text-sm font-normal text-purple-900">
+                  <div class="mt-auto ml-2 text-sm font-normal text-blue-950">
                     per user
                     <br />
                     per month
@@ -270,7 +268,8 @@ const pricingPlans = [
               <div class="w-full py-2 mb-4">
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium bg-blue-100 hover:bg-blue-50 text-blue-600">
+                  class="inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium bg-blue-100 hover:bg-blue-50 text-blue-600"
+                >
                   Get started
                 </button>
               </div>
@@ -279,7 +278,8 @@ const pricingPlans = [
               <div class="w-full py-2 mb-4">
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium bg-blue-500 hover:bg-blue-600 text-white">
+                  class="inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium bg-blue-500 hover:bg-blue-600 text-white"
+                >
                   Get in started
                 </button>
               </div>
@@ -288,7 +288,8 @@ const pricingPlans = [
               <div class="w-full py-2 mb-4">
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium bg-blue-100 hover:bg-blue-50 text-blue-600">
+                  class="inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium bg-blue-100 hover:bg-blue-50 text-blue-600"
+                >
                   Get in touch
                 </button>
               </div>
@@ -298,9 +299,10 @@ const pricingPlans = [
         <tbody class="divide-y divide-white/10">
           <tr>
             <th
-              class="py-3 text-base font-medium text-left text-purple-900"
+              class="py-3 text-base font-medium text-left text-blue-950"
               colspan="4"
-              scope="colgroup">
+              scope="colgroup"
+            >
               Product features
             </th>
           </tr>
@@ -347,12 +349,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -379,12 +378,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -403,12 +399,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -424,12 +417,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -451,12 +441,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -475,12 +462,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -496,12 +480,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -523,12 +504,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -547,12 +525,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -568,12 +543,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -581,9 +553,10 @@ const pricingPlans = [
           </tr>
           <tr>
             <th
-              class="py-3 text-base font-medium text-left text-purple-900"
+              class="py-3 text-base font-medium text-left text-blue-950"
               colspan="4"
-              scope="colgroup">
+              scope="colgroup"
+            >
               Support and performance
             </th>
           </tr>
@@ -618,12 +591,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -642,12 +612,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -666,12 +633,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -692,12 +656,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -716,12 +677,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -737,12 +695,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -763,12 +718,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -787,12 +739,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -808,12 +757,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -834,12 +780,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -858,12 +801,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -882,12 +822,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -908,12 +845,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -932,12 +866,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -956,12 +887,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -983,12 +911,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1007,12 +932,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1031,12 +953,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1045,9 +964,10 @@ const pricingPlans = [
 
           <tr>
             <th
-              class="py-3 text-base font-medium text-left text-purple-900"
+              class="py-3 text-base font-medium text-left text-blue-950"
               colspan="4"
-              scope="colgroup">
+              scope="colgroup"
+            >
               Payment
             </th>
           </tr>
@@ -1066,12 +986,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1106,12 +1023,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1137,12 +1051,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1161,12 +1072,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1182,12 +1090,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1216,12 +1121,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1237,12 +1139,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1258,12 +1157,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1287,12 +1183,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1308,12 +1201,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1329,12 +1219,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1355,12 +1242,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1376,12 +1260,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1397,12 +1278,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path
                   d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z"
                 ></path>
@@ -1426,12 +1304,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1447,12 +1322,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>
@@ -1468,12 +1340,9 @@ const pricingPlans = [
                 stroke="currentColor"
                 fill="none"
                 stroke-linecap="round"
-                stroke-linejoin="round">
-                <path
-                  stroke="none"
-                  d="M0 0h24v24H0z"
-                  fill="none"
-                ></path>
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                 <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
                 <path d="M9 12l2 2l4 -4"></path>
               </svg>

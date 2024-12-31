@@ -92,14 +92,16 @@ const ctaFeatures = [
 ---
 
 <BaseLayout>
-  <section class="relative overflow-hidden border-b">
+  <section class="relative overflow-hidden border-b border-slate-200">
     <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:py-44">
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:py-44"
+    >
       <div class="items-start gap-12 grid grid-cols-1 md:grid-cols-2">
         <div>
           <div class="lg:pr-24 md:pr-12">
             <h2
-              class="text-purple-900 font-semibold text-4xl lg:text-7xl tracking-tight">
+              class="text-blue-950 font-semibold text-4xl lg:text-7xl tracking-tight"
+            >
               The platform for financial transactions.
             </h2>
             <p class="text-slate-500 mt-5">
@@ -113,21 +115,24 @@ const ctaFeatures = [
               class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
               title="link to your page"
               aria-label="your label"
-              href="#all-customers">
+              href="#all-customers"
+            >
               See all stories
             </a>
           </div>
         </div>
         <div class="lg:mt-0 lg:ml-auto">
           <div
-            class="absolute transform sm:left-1/2 sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8">
+            class="absolute transform sm:left-1/2 sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8"
+          >
             <div class="flex items-center space-x-6 lg:space-x-8">
               <div class="grid flex-shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
                 {
                   heroCards.slice(0, 2).map((card) => (
                     <div class="h-full w-96 sm:opacity-0 lg:opacity-100">
                       <div
-                        class={`relative overflow-hidden rounded-2xl ${card.bgColor} p-8 z-50 shadow-xl lg:py-12 lg:gap-x-8`}>
+                        class={`relative overflow-hidden rounded-2xl ${card.bgColor} p-8 z-50 shadow-xl lg:py-12 lg:gap-x-8`}
+                      >
                         <div class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                           <img
                             src={card.imgSrc}
@@ -137,10 +142,7 @@ const ctaFeatures = [
                         </div>
                         <div class="relative">
                           <span>
-                            <img
-                              src={card.iconSrc}
-                              alt=""
-                            />
+                            <img src={card.iconSrc} alt="" />
                           </span>
                           <blockquote class="mt-6 text-white lg:mt-32">
                             <p class="font-medium">{card.quote}</p>
@@ -156,7 +158,8 @@ const ctaFeatures = [
                   heroCards.slice(1, 6).map((card) => (
                     <div class="h-full w-96 sm:opacity-0 lg:opacity-100">
                       <div
-                        class={`relative overflow-hidden rounded-2xl ${card.bgColor} p-8 z-50 shadow-xl lg:py-12 lg:gap-x-8`}>
+                        class={`relative overflow-hidden rounded-2xl ${card.bgColor} p-8 z-50 shadow-xl lg:py-12 lg:gap-x-8`}
+                      >
                         <div class="absolute inset-0 opacity-50 mix-blend-multiply saturate-0 filter">
                           <img
                             src={card.imgSrc}
@@ -166,10 +169,7 @@ const ctaFeatures = [
                         </div>
                         <div class="relative">
                           <span>
-                            <img
-                              src={card.iconSrc}
-                              alt=""
-                            />
+                            <img src={card.iconSrc} alt="" />
                           </span>
                           <blockquote class="mt-6 text-white lg:mt-32">
                             <p class="font-medium">{card.quote}</p>
@@ -190,17 +190,19 @@ const ctaFeatures = [
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <div>
         <h2
-          class="text-purple-900 font-semibold tracking-tight lg:text-5xl text-3xl">
+          class="text-blue-950 font-semibold tracking-tight lg:text-5xl text-3xl"
+        >
           We help customers achieve stunning results
         </h2>
       </div>
       <ul
         role="list"
-        class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-6 mt-12">
+        class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-6 mt-12"
+      >
         {
           stats.map((stat) => (
             <li>
-              <p class="font-semibold text-purple-900">{stat.value}</p>
+              <p class="font-semibold text-blue-950">{stat.value}</p>
               <div class="mt-2 text-slate-500 text-sm">{stat.description}</div>
             </li>
           ))
@@ -216,21 +218,24 @@ const ctaFeatures = [
         >our customers</span
       >
       <h2
-        class="text-purple-900 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+        class="text-blue-950 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl"
+      >
         We accelerate growth for all types of businesses
       </h2>
 
       <div class="grid lg:grid-cols-3 gap-8 mt-24">
         {
-          allPosts.slice().map((post) => (
-            <Entries
-              url={"/customers/" + post.slug}
-              customer={post.data.customer}
-              about={post.data.about}
-              alt={post.data.customer}
-              logo={post.data.logo.url}
-            />
-          ))
+          allPosts
+            .slice()
+            .map((post) => (
+              <Entries
+                url={"/customers/" + post.slug}
+                customer={post.data.customer}
+                about={post.data.about}
+                alt={post.data.customer}
+                logo={post.data.logo.url}
+              />
+            ))
         }
       </div>
     </div>
@@ -239,7 +244,8 @@ const ctaFeatures = [
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <div>
         <h2
-          class="text-purple-900 font-semibold tracking-tight lg:text-5xl text-3xl">
+          class="text-blue-950 font-semibold tracking-tight lg:text-5xl text-3xl"
+        >
           Spaziobianco is a well crafted
           <span class="lg:block">multipage UI Kit for your SaaS</span>
         </h2>
@@ -256,7 +262,8 @@ const ctaFeatures = [
                 </p>
                 <ul
                   role="list"
-                  class="order-last mt-12 flex-col gap-y-2 text-sm text-slate-500 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  class="order-last mt-12 flex-col gap-y-2 text-sm text-slate-500 grid grid-cols-1 lg:grid-cols-2 gap-8"
+                >
                   {
                     featuresList.map((feature) => (
                       <li class="flex items-start gap-2 ">
@@ -326,10 +333,11 @@ const ctaFeatures = [
   </section>
   <section class="bg-white transform skew-y-6 -mt-72 lg:-mt-[26rem]">
     <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:py-52 items-center transform -skew-y-6">
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 lg:py-52 items-center transform -skew-y-6"
+    >
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
-          <h2 class="text-purple-900 font-semibold tracking-tight text-3xl">
+          <h2 class="text-blue-950 font-semibold tracking-tight text-3xl">
             Ready to get connected?
           </h2>
           <div class="max-w-xl mt-6">
@@ -342,7 +350,8 @@ const ctaFeatures = [
               class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
               title="link to your page"
               aria-label="your label"
-              href="/forms/signup">
+              href="/forms/signup"
+            >
               Register now
             </a>
           </div>
@@ -355,19 +364,21 @@ const ctaFeatures = [
                   <div class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100">
                     {index + 1}
                   </div>
-                  <p class=" font-semibold text-purple-900 ">{section.title}</p>
+                  <p class=" font-semibold text-blue-950 ">{section.title}</p>
                 </div>
                 <p class="text-sm text-slate-500 ">{section.description}</p>
                 <p class="mt-5">
                   <a
                     href={section.link}
-                    class="text-blue-500 hover:text-blue-600 inline-flex items-center group">
+                    class="text-blue-500 hover:text-blue-600 inline-flex items-center group"
+                  >
                     {section.linkText}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
+                      class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
+                    >
                       <path
                         fill-rule="evenodd"
                         d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
@@ -385,9 +396,10 @@ const ctaFeatures = [
   </section>
   <section class="bg-slate-50 mt-20">
     <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 items-center">
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 items-center"
+    >
       <div>
-        <h2 class="text-purple-900 font-semibold">
+        <h2 class="text-blue-950 font-semibold">
           Help us build economic infrastructure for the internet
         </h2>
         <p class="text-slate-500 text-sm mt-6">

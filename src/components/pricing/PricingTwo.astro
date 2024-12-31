@@ -79,7 +79,8 @@ const pricingPlans = [
         >pricing</span
       >
       <h2
-        class="text-purple-900 font-semibold tracking-tight lg:text-4xl mt-6 text-3xl text-balance md:text-balance md:w-1/2 mx-auto">
+        class="text-blue-950 font-semibold tracking-tight lg:text-4xl mt-6 text-3xl text-balance md:text-balance md:w-1/2 mx-auto"
+      >
         Always know what you'll pay, transparent pricing for everyone.
       </h2>
       <p class="text-slate-500 mt-5 md:text-balance md:w-1/2 mx-auto">
@@ -88,20 +89,19 @@ const pricingPlans = [
       </p>
       <div class="md:max-w-sm mx-auto mt-12">
         <div
-          class="inline-flex w-full border rounded-full mt-6 overflow-hidden bg-white p-0.5 z-0">
+          class="inline-flex w-full border rounded-full mt-6 overflow-hidden bg-white p-0.5 z-0 border-slate-200"
+        >
           <button
             class="text-black font-medium border rounded-full transition w-full py-2 block border-transparent px-8 text-xs"
             @click="annual = false"
             :class="annual == false ? 'bg-slate-100 border text-black ' : ''"
-            type="button"
-            >Monthly</button
+            type="button">Monthly</button
           >
           <button
             class="text-black font-medium border rounded-full transition w-full py-2 block border-transparent px-8 text-xs"
             @click="annual = true"
             :class="annual == true ? 'bg-slate-100 border text-black' : ''"
-            type="button"
-            >Annual</button
+            type="button">Annual</button
           >
         </div>
       </div>
@@ -111,23 +111,22 @@ const pricingPlans = [
         pricingPlans.map((plan) => (
           <section>
             <div
-              class={` ${plan.cardBgClass}  flex flex-col  justify-between w-full  `}>
+              class={` ${plan.cardBgClass}  flex flex-col  justify-between w-full  `}
+            >
               <div>
                 <div class="space-y-4 mt-8">
                   <div class="flex  flex-col  ">
-                    <p class={`text-lg   text-purple-900`}>{plan.name}</p>
-                    <p class={` text-purple-900 mt-8`}>
+                    <p class={`text-lg   text-blue-950`}>{plan.name}</p>
+                    <p class={` text-blue-950 mt-8`}>
                       <span class="text-5xl font-light tracking-tight    ">
                         <span x-show="!annual">${plan.monthlyPrice}</span>
                         <span x-show="annual">${plan.annualPrice}</span>
                       </span>
                     </p>
 
-                    <span class="text-sm font-medium mt-4 blockext-purple-900">
+                    <span class="text-sm font-medium mt-4 blockext-blue-950">
                       Monthly
-                      <span
-                        x-show="annual"
-                        style="display: none;">
+                      <span x-show="annual" style="display: none;">
                         (billed annually)
                       </span>
                     </span>
@@ -142,12 +141,14 @@ const pricingPlans = [
                   type="button"
                   title={plan.name}
                   aria-label="get started"
-                  class={`inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium ${plan.buttonClass}`}>
+                  class={`inline-flex items-center justify-center px-6 py-3.5 rounded-full w-full font-medium ${plan.buttonClass}`}
+                >
                   Get started
                 </button>
               </div>
               <ul
-                class={`flex flex-col order-last mt-8 text-sm ${plan.descriptionColor} gap-y-3`}>
+                class={`flex flex-col order-last mt-8 text-sm ${plan.descriptionColor} gap-y-3`}
+              >
                 {plan.features.map((feature) => (
                   <li class="inline-flex items-center gap-2">
                     <svg
@@ -160,12 +161,9 @@ const pricingPlans = [
                       stroke="currentColor"
                       fill="none"
                       stroke-linecap="round"
-                      stroke-linejoin="round">
-                      <path
-                        stroke="none"
-                        d="M0 0h24v24H0z"
-                        fill="none"
-                      />
+                      stroke-linejoin="round"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
                       <path d="M9 12l2 2l4 -4" />
                     </svg>
@@ -174,7 +172,8 @@ const pricingPlans = [
                 ))}
                 {plan.unavailableFeatures.map((feature) => (
                   <li
-                    class={`inline-flex items-center gap-2 ${plan.descriptionColor} line-through opacity-50`}>
+                    class={`inline-flex items-center gap-2 ${plan.descriptionColor} line-through opacity-50`}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -185,12 +184,9 @@ const pricingPlans = [
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x">
-                      <path
-                        stroke="none"
-                        d="M0 0h24v24H0z"
-                        fill="none"
-                      />
+                      class="icon icon-tabler icons-tabler-outline icon-tabler-xbox-x"
+                    >
+                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9z" />
                       <path d="M9 8l6 8" />
                       <path d="M15 8l-6 8" />

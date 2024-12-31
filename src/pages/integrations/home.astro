@@ -12,7 +12,8 @@ import Entries from "@/components/integrations/Entries.astro";
         >integrations</span
       >
       <h2
-        class="text-purple-900 font-semibold tracking-tight lg:text-5xl text-3xl lg:text-balance mt-6">
+        class="text-blue-950 font-semibold tracking-tight lg:text-5xl text-3xl lg:text-balance mt-6"
+      >
         Find an Integration
       </h2>
       <p class="text-slate-500 mt-5 lg:text-pretty">
@@ -22,18 +23,21 @@ import Entries from "@/components/integrations/Entries.astro";
       <div>
         <ul
           role="list"
-          class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-x-6 lg:gap-y-24 mt-12">
+          class="grid grid-cols-2 lg:grid-cols-4 gap-4 list-none lg:gap-x-6 lg:gap-y-24 mt-12"
+        >
           {
-            allPosts.slice().map((post) => (
-              <Entries
-                url={"/integrations/" + post.slug}
-                integration={post.data.integration}
-                description={post.data.description}
-                alt={post.data.integration}
-                permissions={post.data.permissions}
-                logo={post.data.logo.url}
-              />
-            ))
+            allPosts
+              .slice()
+              .map((post) => (
+                <Entries
+                  url={"/integrations/" + post.slug}
+                  integration={post.data.integration}
+                  description={post.data.description}
+                  alt={post.data.integration}
+                  permissions={post.data.permissions}
+                  logo={post.data.logo.url}
+                />
+              ))
           }
         </ul>
       </div>
@@ -43,7 +47,7 @@ import Entries from "@/components/integrations/Entries.astro";
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
-          <h2 class="text-purple-900 font-semibold tracking-tight text-3xl">
+          <h2 class="text-blue-950 font-semibold tracking-tight text-3xl">
             Ready to get connected?
           </h2>
           <div class="max-w-xl mt-6">
@@ -56,7 +60,8 @@ import Entries from "@/components/integrations/Entries.astro";
               class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
               title="link to your page"
               aria-label="your label"
-              href="/submit">
+              href="/submit"
+            >
               Contact Spazio Bianco
             </a>
           </div>
@@ -64,19 +69,22 @@ import Entries from "@/components/integrations/Entries.astro";
         <div class="mx-auto text-left">
           <div>
             <div
-              class="gap-x-2 gap-y-14 lg:gap-12 grid grid-cols-1 lg:grid-cols-2">
+              class="gap-x-2 gap-y-14 lg:gap-12 grid grid-cols-1 lg:grid-cols-2"
+            >
               <div>
                 <div class="space-y-3">
                   <div class="lg:inline-flex lg:items-center lg:gap-3">
                     <div
-                      class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100">
+                      class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="size-5">
+                        class="size-5"
+                      >
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -84,7 +92,7 @@ import Entries from "@/components/integrations/Entries.astro";
                         ></path>
                       </svg>
                     </div>
-                    <p class="mt-5 font-semibold text-purple-900 lg:mt-0">
+                    <p class="mt-5 font-semibold text-blue-950 lg:mt-0">
                       Read customer stories
                     </p>
                   </div>
@@ -96,18 +104,19 @@ import Entries from "@/components/integrations/Entries.astro";
                       title="link to your page"
                       aria-label="your label"
                       href=""
-                      class="text-blue-500 hover:text-blue-600 inline-flex items-center group">
+                      class="text-blue-500 hover:text-blue-600 inline-flex items-center group"
+                    >
                       See all stories
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
-                        class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
+                        class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
+                      >
                         <path
                           fill-rule="evenodd"
                           d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                          clip-rule="evenodd"
-                        ></path>
+                          clip-rule="evenodd"></path>
                       </svg>
                     </a>
                   </p>
@@ -117,14 +126,16 @@ import Entries from "@/components/integrations/Entries.astro";
                 <div class="space-y-3">
                   <div class="lg:inline-flex lg:items-center lg:gap-3">
                     <div
-                      class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100">
+                      class="flex items-center justify-center size-8 text-blue-500 rounded-full bg-slate-100"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="size-5">
+                        class="size-5"
+                      >
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -132,7 +143,7 @@ import Entries from "@/components/integrations/Entries.astro";
                         ></path>
                       </svg>
                     </div>
-                    <p class="mt-5 font-semibold text-purple-900 lg:mt-0">
+                    <p class="mt-5 font-semibold text-blue-950 lg:mt-0">
                       Become a partner
                     </p>
                   </div>
@@ -144,18 +155,19 @@ import Entries from "@/components/integrations/Entries.astro";
                       title="link to your page"
                       aria-label="your label"
                       href="/about"
-                      class="text-blue-500 hover:text-blue-600 inline-flex items-center group">
+                      class="text-blue-500 hover:text-blue-600 inline-flex items-center group"
+                    >
                       Learn more
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
-                        class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform">
+                        class="size-4 ml-3 group-hover:translate-x-2 transition duration-500 ease-in-out transform"
+                      >
                         <path
                           fill-rule="evenodd"
                           d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
-                          clip-rule="evenodd"
-                        ></path>
+                          clip-rule="evenodd"></path>
                       </svg>
                     </a>
                   </p>

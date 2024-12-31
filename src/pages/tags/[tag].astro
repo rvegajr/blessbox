@@ -27,15 +27,17 @@ const { posts } = Astro.props;
 <BaseLayout pageTitle={tag}>
   <section>
     <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 lg:py-36 items-start">
-      <p class="font-semibold text-purple-900 mt-6 text-3xl lg:mx-auto">
+      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 lg:py-36 items-start"
+    >
+      <p class="font-semibold text-blue-950 mt-6 text-3xl lg:mx-auto">
         Posts tagged with {tag}
       </p>
       <ol role="list" class="mt-16 space-y-10 sm:space-y-16">
         <li>
           <ol
             role="list"
-            class="rounded-2xl bg-slate-50 py-3 px-6 sm:py-7 sm:px-8">
+            class="rounded-2xl bg-slate-50 py-3 px-6 sm:py-7 sm:px-8"
+          >
             {
               posts.map((post) => (
                 <li aria-label="tag">

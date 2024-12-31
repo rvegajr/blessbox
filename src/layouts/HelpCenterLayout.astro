@@ -7,7 +7,9 @@ const { frontmatter } = Astro.props;
   <section>
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <div class="max-w-3xl">
-        <p class="text-purple-900 font-semibold mt-6 text-4xl tracking-tight lg:text-balance">
+        <p
+          class="text-blue-950 font-semibold mt-6 text-4xl tracking-tight lg:text-balance"
+        >
           {frontmatter.description}
         </p>
 
@@ -15,7 +17,7 @@ const { frontmatter } = Astro.props;
           <div class="prose-styles"><slot /></div>
           <div class="max-w-xl mt-12 border-t pb-5 border-slate-200">
             <div class="items-center inline-flex rounded-md py-4 w-full">
-              <p class="text-purple-900">Did this answer your question? ?</p>
+              <p class="text-blue-950">Did this answer your question? ?</p>
 
               <div class="items-center inline-flex gap-3 ml-auto">
                 <button
