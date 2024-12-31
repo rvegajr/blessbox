@@ -9,7 +9,9 @@ const footerSections = [
   },
   {
     title: "More themes",
-    links: [{ href: "https://www.lexingtonthemes.com", label: "Lexington Themes" }],
+    links: [
+      { href: "https://www.lexingtonthemes.com", label: "Lexington Themes" },
+    ],
   },
   {
     title: "Stay updated",
@@ -37,52 +39,53 @@ const footerSections = [
 ];
 ---
 
-<footer class="bg-purple-900">
+<footer class="bg-blue-1000">
   <div
-    class="items-center max-w-7xl lg:px-16 md:px-12 mx-auto px-8 xl:px-24 pt-24 pb-12">
+    class="items-center max-w-7xl lg:px-16 md:px-12 mx-auto px-8 xl:px-24 pt-24 pb-12"
+  >
     <div class="xl:gap-8 xl:grid xl:grid-cols-3">
       <div class="text-white xl:col-span-3">
         <a
           title="link to your page"
           aria-label="your label"
           href="/"
-          class="text-xl text-white font-semibold tracking-tight inline-flex gap-2 items-center">
+          class="text-xl text-white font-semibold tracking-tight inline-flex gap-2 items-center"
+        >
           <svg
             class="size-6"
             viewBox="0 0 50 39"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg">
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d="M16.4992 2H37.5808L22.0816 24.9729H1L16.4992 2Z"
               class="ccompli1"
-              fill="#fafafa80"
-            ></path>
+              fill="#fafafa80"></path>
             <path
               d="M17.4224 27.102L11.4192 36H33.5008L49 13.0271H32.7024L23.2064 27.102H17.4224Z"
               class="ccustom"
-              fill="#fafafa"
-            ></path>
+              fill="#fafafa"></path>
           </svg>
           Spazio Bianco
         </a>
       </div>
       <div
-        class="mt-12 grid gap-8 grid-cols-2 md:grid-cols-2 lg:mt-24 lg:col-span-3">
+        class="mt-12 grid gap-8 grid-cols-2 md:grid-cols-2 lg:mt-24 lg:col-span-3"
+      >
         <div class="gap-8 grid md:grid-cols-2">
           {
             footerSections.slice(0, 2).map((section) => (
               <div>
                 <h3 class="text-white font-normal text-xl">{section.title}</h3>
-                <ul
-                  class="mt-4 space-y-2"
-                  role="list">
+                <ul class="mt-4 space-y-2" role="list">
                   {section.links.map((link) => (
                     <li>
                       <a
                         href={link.href}
                         class="text-white/60 hover:text-white font-normal text-sm"
                         title="link to your page"
-                        aria-label="your label">
+                        aria-label="your label"
+                      >
                         {link.label}
                       </a>
                     </li>
@@ -97,16 +100,15 @@ const footerSections = [
             footerSections.slice(2, 4).map((section) => (
               <div>
                 <h3 class="text-white font-normal text-xl">{section.title}</h3>
-                <ul
-                  class="mt-4 space-y-2"
-                  role="list">
+                <ul class="mt-4 space-y-2" role="list">
                   {section.links.map((link) => (
                     <li>
                       <a
                         href={link.href}
                         class="text-white/60 hover:text-white font-normal text-sm"
                         title="link to your page"
-                        aria-label="your label">
+                        aria-label="your label"
+                      >
                         {link.label}
                       </a>
                     </li>
@@ -120,18 +122,21 @@ const footerSections = [
     </div>
     <div class="col-span-full md:col-span-1 max-w-xl mt-12 lg:mt-24">
       <div
-        class="flex flex-col col-span-full md:flex-row justify-center gap-6 lg:ml-auto">
+        class="flex flex-col col-span-full md:flex-row justify-center gap-6 lg:ml-auto"
+      >
         <a
           class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-full"
           title="link to your page"
           aria-label="your label"
-          href="/system/overview">
+          href="/system/overview"
+        >
           Start for free
         </a><a
           class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-transparent border-white border hover:border-blue-500 w-full"
           title="link to your page"
           aria-label="your label"
-          href="https://buy.polar.sh/polar_cl_i_IYoyQu3ahT_zZQ1CN1uaDgu7ZBdBGVpLThHkMDt0s">
+          href="https://buy.polar.sh/polar_cl_i_IYoyQu3ahT_zZQ1CN1uaDgu7ZBdBGVpLThHkMDt0s"
+        >
           <span>Talk to sales</span>
         </a>
       </div>
@@ -140,7 +145,8 @@ const footerSections = [
 
   <div class="items-center max-w-7xl lg:px-16 md:px-12 mx-auto px-8 xl:px-24 ¨">
     <div
-      class="sm:flex sm:items-center sm:justify-between border-t py-12 border-white/10">
+      class="sm:flex sm:items-center sm:justify-between border-t py-12 border-white/10"
+    >
       <h3 class="text-xs leading-6 text-white/30">
         © 2023 Lexington themes Ltd. All rights reserved.
       </h3>
@@ -150,8 +156,7 @@ const footerSections = [
             class="text-white/40 hover:text-white font-normal text-xs"
             title="link to your page"
             aria-label="your label"
-            href="#"
-            >Terms & Conditions</a
+            href="#">Terms & Conditions</a
           >
           <span class="text-blue-500">⏤</span>
 
@@ -159,14 +164,16 @@ const footerSections = [
             class="text-white/60 hover:text-white font-normal text-xs"
             title="link to your page"
             aria-label="your label"
-            href="#">
+            href="#"
+          >
             Privacy Policy</a
           >
           <a
             title="link to your page"
             aria-label="your label"
             href="#"
-            class="text-slate-500 hover:text-slate-400">
+            class="text-slate-500 hover:text-slate-400"
+          >
             <span class="sr-only">Instagram</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -178,12 +185,9 @@ const footerSections = [
               stroke="currentColor"
               fill="none"
               stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                stroke="none"
-                d="M0 0h24v24H0z"
-                fill="none"
-              ></path>
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path
                 d="M4 4m0 4a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z"
               ></path>
@@ -195,7 +199,8 @@ const footerSections = [
             title="link to your page"
             aria-label="your label"
             href="#"
-            class="text-slate-500 hover:text-slate-400">
+            class="text-slate-500 hover:text-slate-400"
+          >
             <span class="sr-only">Twitter</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -207,24 +212,21 @@ const footerSections = [
               stroke="currentColor"
               fill="none"
               stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                stroke="none"
-                d="M0 0h24v24H0z"
-                fill="none"
-              ></path>
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path
                 d="M14.058 3.41c-1.807 .767 -2.995 2.453 -3.056 4.38l-.002 .182l-.243 -.023c-2.392 -.269 -4.498 -1.512 -5.944 -3.531a1 1 0 0 0 -1.685 .092l-.097 .186l-.049 .099c-.719 1.485 -1.19 3.29 -1.017 5.203l.03 .273c.283 2.263 1.5 4.215 3.779 5.679l.173 .107l-.081 .043c-1.315 .663 -2.518 .952 -3.827 .9c-1.056 -.04 -1.446 1.372 -.518 1.878c3.598 1.961 7.461 2.566 10.792 1.6c4.06 -1.18 7.152 -4.223 8.335 -8.433l.127 -.495c.238 -.993 .372 -2.006 .401 -3.024l.003 -.332l.393 -.779l.44 -.862l.214 -.434l.118 -.247c.265 -.565 .456 -1.033 .574 -1.43l.014 -.056l.008 -.018c.22 -.593 -.166 -1.358 -.941 -1.358l-.122 .007a.997 .997 0 0 0 -.231 .057l-.086 .038a7.46 7.46 0 0 1 -.88 .36l-.356 .115l-.271 .08l-.772 .214c-1.336 -1.118 -3.144 -1.254 -5.012 -.554l-.211 .084z"
                 stroke-width="0"
-                fill="currentColor"
-              ></path>
+                fill="currentColor"></path>
             </svg>
           </a>
           <a
             title="link to your page"
             aria-label="your label"
             href="#"
-            class="text-slate-500 hover:text-slate-400">
+            class="text-slate-500 hover:text-slate-400"
+          >
             <span class="sr-only">GitHub</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -236,12 +238,9 @@ const footerSections = [
               stroke="currentColor"
               fill="none"
               stroke-linecap="round"
-              stroke-linejoin="round">
-              <path
-                stroke="none"
-                d="M0 0h24v24H0z"
-                fill="none"
-              ></path>
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
               <path
                 d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"
               ></path>

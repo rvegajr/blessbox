@@ -9,22 +9,23 @@ import Entries from "@/components/jobs/Entries.astro";
   <section class="bg-white">
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <h2
-        class="text-purple-900 font-semibold tracking-tight lg:text-5xl text-3xl lg:text-balance">
-        Join us. <br> Make the web. <br> Faster.
+        class="text-blue-950 font-semibold tracking-tight lg:text-5xl text-3xl lg:text-balance"
+      >
+        Join us. <br /> Make the web. <br /> Faster.
       </h2>
 
       <div class="mt-12">
         <div class="mt-8 flow-root">
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div
-              class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8"
+            >
               <table class="min-w-full">
                 <thead>
                   <tr>
                     <th
                       scope="col"
-                      class="py-3.5 text-left text-sm font-slate-500"
-                      >Role</th
+                      class="py-3.5 text-left text-sm font-slate-500">Role</th
                     >
                     <th
                       scope="col"
@@ -38,18 +39,20 @@ import Entries from "@/components/jobs/Entries.astro";
                     >
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y">
+                <tbody class="bg-white divide-y divide-slate-200">
                   {
-                    allPosts.slice().map((post) => (
-                      <Entries
-                        url={"/jobs/" + post.slug}
-                        position={post.data.position}
-                        location={post.data.location}
-                        team={post.data.team}
-                        alt={post.data.position}
-                        flag={post.data.flag.url}
-                      />
-                    ))
+                    allPosts
+                      .slice()
+                      .map((post) => (
+                        <Entries
+                          url={"/jobs/" + post.slug}
+                          position={post.data.position}
+                          location={post.data.location}
+                          team={post.data.team}
+                          alt={post.data.position}
+                          flag={post.data.flag.url}
+                        />
+                      ))
                   }
                 </tbody>
               </table>

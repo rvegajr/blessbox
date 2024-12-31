@@ -13,16 +13,19 @@ const features = [
   },
 ];
 ---
+
 <section class="relative overflow-hidden bg-white">
-  <div class="bg-purple-900 max-w-7xl mx-auto rounded-3xl">
+  <div class="bg-blue-1000 max-w-7xl mx-auto rounded-3xl">
     <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
         <div>
-          <span class="text-sm font-medium text-slate-300 tracking-wide uppercase"
+          <span
+            class="text-sm font-medium text-slate-300 tracking-wide uppercase"
             >customizable</span
           >
           <h2
-            class="text-white font-semibold tracking-tight lg:text-5xl mt-6 text-3xl">
+            class="text-white font-semibold tracking-tight lg:text-5xl mt-6 text-3xl"
+          >
             Integrate with your existing email.
           </h2>
           <p class="text-slate-300 mt-5 text-balance">
@@ -36,7 +39,8 @@ const features = [
           </p>
           <ul
             role="list"
-            class="grid grid-cols-2 gap-4 list-none lg:gap-6 mt-12">
+            class="grid grid-cols-2 gap-4 list-none lg:gap-6 mt-12"
+          >
             {
               features.map((feature) => (
                 <li>
@@ -70,10 +74,12 @@ const features = [
         }
     }"
             x-init="tabRepositionMarker($refs.tabButtons.firstElementChild);"
-            class="relative lg:rounded-3xl lg:p-10 text-white">
+            class="relative lg:rounded-3xl lg:p-10 text-white"
+          >
             <div
               x-ref="tabButtons"
-              class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-purple-900 border border-white/20 rounded-full select-none">
+              class="relative inline-grid items-center justify-center w-full h-10 grid-cols-2 p-1 bg-blue-1000 border border-white/20 rounded-full select-none"
+            >
               <button
                 :id="$id(tabId)"
                 @click="tabButtonClicked($el);"
@@ -91,7 +97,8 @@ const features = [
               <div
                 x-ref="tabMarker"
                 class="absolute left-0 z-10 w-1/2 h-full duration-300 ease-out"
-                x-cloak>
+                x-cloak
+              >
                 <div class="w-full h-full bg-white/10 rounded-full shadow-sm">
                 </div>
               </div>
@@ -100,10 +107,12 @@ const features = [
               <div
                 :id="$id(tabId + '-content')"
                 x-show="tabContentActive($el)"
-                class="relative">
+                class="relative"
+              >
                 <!-- Tab Content 1 - Replace with your content -->
                 <section
-                  class="text-xs font-mono shadow-3xl mt-4 rounded-2xl overflowhidden h-full bg-[#14162a] p-4">
+                  class="text-xs font-mono shadow-3xl mt-4 rounded-2xl overflowhidden h-full bg-blue-950 p-4"
+                >
                   <Code
                     code={`
 import { defineConfig } from 'astro/config';
@@ -136,9 +145,11 @@ export default defineConfig({
                 :id="$id(tabId + '-content')"
                 x-show="tabContentActive($el)"
                 class="relative"
-                x-cloak>
+                x-cloak
+              >
                 <section
-                  class="text-xs font-mono mt-4 rounded-3xl shadow-2xl overflow-hidden h-full bg-[#14162a] p-4">
+                  class="text-xs font-mono mt-4 rounded-3xl shadow-2xl overflow-hidden h-full bg-blue-950 p-4"
+                >
                   <Code
                     code={`
 import { defineConfig } from 'astro/config';

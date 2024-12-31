@@ -3,10 +3,7 @@ const { page, url, description } = Astro.props;
 ---
 
 <li>
-  <a
-    title={page}
-    href={url}
-    title={page}>
+  <a title={page} href={url} title={page}>
     <div class="inline-flex items-start gap-3">
       <div>
         <svg
@@ -15,7 +12,8 @@ const { page, url, description } = Astro.props;
           viewBox="0 0 24 24"
           stroke-width="1.5"
           stroke="currentColor"
-          class="size-5 text-blue-500">
+          class="size-5 text-blue-500"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -24,10 +22,12 @@ const { page, url, description } = Astro.props;
         </svg>
       </div>
       <div>
-        <span class="text-blue-600 hover:text-purple-900 text-xl font-medium">
+        <span class="text-blue-600 hover:text-blue-950 text-xl font-medium">
           {page}
         </span>
-        <p class="text-slate-500 leading-relaxed mt-2 text-base lg:text-balance">
+        <p
+          class="text-slate-500 leading-relaxed mt-2 text-base lg:text-balance"
+        >
           {description}
         </p>
       </div>
@@ -38,7 +38,8 @@ const { page, url, description } = Astro.props;
   <a
     href={url}
     title={page}
-    class="text-slate-500 hover:text-blue-400 duration-200">
+    class="text-slate-500 hover:text-blue-400 duration-200"
+  >
     {page}
   </a>
 </li>
