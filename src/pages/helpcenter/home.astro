@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 const allPosts = await getCollection("helpcenter");
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Entries from "@/components/helpcenter/Entries.astro";
+import Entries from "@/components/helpcenter/HelpCenterEntries1.astro";
 ---
 
 <BaseLayout>
@@ -18,7 +18,7 @@ import Entries from "@/components/helpcenter/Entries.astro";
             type="text"
             name="search"
             id="search"
-            class="pr-12 w-full focus:outline-none border focus:border-slate-200 py-3 appearance-none block border-transparent focus:bg-white bg-slate-50 px-3 rounded-xl text-blue-950"
+            class="pr-12 w-full focus:outline-none border focus:border-base-200 py-3 appearance-none block border-transparent focus:bg-white bg-base-50 px-3 rounded-xl text-blue-950"
           />
           <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
             <kbd

@@ -1,7 +1,138 @@
 ---
+// Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Overview from "@/components/system/Overview.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Data array
+const pageData = [
+  {
+    sectionTitle: "All pages",
+    categories: [
+      {
+        title: "Main",
+        links: [
+          { name: "Index 1ne", url: "/" },
+          { name: "404", url: "/404" },
+        ],
+      },
+      {
+        title: "Forms",
+        links: [
+          { name: "Sign in", url: "/forms/sign-in" },
+          { name: "Sign up", url: "/forms/sign-up" },
+        ],
+      },
+      {
+        title: "System Pages",
+        links: [
+          { name: "Links", url: "/system/links" },
+          { name: "Colors", url: "/system/colors" },
+          { name: "Buttons", url: "/system/buttons" },
+          { name: "Typography", url: "/system/typography" },
+          {
+            name: "License",
+            url: "https://lexingtonthemes.com/legal/license/",
+          },
+          {
+            name: "Documentation",
+            url: "https://lexingtonthemes.com/documentation",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    sectionTitle: "Content collections",
+    categories: [
+      {
+        title: "Blog Pages",
+        links: [
+          { name: "Blog home", url: "/blog/home" },
+          { name: "Blog post", url: "/blog/posts/1" },
+          { name: "Tag index", url: "/blog/tags" },
+          { name: "Tag Category", url: "/blog/tags/web3" },
+          { name: "RSS", url: "/rss.xml" },
+        ],
+      },
+      {
+        title: "Utility Pages",
+        links: [
+          { name: "Terms Of use", url: "/infopages/terms" },
+          { name: "Privacy Policy", url: "/infopages/privacy" },
+        ],
+      },
+      {
+        title: "Help Center",
+        links: [
+          { name: "Knowledge Base", url: "/helpcenter/knowledge-base" },
+          { name: "Home", url: "/helpcenter/home" },
+          { name: "Details", url: "/helpcenter/1" },
+        ],
+      },
+      {
+        title: "Integrations",
+        links: [
+          { name: "Home", url: "/integrations/home" },
+          { name: "Details", url: "/integrations/1" },
+        ],
+      },
+      {
+        title: "Jobs",
+        links: [
+          { name: "Home", url: "/jobs/home" },
+          { name: "Details", url: "/jobs/1" },
+        ],
+      },
+      {
+        title: "Teams",
+        links: [
+          { name: "Home", url: "/team/home" },
+          { name: "Details", url: "/team/1" },
+        ],
+      },
+    ],
+  },
+];
 ---
+
 <BaseLayout>
-  <Overview />
+  <section>
+    <Wrapper variant="standard" class="py-24">
+      <Text tag="h1" variant="displayXL" class="mt-12 text-black text-balance">
+        Overview
+      </Text>
+      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 mt-12">
+        {
+          pageData.map((section) => (
+            <div class="md:col-span-2">
+              <Text tag="p" variant="textBase" class=" text-black">
+                {section.sectionTitle}
+              </Text>
+              <div class=" grid grid-cols-1 md:grid-cols-2 gap-y-8    mt-4 pt-4 border-t border-base-900">
+                {section.categories.map((category) => (
+                  <div class="flex flex-col space-y-2">
+                    <Text tag="h3" variant="textBase" class=" text-black">
+                      {category.title}
+                    </Text>
+                    {category.links.map((link) => (
+                      <Text
+                        tag="a"
+                        variant="textSM"
+                        class="text-base-500 hover:text-black"
+                        href={link.url}
+                        title={link.name}
+                        aria-label={link.name}
+                      >
+                        {link.name}
+                      </Text>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </Wrapper>
+  </section>
 </BaseLayout>

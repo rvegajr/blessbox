@@ -12,7 +12,7 @@ const { frontmatter } = Astro.props;
         <div class="lg:sticker lg:sticky pb-16 pt-8 top-0">
           <div>
             <div class="lg:pl-36 md:pl-12">
-              <nav class="bg-slate-50 rounded-lg space-y-3 p-4 lg:p-8">
+              <nav class="bg-base-50 rounded-lg space-y-3 p-4 lg:p-8">
                 <img src={frontmatter.logo.url} alt={frontmatter.logo.alt} />
                 <div class="mt-6 space-y-6">
                   {
@@ -21,7 +21,7 @@ const { frontmatter } = Astro.props;
                         <p class="text-base font-medium leading-6 text-blue-950">
                           {key}
                         </p>
-                        <p class="text-slate-400 text-sm">{value}</p>
+                        <p class="text-base-400 text-sm">{value}</p>
                       </div>
                     ))
                   }
@@ -37,7 +37,7 @@ const { frontmatter } = Astro.props;
             <p class="text-blue-950 font-semibold mt-6 text-4xl tracking-tight">
               {frontmatter.customer}
             </p>
-            <p class="text-slate-500 mt-5 lg:text-balance">
+            <p class="text-base-500 mt-5 lg:text-balance">
               {frontmatter.about}
             </p>
             <dl class="flex flex-col gap-4 mt-12">
@@ -49,7 +49,7 @@ const { frontmatter } = Astro.props;
                         {item.title}
                       </p>
                     </dt>
-                    <dd class="mt-4 text-sm text-slate-500 lg:text-pretty">
+                    <dd class="mt-4 text-sm text-base-500 lg:text-pretty">
                       {item.content}
                     </dd>
                   </div>
@@ -67,7 +67,7 @@ const { frontmatter } = Astro.props;
                 frontmatter.results.map((result, index) => (
                   <li class="flex items-center gap-2">
                     <span> {index + 1}</span>
-                    <p class="text-sm text-slate-500">{result}</p>
+                    <p class="text-sm text-base-500">{result}</p>
                   </li>
                 ))
               }

@@ -18,6 +18,7 @@ export default defineConfig({
     skipInline: false,
     drafts: true
   },
+  devToolbar: { enabled: false },
   site: 'https://yourdomain.com',
   integrations: [ sitemap(), mdx()]
 });

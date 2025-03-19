@@ -1,0 +1,46 @@
+---
+// Assets
+import { Image } from "astro:assets";
+// Fundations
+import Text from "@/components/fundations/elements/Text.astro";
+
+const { customer, logo, url, ctaTitle, testimonial, bgColor } = {
+  url: "/customers/" + Astro.props.post.slug,
+  logo: Astro.props.post.data.logo.url,
+  customer: Astro.props.post.data.customer,
+  ctaTitle: Astro.props.post.data.ctaTitle,
+  testimonial: Astro.props.post.data.testimonial,
+  // Pass different  background color to the cards
+  bgColor: Astro.props.post.data.bgColor || "bg-base-50",
+};
+---
+
+<div
+  data-aos="fade-up"
+  data-aos-duration="1500"
+  class={`${bgColor} rounded-2xl p-8 relative overflow-hidden`}
+>
+  <a href={url} title={customer} aria-label={customer} class="absolute inset-0"
+  ></a>
+  <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+    <Text
+      tag="h3"
+      variant="displayMD"
+      class="font-semibold tracking-tight mt-8 text-base-800"
+    >
+      {ctaTitle}
+    </Text>
+    <div>
+      <Text tag="p" variant="textXL" class="text-base-800">
+        {testimonial}
+      </Text>
+      <Image
+        src={logo}
+        alt={customer}
+        width={300}
+        height={300}
+        class="size-full"
+      />
+    </div>
+  </div>
+</div>

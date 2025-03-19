@@ -1,21 +1,5 @@
 import { defineCollection, z } from "astro:content";
-const integrations = defineCollection({
-  schema: z.object({
-    integration: z.string(),
-    description: z.string(),
-    email: z.string(),
-    permissions: z.array(z.string()),
-    details: z.array(z.object({
-      title: z.string(),
-      value: z.string(),
-      url: z.optional(z.string()),
-    })),
-    logo: z.object({
-      url: z.string(),
-      alt: z.string(),
-    }),
-  }),
-});
+
 const helpcenter = defineCollection({
   schema: z.object({
     page: z.string(),
@@ -28,7 +12,11 @@ const helpcenter = defineCollection({
 });
 const customers = defineCollection({
   schema: z.object({
+    bgColor: z.string().optional(),
     customer: z.string(),
+    testimonial: z.string().optional(),
+    ctaTitle: z.string().optional(),
+    partnership: z.string().optional(),
     challengesAndSolutions: z.array(z.object({
       title: z.string(),
       content: z.string(),
@@ -75,7 +63,6 @@ const postsCollection = defineCollection({
 });
 
 export const collections = {
-  integrations: integrations,
   helpcenter: helpcenter,
   customers: customers,
   infopages: infopages,

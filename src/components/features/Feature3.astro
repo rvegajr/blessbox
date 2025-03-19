@@ -1,0 +1,148 @@
+---
+// Assets
+import Logo from "@/components/assets/Logo.astro";
+// Fundations
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import Plus from "@/components/fundations/icons/Plus.astro";
+import ApiApp from "@/components/fundations/icons/ApiApp.astro";
+import Filters from "@/components/fundations/icons/Filters.astro";
+import WaveSquare from "@/components/fundations/icons/WaveSquare.astro";
+import ArrowIteration from "@/components/fundations/icons/ArrowIteration.astro";
+// Icons
+const data = [
+  {
+    icon: "Filters",
+    category: "Full data transparency",
+  },
+  {
+    icon: "WaveSquare",
+    category: "Reduced dependencies",
+  },
+  {
+    icon: "ArrowIteration",
+    category: "Reliable infrastructure",
+  },
+  {
+    icon: "Plus",
+    category: "Faster development cycles",
+  },
+];
+---
+
+<section>
+  <Wrapper variant="standard" class="py-12 lg:py-24">
+    <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-24">
+      <div>
+        <Text
+          class="span"
+          variant="textXS"
+          data-aos="fade-down"
+          data-aos-duration="1000"
+          class="uppercase text-base-600 font-medium flex items-center gap-2"
+        >
+          <ApiApp size="sm" class="text-yellow-600" />
+          Raw, unfiltered APIs
+        </Text>
+        <Text
+          tag="h3"
+          variant="displayMD"
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          class="font-semibold tracking-tight mt-8 text-base-800 md:text-balance"
+        >
+          Unfiltered, direct access to the Federal Reserve
+        </Text>
+        <Text
+          tag="p"
+          variant="textBase"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          class="mt-2 text-base text-base-500"
+        >
+          Financial networks like Visa and FedACH have been refined over
+          decades, but many tech companies add layers of abstraction that limit
+          flexibility.
+          <br />
+          <br />
+          We do the opposite—giving you direct, unfiltered access to the Federal
+          Reserve, Visa, and other networks. This means greater stability, fewer
+          restrictions, and complete control over how you build.
+        </Text>
+        <ul
+          data-aos="fade-up"
+          data-aos-duration="2000"
+          role="list"
+          class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2"
+        >
+          {
+            data.map((section) => (
+              <li class="flex items-center gap-2 text-base-800">
+                {section.icon === "Filters" && <Filters size="base" />}
+                {section.icon === "WaveSquare" && <WaveSquare size="base" />}
+                {section.icon === "ArrowIteration" && (
+                  <ArrowIteration size="base" />
+                )}
+                {section.icon === "Plus" && <Plus size="base" />}
+                <Text tag="p" variant="textSM" class="font-medium leading-6 ">
+                  {section.category}
+                </Text>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div
+        class="h-full outline-1 p-8 outline-base-200 bg-base-100 rounded-xl overflow-hidden relative shadow items-center flex flex-col"
+      >
+        <div class="absolute inset-0 w-full flex items-center justify-center">
+          <div
+            class="relative mx-auto overflow-hidden overflow-x-hidden w-full text-xs text-base-800"
+          >
+            <div
+              class="items-center relative animate-marquee flex whitespace-nowrap bg-teal-300 w-max px-4 py-1 border-y border-dashed border-teal-600"
+            >
+              STAT/34PQ-A24-7891#SECURE TERMINAL ACCESS#SYSTEM ONLINE
+              7856443127890654231099876 ID:NETWORK-PRIME TL93/alpha/2.5.8/active
+              NODE:CENTRAL-HUB-07 UPTIME:3278.45h PACKET_INTEGRITY:99.87%
+              ROUTING_TABLE:UPDATED ENV:PRODUCTION MEMORY:64GB/128GB CPU:32%
+              THERMAL:NOMINAL AUTH_LEVEL:ADMINISTRATOR
+            </div>
+            <div
+              class="items-center relative animate-slowMarquee flex whitespace-nowrap bg-yellow-300 w-max px-4 py-1 border-y border-dashed border-yellow-600"
+            >
+              CONN/95BT-R38-1265#DATA STREAM ACTIVE#BUFFER STABLE
+              3321567456789023418765432 STATUS:TRANSMITTING
+              FS47/beta/9.3.1/nominal BANDWIDTH:1.28TB/s LATENCY:4.7ms
+              ENCRYPTION:AES-256 PROTOCOL:TCP/IPV6 FIREWALL:ENABLED
+              GATEWAY:192.168.0.1 DNS:PRIMARY VPN:CONNECTED
+              LOCATION:SECURE-FACILITY-12
+            </div>
+            <div
+              class="items-center relative animate-marquee flex whitespace-nowrap bg-blue-300 w-max px-4 py-1 border-y border-dashed border-blue-600"
+            >
+              PROC/72KM-D19-6543#RUNTIME ENVIRONMENT#TASK QUEUE
+              1122334455667788990011223 MODE:PRIORITY-HIGH
+              VX26/gamma/1.7.4/running THREADS:128 PROCESS_ID:45921
+              SCHEDULER:REALTIME DEPENDENCIES:LOADED COMPILER:V12.4.5
+              BUILD:STABLE-8734 CACHE:OPTIMIZED STACK:4096MB HEAP:16GB
+              ARCHITECTURE:X64 VIRTUALIZED:TRUE
+            </div>
+          </div>
+        </div>
+
+        <!-- Second div (in front) -->
+        <div
+          class="flex w-full items-center justify-center max-w-[50%] relative z-10 h-40 my-auto"
+        >
+          <div
+            class="w-full rounded-lg outline-2 text-xs hover:scale-120 hover:bg-white/50 hover:backdrop-blur duration-300 bg-white outline-base-50 px-20 h-40 font-medium flex flex-col items-center justify-center font-mono shadow-xl shadow-base-800/30 transition-all hover:outline-transparent"
+          >
+            <Logo class="size-12 text-base-800" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </Wrapper>
+</section>
