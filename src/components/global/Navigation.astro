@@ -1,98 +1,37 @@
-<div class="w-full mx-auto">
-  <div
-    x-data="{ open: false }"
-    class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
-  >
-    <div class="flex flex-row items-center justify-between lg:justify-start">
-      <a
-        title="link to your page"
-        aria-label="your label"
-        href="/"
-        class="text-xl text-blue-950 font-semibold tracking-tight inline-flex gap-2 items-center"
-      >
-        <svg
-          class="size-6"
-          viewBox="0 0 50 39"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M16.4992 2H37.5808L22.0816 24.9729H1L16.4992 2Z"
-            class="ccompli1"
-            fill="#007AFF"></path>
-          <path
-            d="M17.4224 27.102L11.4192 36H33.5008L49 13.0271H32.7024L23.2064 27.102H17.4224Z"
-            class="ccustom"
-            fill="#312ECB"></path>
-        </svg>
-        Spazio Bianco
-      </a>
-      <button
-        @click="open = !open"
-        class="inline-flex items-center justify-center p-2 text-slate-400 hover:text-blue-950 focus:outline-none focus:text-blue-950 md:hidden"
-      >
-        <svg
-          class="size-6"
-          stroke="currentColor"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            :class="{'hidden': open, 'inline-flex': !open }"
-            class="inline-flex"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h16"></path>
-          <path
-            :class="{'hidden': !open, 'inline-flex': open }"
-            class="hidden"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
-    <nav
-      :class="{'flex': open, 'hidden': !open}"
-      class="flex-col flex-grow hidden py-12 lg:py-0 md:flex md:justify-end md:flex-row"
-    >
-      <ul
-        class="gap-2 gap-y-4 list-none items-center md:flex-row flex-col flex"
-      >
-        <li>
-          <a
-            title="link to your page"
-            aria-label="your label"
-            href="/system/overview"
-            class="px-2 lg:px-6 py-10 md:px-3 text-sm font-semibold text-slate-600 hover:text-blue-950"
-          >
-            Overview
-          </a>
-        </li>
+---
+// Fundations
+import Logo from "@/components/assets/Logo.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+---
 
-        <li>
-          <a
-            title="link to your page"
-            aria-label="your label"
-            href="/system/styleguide/"
-            class="px-2 lg:px-6 py-10 md:px-3 text-sm font-semibold text-slate-600 hover:text-blue-950"
-          >
-            Style guide
-          </a>
-        </li>
-        <li>
-          <a
-            title="link to your page"
-            aria-label="your label"
-            href="https://buy.polar.sh/polar_cl_i_IYoyQu3ahT_zZQ1CN1uaDgu7ZBdBGVpLThHkMDt0s"
-            class="text-blue-600 items-center font-medium gap-3 text-sm inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-2.5 rounded-full active:bg-blue-800 active:text-white bg-blue-50 hover:bg-blue-100 w-auto"
-          >
-            Buy Spazio Bianco
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </div>
-</div>
+<!-- <header class="fixed w-full z-50">
+  <Wrapper variant="standard" class="relative overflow-hidden">
+    <div class="flex justify-between items-center py-4">
+      <div class="relative">
+        <a href="/"><Logo class="h-4" /></a>
+      </div>
+      <div
+        class="flex gap-4 text-xs rounded-full p-1 hover:cursor-pointer transition-all"
+      >
+        <Text
+          tag="a"
+          variant="textXS"
+          href="/system/overview"
+          class="transition-all text-base-900"
+        >
+          Overview
+        </Text>
+        <Text
+          tag="a"
+          variant="textXS"
+          href="https://buy.polar.sh/polar_cl_i_IYoyQu3ahT_zZQ1CN1uaDgu7ZBdBGVpLThHkMDt0s"
+          class="transition-all text-base-600"
+        >
+          Buy S:Bianco
+        </Text>
+        
+      </div>
+    </div>
+  </Wrapper>
+</header> -->

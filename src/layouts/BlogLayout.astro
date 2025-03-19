@@ -15,7 +15,7 @@ const { frontmatter } = Astro.props;
               class="text-blue-950 font-semibold text-3xl lg:text-7xl tracking-tight lg:text-balance"
             >
               {frontmatter.title}
-            </h2><p class="text-xl text-slate-500 mt-12 lg:text-balance">
+            </h2><p class="text-xl text-base-500 mt-12 lg:text-balance">
               {frontmatter.description}
             </p>
             <div class="mt-6">
@@ -29,11 +29,11 @@ const { frontmatter } = Astro.props;
                 </div>
                 <div class="ml-3">
                   <p
-                    class="text-sm font-medium text-slate-500 group-hover:text-blue-950"
+                    class="text-sm font-medium text-base-500 group-hover:text-blue-950"
                   >
                     {frontmatter.author}
                   </p>
-                  <p class="text-xs text-slate-500 uppercase">
+                  <p class="text-xs text-base-500 uppercase">
                     {frontmatter.pubDate.toString().slice(0, 10)}
                   </p>
                 </div>
@@ -47,7 +47,7 @@ const { frontmatter } = Astro.props;
   <section>
     <div class="px-8 max-w-7xl lg:px-24 mx-auto py-12">
       <div
-        class="max-w-[40rem] prose-lg hover:prose-a:text-blue-500 prose prose-a:font-semibold prose-a:text-blue-300 prose-blockquote:text-blue-600 prose-h3:text-blue-950 text-slate-500"
+        class="max-w-[40rem] prose-lg hover:prose-a:text-blue-500 prose prose-a:font-semibold prose-a:text-blue-300 prose-blockquote:text-blue-600 prose-h3:text-blue-950 text-base-500"
       >
         <slot />
       </div>
