@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 const allPosts = await getCollection("jobs");
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Entries from "@/components/jobs/Entries.astro";
+import Entries from "@/components/jobs/JobEntries1.astro";
 ---
 
 <BaseLayout>
@@ -25,21 +25,21 @@ import Entries from "@/components/jobs/Entries.astro";
                   <tr>
                     <th
                       scope="col"
-                      class="py-3.5 text-left text-sm font-slate-500">Role</th
+                      class="py-3.5 text-left text-sm font-base-500">Role</th
                     >
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-left text-sm font-semibold text-slate-500"
+                      class="px-3 py-3.5 text-left text-sm font-semibold text-base-500"
                       >Team</th
                     >
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-left text-sm font-semibold text-slate-500"
+                      class="px-3 py-3.5 text-left text-sm font-semibold text-base-500"
                       >Location</th
                     >
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-slate-200">
+                <tbody class="bg-white divide-y divide-base-200">
                   {
                     allPosts
                       .slice()

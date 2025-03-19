@@ -1,0 +1,222 @@
+---
+// Fundations
+import Text from "@/components/fundations/elements/Text.astro";
+import Link from "@/components/fundations/elements/Link.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import Tool from "@/components/fundations/icons/Tool.astro";
+import User from "@/components/fundations/icons/User.astro";
+import Plus from "@/components/fundations/icons/Plus.astro";
+import ApiApp from "@/components/fundations/icons/ApiApp.astro";
+import Filters from "@/components/fundations/icons/Filters.astro";
+import CreditCard from "@/components/fundations/icons/CreditCard.astro";
+import WaveSquare from "@/components/fundations/icons/WaveSquare.astro";
+import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
+import ArrowIteration from "@/components/fundations/icons/ArrowIteration.astro";
+const pricingData = [
+  {
+    category: "ACH Processing",
+    icon: "ApiApp",
+
+    details: [
+      {
+        label: "Same-day ACH transfers",
+        price: "$1.50",
+        unit: "/ transaction",
+      },
+      {
+        label: "Next-day ACH transfers",
+        price: "$0.40",
+        unit: "/ transaction",
+      },
+      { label: "ACH return processing", price: "$4.00", unit: "/ transaction" },
+      {
+        label: "Unauthorized return handling",
+        price: "$12.00",
+        unit: "/ transaction",
+      },
+      {
+        label: "Late return request processing",
+        price: "$20.00",
+        unit: "/ transaction",
+      },
+    ],
+  },
+  {
+    category: "Wire Processing",
+    icon: "Tool",
+
+    details: [
+      {
+        label: "Wire transfer initiation",
+        price: "$12.00",
+        unit: "/ transaction",
+      },
+      {
+        label: "Wire drawdown request",
+        price: "$12.00",
+        unit: "/ transaction",
+      },
+    ],
+  },
+  {
+    category: "Check Issuing",
+    icon: "User",
+
+    details: [
+      {
+        label: "Check printing & mailing (Sbianco fulfilled)",
+        price: "$2.50",
+        unit: "/ check",
+      },
+      {
+        label: "Check printing & mailing (Third-party fulfilled)",
+        link: "/forms/sign-up",
+      },
+    ],
+  },
+  {
+    category: "Check Deposits",
+    icon: "ArrowIteration",
+
+    details: [
+      { label: "Remote deposit capture", link: "/forms/contact-sales" },
+      { label: "Lockbox check processing", price: "$8.00", unit: "/ check" },
+      { label: "Returned check processing", price: "$8.00", unit: "/ check" },
+    ],
+  },
+  {
+    category: "Card Processing",
+    icon: "Filters",
+
+    details: [
+      { label: "Virtual card issuance", price: "$0.20", unit: "/ card" },
+      { label: "Physical card issuance", link: "/forms/sign-up" },
+      { label: "Additional card services", link: "/forms/sign-up" },
+    ],
+  },
+  {
+    category: "Real-Time Payments Processing",
+    icon: "WaveSquare",
+
+    details: [
+      { label: "Instant RTP transfers", price: "$0.40", unit: "/ transaction" },
+      {
+        label: "Payment request initiation",
+        price: "$0.40",
+        unit: "/ transaction",
+      },
+    ],
+  },
+];
+---
+
+<section class="bg-base-50">
+  <Wrapper variant="standard" class="py-12 lg:py-24">
+    <div class="lg:w-1/2">
+      <Text
+        class="span"
+        variant="textXS"
+        data-aos="fade-down"
+        data-aos-duration="1000"
+        class="uppercase text-base-600 font-medium flex items-center gap-2"
+      >
+        <CreditCard size="sm" class="text-yellow-600" />
+        Pricing
+      </Text>
+      <Text
+        tag="h1"
+        variant="displayMD"
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="font-semibold tracking-tight mt-8 text-base-800 md:text-balance"
+      >
+        Fees
+      </Text>
+      <Text
+        tag="p"
+        variant="textBase"
+        data-aos="fade-up"
+        data-aos-duration="1500"
+        class="mt-2 text-base text-base-500 lg:text-balance"
+      >
+        For fintech platforms handling customer transactions or businesses with
+        substantial balances, we provide tailored pricing. Reach out to us for
+        more information.
+      </Text>
+    </div>
+    <ul role="list" class="flex flex-col gap-12 mt-8">
+      {
+        pricingData.map((section) => (
+          <div class="">
+            <div class="p-2  bg-white rounded-lg">
+              <div class="flex items-center gap-2">
+                <div class="flex">
+                  <div class="flex p-2 transition-all duration-300 rounded-lg bg-teal-400 text-base-800 group-hover:bg-base-800 group-hover:text-white">
+                    {section.icon === "User" && <User size="base" />}
+                    {section.icon === "Tool" && <Tool size="base" />}
+                    {section.icon === "Plus" && <Plus size="base" />}
+                    {section.icon === "ApiApp" && <ApiApp size="base" />}
+                    {section.icon === "Filters" && <Filters size="base" />}
+                    {section.icon === "WaveSquare" && (
+                      <WaveSquare size="base" />
+                    )}
+                    {section.icon === "ArrowIteration" && (
+                      <ArrowIteration size="base" />
+                    )}
+                  </div>
+                </div>
+                <Text
+                  tag="h3"
+                  variant="textBase"
+                  class="font-semibold text-base-800"
+                >
+                  {section.category}
+                </Text>
+              </div>
+            </div>
+            <ul class="flex flex-col gap-1 mt-4">
+              {section.details.map((detail) => (
+                <li class="flex gap-2 flex-col md:flex-row justify-between text-base-500">
+                  <Text tag="p" variant="textSM" class="font-medium">
+                    {detail.label}
+                  </Text>
+                  {detail.link ? (
+                    <div class="flex">
+                      <Text
+                        tag="a"
+                        variant="textSM"
+                        href={detail.link}
+                        class="flex items-center gap-2"
+                      >
+                        Contact sales
+                        <ChevronRight size="sm" />
+                      </Text>
+                    </div>
+                  ) : (
+                    <div class="flex gap-1 items-baseline">
+                      <Text
+                        tag="p"
+                        variant="textSM"
+                        class="font-semibold text-base-800"
+                      >
+                        {detail.price}
+                      </Text>
+                      <Text
+                        tag="p"
+                        variant="textXS"
+                        class="text-base-500 capitalize"
+                      >
+                        {detail.unit}
+                      </Text>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </ul>
+  </Wrapper>
+</section>

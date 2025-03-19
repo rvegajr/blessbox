@@ -1,0 +1,71 @@
+---
+// Assets
+// Fundations
+import Link from "@/components/fundations/elements/Link.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
+---
+
+<section
+  class="relative overflow-hidden from-base-300 bg-linear-45 via-base-200 to-base-100"
+>
+  
+    
+  <Wrapper variant="standard" class="relative z-20 py-32 lg:pt-48 lg:pb-80">
+    <div>
+      <Text
+        tag="h1"
+        variant="display2XL"
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="font-semibold tracking-tighter text-base-800 lg:text-balance"
+      >
+        Powerful financial APIs for tech innovators
+      </Text>
+      <Text
+        tag="p"
+        variant="textLG"
+        data-aos="fade-up"
+        data-aos-duration="1500"
+        class="max-w-lg mt-4 text-base text-base-800 font-medium md:text-balance"
+      >
+        Seamless, scalable infrastructure for managing funds store, transfer,
+        and reconcile money with ease.
+      </Text>
+      <div
+        data-aos="fade-up"
+        data-aos-duration="2000"
+        class="flex items-center mt-12 space-x-2"
+      >
+        <Link
+          size="base"
+          variant="default"
+          href="/forms/sign-up"
+          gap="xs"
+          class="group"
+        >
+          Get started
+          <ChevronRight
+            size="sm"
+            class="duration-300 easy-out-in group-hover:translate-x-2"
+          />
+        </Link>
+        <Link
+          size="base"
+          variant="muted"
+          href="/forms/contact"
+          gap="xs"
+          class="group"
+        >
+          Contact sales
+          <ChevronRight
+            size="sm"
+            class="duration-300 easy-out-in group-hover:translate-x-2"
+          />
+        </Link>
+      </div>
+    </div>
+  </Wrapper>
+</section>
