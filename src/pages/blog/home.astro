@@ -1,33 +1,73 @@
 ---
-import { getCollection } from "astro:content";
+// Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import EntriesOne from "@/components/blog/BlogEntries1.astro";
+import Button from "@/components/fundations/elements/Button.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Component
+import BlogEntries1 from "@/components/blog/BlogEntries1.astro";
+// Content
+import { getCollection } from "astro:content";
 const allPosts = await getCollection("posts");
 // blog
 import BlogSearch from "@/components/blog/BlogSearch.astro";
 ---
+
 <BaseLayout>
   <section>
-    <BlogSearch />
-    <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
-      <div class="space-y-24">
-        {
-          allPosts
-            .slice()
-            .map((post) => (
-              <EntriesOne
-                url={"/posts/" + post.slug}
-                title={post.data.title}
-                description={post.data.description}
-                alt={post.data.title}
-                pubDate={post.data.pubDate.toString().slice(0, 10)}
-                author={post.data.author}
-                image={post.data.image.url}
-              />
-            ))
-        }
+    <Wrapper variant="standard" class="py-32 lg:pt-48">
+      <div>
+        <Text
+          tag="h1"
+          variant="display2XL"
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          class="font-semibold tracking-tighter text-base-800 lg:text-balance"
+        >
+          Latest news
+        </Text>
+        <Text
+          tag="p"
+          variant="textLG"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          class="max-w-lg mt-4 font-medium text-base-800 md:text-balance"
+        >
+          The lates news about our banking products, services and events.
+        </Text>
+        <form
+          data-aos="fade-up"
+          data-aos-duration="2000"
+          class="max-w-md mt-12"
+        >
+          <label for="email" class="text-xs font-medium text-base-600">
+            Subscribe to our newsletter
+          </label>
+          <div class="flex flex-col gap-2 mt-1">
+            <input
+              type="email"
+              id="email"
+              placeholder="email@example.com"
+              required
+              class="block w-full h-10 px-4 py-2 text-sm text-teal-700 duration-300 border border-transparent rounded-lg appearance-none bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
+            />
+            <Button size="base" variant="default" type="submit" class="w-full">
+              Subscribe
+            </Button>
+          </div>
+          <Text tag="p" variant="textXS" class="mt-2 font-medium text-base-500">
+            By subscribing, you agree to receive our latest updates. No spam,
+            promise!
+          </Text>
+        </form>
       </div>
-    </div>
+
+      <div class="mt-12 lg:mt-24">
+        <BlogSearch />
+        <div class="grid grid-cols-1 gap-4 mt-24 sm:grid-cols-4 gap-y-8">
+          {allPosts.map((post) => <BlogEntries1 post={post} />)}
+        </div>
+      </div>
+    </Wrapper>
   </section>
 </BaseLayout>

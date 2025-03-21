@@ -21,27 +21,27 @@ const stats = [
 ---
 
 <section>
-  <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
-    <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
+  <div class="px-8 py-24 mx-auto max-w-7xl lg:px-16 md:px-12 xl:px-24">
+    <span class="text-sm font-medium tracking-wide text-blue-600 uppercase"
       >cool stats</span
     >
 
     <h2
-      class="text-blue-950 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl lg:text-balance"
+      class="mt-6 text-3xl font-semibold tracking-tight text-blue-950 lg:text-5xl lg:text-balance"
     >
       Beyond the basics stats for the platform, we have some more interesting
       stats.
     </h2>
 
-    <div class="gap-6 grid grid-cols-1 lg:grid-cols-4 mt-12">
+    <div class="mt-12 gap-6 grid grid-cols-1 lg:grid-cols-4">
       {
         stats.map((stat) => (
           <div>
-            <p class="text-4xl font-medium tracking-tight  lg:text-5xl text-blue-500">
+            <p class="text-4xl font-medium tracking-tight text-blue-500  lg:text-5xl">
               {stat.value}
             </p>
 
-            <p class="text-base-500 mt-6 border-blue-500">{stat.description}</p>
+            <p class="mt-6 border-blue-500 text-base-500">{stat.description}</p>
           </div>
         ))
       }
