@@ -40,9 +40,9 @@ const tips5 = [
 <section>
   <Wrapper variant="standard" class="py-12">
     <div
-      class="flex bg-linear-180 from-base-50 via-base-100 to-base-300 rounded-2xl p-8 lg:p-20 overflow-hidden relative lg:-mx-20"
+      class="relative flex p-8 overflow-hidden shadow bg-linear-180 from-base-50 via-base-100 to-base-300 rounded-2xl lg:p-20 lg:-mx-20"
     >
-      <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-24 relative">
+      <div class="relative grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-24">
         <div>
           <div>
             <Text
@@ -50,7 +50,7 @@ const tips5 = [
               variant="textXS"
               data-aos="fade-down"
               data-aos-duration="1000"
-              class="uppercase text-base-500 font-medium flex items-center gap-2"
+              class="flex items-center font-medium uppercase text-base-500 gap-2"
             >
               <ApiApp size="sm" class="text-yellow-700" />
               Tailored Compliance
@@ -60,7 +60,7 @@ const tips5 = [
               variant="displayMD"
               data-aos="fade-up"
               data-aos-duration="1000"
-              class="font-semibold tracking-tight mt-8 text-base-800 md:text-balance"
+              class="mt-8 font-semibold tracking-tight text-base-800 md:text-balance"
             >
               Take control of your customer relationships
             </Text>
@@ -75,25 +75,25 @@ const tips5 = [
               physical checks.
             </Text>
           </div>
-          <div class="flex flex-col gap-2 mt-8">
+          <div class="flex flex-col mt-8 gap-2">
             <button
-              class="tab w-full flex text-left font-semibold items-center duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 h-10 px-4 py-3 text-sm rounded-md hover:text-base-900"
+              class="flex items-center w-full h-10 px-4 py-3 text-sm font-semibold text-left tab duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 rounded-md hover:text-base-900"
               >Process an ACH transaction</button
             >
             <button
-              class="tab w-full flex text-left font-semibold items-center duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 h-10 px-4 py-3 text-sm rounded-md hover:text-base-900"
+              class="flex items-center w-full h-10 px-4 py-3 text-sm font-semibold text-left tab duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 rounded-md hover:text-base-900"
               >Open a bank account</button
             >
             <button
-              class="tab w-full flex text-left font-semibold items-center duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 h-10 px-4 py-3 text-sm rounded-md hover:text-base-900"
+              class="flex items-center w-full h-10 px-4 py-3 text-sm font-semibold text-left tab duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 rounded-md hover:text-base-900"
               >Generate a distinct account number</button
             >
             <button
-              class="tab w-full flex text-left font-semibold items-center duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 h-10 px-4 py-3 text-sm rounded-md hover:text-base-900"
+              class="flex items-center w-full h-10 px-4 py-3 text-sm font-semibold text-left tab duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 rounded-md hover:text-base-900"
               >Create a Card</button
             >
             <button
-              class="tab w-full flex text-left font-semibold items-center duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 h-10 px-4 py-3 text-sm rounded-md hover:text-base-900"
+              class="flex items-center w-full h-10 px-4 py-3 text-sm font-semibold text-left tab duration-300 ease-in-out transition-all focus:outline-offset-2 focus:outline-offset-white focus:outline-2 focus:outline-teal-300 text-base-500 bg-transaparent hover:bg-base-100 outline outline-teal-600 rounded-md hover:text-base-900"
               >Deposit a check</button
             >
           </div>
@@ -102,7 +102,7 @@ const tips5 = [
           <div class="tab-content">
             <div>
               <Code
-                class="p-8 text-xs scrollbar-hide relative h-full rounded-xl shadow-2xl"
+                class="relative h-full p-8 text-xs shadow-2xl scrollbar-hide rounded-xl"
                 code={`await payments.transfer.create({
         amount: 50000,
         currency: "USD",
@@ -127,14 +127,14 @@ const tips5 = [
                 <Text
                   tag="p"
                   variant="textSM"
-                  class="mt-2 text-base text-base-600 font-medium lg:text-balance"
+                  class="mt-2 text-base font-medium text-base-600 lg:text-balance"
                 >
                   Programmatically open unlimited bank accounts of any type.
                 </Text>
-                <ul role="list" class="flex flex-col gap-1 mt-1">
+                <ul role="list" class="flex flex-col mt-1 gap-1">
                   {
                     tips2.map((text, index) => (
-                      <li class="flex items-center gap-2 text-base-600 font-medium">
+                      <li class="flex items-center font-medium gap-2 text-base-600">
                         <Check size="sm" class="text-base-900" />
                         <Text tag="p" variant="textSM" class="leading-6">
                           {text}
@@ -146,10 +146,10 @@ const tips5 = [
               </div>
             </div>
           </div>
-          <div class="tab-content hidden h-full">
+          <div class="hidden h-full tab-content">
             <div>
               <Code
-                class="p-8 text-xs scrollbar-hide relative h-full rounded-xl shadow-2xl"
+                class="relative h-full p-8 text-xs shadow-2xl scrollbar-hide rounded-xl"
                 code={`fetch("https://api.payments.com/ach-transfer", {
     method: "POST",
     headers: {
@@ -174,14 +174,14 @@ const tips5 = [
                 <Text
                   tag="p"
                   variant="textSM"
-                  class="mt-2 text-base text-base-600 font-medium lg:text-balance"
+                  class="mt-2 text-base font-medium text-base-600 lg:text-balance"
                 >
                   Cards can be used immediately upon creation.
                 </Text>
-                <ul role="list" class="flex flex-col gap-1 mt-1">
+                <ul role="list" class="flex flex-col mt-1 gap-1">
                   {
                     tips3.map((text, index) => (
-                      <li class="flex items-center gap-2 text-base-600 font-medium">
+                      <li class="flex items-center font-medium gap-2 text-base-600">
                         <Check size="sm" class="text-base-900" />
                         <Text tag="p" variant="textSM" class="leading-6">
                           {text}
@@ -193,10 +193,10 @@ const tips5 = [
               </div>
             </div>
           </div>
-          <div class="tab-content hidden h-full">
+          <div class="hidden h-full tab-content">
             <div>
               <Code
-                class="p-8 text-xs scrollbar-hide relative h-full rounded-xl shadow-2xl"
+                class="relative h-full p-8 text-xs shadow-2xl scrollbar-hide rounded-xl"
                 code={`fetch("https://api.payments.com/ach-transfer", {
     method: "POST",
     headers: {
@@ -221,14 +221,14 @@ const tips5 = [
                 <Text
                   tag="p"
                   variant="textSM"
-                  class="mt-2 text-base text-base-600 font-medium lg:text-balance"
+                  class="mt-2 text-base font-medium text-base-600 lg:text-balance"
                 >
                   Cards become usable instantly upon creation.
                 </Text>
-                <ul role="list" class="flex flex-col gap-1 mt-1">
+                <ul role="list" class="flex flex-col mt-1 gap-1">
                   {
                     tips4.map((text, index) => (
-                      <li class="flex items-center gap-2 text-base-600 font-medium">
+                      <li class="flex items-center font-medium gap-2 text-base-600">
                         <Check size="sm" class="text-base-900" />
                         <Text tag="p" variant="textSM" class="leading-6">
                           {text}
@@ -240,10 +240,10 @@ const tips5 = [
               </div>
             </div>
           </div>
-          <div class="tab-content hidden h-full">
+          <div class="hidden h-full tab-content">
             <div>
               <Code
-                class="p-8 text-xs scrollbar-hide relative h-full rounded-xl shadow-2xl"
+                class="relative h-full p-8 text-xs shadow-2xl scrollbar-hide rounded-xl"
                 code={`fetch("https://api.payments.com/create-card", {
     method: "POST",
     headers: {
@@ -272,14 +272,14 @@ const tips5 = [
                 <Text
                   tag="p"
                   variant="textSM"
-                  class="mt-2 text-base text-base-600 font-medium lg:text-balance"
+                  class="mt-2 text-base font-medium text-base-600 lg:text-balance"
                 >
                   Our streamlined API allows direct file uploads.
                 </Text>
-                <ul role="list" class="flex flex-col gap-1 mt-1">
+                <ul role="list" class="flex flex-col mt-1 gap-1">
                   {
                     tips5.map((text, index) => (
-                      <li class="flex items-center gap-2 text-base-600 font-medium">
+                      <li class="flex items-center font-medium gap-2 text-base-600">
                         <Check size="sm" class="text-base-900" />
                         <Text tag="p" variant="textSM" class="leading-6">
                           {text}
@@ -291,10 +291,10 @@ const tips5 = [
               </div>
             </div>
           </div>
-          <div class="tab-content hidden h-full">
+          <div class="hidden h-full tab-content">
             <div>
               <Code
-                class="p-8 text-xs scrollbar-hide relative h-full rounded-xl shadow-2xl"
+                class="relative h-full p-8 text-xs shadow-2xl scrollbar-hide rounded-xl"
                 code={`fetch("https://api.payments.com/deposit-check", {
     method: "POST",
     headers: {
@@ -323,14 +323,14 @@ const tips5 = [
                 <Text
                   tag="p"
                   variant="textSM"
-                  class="mt-2 text-base text-base-600 font-medium lg:text-balance"
+                  class="mt-2 text-base font-medium text-base-600 lg:text-balance"
                 >
                   Automatically generate ACH debits.
                 </Text>
-                <ul role="list" class="flex flex-col gap-1 mt-1">
+                <ul role="list" class="flex flex-col mt-1 gap-1">
                   {
                     tips1.map((text, index) => (
-                      <li class="flex items-center gap-2 text-base-600 font-medium">
+                      <li class="flex items-center font-medium gap-2 text-base-600">
                         <Check size="sm" class="text-base-900" />
                         <Text tag="p" variant="textSM" class="leading-6">
                           {text}

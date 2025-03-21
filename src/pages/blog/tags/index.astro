@@ -10,16 +10,16 @@ const pageTitle = "Tag Index";
 <BaseLayout pageTitle={pageTitle}>
   <section>
     <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-12 items-start"
+      class="items-start px-8 py-12 mx-auto max-w-7xl lg:px-16 md:px-12 xl:px-24"
     >
-      <p class="font-semibold text-blue-950 mt-6 text-3xl lg:mx-auto">
+      <p class="mt-6 text-3xl font-semibold text-blue-950 lg:mx-auto">
         All tags
       </p>
       <ol role="list" class="mt-16 space-y-10 sm:space-y-16">
         <li>
           <ol
             role="list"
-            class="mt-8 divide-y divide-base-200 rounded-2xl bg-base-50 py-3 px-6 text-base tracking-tight sm:px-8"
+            class="px-6 py-3 mt-8 text-base tracking-tight divide-y divide-base-200 rounded-2xl bg-base-50 sm:px-8"
           >
             {
               tags.map((tag) => (

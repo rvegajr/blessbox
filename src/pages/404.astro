@@ -1,46 +1,51 @@
 ---
+// Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
 ---
 
 <BaseLayout>
   <section>
-    <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 flex flex-col text-center lg:h-svh justify-center py-12 lg:py-48 items-center"
+    <Wrapper
+      variant="standard"
+      class="flex flex-col items-center justify-center h-full py-24 min-h-dvh"
     >
-      <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
-        >404</span
+      <div
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="max-w-lg p-8 mx-auto shadow bg-base-100 lg:p-20 rounded-2xl"
       >
-
-      <h2
-        class="text-blue-950 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl"
-      >
-        Page not found!
-      </h2>
-
-      <p class="text-base-500 mt-5 lg:text-balance mx-auto max-w-xl">
-        Sorry, but the page you were looking for could not be found. You can
-        return to <a
-          title="link to your page"
-          aria-label="your label"
-          href="/index"
-          class="text-blue-600 hover:text-tangroa-500">our front page</a
-        >, or <a
-          title="link to your page"
-          aria-label="your label"
-          href="/contact"
-          class="text-blue-600 hover:text-tangroa-500">drop us a line</a
-        > if you can't find what you're looking for.
-      </p>
-      <div class="mt-10">
-        <a
-          class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
-          title="link to your page"
-          aria-label="your label"
-          href="/system/overview"
+        <div class="flex">
+          <div
+            data-aos="fade-up"
+            data-aos-duration="1000"
+            class="flex items-center justify-center p-8 bg-white shadow aspect-square rounded-2xl"
+          >
+            <Text
+              tag="h3"
+              variant="displaySM"
+              class="font-bold tracking-tight text-base-800"
+            >
+              404
+            </Text>
+          </div>
+        </div>
+        <Text
+          tag="p"
+          variant="textBase"
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          class="mt-8 text-base text-base-500"
         >
-          Go back home
-        </a>
+          Sorry, but the page you were looking for could not be found. You can
+          return to <a href="/" class="text-teal-700 hover:text-teal-800"
+            >our front page</a
+          >, or <a href="/forms/contact" class="text-teal-700 hover:text-teal-800"
+            >drop us a line</a
+          > if you can't find what you're looking for.
+        </Text>
       </div>
-    </div>
+    </Wrapper>
   </section>
 </BaseLayout>

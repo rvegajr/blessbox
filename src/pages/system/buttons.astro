@@ -13,17 +13,17 @@ import Wrapper from "@/components/fundations/containers/Wrapper.astro";
         Buttons
       </Text>
       <div
-        class="flex flex-col gap-8 mt-2 relative before:absolute after:absolute before:bg-black after:bg-base-200 dark:before:bg-base-50 dark:after:bg-base-50/10 before:top-0 before:left-0 before:h-px before:w-18 after:top-0 after:right-0 after:left-20 after:h-px"
+        class="relative flex flex-col mt-2 gap-8 before:absolute after:absolute before:bg-black after:bg-base-200 dark:before:bg-base-50 dark:after:bg-base-50/10 before:top-0 before:left-0 before:h-px before:w-18 after:top-0 after:right-0 after:left-20 after:h-px"
       >
         <div class="py-4">
           <Text
             tag="p"
             variant="textXS"
-            class="text-base-900 dark:text-white uppercase font-medium"
+            class="font-medium uppercase text-base-900 dark:text-white"
           >
             Default
           </Text>
-          <div class="mt-4 flex flex-wrap gap-4">
+          <div class="flex flex-wrap mt-4 gap-4">
             <Button href="#_" size="xs" variant="default">Default XS</Button>
             <Button href="#_" size="sm" variant="default">Default SM</Button>
             <Button href="#_" size="base" variant="default">Default Base</Button
@@ -37,11 +37,11 @@ import Wrapper from "@/components/fundations/containers/Wrapper.astro";
           <Text
             tag="p"
             variant="textXS"
-            class="text-base-900 dark:text-white uppercase font-medium"
+            class="font-medium uppercase text-base-900 dark:text-white"
           >
             Accent
           </Text>
-          <div class="mt-4 flex flex-wrap gap-4">
+          <div class="flex flex-wrap mt-4 gap-4">
             <Button href="#_" size="xs" variant="accent">Accent XS</Button>
             <Button href="#_" size="sm" variant="accent">Accent SM</Button>
             <Button href="#_" size="base" variant="accent">Accent Base</Button>
@@ -54,11 +54,11 @@ import Wrapper from "@/components/fundations/containers/Wrapper.astro";
           <Text
             tag="p"
             variant="textXS"
-            class="text-base-900 dark:text-white uppercase font-medium"
+            class="font-medium uppercase text-base-900 dark:text-white"
           >
             Muted
           </Text>
-          <div class="mt-4 flex flex-wrap gap-4">
+          <div class="flex flex-wrap mt-4 gap-4">
             <Button href="#_" size="xs" variant="muted">Muted XS</Button>
             <Button href="#_" size="sm" variant="muted">Muted SM</Button>
             <Button href="#_" size="base" variant="muted">Muted Base</Button>

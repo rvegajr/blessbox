@@ -1,43 +1,69 @@
 ---
-const { page, url, description } = Astro.props;
+// Fundations
+import Text from "@/components/fundations/elements/Text.astro";
+
+// Icons
+import User from "@/components/fundations/icons/User.astro";
+import Shield from "@/components/fundations/icons/Shield.astro";
+import Settings from "@/components/fundations/icons/Settings.astro";
+import CreditCard from "@/components/fundations/icons/CreditCard.astro";
+import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
+import InfoCircle from "@/components/fundations/icons/InfoCircle.astro";
+
+// Content
+const { page, url, iconId } = {
+  url: "/helpcenter/" + Astro.props.post.slug,
+  page: Astro.props.post.data.page,
+  iconId: Astro.props.post.data.iconId || "info-circle", // Default icon if not provided
+};
+
+// Map iconId values to actual icon components
+const iconMap = {
+  user: User,
+  settings: Settings,
+  shield: Shield,
+  creditCard: CreditCard,
+};
+
+// Select the correct icon component
+const IconComponent = iconMap[iconId] || InfoCircle; // Default to InfoCircle if not found
 ---
 
-<li>
-  <a title={page} href={url} title={page}>
-    <div class="inline-flex items-start gap-3">
-      <div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="size-5 text-blue-500"
+<div
+  class="outline outline-base-200 relative overflow-hidden group flex h-full flex-col gap-12 lg:gap-24 bg-white rounded-xl shadow-xl px-5 pt-6 pb-[30px] justify-center transition-all z-50 sm:min-h-[250px] md:min-h-[200px] xl:min-h-[250px] cursor-pointer hover:bg-gray-50"
+>
+  <a class="absolute inset-0 z-10" title={page} href={url}></a>
+  <div class="relative flex flex-col justify-between h-full">
+    <div>
+      <div class="flex">
+        <div
+          class="flex p-2 bg-yellow-400 rounded-lg transition-all duration-300 text-base-800 group-hover:bg-base-800 group-hover:text-white"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
-          ></path>
-        </svg>
+          <IconComponent size="base" />
+          <!-- Render dynamic icon here -->
+        </div>
       </div>
       <div>
-        <span class="text-blue-600 hover:text-blue-950 text-xl font-medium">
+        <Text
+          tag="h3"
+          variant="textBase"
+          class="mt-2 font-medium leading-6 text-base-800"
+        >
           {page}
-        </span>
-        <p class="text-base-500 leading-relaxed mt-2 text-base lg:text-balance">
-          {description}
-        </p>
+        </Text>
+        <Text tag="p" variant="textSM" class="text-base-500">{page}</Text>
       </div>
     </div>
-  </a>
-</li>
-<li class="py-4 hidden">
-  <a
-    href={url}
-    title={page}
-    class="text-base-500 hover:text-blue-400 duration-200"
-  >
-    {page}
-  </a>
-</li>
+    <Text
+      tag="p"
+      variant="textSM"
+      class="flex items-center font-medium gap-2 text-base-800"
+    >
+      Learn more
+      <ChevronRight
+        size="sm"
+        class="duration-300 ease-out group-hover:translate-x-2"
+      />
+    </Text>
+  </div>
+</div>

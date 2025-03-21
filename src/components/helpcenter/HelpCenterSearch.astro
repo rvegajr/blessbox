@@ -1,0 +1,153 @@
+---
+import { getCollection } from "astro:content";
+const posts = await Promise.all(
+  (await getCollection("helpcenter")).map(async (post) => ({
+    page: post.data.page,
+    description: post.data.description,
+    slug: post.slug,
+    content: post.body,
+  }))
+);
+---
+
+<div
+  data-aos="fade-down"
+  data-aos-duration="2000"
+  class="max-w-sm mx-auto mt-8 search-container"
+>
+  <div class="relative">
+    <div class="relative">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search posts..."
+        class="block w-full h-10 py-2 pl-10 pr-10 text-sm text-teal-700 border border-transparent rounded-lg shadow-2xl appearance-none duration-300 bg-base-900 outline outline-base-800 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 sm:text-sm shadow-base-950/10 focus:ring-offset-base-900"
+      />
+      <div
+        class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5 text-base-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+      <button
+        id="clearSearch"
+        class="absolute inset-y-0 right-0 items-center hidden pr-3 text-base-400 hover:text-yellow-500 duration-300"
+        aria-label="Clear search"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div
+      id="searchResults"
+      class="absolute left-0 right-0 hidden p-4 mt-4 overflow-y-auto text-left shadow-2xl max-h-55 bg-base-900 shadow-base-950/10 rounded-xl scrollbar-hide focus:outline-none space-y-2 focus:ring-2 focus:ring-teal-500 outline outline-base-800"
+    >
+    </div>
+  </div>
+</div>
+<script is:inline define:vars={{ posts }}>
+  window.addEventListener("load", () => {
+    // Get references to DOM elements
+    const searchInput = document.getElementById("searchInput");
+    const searchResults = document.getElementById("searchResults");
+    const clearSearch = document.getElementById("clearSearch");
+    // Clear the input field on page load to prevent old search values from persisting
+    searchInput.value = "";
+    // Initialize Fuse.js for fuzzy search functionality
+    const fuse = new Fuse(posts, {
+      keys: ["page", "description", "content"], // Searchable fields
+      threshold: 0.3, // Determines search sensitivity (lower = stricter match)
+      includeMatches: true, // Includes matching text segments in results
+    });
+    // Function to display search results
+    function renderResults(results) {
+      // If input is empty, hide results and clear button
+      if (!searchInput.value.trim()) {
+        searchResults.classList.add("hidden");
+        clearSearch.classList.add("hidden");
+        return;
+      }
+      // Show the clear search button
+      clearSearch.classList.remove("hidden");
+      // If no results found, display a message
+      if (results.length === 0) {
+        searchResults.innerHTML = `
+        <div class="px-4 py-3 text-xs text-teal-500">
+          No results found
+        </div>
+      `;
+        searchResults.classList.remove("hidden");
+        return;
+      }
+      // Generate search results and display them
+      searchResults.innerHTML = results
+
+        .map(
+          (result) => `
+       <a 
+  href="/helpcenter/${result.item.slug}"
+  class="block px-4 py-3 rounded-lg hover:bg-white/5 focus:outline-none focus:ring-2 focus:ring-teal-500 hover:shadow-2xl shadow-base-950/10 duration-300 "
+>
+  <h3 class="font-medium text-white">${result.item.page}</h3>
+  <p class="mt-2 text-xs text-base-500">${result.item.description}</p>
+</a>
+
+      `
+        )
+        .join(""); // Convert array of HTML into a single string
+      // Make the search results container visible
+      searchResults.classList.remove("hidden");
+    }
+    // Listen for input in the search field
+    searchInput.addEventListener("input", (e) => {
+      const value = e.target.value; // Get input value
+      const results = value.trim() ? fuse.search(value) : []; // Perform search if input isn't empty
+      renderResults(results); // Update results display
+    });
+    // Clear search input when clicking the "clear" button
+    clearSearch.addEventListener("click", () => {
+      searchInput.value = ""; // Reset input field
+      searchResults.classList.add("hidden"); // Hide results
+      clearSearch.classList.add("hidden"); // Hide clear button
+      searchInput.focus(); // Keep focus on the input field
+    });
+    // Hide search results when clicking outside the search container
+    document.addEventListener("click", (e) => {
+      if (
+        !searchInput.contains(e.target) && // Click is not on input
+        !searchResults.contains(e.target) && // Click is not on results
+        !clearSearch.contains(e.target) // Click is not on clear button
+      ) {
+        searchResults.classList.add("hidden"); // Hide results
+      }
+    });
+    // Close search results when pressing the "Escape" key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !searchResults.classList.contains("hidden")) {
+        searchResults.classList.add("hidden"); // Hide results
+        searchInput.blur(); // Remove focus from input field
+      }
+    });
+  });
+</script>
