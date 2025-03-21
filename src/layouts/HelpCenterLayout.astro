@@ -1,38 +1,99 @@
 ---
-import BaseLayout from "./BaseLayout.astro";
+// Fundations
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import User from "@/components/fundations/icons/User.astro";
+import Shield from "@/components/fundations/icons/Shield.astro";
+import Settings from "@/components/fundations/icons/Settings.astro";
+import CreditCard from "@/components/fundations/icons/CreditCard.astro";
+import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
+import InfoCircle from "@/components/fundations/icons/InfoCircle.astro";
+
+// Content
 const { frontmatter } = Astro.props;
+
+// Icon Mapping
+const icons = {
+  user: User,
+  settings: Settings,
+  shield: Shield,
+  creditCard: CreditCard,
+};
+
+// Get the correct icon component based on iconId
+const IconComponent = icons[frontmatter.iconId] || InfoCircle; // Default to InfoCircle if no match
 ---
 
 <BaseLayout>
   <section>
-    <div class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24">
-      <div class="max-w-3xl">
-        <p
-          class="text-blue-950 font-semibold mt-6 text-4xl tracking-tight lg:text-balance"
+    <Wrapper variant="narrow" class="py-24">
+      <!-- Last Updated -->
+      <Text
+        variant="textXS"
+        class="flex items-center font-medium uppercase text-base-600 gap-2"
+      >
+        <IconComponent size="sm" class="text-yellow-600" />
+        <span>
+          <time datetime="{frontmatter.lastUpdated}">
+            {
+              new Date(frontmatter.lastUpdated).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+              })
+            }
+          </time>
+        </span>
+      </Text>
+
+      <!-- Page Icon and Title -->
+      <div class="flex items-center mt-8 gap-4">
+        <Text
+          tag="h3"
+          variant="displayMD"
+          class="font-semibold tracking-tight text-base-800"
         >
-          {frontmatter.description}
-        </p>
-
-        <div class="mt-24">
-          <div class="prose-styles"><slot /></div>
-          <div class="max-w-xl mt-12 border-t pb-5 border-base-200">
-            <div class="items-center inline-flex rounded-md py-4 w-full">
-              <p class="text-blue-950">Did this answer your question? ?</p>
-
-              <div class="items-center inline-flex gap-3 ml-auto">
-                <button
-                  class="items-center flex bg-base-50 hover:text-blue-600 h-8 justify-center rounded-lg text-base-500 w-12"
-                  >Yes
-                </button>
-                <button
-                  class="items-center flex bg-base-50 hover:text-blue-600 h-8 justify-center rounded-lg text-base-500 w-12"
-                  >No</button
-                >
-              </div>
-            </div>
-          </div>
-        </div>
+          {frontmatter.page}
+        </Text>
       </div>
-    </div>
+
+      <!-- Description -->
+      <Text variant="textMD" class="mt-4 text-base-600">
+        {frontmatter.description}
+      </Text>
+
+      <!-- FAQ Section -->
+      <Wrapper variant="prose" class="py-12 mt-12 border-t border-base-200">
+        <slot />
+      </Wrapper>
+
+      <!-- Frequently Asked Questions -->
+      <div class="pt-12 border-t border-base-200">
+        <Text tag="h4" variant="displaySM" class="font-semibold text-base-800"
+          >Frequently Asked Questions</Text
+        >
+        <ul class="mt-4 list-none space-y-4">
+          {
+            frontmatter.faq.map((item) => (
+              <li class="flex">
+                <div>
+                  <Text
+                    tag="h5"
+                    variant="textBase"
+                    class="font-medium text-base-800"
+                  >
+                    {item.question}
+                  </Text>
+                  <Text variant="textMD" class="mt-2 text-base-500">
+                    {item.answer}
+                  </Text>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </Wrapper>
   </section>
 </BaseLayout>

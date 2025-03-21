@@ -3,6 +3,7 @@
 import { Image } from "astro:assets";
 // Fundations
 import Text from "@/components/fundations/elements/Text.astro";
+import { ACTION_ERROR_CODES } from "astro:actions";
 
 const { customer, logo, url, ctaTitle, testimonial, bgColor } = {
   url: "/customers/" + Astro.props.post.slug,
@@ -15,31 +16,55 @@ const { customer, logo, url, ctaTitle, testimonial, bgColor } = {
 };
 ---
 
+
+
+
 <div
   data-aos="fade-up"
   data-aos-duration="1500"
-  class={`${bgColor} rounded-2xl p-8 relative overflow-hidden`}
+  class="relative pt-8 overflow-hidden bg-white shadow lg:pt-12 rounded-3xl"
 >
   <a href={url} title={customer} aria-label={customer} class="absolute inset-0"
   ></a>
-  <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-    <Text
-      tag="h3"
-      variant="displayMD"
-      class="font-semibold tracking-tight mt-8 text-base-800"
-    >
-      {ctaTitle}
-    </Text>
-    <div>
-      <Text tag="p" variant="textXL" class="text-base-800">
-        {testimonial}
+  <div class="grid grid-cols-1 gap-8  lg:grid-cols-2 realtive">
+    <div class="p-8 pt-0 lg:p-12 lg:pt-0">
+      <Text
+        class="span"
+        variant="textXS"
+        data-aos="fade-down"
+        data-aos-duration="1000"
+        class="flex items-center font-medium uppercase text-base-600 gap-2"
+      >
+       {customer}
       </Text>
+      <Text
+        tag="h3"
+        variant="displaySM"
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="mt-8 font-semibold tracking-tight text-base-800 md:text-balance"
+      >
+      {ctaTitle}
+      </Text>
+      <Text
+        tag="p"
+        variant="textBase"
+        data-aos="fade-up"
+        data-aos-duration="1500"
+        class="mt-2 text-base text-base-400"
+      >
+      {testimonial}
+      </Text>
+    </div>
+   
+    <div class={`${bgColor} flex h-full  size-full aspect-16/8 shrink-0 items-center justify-center rounded-t-2xl  shadow-lg lg:rounded-tr-none`}>
+     
       <Image
+        class="h-20 p-4"
         src={logo}
         alt={customer}
-        width={300}
-        height={300}
-        class="size-full"
+        width={600}
+        height={600}
       />
     </div>
   </div>

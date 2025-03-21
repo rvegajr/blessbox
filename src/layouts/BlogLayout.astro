@@ -6,23 +6,23 @@ const { frontmatter } = Astro.props;
 <BaseLayout>
   <section>
     <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-start"
+      class="items-start px-8 py-24 mx-auto max-w-7xl lg:px-16 md:px-12 xl:px-24"
     >
       <div>
         <div class="items-center grid gap-12">
           <div>
             <h2
-              class="text-blue-950 font-semibold text-3xl lg:text-7xl tracking-tight lg:text-balance"
+              class="text-3xl font-semibold tracking-tight text-blue-950 lg:text-7xl lg:text-balance"
             >
               {frontmatter.title}
-            </h2><p class="text-xl text-base-500 mt-12 lg:text-balance">
+            </h2><p class="mt-12 text-xl text-base-500 lg:text-balance">
               {frontmatter.description}
             </p>
             <div class="mt-6">
               <div class="flex items-center">
                 <div>
                   <img
-                    class="inline-block h-9 w-9 rounded-full"
+                    class="inline-block rounded-full h-9 w-9"
                     src={frontmatter.image.url}
                     alt={frontmatter.image.alt}
                   />
@@ -33,7 +33,7 @@ const { frontmatter } = Astro.props;
                   >
                     {frontmatter.author}
                   </p>
-                  <p class="text-xs text-base-500 uppercase">
+                  <p class="text-xs uppercase text-base-500">
                     {frontmatter.pubDate.toString().slice(0, 10)}
                   </p>
                 </div>
@@ -45,7 +45,7 @@ const { frontmatter } = Astro.props;
     </div>
   </section>
   <section>
-    <div class="px-8 max-w-7xl lg:px-24 mx-auto py-12">
+    <div class="px-8 py-12 mx-auto max-w-7xl lg:px-24">
       <div
         class="max-w-[40rem] prose-lg hover:prose-a:text-blue-500 prose prose-a:font-semibold prose-a:text-blue-300 prose-blockquote:text-blue-600 prose-h3:text-blue-950 text-base-500"
       >

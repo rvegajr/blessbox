@@ -66,7 +66,7 @@ const data = [
         variant="textXS"
         data-aos="fade-down"
         data-aos-duration="1000"
-        class="uppercase text-base-600 font-medium flex items-center gap-2"
+        class="flex items-center font-medium uppercase text-base-600 gap-2"
       >
         <Tools size="sm" class="text-yellow-600" />
         Built for modern builders
@@ -76,7 +76,7 @@ const data = [
         variant="displayMD"
         data-aos="fade-up"
         data-aos-duration="1000"
-        class="font-semibold tracking-tight mt-8 text-base-800"
+        class="mt-8 font-semibold tracking-tight text-base-800"
       >
         Banking without barriers
       </Text>
@@ -124,15 +124,15 @@ const data = [
       </div>
     </div>
     <dl
-      class="grid gap-px overflow-hidden bg-gray-200 border mt-12 border-gray-200 shadow-xl rounded-xl sm:grid-cols-2 xl:grid-cols-4"
+      class="mt-12 overflow-hidden shadow-xl grid gap-px bg-base-200 outline outline-base-200 rounded-xl sm:grid-cols-2 xl:grid-cols-4"
     >
       {
         data.map((section) => (
-          <div class="group flex h-full justify-between flex-col gap-12 lg:gap-24 bg-white group px-5 group relative pt-6 pb-[30px]  no-underline transition-all sm:min-h-[250px] md:min-h-[200px] xl:min-h-[250px] cursor-pointer hover:bg-gray-50">
+          <div class="group flex h-full justify-between flex-col gap-12 lg:gap-24 bg-white group px-5 group relative pt-6 pb-[30px]  transition-all  md:min-h-[150px] cursor-pointer hover:bg-base-50">
             <a class="absolute inset-0" href="#_" />
             <div>
               <div class="flex ">
-                <div class="flex p-2 transition-all duration-300 rounded-lg bg-yellow-400  text-base-800 group-hover:bg-base-800 group-hover:text-white">
+                <div class="flex p-2 bg-yellow-400 rounded-lg transition-all duration-300  text-base-800 group-hover:bg-base-800 group-hover:text-white">
                   {section.icon === "Filters" && <Filters size="base" />}
                   {section.icon === "WaveSquare" && <WaveSquare size="base" />}
                   {section.icon === "ArrowIteration" && (
@@ -165,7 +165,7 @@ const data = [
             <Text
               tag="p"
               variant="textSM"
-              class="flex items-center gap-2 font-medium text-base-800"
+              class="flex items-center font-medium gap-2 text-base-800"
             >
               Learn more
               <ChevronRight

@@ -2,6 +2,7 @@
 // Assets
 import { Code } from "astro:components";
 import LogoCloud from "@/components/assets/LogoCloud.astro";
+import VisualAsset1 from "@/components/assets/VisualAsset1.astro";
 // Fundations
 import Text from "@/components/fundations/elements/Text.astro";
 import Wrapper from "@/components/fundations/containers/Wrapper.astro";
@@ -10,12 +11,12 @@ import Wrapper from "@/components/fundations/containers/Wrapper.astro";
 <section>
   <Wrapper variant="standard" class="pt-24 pb-12">
     <div
-      class="z-40 grid items-start grid-cols-1 gap-12 -mt-40 lg:-mt-80 lg:grid-cols-2 lg:gap-24"
+      class="z-40 items-start -mt-40 grid grid-cols-1 gap-12 lg:-mt-80 lg:grid-cols-2 lg:gap-24"
     >
       <Code
         data-aos="fade-up"
         data-aos-duration="2000"
-        class="h-full z-40 p-8 text-xs scrollbar-hide rounded-xl"
+        class="z-40 h-full p-8 text-xs scrollbar-hide rounded-xl"
         code={`await payments.transfer.create({
 amount: 25075,
 currency: "USD",
@@ -37,85 +38,15 @@ status: "Pending",
         lang="js"
         theme="css-variables"
       />
-      <div
+      <VisualAsset1
         data-aos="fade-up"
         data-aos-duration="2500"
-        class="z-40 h-full rounded-xl overflow-hidden bg-white p-8 shadow outline-1 outline-base-200"
-      >
-        <Text tag="p" variant="textXS" class="font-medium text-base-500"
-          >Processed</Text
-        >
-        <Text tag="p" variant="textXL" class="mt-4 font-semibold text-base-800"
-          >$275.50</Text
-        >
-        <div class="relative mt-8">
-          <div
-            class="absolute inset-0 top-0 left-0 w-full h-[0.080rem] bg-base-200 rounded-full"
-          >
-          </div>
-
-          <!-- Left Ball -->
-          <div
-            class="absolute left-0 flex items-center -translate-y-1/2 top-1/2"
-          >
-            <div class="rounded-full bg-base-800 size-4"></div>
-          </div>
-
-          <!-- Right Ball -->
-          <div
-            class="absolute right-0 flex items-center -translate-y-1/2 top-1/2"
-          >
-            <div class="bg-blue-600 rounded-full size-4"></div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 mt-20">
-          <div>
-            <Text tag="p" variant="textXS" class="font-medium text-base-500"
-              >Source</Text
-            >
-            <Text tag="h4" variant="textSM" class="font-semibold text-base-800"
-              >Business account</Text
-            >
-            <Text tag="p" variant="textXS" class="font-medium text-base-500"
-              >Stripe • 785214369</Text
-            >
-          </div>
-          <div>
-            <Text tag="p" variant="textXS" class="font-medium text-base-500"
-              >Destination</Text
-            >
-            <Text tag="h4" variant="textSM" class="font-semibold text-base-800"
-              >Emma Martinez</Text
-            >
-            <Text tag="p" variant="textXS" class="font-medium text-base-500"
-              >Chase Bank • 321654987</Text
-            >
-          </div>
-        </div>
-        <div class="h-px my-6 bg-base-200"></div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <Text tag="h4" variant="textSM" class="font-semibold text-base-800"
-              >Description</Text
-            >
-            <Text tag="p" variant="textXS" class="font-medium text-base-500"
-              >Project A-78542</Text
-            >
-          </div>
-          <div>
-            <Text tag="h4" variant="textSM" class="font-semibold text-base-800"
-              >Company name</Text
-            >
-            <Text tag="p" variant="textXS" class="font-medium text-base-500"
-              >Horizon Technologies</Text
-            >
-          </div>
-        </div>
-      </div>
+        class="z-40 h-full p-8 overflow-hidden bg-white shadow rounded-xl outline-1 outline-base-200"
+      />
+    
     </div>
     <LogoCloud
-      class="grid grid-cols-2 mt-12 lg:-mx-8 sm:grid-cols-3 md:grid-cols-6 lg:mt-24"
+      class="mt-12 grid grid-cols-2 lg:-mx-8 sm:grid-cols-3 md:grid-cols-6 lg:mt-24"
     />
   </Wrapper>
 </section>

@@ -31,7 +31,6 @@ const data = [
     text: "Optimize workflows to make compliance reporting effortless.",
   },
 ];
-
 ---
 
 <section>
@@ -43,7 +42,7 @@ const data = [
           variant="textXS"
           data-aos="fade-down"
           data-aos-duration="1000"
-          class="uppercase text-base-600 font-medium flex items-center gap-2"
+          class="flex items-center gap-2 font-medium uppercase text-base-600"
         >
           <ApiApp size="sm" class="text-yellow-600" />
           Tailored Compliance
@@ -53,7 +52,7 @@ const data = [
           variant="displayMD"
           data-aos="fade-up"
           data-aos-duration="1000"
-          class="font-semibold tracking-tight mt-8 text-base-800 md:text-balance"
+          class="mt-8 font-semibold tracking-tight text-base-800 md:text-balance"
         >
           Take control of your customer relationships
         </Text>
@@ -70,33 +69,31 @@ const data = [
         </Text>
       </div>
       <dl
-          data-aos="fade-up"
-          data-aos-duration="2000"
-          class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2 gap-y-8 "
-        >
-          {
-            data.map((section) => (
-              <div>
-                <dt class="flex items-center gap-2 text-base-800">
-                  {section.icon === "Settings" && <Settings size="base" />}
-                  {section.icon === "Tools" && <Tools size="base" />}
-                  {section.icon === "Search" && (
-                    <Search size="base" />
-                  )}
-                  {section.icon === "User" && <User size="base" />}
-                  <Text tag="p" variant="textSM" class="font-medium leading-6 ">
-                    {section.category}
-                  </Text>
-                </dt>
-                <dd class="mt-2">
-                  <Text tag="p" variant="textSM" class=" text-base-500">
-                    {section.text}
-                  </Text>
-                </dd>
-              </div>
-            ))
-          }
-        </dl>
+        data-aos="fade-up"
+        data-aos-duration="2000"
+        class="grid grid-cols-1 gap-2 mt-8 sm:grid-cols-2 gap-y-8"
+      >
+        {
+          data.map((section) => (
+            <div>
+              <dt class="flex items-center gap-2 text-base-800">
+                {section.icon === "Settings" && <Settings size="base" />}
+                {section.icon === "Tools" && <Tools size="base" />}
+                {section.icon === "Search" && <Search size="base" />}
+                {section.icon === "User" && <User size="base" />}
+                <Text tag="p" variant="textSM" class="font-medium leading-6 ">
+                  {section.category}
+                </Text>
+              </dt>
+              <dd class="mt-2">
+                <Text tag="p" variant="textSM" class=" text-base-500">
+                  {section.text}
+                </Text>
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </Wrapper>
 </section>

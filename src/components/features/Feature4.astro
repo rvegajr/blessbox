@@ -141,7 +141,7 @@ const allCustomers = await getCollection("customers");
       </div>
       <div class="relative">
         <Code
-          class="p-8 text-xs scrollbar-hide rounded-xl relative lg:z-10"
+          class="relative p-8 text-xs scrollbar-hide rounded-xl lg:z-10"
           code={`await payments.transfer.create({
     amount: 25075,
     currency: "USD",
@@ -166,7 +166,7 @@ const allCustomers = await getCollection("customers");
         <div
           data-aos="fade-up"
           data-aos-duration="1000"
-          class="lg:z-50 lg:absolute lg:top-32 hover: hidden lg:block lg:left-14 w-full rounded-xl divide-y divide-base-200 overflow-hidden bg-white outline-1 outline-base-200 shadow-2xl"
+          class="hidden w-full overflow-hidden bg-white shadow-2xl lg:z-50 lg:absolute lg:top-32 lg:block lg:left-14 rounded-xl divide-y divide-base-200 outline-1 outline-base-200"
         >
           <div class="px-8 py-4">
             <Text tag="p" variant="textXS" class="font-medium text-base-500"
@@ -178,14 +178,14 @@ const allCustomers = await getCollection("customers");
               class="mt-4 font-semibold text-base-800">$275.50</Text
             >
           </div>
-          <ul role="list" class="space-y-3 p-8 pb-14">
+          <ul role="list" class="p-8 space-y-3 pb-14">
             {
               timelineSteps.map((step, index) => (
                 <li class="relative flex gap-x-2">
-                  <div class="absolute top-0 -bottom-6 left-0 flex w-6 justify-center">
+                  <div class="absolute top-0 left-0 flex justify-center w-6 -bottom-6">
                     <div class="w-px bg-base-300" />
                   </div>
-                  <div class="relative flex size-6 flex-none items-center justify-center bg-white">
+                  <div class="relative flex items-center justify-center flex-none bg-white size-6">
                     <div class={`size-1.5 rounded-full ${step.color} ring`} />
                   </div>
                   <Text

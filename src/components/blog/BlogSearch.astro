@@ -15,12 +15,12 @@ const posts = await Promise.all(
   <button
     type="button"
     id="searchButton"
-    class="p-2 text-base-600 hover:text-base-900 focus:outline-none cursor-pointer"
+    class="p-2 cursor-pointer text-base-600 hover:text-base-900 focus:outline-none"
     aria-label="Search posts"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      class="h-6 w-6"
+      class="w-6 h-6"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -35,7 +35,7 @@ const posts = await Promise.all(
 
   <div
     id="searchModal"
-    class="fixed inset-0 z-50 overflow-y-auto hidden"
+    class="fixed inset-0 z-50 hidden overflow-y-auto"
     role="dialog"
     aria-modal="true"
   >
@@ -47,18 +47,18 @@ const posts = await Promise.all(
       </div>
 
       <div
-        class="inline-block w-full max-w-2xl p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-lg"
+        class="inline-block w-full max-w-2xl p-6 my-8 text-left align-middle bg-white rounded-lg shadow-xl transition-all transform"
       >
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-medium text-base-900">Search Posts</h3>
           <button
             type="button"
             id="closeSearch"
-            class="text-base-400 hover:text-base-500 cursor-pointer"
+            class="cursor-pointer text-base-400 hover:text-base-500"
             aria-label="Close search"
           >
             <svg
-              class="h-6 w-6"
+              class="w-6 h-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -79,7 +79,7 @@ const posts = await Promise.all(
           class="w-full px-4 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
 
-        <div id="searchResults" class="mt-4 max-h-96 overflow-y-auto"></div>
+        <div id="searchResults" class="mt-4 overflow-y-auto max-h-96"></div>
       </div>
     </div>
   </div>
@@ -87,6 +87,7 @@ const posts = await Promise.all(
 
 <script is:inline define:vars={{ posts }}>
   window.addEventListener("load", () => {
+    // Get references to necessary DOM elements
     const searchButton = document.getElementById("searchButton");
     const searchModal = document.getElementById("searchModal");
     const modalOverlay = document.getElementById("modalOverlay");
@@ -94,81 +95,92 @@ const posts = await Promise.all(
     const searchResults = document.getElementById("searchResults");
     const closeSearch = document.getElementById("closeSearch");
 
+    // Clear the search input field on page load to prevent old values from persisting
+    searchInput.value = "";
+
+    // Initialize Fuse.js for fuzzy searching
     const fuse = new Fuse(posts, {
-      keys: ["title", "description", "content"],
-      threshold: 0.3,
-      includeMatches: true,
+      keys: ["title", "description", "content"], // Fields to search in
+      threshold: 0.3, // Determines search sensitivity (lower = stricter match)
+      includeMatches: true, // Includes matched text segments in results
     });
 
+    // Function to open the search modal
     function openSearch(e) {
       e.preventDefault();
       e.stopPropagation();
-      searchModal.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-      setTimeout(() => searchInput.focus(), 100);
+      searchModal.classList.remove("hidden"); // Show the modal
+      document.body.style.overflow = "hidden"; // Prevent scrolling in the background
+      setTimeout(() => searchInput.focus(), 100); // Delay focus to ensure input is ready
     }
 
+    // Function to close the search modal
     function closeSearchModal(e) {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
       }
-      searchModal.classList.add("hidden");
-      document.body.style.overflow = "";
-      searchInput.value = "";
-      searchResults.innerHTML = "";
+      searchModal.classList.add("hidden"); // Hide the modal
+      document.body.style.overflow = ""; // Restore scrolling functionality
+      searchInput.value = ""; // Clear search input when modal is closed
+      searchResults.innerHTML = ""; // Clear search results
     }
 
+    // Function to display search results
     function renderResults(results) {
+      // If search input is empty, clear results
       if (!searchInput.value.trim()) {
         searchResults.innerHTML = "";
         return;
       }
 
+      // If no results are found, display a message
       if (results.length === 0) {
         searchResults.innerHTML = `
-          <div class="px-4 py-3 text-sm text-base-500">
-            No results found
-          </div>
-        `;
+                <div class="px-4 py-3 text-sm text-base-500">
+                    No results found
+                </div>
+            `;
         return;
       }
 
+      // Generate HTML for search results and display them
       searchResults.innerHTML = results
-        .slice(0, 5)
+        .slice(0, 5) // Limit results to top 5 matches
         .map(
           (result) => `
-          <a 
-            href="/blog/posts/${result.item.slug}"
-            class="block px-4 py-3 hover:bg-base-100 rounded-md"
-          >
-            <div class="font-medium text-base-900">${result.item.title}</div>
-            <div class="text-sm text-base-500">${result.item.description}</div>
-          </a>
-        `
+                <a 
+                    href="/blog/posts/${result.item.slug}"  // Link to the article page
+                    class="block px-4 py-3 hover:bg-base-100 rounded-md"
+                >
+                    <div class="font-medium text-base-900">${result.item.title}</div>
+                    <div class="text-sm text-base-500">${result.item.description}</div>
+                </a>
+            `
         )
-        .join("");
+        .join(""); // Convert array of HTML into a single string
     }
 
-    // Add both click and touch events for search button
+    // Attach event listeners for opening the search modal (both click and touch)
     searchButton.addEventListener("click", openSearch);
     searchButton.addEventListener("touchend", openSearch);
 
-    // Add both click and touch events for close button
+    // Attach event listeners for closing the search modal (both click and touch)
     closeSearch.addEventListener("click", closeSearchModal);
     closeSearch.addEventListener("touchend", closeSearchModal);
 
-    // Close modal when clicking outside
+    // Close the modal when clicking outside the search box
     modalOverlay.addEventListener("click", closeSearchModal);
     modalOverlay.addEventListener("touchend", closeSearchModal);
 
+    // Perform search when input changes
     searchInput.addEventListener("input", (e) => {
-      const value = e.target.value;
-      const results = value.trim() ? fuse.search(value) : [];
-      renderResults(results);
+      const value = e.target.value; // Get the input value
+      const results = value.trim() ? fuse.search(value) : []; // Perform search if input isn't empty
+      renderResults(results); // Update the displayed results
     });
 
-    // Close on escape key
+    // Close the search modal when pressing the "Escape" key
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !searchModal.classList.contains("hidden")) {
         closeSearchModal();

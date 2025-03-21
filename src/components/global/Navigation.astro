@@ -1,37 +1,38 @@
 ---
 // Fundations
 import Logo from "@/components/assets/Logo.astro";
+import Link from "@/components/fundations/elements/Link.astro";
 import Text from "@/components/fundations/elements/Text.astro";
 import Wrapper from "@/components/fundations/containers/Wrapper.astro";
 ---
 
-<!-- <header class="fixed w-full z-50">
+ <header class="fixed z-50 w-full">
   <Wrapper variant="standard" class="relative overflow-hidden">
-    <div class="flex justify-between items-center py-4">
+    <div class="flex items-center justify-between py-4">
       <div class="relative">
-        <a href="/"><Logo class="h-4" /></a>
+        <a href="/"><Logo class="h-4 text-white" /></a>
       </div>
       <div
-        class="flex gap-4 text-xs rounded-full p-1 hover:cursor-pointer transition-all"
+        class="flex items-center p-1 text-xs rounded-full gap-4 hover:cursor-pointer transition-all"
       >
         <Text
           tag="a"
           variant="textXS"
           href="/system/overview"
-          class="transition-all text-base-900"
+          class="text-white transition-all"
         >
           Overview
         </Text>
-        <Text
-          tag="a"
-          variant="textXS"
+        <Link
+          size="xs"
+          variant="muted"
           href="https://buy.polar.sh/polar_cl_i_IYoyQu3ahT_zZQ1CN1uaDgu7ZBdBGVpLThHkMDt0s"
           class="transition-all text-base-600"
         >
           Buy S:Bianco
-        </Text>
+        </Link>
         
       </div>
     </div>
   </Wrapper>
-</header> -->
+</header>

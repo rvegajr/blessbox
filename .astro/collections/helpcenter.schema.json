@@ -4,27 +4,45 @@
     "helpcenter": {
       "type": "object",
       "properties": {
+        "iconId": {
+          "type": "string"
+        },
         "page": {
           "type": "string"
         },
         "description": {
           "type": "string"
         },
-        "icon": {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
+        "category": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "lastUpdated": {
+          "type": "string"
+        },
+        "faq": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": {
+                "type": "string"
+              },
+              "answer": {
+                "type": "string"
+              }
             },
-            "alt": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "url",
-            "alt"
-          ],
-          "additionalProperties": false
+            "required": [
+              "question",
+              "answer"
+            ],
+            "additionalProperties": false
+          }
         },
         "$schema": {
           "type": "string"
@@ -32,8 +50,7 @@
       },
       "required": [
         "page",
-        "description",
-        "icon"
+        "description"
       ],
       "additionalProperties": false
     }
