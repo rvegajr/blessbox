@@ -1,50 +1,79 @@
 ---
+// Assets
+import { Code } from "astro:components";
+import LimeStripe from "@/components/assets/LimeStripe.astro";
 // Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Link from "@/components/fundations/elements/Link.astro";
 import Text from "@/components/fundations/elements/Text.astro";
 import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import ChevronLeft from "@/components/fundations/icons/ChevronLeft.astro";
+import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
 ---
 
 <BaseLayout>
-  <section>
+  <section class="relative overflow-hidden">
     <Wrapper
       variant="standard"
-      class="flex flex-col items-center justify-center h-full py-24 min-h-dvh"
+      class="relative py-32 overflow-hidden h-dvh flex flex-col items-center justify-center"
     >
-      <div
-        data-aos="fade-up"
-        data-aos-duration="1000"
-        class="max-w-lg p-8 mx-auto shadow bg-base-100 lg:p-20 rounded-2xl"
-      >
-        <div class="flex">
-          <div
-            data-aos="fade-up"
-            data-aos-duration="1000"
-            class="flex items-center justify-center p-8 bg-white shadow aspect-square rounded-2xl"
-          >
-            <Text
-              tag="h3"
-              variant="displaySM"
-              class="font-bold tracking-tight text-base-800"
-            >
-              404
-            </Text>
-          </div>
-        </div>
+      <LimeStripe
+        class="absolute inset-0 size-full pointer-events-none scale-180"
+      />
+      <div class="relative text-center lg:w-1/2 mx-auto">
         <Text
-          tag="p"
-          variant="textBase"
+          tag="h1"
+          variant="display2XL"
           data-aos="fade-up"
           data-aos-duration="1000"
-          class="mt-8 text-base text-base-500"
+          class="font-semibold tracking-tighter text-base-800 lg:text-balance"
+        >
+          Erro 404
+        </Text>
+        <Text
+          tag="p"
+          variant="textLG"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          class="mt-4 font-medium text-base-800 md:text-balance"
         >
           Sorry, but the page you were looking for could not be found. You can
-          return to <a href="/" class="text-teal-700 hover:text-teal-800"
-            >our front page</a
-          >, or <a href="/forms/contact" class="text-teal-700 hover:text-teal-800"
-            >drop us a line</a
-          > if you can't find what you're looking for.
+          return to our front page, or drop us a line if you can't find what
+          you're looking for.
         </Text>
+        <div
+          data-aos="fade-up"
+          data-aos-duration="2000"
+          class="flex flex-col items-center mt-12 gap-2 justify-center max-w-xs mx-auto"
+        >
+          <Link
+            size="base"
+            variant="default"
+            href="/forms/sign-up"
+            gap="xs"
+            class="group w-full"
+          >
+            <ChevronLeft
+              size="sm"
+              class="duration-300 easy-out-in group-hover:translate-x-2"
+            />
+            Go to front page
+          </Link>
+          <Link
+            size="base"
+            variant="muted"
+            href="/forms/contact"
+            gap="xs"
+            class="group w-full"
+          >
+            See all pages
+            <ChevronRight
+              size="sm"
+              class="duration-300 easy-out-in group-hover:translate-x-2"
+            />
+          </Link>
+        </div>
       </div>
     </Wrapper>
   </section>

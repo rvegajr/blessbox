@@ -1,4 +1,4 @@
-# Spazio Bianco
+# Buio
 
 ## Template Integrations
 - Tailwind CSS v4  
@@ -38,26 +38,24 @@ All commands are run from the root of the project, from a terminal:
 
 Learn more - Explore more through Astro's official [documentation](https://docs.astro.build).
 
-------
-Updated on 30th December 2024
+
+
+----------------------------
+Updated on 23th March 2025
 
 ## This update includes:
-- Added Tailwind CSS v4 Beta
-On this version, Tailwind CSS is now beta version from Tailwind CSS V4, this means that there's no `tailwind.config.mjs` file anymore. From now on, all style will be added on the `css` file. You can find the styles on the `src/styles/global.css` file.
-- Astro V5
-This update includes Astro V5, which is a major update that includes several new features and improvements.
+- Added Fuse Js Search on: Blog, Help Center, Jobs and Integrations.
+- AOS Animation on
+- Full redesign
 
-
-- Astro SEO by @astrolib/seo
-This update includes the integration of the Astro SEO package by @astrolib/seo, is an integration that makes managing your SEO easier in Astro projects. It is fully based on the excellent Next SEO library
-
-## On the next update
+On this version, Tailwind CSS is now V4, this means that there's no `tailwind.config.mjs` file anymore. 
+From now on, all style will be added on the `css` file. You can find the styles on the `src/styles/global.css` file.
 
 - Added Image component from Astro
 The Astro Image component is coming back to the themes
 
 - Reusable components
-This template now includes reusable components, such as the `Text` component:
+This template now includes reusable components, such as the `Text`, `Button`, `Link` and `Wrapper` components.
 
 - Text Component  
 A versatile and reusable component for handling text across your project, ensuring consistency and easy customization.  
@@ -100,6 +98,19 @@ Your content goes here
 </Wrapper>
 ```
 -----
+------
+Updated on 30th December 2024
+
+## This update includes:
+- Added Tailwind CSS v4
+On this version, Tailwind CSS is now beta version from Tailwind CSS V4, this means that there's no `tailwind.config.mjs` file anymore. From now on, all style will be added on the `css` file. You can find the styles on the `src/styles/global.css` file.
+
+- Astro V5
+This update includes Astro V5, which is a major update that includes several new features and improvements.
+
+
+- Astro SEO by @astrolib/seo
+This update includes the integration of the Astro SEO package by @astrolib/seo, is an integration that makes managing your SEO easier in Astro projects. It is fully based on the excellent Next SEO library
 
 ### [Support](https://lexingtonthemes.com/legal/support/)
   ### [Documentation](https://lexingtonthemes.com/documentation/)

@@ -6,14 +6,15 @@ import Text from "@/components/fundations/elements/Text.astro";
 import User from "@/components/fundations/icons/User.astro";
 import Shield from "@/components/fundations/icons/Shield.astro";
 import Settings from "@/components/fundations/icons/Settings.astro";
+import InfoCircle from "@/components/fundations/icons/InfoCircle.astro";
 import CreditCard from "@/components/fundations/icons/CreditCard.astro";
 import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
-import InfoCircle from "@/components/fundations/icons/InfoCircle.astro";
 
 // Content
-const { page, url, iconId } = {
+const { page, description, url, iconId } = {
   url: "/helpcenter/" + Astro.props.post.slug,
   page: Astro.props.post.data.page,
+  description: Astro.props.post.data.description,
   iconId: Astro.props.post.data.iconId || "info-circle", // Default icon if not provided
 };
 
@@ -30,10 +31,10 @@ const IconComponent = iconMap[iconId] || InfoCircle; // Default to InfoCircle if
 ---
 
 <div
-  class="outline outline-base-200 relative overflow-hidden group flex h-full flex-col gap-12 lg:gap-24 bg-white rounded-xl shadow-xl px-5 pt-6 pb-[30px] justify-center transition-all z-50 sm:min-h-[250px] md:min-h-[200px] xl:min-h-[250px] cursor-pointer hover:bg-gray-50"
+  class="outline outline-base-200 relative overflow-hidden  group flex h-full flex-col gap-12 lg:gap-24 bg-white rounded-xl shadow-xl p-8 justify-center transition-all  hover:bg-gray-50"
 >
   <a class="absolute inset-0 z-10" title={page} href={url}></a>
-  <div class="relative flex flex-col justify-between h-full">
+  <div class="relative flex flex-col justify-between h-full gap-8">
     <div>
       <div class="flex">
         <div
@@ -51,7 +52,9 @@ const IconComponent = iconMap[iconId] || InfoCircle; // Default to InfoCircle if
         >
           {page}
         </Text>
-        <Text tag="p" variant="textSM" class="text-base-500">{page}</Text>
+        <Text tag="p" variant="textSM" class="text-base-500 mt-2"
+          >{description}</Text
+        >
       </div>
     </div>
     <Text

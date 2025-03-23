@@ -4,20 +4,36 @@
     "customers": {
       "type": "object",
       "properties": {
-        "bgColor": {
-          "type": "string"
-        },
         "customer": {
           "type": "string"
         },
-        "testimonial": {
+        "bgColor": {
           "type": "string"
         },
         "ctaTitle": {
           "type": "string"
         },
+        "testimonial": {
+          "type": "string"
+        },
         "partnership": {
           "type": "string"
+        },
+        "avatar": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "alt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "alt"
+          ],
+          "additionalProperties": false
         },
         "challengesAndSolutions": {
           "type": "array",
@@ -75,6 +91,7 @@
       },
       "required": [
         "customer",
+        "avatar",
         "challengesAndSolutions",
         "results",
         "about",

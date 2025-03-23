@@ -1,16 +1,17 @@
 ---
+// Assets
+import LimeStripe from "@/components/assets/LimeStripe.astro";
 // Widgets
 import Chat from "@/components/widgets/Chat.astro";
 // Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Link from "@/components/fundations/elements/Link.astro";
 import Text from "@/components/fundations/elements/Text.astro";
 import Button from "@/components/fundations/elements/Button.astro";
 import Wrapper from "@/components/fundations/containers/Wrapper.astro";
-// Sections
-import Status from "@/components/helpcenter/Status.astro";
+
 // Icons
 import User from "@/components/fundations/icons/User.astro";
+import Clock from "@/components/fundations/icons/Clock.astro";
 import Brain from "@/components/fundations/icons/Brain.astro";
 import Tools from "@/components/fundations/icons/Tools.astro";
 import Phone from "@/components/fundations/icons/Phone.astro";
@@ -26,6 +27,13 @@ const data = [
     category: "Help Center",
     text: "Find all questions and answers about our services and features.",
     buttonText: "Visit Help Center",
+  },
+  {
+    icon: "Clock",
+    url: "/changelog/home",
+    category: "Changelog",
+    text: "Find all the latest updates and changes, including new features and improvements.",
+    buttonText: "Follow updates",
   },
   {
     icon: "Settings",
@@ -45,7 +53,7 @@ const data = [
   {
     icon: "Phone",
     actionType: "link",
-    url: "phone:tel:+123456789", 
+    url: "phone:tel:+123456789",
     category: "Contact us",
     text: "Have a question or need assistance? Reach out to our dedicated support team.",
     buttonText: "Call us",
@@ -54,10 +62,13 @@ const data = [
 ---
 
 <BaseLayout>
-  <section>
+  <section class="overflow-hidden relative">
     <Chat class="fixed bottom-5 right-5" />
-    <Wrapper variant="standard" class="py-12 lg:py-24">
-      <div>
+    <Wrapper variant="standard" class="py-12 lg:pt-32 relative overflow-hidden">
+      <LimeStripe
+        class="absolute inset-0 size-full pointer-events-none scale-220 rotate-x-180 top-80"
+      />
+      <div class="relative">
         <Text
           class="span"
           variant="textXS"
@@ -88,17 +99,20 @@ const data = [
           your finances with confidence in the digital age.
         </Text>
       </div>
+    </Wrapper>
+    <Wrapper variant="standard" class="py-12 border-t border-base-200">
       <dl
         data-aos="fade-up"
         data-aos-duration="2000"
-        class="mt-24 grid grid-cols-1 gap-4 sm:grid-cols-4 gap-y-8"
+        class="grid grid-cols-1 gap-4 sm:grid-cols-4 gap-y-8"
       >
         {
           data.map((section) => (
-            <div class="flex flex-col justify-between h-full gap-12">
+            <div class="flex flex-col justify-between h-full gap-12 group">
               <div>
                 <dt class="flex items-center gap-2 text-base-800">
                   {section.icon === "Settings" && <Settings size="base" />}
+                  {section.icon === "Clock" && <Clock size="base" />}
                   {section.icon === "Tools" && <Tools size="base" />}
                   {section.icon === "Search" && <Search size="base" />}
                   {section.icon === "QuestionMark" && (
@@ -107,9 +121,9 @@ const data = [
                   {section.icon === "User" && <User size="base" />}
                   {section.icon === "Phone" && <Phone size="base" />}
                   <Text
-                    tag="p"
+                    tag="h3"
                     variant="textBase"
-                    class="font-medium leading-6"
+                    class="font-medium "
                   >
                     {section.category}
                   </Text>
@@ -146,5 +160,4 @@ const data = [
       </dl>
     </Wrapper>
   </section>
-  <Status />
 </BaseLayout>

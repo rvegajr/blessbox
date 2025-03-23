@@ -1,12 +1,12 @@
 ---
 // Assets
-import Logo from "@/components/assets/Logo.astro";
+import { Code } from "astro:components";
+import VisualAsset3 from "@/components/assets/VisualAsset3.astro";
 // Fundations
 import Text from "@/components/fundations/elements/Text.astro";
 import Wrapper from "@/components/fundations/containers/Wrapper.astro";
 // Icons
 import Plus from "@/components/fundations/icons/Plus.astro";
-import ApiApp from "@/components/fundations/icons/ApiApp.astro";
 import Filters from "@/components/fundations/icons/Filters.astro";
 import WaveSquare from "@/components/fundations/icons/WaveSquare.astro";
 import ArrowIteration from "@/components/fundations/icons/ArrowIteration.astro";
@@ -14,134 +14,161 @@ import ArrowIteration from "@/components/fundations/icons/ArrowIteration.astro";
 const data = [
   {
     icon: "Filters",
-    category: "Full data transparency",
+    category: "ACH",
+    text: "Initiate ACH transactions, process both credits and debits, verify accounts in advance, and store frequently used details.",
   },
   {
     icon: "WaveSquare",
-    category: "Reduced dependencies",
+    category: "Bank accounts",
+    text: "Create flexible account structures with unlimited unique account numbers.",
   },
   {
     icon: "ArrowIteration",
-    category: "Reliable infrastructure",
+    category: "Cards",
+    text: "Generate custom cards for users, control authorizations in real-time, and set personalized limits.",
   },
   {
     icon: "Plus",
-    category: "Faster development cycles",
+    category: "Checks",
+    text: "Send customized checks globally via API or deposit them digitally using the dashboard.",
   },
 ];
+// Timeline
+const timelineSteps = [
+  {
+    title: "Transfer initiated",
+    description: "The wheels are in motion!",
+    time: "Mar 12, 08:15 AM ",
+    datetime: "2025-03-12T08:15",
+    color: "bg-teal-200 ring-teal-500",
+  },
+  {
+    title: "Stamp of approval",
+    description: "Johnny Mnemonic gave it the nod.",
+    time: "Mar 12, 09:47 AM ",
+    datetime: "2025-03-12T09:47",
+    color: "bg-teal-200 ring-teal-500",
+  },
+  {
+    title: "Off to the Feds",
+    description: "Sent to the Federal Reserve...",
+    time: "Mar 12, 09:50 AM ",
+    datetime: "2025-03-12T09:50",
+    color: "bg-teal-200 ring-teal-500",
+  },
+  {
+    title: "Money landed",
+    description: "Settled with the recipient bank.",
+    time: "Mar 12, 3:30 PM ",
+    datetime: "2025-03-12T15:30",
+    color: "bg-teal-200 ring-teal-500",
+  },
+  {
+    title: "Final release",
+    description: "Funds will be good to go on March 14!",
+    time: "Mar 14",
+    datetime: "2025-03-14T00:00",
+    color: "bg-yellow-300 ring-yellow-500",
+  },
+];
+
+// Customers Content
+// Card
+import CustomerEntry1 from "@/components/customers/CustomerEntry1.astro";
+// Content
+import { getCollection } from "astro:content";
+const allCustomers = await getCollection("customers");
 ---
 
 <section>
-  <Wrapper variant="standard" class="py-12 lg:py-24">
+  <Wrapper variant="standard" class="py-12 lg:py-24 border-t">
     <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-24">
-      <div>
-        <Text
-          class="span"
-          variant="textXS"
-          data-aos="fade-down"
-          data-aos-duration="1000"
-          class="flex items-center font-medium uppercase text-base-600 gap-2"
-        >
-          <ApiApp size="sm" class="text-yellow-600" />
-          Raw, unfiltered APIs
-        </Text>
+      <div class="lg:order-last">
         <Text
           tag="h3"
-          variant="displayMD"
+          variant="textXL"
           data-aos="fade-up"
           data-aos-duration="1000"
-          class="mt-8 font-semibold tracking-tight text-base-800 md:text-balance"
+          class="font-semibold tracking-tight text-base-800 md:text-balance"
         >
-          Unfiltered, direct access to the Federal Reserve
+          Transfer funds with reliability
         </Text>
         <Text
           tag="p"
           variant="textBase"
           data-aos="fade-up"
           data-aos-duration="1500"
-          class="mt-2 text-base text-base-500"
+          class="mt-2 text-base text-base-500 md:text-balance"
         >
-          Financial networks like Visa and FedACH have been refined over
-          decades, but many tech companies add layers of abstraction that limit
-          flexibility.
-          <br />
-          <br />
-          We do the opposite—giving you direct, unfiltered access to the Federal
-          Reserve, Visa, and other networks. This means greater stability, fewer
-          restrictions, and complete control over how you build.
+          Automate ACH, wire transfers, real-time payments, and even physical
+          checks.
         </Text>
-        <ul
+        <dl
           data-aos="fade-up"
           data-aos-duration="2000"
-          role="list"
-          class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2"
+          class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-2 gap-y-8"
         >
           {
             data.map((section) => (
-              <li class="flex items-center gap-2 text-base-800">
-                {section.icon === "Filters" && <Filters size="base" />}
-                {section.icon === "WaveSquare" && <WaveSquare size="base" />}
-                {section.icon === "ArrowIteration" && (
-                  <ArrowIteration size="base" />
-                )}
-                {section.icon === "Plus" && <Plus size="base" />}
-                <Text tag="p" variant="textSM" class="font-medium leading-6 ">
-                  {section.category}
-                </Text>
-              </li>
+              <div>
+                <dt class="flex items-center gap-2 text-base-800">
+                  {section.icon === "Filters" && <Filters size="base" />}
+                  {section.icon === "WaveSquare" && <WaveSquare size="base" />}
+                  {section.icon === "ArrowIteration" && (
+                    <ArrowIteration size="base" />
+                  )}
+                  {section.icon === "Plus" && <Plus size="base" />}
+                  <Text tag="p" variant="textSM" class="font-medium leading-6 ">
+                    {section.category}
+                  </Text>
+                </dt>
+                <dd class="mt-2">
+                  <Text tag="p" variant="textSM" class=" text-base-500">
+                    {section.text}
+                  </Text>
+                </dd>
+              </div>
             ))
           }
-        </ul>
-      </div>
-      <div
-        class="relative flex flex-col items-center h-full p-8 overflow-hidden shadow outline-1 outline-base-200 bg-base-100 rounded-xl"
-      >
-        <div class="absolute inset-0 flex items-center justify-center w-full">
-          <div
-            class="relative w-full mx-auto overflow-hidden overflow-x-hidden text-xs text-base-800"
-          >
-            <div
-              class="relative flex items-center px-4 py-1 bg-teal-300 border-teal-600 border-dashed animate-marquee whitespace-nowrap w-max border-y"
-            >
-              STAT/34PQ-A24-7891#SECURE TERMINAL ACCESS#SYSTEM ONLINE
-              7856443127890654231099876 ID:NETWORK-PRIME TL93/alpha/2.5.8/active
-              NODE:CENTRAL-HUB-07 UPTIME:3278.45h PACKET_INTEGRITY:99.87%
-              ROUTING_TABLE:UPDATED ENV:PRODUCTION MEMORY:64GB/128GB CPU:32%
-              THERMAL:NOMINAL AUTH_LEVEL:ADMINISTRATOR
-            </div>
-            <div
-              class="relative flex items-center px-4 py-1 bg-yellow-300 border-yellow-600 border-dashed animate-slowMarquee whitespace-nowrap w-max border-y"
-            >
-              CONN/95BT-R38-1265#DATA STREAM ACTIVE#BUFFER STABLE
-              3321567456789023418765432 STATUS:TRANSMITTING
-              FS47/beta/9.3.1/nominal BANDWIDTH:1.28TB/s LATENCY:4.7ms
-              ENCRYPTION:AES-256 PROTOCOL:TCP/IPV6 FIREWALL:ENABLED
-              GATEWAY:192.168.0.1 DNS:PRIMARY VPN:CONNECTED
-              LOCATION:SECURE-FACILITY-12
-            </div>
-            <div
-              class="relative flex items-center px-4 py-1 bg-blue-300 border-blue-600 border-dashed animate-marquee whitespace-nowrap w-max border-y"
-            >
-              PROC/72KM-D19-6543#RUNTIME ENVIRONMENT#TASK QUEUE
-              1122334455667788990011223 MODE:PRIORITY-HIGH
-              VX26/gamma/1.7.4/running THREADS:128 PROCESS_ID:45921
-              SCHEDULER:REALTIME DEPENDENCIES:LOADED COMPILER:V12.4.5
-              BUILD:STABLE-8734 CACHE:OPTIMIZED STACK:4096MB HEAP:16GB
-              ARCHITECTURE:X64 VIRTUALIZED:TRUE
-            </div>
-          </div>
-        </div>
+        </dl>
 
-        <!-- Second div (in front) -->
-        <div
-          class="flex w-full items-center justify-center max-w-[50%] relative z-10 h-40 my-auto"
-        >
-          <div
-            class="flex flex-col items-center justify-center w-full h-40 px-20 font-mono text-xs font-medium bg-white rounded-lg shadow-xl outline-2 hover:scale-120 hover:bg-white/50 hover:backdrop-blur duration-300 outline-base-50 shadow-base-800/30 transition-all hover:outline-transparent"
-          >
-            <Logo class="size-12 text-base-800" />
-          </div>
+        <div data-aos="fade-up" data-aos-duration="2500" class="mt-8">
+          {
+            allCustomers
+              .slice(0, 1)
+              .map((post) => <CustomerEntry1 post={post} />)
+          }
         </div>
+      </div>
+      <div class="relative">
+        <Code
+          class="relative p-8 text-xs scrollbar-hide rounded-xl lg:z-10"
+          code={`await payments.transfer.create({
+    amount: 25075,
+    currency: "USD",
+    from_account: {
+      id: "acct_everbank_112233445",
+      bank: "EverBank",
+      type: "Business Checking",
+    },
+    
+    to_account: {
+      id: "acct_chase_556677889",
+      bank: "Chase",
+      type: "Savings",
+    },
+    
+    initiated_at: "2025-03-14T14:32:00Z",
+    status: "Pending",
+    });`}
+          lang="js"
+          theme="css-variables"
+        />
+        <VisualAsset3
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          class="hidden w-full overflow-hidden bg-white shadow-2xl lg:z-50 lg:absolute lg:top-32 lg:block lg:left-14 rounded-xl divide-y divide-base-200 outline-1 outline-base-200"
+        />
       </div>
     </div>
   </Wrapper>

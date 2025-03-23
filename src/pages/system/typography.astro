@@ -6,8 +6,12 @@ import Wrapper from "@/components/fundations/containers/Wrapper.astro";
 ---
 
 <BaseLayout>
-  <Wrapper variant="standard" class="py-8">
-    <Text tag="h1" variant="textXL" class="dark:text-white text-base-900">
+  <Wrapper variant="standard" class="py-24">
+    <Text
+      tag="h1"
+      variant="displayXL"
+      class="font-semibold tracking-tighter text-base-800 lg:text-balance"
+    >
       Typography
     </Text>
 
@@ -18,9 +22,7 @@ import Wrapper from "@/components/fundations/containers/Wrapper.astro";
       >Font in use: Geist + Geist Mono
     </Text>
 
-    <div
-      class="relative flex flex-col pt-2 mt-2 font-medium dark:text-white text-base-900 before:absolute after:absolute before:bg-black after:bg-base-200 dark:before:bg-base-50 dark:after:bg-base-50/10 before:top-0 before:left-0 before:h-px before:w-18 after:top-0 after:right-0 after:left-20 after:h-px"
-    >
+    <div class="mt-12">
       <div class="py-4">
         <Text tag="p" variant="textXS"> Text XS </Text>
       </div>
