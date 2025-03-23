@@ -1,109 +1,155 @@
 ---
-import BaseLayout from "./BaseLayout.astro";
+// Assets
+import { Image } from "astro:assets";
+import LimeStripe from "@/components/assets/LimeStripe.astro";
+// Fundations
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import User from "@/components/fundations/icons/User.astro";
 const { frontmatter } = Astro.props;
 ---
 
 <BaseLayout>
   <section>
-    <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 lg:flex pt-24"
-    >
-      <div class="lg:w-1/2 lg:pl-12 lg:ml-auto">
-        <div class="lg:sticker lg:sticky pb-16 pt-8 top-0">
-          <div>
-            <div class="lg:pl-36 md:pl-12">
-              <nav class="bg-slate-50 rounded-lg space-y-3 p-4 lg:p-8">
-                <img src={frontmatter.logo.url} alt={frontmatter.logo.alt} />
-                <div class="mt-6 space-y-6">
-                  {
-                    Object.entries(frontmatter.details).map(([key, value]) => (
-                      <div>
-                        <p class="text-base font-medium leading-6 text-blue-950">
-                          {key}
-                        </p>
-                        <p class="text-slate-400 text-sm">{value}</p>
-                      </div>
-                    ))
-                  }
-                </div>
-              </nav>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="lg:w-1/2 lg:order-first">
-        <div class="flex-shrink-0">
-          <div>
-            <p class="text-blue-950 font-semibold mt-6 text-4xl tracking-tight">
-              {frontmatter.customer}
-            </p>
-            <p class="text-slate-500 mt-5 lg:text-balance">
-              {frontmatter.about}
-            </p>
-            <dl class="flex flex-col gap-4 mt-12">
-              {
-                frontmatter.challengesAndSolutions.map((item) => (
-                  <div>
-                    <dt>
-                      <p class="text-blue-950 font-semibold mt-6 text-xl tracking-tight">
-                        {item.title}
-                      </p>
-                    </dt>
-                    <dd class="mt-4 text-sm text-slate-500 lg:text-pretty">
-                      {item.content}
-                    </dd>
-                  </div>
-                ))
-              }
-            </dl>
-            <div class="mt-12">
-              <span
-                class="text-blue-950 font-semibold mt-6 text-xl tracking-tight"
-                >Results</span
-              >
-            </div>
-            <ul role="list" class="flex flex-col gap-2 mt-12">
-              {
-                frontmatter.results.map((result, index) => (
-                  <li class="flex items-center gap-2">
-                    <span> {index + 1}</span>
-                    <p class="text-sm text-slate-500">{result}</p>
-                  </li>
-                ))
-              }
-            </ul>
-          </div>
-          <div class="prose-styles">
-            <slot />
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 lg:flex py-24"
-    >
-      <div
-        class="relative overflow-hidden rounded-2xl bg-blue-500 p-8 z-50 shadow-xl lg:py-12 lg:grid lg:grid-cols-2 lg:gap-x-8 md:col-span-full"
-      >
-        <div
-          class="absolute inset-0 opacity-80 mix-blend-multiply saturate-0 filter"
+    <Wrapper variant="standard" class="relative py-32 lg:pb-40 overflow-hidden">
+      <LimeStripe
+        class="absolute inset-0 size-full pointer-events-none scale-180 rotate-x-180 top-100"
+      />
+      <div class="relative">
+        <Text
+          class="span"
+          variant="textXS"
+          data-aos="fade-down"
+          data-aos-duration="1000"
+          class="flex items-center font-medium uppercase text-base-600 gap-2"
         >
-          <img
-            src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-            alt=""
-            class="h-full w-full object-cover"
-          />
-        </div>
-        <div class="relative lg:col-span-1">
-          <blockquote class="text-white mt-24">
-            <p class="font-medium">
-              Spaziobianco Public rollover performance exchange traded funds
-              junk bonds passively NASDAQ bills upswing retirement corporate
-              market exposure.
-            </p>
-          </blockquote>
-        </div>
+          <User size="sm" class="text-yellow-600" />
+          Integrations
+        </Text>
+        <Text
+          tag="h1"
+          variant="displayXL"
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          class="font-semibold tracking-tighter text-base-800 lg:text-balance mt-8"
+        >
+          {frontmatter.customer}
+        </Text>
+        <Text
+          tag="p"
+          variant="textLG"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          class="max-w-lg mt-4 font-medium text-base-800 md:text-balance"
+        >
+          {frontmatter.about}
+        </Text>
       </div>
-    </div>
+    </Wrapper>
+  </section>
+  <section>
+    <Wrapper variant="standard" class="py-4 border-t">
+      <div
+        class="items-start grid grid-cols-1 gap-2 lg:grid-cols-3 -mt-20 lg:-mt-30 z-20"
+      >
+        {
+          frontmatter.results.map((result, index) => (
+            <div class="outline outline-base-200 relative overflow-hidden  group flex h-full flex-col  bg-white rounded-xl shadow-xl p-8   transition-all  hover:bg-gray-50 items-start">
+              <div class="flex">
+                <div class=" flex p-2 text-sm font-semibold bg-yellow-400 rounded-lg aspect-square size-8 items-center justify-center transition-all duration-300 text-base-800 group-hover:bg-base-800 group-hover:text-white">
+                  {index + 1}
+                </div>
+              </div>
+              <Text
+                tag="p"
+                variant="textBase"
+                class="text-base-500 mt-12 lg:mt-24"
+              >
+                {result}
+              </Text>
+            </div>
+          ))
+        }
+      </div>
+    </Wrapper>
+  </section>
+  <section>
+    <Wrapper variant="standard" class="py-12 border-t">
+      <div class="flex flex-col text-center">
+        <Text
+          tag="h3"
+          variant="textXL"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          class=" font-semibold  text-base-800 md:text-balance max-w-xl mx-auto"
+        >
+          "{frontmatter.testimonial}"
+        </Text>
+        <Image
+          width={500}
+          height={500}
+          src={frontmatter.avatar.url}
+          alt={frontmatter.avatar.alt}
+           data-aos="fade-up"
+          data-aos-duration="2000"
+          class="size-20 rounded-full mx-auto object-top object-cover mt-8"
+        />
+      </div>
+    </Wrapper>
+  </section>
+  <section>
+    <Wrapper variant="standard" class="py-12 border-t">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div>
+          <div class="flex flex-col gap-4">
+            {
+              Object.entries(frontmatter.details).map(([key, value]) => (
+                <div>
+                  <Text
+                    tag="h4"
+                    variant="textBase"
+                    class="text-base-800 font-medium"
+                  >
+                    {key}
+                  </Text>
+                  <Text
+                    tag="p"
+                    variant="textSM"
+                    class="text-base-600 capitalize lg:text-balance"
+                  >
+                    {value}
+                  </Text>
+                </div>
+              ))
+            }
+          </div>
+          <dl class="flex flex-col gap-8 mt-4 pt-4 border-t border-base-200">
+            {
+              frontmatter.challengesAndSolutions.map((item) => (
+                <div>
+                  <dt>
+                    <Text tag="h3" variant="textBase" class="font-medium">
+                      {item.title}
+                    </Text>
+                  </dt>
+                  <dd>
+                    <Text
+                      tag="p"
+                      variant="textSM"
+                      class="text-base-600 capitalize mt-2 "
+                    >
+                      {item.content}
+                    </Text>
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+        <Wrapper variant="prose" class="lg:col-span-2"><slot /></Wrapper>
+      </div>
+    </Wrapper>
   </section>
 </BaseLayout>

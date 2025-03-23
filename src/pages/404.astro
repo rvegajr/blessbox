@@ -1,46 +1,80 @@
 ---
+// Assets
+import { Code } from "astro:components";
+import LimeStripe from "@/components/assets/LimeStripe.astro";
+// Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Link from "@/components/fundations/elements/Link.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Icons
+import ChevronLeft from "@/components/fundations/icons/ChevronLeft.astro";
+import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
 ---
 
 <BaseLayout>
-  <section>
-    <div
-      class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 flex flex-col text-center lg:h-svh justify-center py-12 lg:py-48 items-center"
+  <section class="relative overflow-hidden">
+    <Wrapper
+      variant="standard"
+      class="relative py-32 overflow-hidden h-dvh flex flex-col items-center justify-center"
     >
-      <span class="text-sm uppercase font-medium tracking-wide text-blue-600"
-        >404</span
-      >
-
-      <h2
-        class="text-blue-950 font-semibold tracking-tight lg:text-5xl mt-6 text-3xl"
-      >
-        Page not found!
-      </h2>
-
-      <p class="text-slate-500 mt-5 lg:text-balance mx-auto max-w-xl">
-        Sorry, but the page you were looking for could not be found. You can
-        return to <a
-          title="link to your page"
-          aria-label="your label"
-          href="/index"
-          class="text-blue-600 hover:text-tangroa-500">our front page</a
-        >, or <a
-          title="link to your page"
-          aria-label="your label"
-          href="/contact"
-          class="text-blue-600 hover:text-tangroa-500">drop us a line</a
-        > if you can't find what you're looking for.
-      </p>
-      <div class="mt-10">
-        <a
-          class="text-white items-center font-medium gap-3 inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none justify-center px-6 lg:px-8 ring-2 ring-transparent focus:ring-offset-2 focus:ring-blue-500 duration-200 py-3.5 rounded-full active:bg-blue-800 active:text-white bg-blue-500 hover:bg-blue-600 w-auto"
-          title="link to your page"
-          aria-label="your label"
-          href="/system/overview"
+      <LimeStripe
+        class="absolute inset-0 size-full pointer-events-none scale-180"
+      />
+      <div class="relative text-center lg:w-1/2 mx-auto">
+        <Text
+          tag="h1"
+          variant="display2XL"
+          data-aos="fade-up"
+          data-aos-duration="1000"
+          class="font-semibold tracking-tighter text-base-800 lg:text-balance"
         >
-          Go back home
-        </a>
+          Erro 404
+        </Text>
+        <Text
+          tag="p"
+          variant="textLG"
+          data-aos="fade-up"
+          data-aos-duration="1500"
+          class="mt-4 font-medium text-base-800 md:text-balance"
+        >
+          Sorry, but the page you were looking for could not be found. You can
+          return to our front page, or drop us a line if you can't find what
+          you're looking for.
+        </Text>
+        <div
+          data-aos="fade-up"
+          data-aos-duration="2000"
+          class="flex flex-col items-center mt-12 gap-2 justify-center max-w-xs mx-auto"
+        >
+          <Link
+            size="base"
+            variant="default"
+            href="/forms/sign-up"
+            gap="xs"
+            class="group w-full"
+          >
+            <ChevronLeft
+              size="sm"
+              class="duration-300 easy-out-in group-hover:translate-x-2"
+            />
+            Go to front page
+          </Link>
+          <Link
+            size="base"
+            variant="muted"
+            href="/forms/contact"
+            gap="xs"
+            class="group w-full"
+          >
+            See all pages
+            <ChevronRight
+              size="sm"
+              class="duration-300 easy-out-in group-hover:translate-x-2"
+            />
+          </Link>
+        </div>
       </div>
-    </div>
+    </Wrapper>
   </section>
 </BaseLayout>

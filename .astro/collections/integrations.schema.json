@@ -4,13 +4,16 @@
     "integrations": {
       "type": "object",
       "properties": {
+        "bgColor": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
         "integration": {
           "type": "string"
         },
         "description": {
-          "type": "string"
-        },
-        "email": {
           "type": "string"
         },
         "permissions": {
@@ -62,9 +65,9 @@
         }
       },
       "required": [
+        "email",
         "integration",
         "description",
-        "email",
         "permissions",
         "details",
         "logo"

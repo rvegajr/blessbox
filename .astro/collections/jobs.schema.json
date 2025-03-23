@@ -4,40 +4,22 @@
     "jobs": {
       "type": "object",
       "properties": {
-        "position": {
+        "page": {
           "type": "string"
         },
-        "location": {
-          "type": "string"
-        },
-        "team": {
-          "type": "string"
-        },
-        "flag": {
+        "details": {
           "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            },
-            "alt": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "url",
-            "alt"
-          ],
-          "additionalProperties": false
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "$schema": {
           "type": "string"
         }
       },
       "required": [
-        "position",
-        "location",
-        "team",
-        "flag"
+        "page",
+        "details"
       ],
       "additionalProperties": false
     }

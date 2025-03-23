@@ -1,90 +1,46 @@
 ---
 page: Privacy
-pubDate: 2024-01-01
+pubDate: 2025-04-01 
 ---
-If you are a California resident, the California Consumer Privacy Act, as amended by the California Privacy Rights Act of 2020 (“**CCPA**”), requires us to provide some additional information to California residents. This Section only applies to you if you are a California resident, although please note that this information and the rights afforded herein are the same as offered to our other users in our main Privacy Policy. This Section does not apply to personal information we collect from our employees and job applicants in their capacity as employees and job applicants, as such information practices are described in separate policies.
 
-The following chart details these activities:
+## 1. Introduction
+[Your Company Name] ("Company," "we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website, services, or products (collectively, the "Services"). By using our Services, you consent to the practices described in this policy.
 
-**Category of personal information**
+## 2. Information We Collect
+We may collect the following types of information:
 
-**Purposes of use**
+### a. Personal Information
+We collect personal information that you provide to us directly, including but not limited to:
+- Full name
+- Email address
+- Phone number
+- Mailing and billing address
+- Payment details (processed securely through third-party providers)
+- Any other information you provide voluntarily through forms, surveys, or customer support interactions
 
-**Categories of Third Parties Information**
+### b. Non-Personal Information
+We may automatically collect non-personal information when you use our Services, such as:
+- Browser type and version
+- IP address
+- Device type and operating system
+- Usage data (e.g., pages visited, time spent on the site, referring URLs)
+- Log files and analytics data
 
-**Categories of Third Parties**
+### c. Cookies and Tracking Technologies
+We use cookies and similar technologies to improve user experience, analyze trends, and enhance security. You can manage your cookie preferences through your browser settings. Learn more in our [Cookie Policy](#_).
 
-Contact information (such as your full name, phone number, email address)
+## 3. How We Use Your Information
+We use the information we collect for the following purposes:
+- **Service Delivery:** To provide, manage, and improve our Services.
+- **Communication:** To send service updates, notifications, and customer support responses.ª
+- **Marketing & Promotions:** To send offers, newsletters, and other promotional content (you can opt out at any time).
+- **Analytics & Performance Monitoring:** To analyze trends, measure engagement, and enhance user experience.
+- **Security & Fraud Prevention:** To monitor suspicious activity and protect against unauthorized access.
+- **Legal Compliance:** To comply with applicable laws, regulations, and legal processes.
 
-Provide the Services; Communicate with you; Analyze use of and improve the services; With your consent; Comply with law or defend our legal rights; Security/fraud prevention
+## 4. How We Share Your Information
+We do not sell your personal information. However, we may share your information in the following circumstances:
 
-Affiliated entities; Service providers; Entities for legal purposes
-
-We do not share/sell
-
-Customer service interaction information (including optional surveys and when you ask for help)
-
-Provide the Services; Communicate with you; Analyze use of and improve the services; With your consent; Comply with law or defend our legal rights; Security/fraud prevention
-
-Affiliated entities; Service providers; Entities for legal purposes
-
-We do not share/sell
-
-Product interaction information
-
-Provide the Services; Communicate with you; Analyze use of and improve the services; With your consent; Comply with law or defend our legal rights; Security/fraud prevention
-
-Affiliated entities; Service providers; Entities for legal purposes
-
-We do not share/sell
-
-Internet network and device information (such as mobile device information, IP address, and information about your interaction with the services)
-
-Provide the Services; Analyze use of and improve the services; With your consent; Comply with law or defend our legal rights; Security/fraud prevention
-
-Affiliated entities; Service providers; Entities for legal purposes;
-
-We do not share/sell
-
-Login information (such as your username and password)
-
-Provide the Services; Comply with law or defend our legal rights; Security/fraud prevention; Comply with law or defend our legal rights
-
-Affiliated entities; Service providers; Entities for legal purposes
-
-We do not share/sell
-
-Professional or employment information (such as the name and address of the company you work for and your title)
-
-Provide the Services; Communicate with you; Analyze use of and improve the services; With your consent; Comply with law or defend our legal rights; Security/fraud prevention
-
-Affiliated entities; Service providers; Entities for legal purposes;
-
-We do not share/sell
-
-Other information (any other information you choose to provide directly to us, including optional profile photos)
-
-Provide the Services; Communicate with you; Analyze use of and improve the services; With your consent; Comply with law or defend our legal rights; Security/fraud prevention
-
-Affiliated entities; Service providers; Entities for legal purposes;
-
-We do not sell/share
-
-For more information about each category of personal information, purpose of use, and third parties to which we disclose personal information, please see the "What we collect and why," and "When we access or disclose you information" sections of our Privacy Policy.
-
-**Your Choices Regarding “Sharing” and “Selling”**: You have the right to opt out of our sale/sharing of your personal information for purposes of online analytics and advertising. Currently, we do not sell or share your data as defined by the CCPA and we have not done so over the past 12 months from the effective date of this Privacy Policy.
-
-**Other CCPA Rights.** If we ever offer any financial incentives in exchange for your personal information, we will provide you with appropriate information about such incentives.
-
-The CCPA also allows you to limit the use or disclosure of your “sensitive personal information” (as defined in the CCPA) if your sensitive personal information is used for certain purposes. Please note that we do not use or disclose sensitive personal information other than for business purposes for which you cannot opt out under the CCPA.
-
-Please see the “Your rights with respect to your information” section of our Policy above for information about the additional rights you have with respect to your personal information under California law and how to exercise them.
-
-Retention of Your Personal Information. Please see the “Retention Of Your Information” section belowof our Privacy Policy for more information.
-
-Shine the Light Disclosure
---------------------------
-
-The California "Shine the Light" law gives residents of California the right under certain circumstances to request information from us regarding the manner in which we disclose certain categories of personal information (as defined in the Shine the Light law) with third parties for their direct marketing purposes. We currently do not disclose your personal information to third parties for their own direct marketing purposes.
-
-
+- **With Service Providers:** We partner with third-party vendors to facilitate services such as payment processing, analytics, customer support, and security.
+- **For Legal Reasons:** We may disclose your information if required by law, to enforce our policies, or to protect our rights.
+- **In Business Transfers:** In the
