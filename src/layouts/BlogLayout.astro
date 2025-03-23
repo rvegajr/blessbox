@@ -1,56 +1,107 @@
 ---
-import BaseLayout from "./BaseLayout.astro";
+// Assets
+import { Image } from "astro:assets";
+// Fundations
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Text from "@/components/fundations/elements/Text.astro";
+import Link from "@/components/fundations/elements/Link.astro";
+import Wrapper from "@/components/fundations/containers/Wrapper.astro";
+// Content
 const { frontmatter } = Astro.props;
 ---
 
 <BaseLayout>
   <section>
-    <div
-      class="items-start px-8 py-24 mx-auto max-w-7xl lg:px-16 md:px-12 xl:px-24"
-    >
-      <div>
-        <div class="items-center grid gap-12">
-          <div>
-            <h2
-              class="text-3xl font-semibold tracking-tight text-blue-950 lg:text-7xl lg:text-balance"
-            >
-              {frontmatter.title}
-            </h2><p class="mt-12 text-xl text-base-500 lg:text-balance">
-              {frontmatter.description}
-            </p>
-            <div class="mt-6">
-              <div class="flex items-center">
-                <div>
-                  <img
-                    class="inline-block rounded-full h-9 w-9"
-                    src={frontmatter.image.url}
-                    alt={frontmatter.image.alt}
-                  />
-                </div>
-                <div class="ml-3">
-                  <p
-                    class="text-sm font-medium text-base-500 group-hover:text-blue-950"
-                  >
-                    {frontmatter.author}
-                  </p>
-                  <p class="text-xs uppercase text-base-500">
-                    {frontmatter.pubDate.toString().slice(0, 10)}
-                  </p>
-                </div>
-              </div>
+    <Wrapper variant="standard" class="py-32">
+      <Text
+        tag="h1"
+        variant="display2XL"
+        data-aos="fade-up"
+        data-aos-duration="1000"
+        class="font-semibold tracking-tighter text-base-800 lg:text-balance"
+      >
+        {frontmatter.title}
+      </Text>
+      <Text
+        tag="p"
+        variant="textBase"
+        data-aos="fade-up"
+        data-aos-duration="1500"
+        class="mt-2 text-base text-base-600 max-w-xl"
+      >
+        {frontmatter.description}
+      </Text>
+
+      <Image
+        width={600}
+        height={600}
+        alt={frontmatter.image.alt}
+        src={frontmatter.image.url}
+        class="size-full object-cover object-center max-h-100 mt-4 rounded-2xl"
+      />
+      <div class="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-3 items-start">
+        <Wrapper variant="prose" class="lg:col-span-2">
+          <slot />
+        </Wrapper>
+        <div>
+          <div class="flex items-center">
+            <Image
+              width={200}
+              height={200}
+              class="inline-block rounded-full size-12"
+              src={frontmatter.authorAvatar.url}
+              alt={frontmatter.authorAvatar.alt}
+            />
+            <div class="ml-3">
+              <Text
+                tag="p"
+                variant="textSM"
+                class="text-base text-base-600 md:text-balance"
+              >
+                {frontmatter.author}
+                <br />
+                <time
+                  datetime={new Date(frontmatter.pubDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      year: "numeric",
+                      month: "long",
+                    }
+                  )}
+                >
+                  {
+                    new Date(frontmatter.pubDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                    })
+                  }</time
+                >
+              </Text>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-base-200">
+            <Text tag="p" variant="textSM" class="text-base-800 font-medium">
+              Tags:
+            </Text>
+            <div class="flex flex-wrap items-center gap-1 mt-2">
+              {
+                frontmatter.tags.map((tag) => (
+                  <>
+                    <Text
+                      tag="a"
+                      variant="textSM"
+                      href={`/blog/tags/${tag}`}
+                      class="capitalize text-base-500 hover:text-base-900"
+                    >
+                      {tag}
+                    </Text>
+                  </>
+                ))
+              }
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-  <section>
-    <div class="px-8 py-12 mx-auto max-w-7xl lg:px-24">
-      <div
-        class="max-w-[40rem] prose-lg hover:prose-a:text-blue-500 prose prose-a:font-semibold prose-a:text-blue-300 prose-blockquote:text-blue-600 prose-h3:text-blue-950 text-base-500"
-      >
-        <slot />
-      </div>
-    </div>
+    </Wrapper>
   </section>
 </BaseLayout>

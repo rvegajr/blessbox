@@ -10,34 +10,25 @@ const {
 // Default button
 const defaultClass = [
   "text-white",
-  "bg-base-800",
+  "bg-base-800 ",
   "hover:bg-base-900",
-  "outline",
-  "outline-base-800",
+  "ring-base-800",
 ];
 // Accent button
-const accentClass = [
-  "text-teal-900",
-  "bg-teal-500",
-  "hover:bg-teal-400",
-  "outline",
-  "outline-teal-500",
-];
+const accentClass = ["text-base-900", "bg-teal-500 ", "ring-teal-600"];
 // Muted button
 const mutedClass = [
   "text-black",
-  "bg-white ",
-  "hover:bg-base-50",
-  "outline",
-  "outline-base-200",
+  "bg-base-100",
+  "hover:bg-base-100",
+  "ring-base-200",
 ];
-// Size (only applies if variant is not "link")
-const xs = ["h-8", "px-6", "py-2", "text-xs rounded"];
-const sm = ["h-9", "px-6", "py-2", "text-sm rounded-md"];
-const base = ["h-10", "px-8", "py-3", "text-sm rounded-md"];
-const md = ["h-11", "px-8", "py-3", "text-base rounded-md"];
-const lg = ["h-12", "px-8", "py-3", "text-md rounded-md"];
-const xl = ["h-13", "px-12", "py-3", "text-lg rounded-md"];
+const xs = ["h-8", "px-3", "py-2", "text-xs rounded-md"];
+const sm = ["h-9", "px-4", "py-2", "text-sm rounded-md"];
+const base = ["h-10", "px-4", "py-3", "text-base rounded-lg"];
+const md = ["h-11", "px-5", "py-3", "text-md rounded-lg"];
+const lg = ["h-12", "px-5", "py-3", "text-lg rounded-lg"];
+const xl = ["h-13", "px-6", "py-3", "text-xl rounded-lg"];
 // Gap
 const gapXS = ["gap-2"];
 const gapSM = ["gap-4"];
@@ -50,19 +41,24 @@ const additionalClasses = className ? className.split(" ") : [];
 <button
   class:list={[
     "flex",
+    "relative",
+    "transition",
     "text-center",
     "font-medium",
-    "shadow-sm",
     "items-center",
+    "shadow-bottom",
     "justify-center",
+    "overflow-hidden",
+    "border border-transparent",
     "duration-300",
     "ease-in-out",
     "transition-all",
-    "focus:outline-offset-2",
-    "focus:outline-offset-white",
+    "outline-offset-4",
+    "hover:opacity-90",
     "hover:shadow-none",
-    "focus:outline-2",
+    "focus-visible:outline-none  focus:outline-2",
     "focus:outline-teal-300 ",
+    "inset-shadow-xs inset-shadow-white/30 ring  active:inset-shadow-transparent",
     variant === "default" && defaultClass,
     variant === "accent" && accentClass,
     variant === "muted" && mutedClass,

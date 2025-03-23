@@ -16,46 +16,48 @@ const { class: className = "", ...rest } = Astro.props;
 <div
   id="chat-bubble"
   {...rest}
-  class={`${className} opacity-0 z-50 pointer-events-none  w-auto sm:w-[350px] max-h-[90vh] overflow-y-auto bg-base-900 shadow-2xl transition-opacity duration-300 outline outline-base-800 rounded-(--card-radius) p-(--card-padding) group [--card-padding:--spacing(2)]  [--card-radius:var(--radius-3xl)]`}
+  class={`${className} opacity-0 z-50 pointer-events-none  w-auto sm:w-[350px] max-h-[90vh] overflow-y-auto bg-white bg-stripes shadow-2xl transition-opacity duration-300 outline outline-base-200 p-2 rounded-xl`}
 >
-  <div class="flex flex-col items-center justify-center h-32">
-    <Text tag="h3" variant="textLG" class="font-medium text-white"
-      >Got any questions?</Text
-    >
-    <Text tag="p" variant="textSM" class="mt-2 text-base-400"
-      >Typically replies under 47 minutes</Text
-    >
-  </div>
   <div
-    class="flex-grow p-6 bg-white shadow rounded-[calc(var(--card-radius)-var(--card-padding))]"
+    class="bg-white outline outline-base-200 shadow-2xl rounded-lg overflow-hidden divide-y divide-base-200"
   >
-    <form class="relative flex flex-col justify-between h-full">
-      <div class="flex flex-col gap-2">
-        <input
-          type="text"
-          id="full_name"
-          placeholder="Your Name"
-          required
-          class="block w-full h-10 px-4 py-2 text-sm text-teal-700 border border-transparent rounded-lg appearance-none duration-300 bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
-        />
-        <input
-          type="email"
-          id="email"
-          placeholder="you@company.com"
-          required
-          class="block w-full h-10 px-4 py-2 text-sm text-teal-700 border border-transparent rounded-lg appearance-none duration-300 bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
-        />
-        <textarea
-          id="message"
-          placeholder="Your Message"
-          rows="4"
-          required
-          class="block w-full px-4 py-2 text-sm text-teal-700 border border-transparent rounded-lg appearance-none duration-300 bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
-        ></textarea>
-      </div>
-      <Button type="submit" size="base" variant="default" class="w-full mt-2">
-        Submit
-      </Button>
-    </form>
+    <div class="flex flex-col items-center justify-center h-32 p-6">
+      <Text tag="h3" variant="textLG" class="font-medium text-base-800"
+        >Got any questions?</Text
+      >
+      <Text tag="p" variant="textSM" class="mt-2 text-base-600"
+        >Typically replies under 1 hour</Text
+      >
+    </div>
+    <div class="flex-grow p-6">
+      <form class="relative flex flex-col justify-between h-full">
+        <div class="flex flex-col gap-2">
+          <input
+            type="text"
+            id="full_name"
+            placeholder="Your Name"
+            required
+            class="block w-full h-10 px-4 py-2 text-sm text-teal-700 border border-transparent rounded-lg appearance-none duration-300 bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
+          />
+          <input
+            type="email"
+            id="email"
+            placeholder="you@company.com"
+            required
+            class="block w-full h-10 px-4 py-2 text-sm text-teal-700 border border-transparent rounded-lg appearance-none duration-300 bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
+          />
+          <textarea
+            id="message"
+            placeholder="Your Message"
+            rows="4"
+            required
+            class="block w-full px-4 py-2 text-sm text-teal-700 border border-transparent rounded-lg appearance-none duration-300 bg-base-100 placeholder-base-400 focus:bg-transparent focus:outline-none focus:ring-teal-500 focus:ring-offset-2 focus:ring-2 focus:ring-offset-base-200"
+          ></textarea>
+        </div>
+        <Button type="submit" size="base" variant="default" class="w-full mt-2">
+          Submit
+        </Button>
+      </form>
+    </div>
   </div>
 </div>

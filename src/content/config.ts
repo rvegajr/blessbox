@@ -1,4 +1,35 @@
 import { defineCollection, z } from "astro:content";
+const integrations = defineCollection({
+  schema: z.object({
+    bgColor: z.string().optional(),
+    email: z.string(),
+    integration: z.string(),
+    description: z.string(),
+    permissions: z.array(z.string()),
+    details: z.array(z.object({
+      title: z.string(),
+      value: z.string(),
+      url: z.optional(z.string()),
+    })),
+    logo: z.object({
+      url: z.string(),
+      alt: z.string(),
+    }),
+  }),
+});
+ const team = defineCollection({
+  schema: z.object({
+    name: z.string(),
+    role: z.string(),
+    intro: z.string(),
+    education: z.array(z.string()),
+    experience: z.array(z.string()),
+    avatar: z.object({
+      url: z.string(),
+      alt: z.string(),
+    }),
+  }),
+});
 const helpcenter = defineCollection({
   schema: z.object({
     iconId: z.string().optional(), 
@@ -17,14 +48,17 @@ const helpcenter = defineCollection({
       .optional(), 
   }),
 });
-export default helpcenter;
 const customers = defineCollection({
   schema: z.object({
-    bgColor: z.string().optional(),
     customer: z.string(),
-    testimonial: z.string().optional(),
+    bgColor: z.string().optional(),
     ctaTitle: z.string().optional(),
+    testimonial: z.string().optional(),
     partnership: z.string().optional(),
+    avatar: z.object({
+      url: z.string(),
+      alt: z.string(),
+    }),
     challengesAndSolutions: z.array(z.object({
       title: z.string(),
       content: z.string(),
@@ -36,6 +70,17 @@ results: z.array(z.string()),
       url: z.string(),
       alt: z.string(),
     }),
+  }),
+});
+const changelog = defineCollection({
+  schema: z.object({
+    page: z.string(),
+    description: z.string(),
+    pubDate: z.date(),
+    image: z.object({
+        url: z.string(),
+        alt: z.string()
+      }),
   }),
 });
 const infopages = defineCollection({
@@ -62,8 +107,11 @@ const postsCollection = defineCollection({
   }),
 });
 export const collections = {
-  helpcenter: helpcenter,
-  customers: customers,
+  team: team,
   infopages: infopages,
+  changelog: changelog,
+  customers: customers,
+  helpcenter: helpcenter,
   posts: postsCollection,
+  integrations: integrations,
 };

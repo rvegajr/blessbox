@@ -3,9 +3,10 @@
 @plugin "tailwind-scrollbar-hide";
 @theme {
   /* Typography */
-  /* Yellow*/
   --font-sans: "Geist", sans-serif;
   --font-mono: "Geist Mono", monospace;
+  /* Colors*/
+  /* Yellow*/
   --color-yellow-50: oklch(99.07% 0.024 111.97);
   --color-yellow-100: oklch(98.18% 0.039 110.21);
   --color-yellow-200: oklch(96.75% 0.078 110.89);
@@ -54,28 +55,38 @@
   --color-base-800: oklch(0.278 0.033 256.848); /* Default */
   --color-base-900: oklch(0.21 0.034 264.665);
   --color-base-950: oklch(0.13 0.028 261.692);
-  
+  --background-image-stripes: repeating-linear-gradient(
+    125deg,
+    transparent,
+    transparent 6px,
+    #e8e8e8 6px,
+    #e8e8e8 7px
+  );
   /* Shadows */
   --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -2px rgba(0, 0, 0, 0.1);
-
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -4px rgba(0, 0, 0, 0.1);
-
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 8px 10px -6px rgba(0, 0, 0, 0.1);
-
   --shadow-2xl: 0px 6.6px 4.7px 0px rgba(26, 43, 59, 0.07),
     0px 16.7px 11.8px 0px rgba(26, 43, 59, 0.1),
     0px 34px 24.1px 0px rgba(26, 43, 59, 0.13),
     0px 70px 49.6px 0px rgba(26, 43, 59, 0.16),
     0px 192px 136px 0px rgba(26, 43, 59, 0.23);
-
+  --shadow-button-before: 0px 2px 0.4px 0px rgba(255, 255, 255, 0.16) inset;
+  --shadow-bottom: rgba(0, 0, 0, 0.09) 0px 1.34368px 0.537473px -0.625px,
+    rgba(0, 0, 0, 0.086) 0px 3.18477px 1.27391px -1.25px,
+    rgba(0, 0, 0, 0.083) 0px 5.80935px 2.32374px -1.875px,
+    rgba(0, 0, 0, 0.08) 0px 9.65803px 3.86321px -2.5px,
+    rgba(0, 0, 0, 0.07) 0px 15.5969px 6.23877px -3.125px,
+    rgba(0, 0, 0, 0.061) 0px 25.5306px 10.2122px -3.75px,
+    rgba(0, 0, 0, 0.04) 0px 43.962px 17.5848px -4.375px,
+    rgba(0, 0, 0, 0) 0px 80px 32px -5px;
   /* Keyframes */
+  --animate-quickMarquee: marquee 10s linear infinite;
   --animate-marquee: marquee 24s linear infinite;
   --animate-slowMarquee: marquee 48s linear infinite;
   --animate-rightMarquee: rightMarquee 24s linear infinite;
@@ -87,7 +98,6 @@
       transform: translateX(-100%);
     }
   }
-
   @keyframes rightMarquee {
     0% {
       transform: translateX(0%);
@@ -97,7 +107,6 @@
     }
   }
 }
-
 :root {
   /* Shiki code style */
   /* base Tokens */
@@ -106,17 +115,6 @@
   --astro-code-token-comment: var(--color-base-500);
   --astro-code-token-highlight: var(--color-base-600);
   --astro-code-token-line-number: var(--color-base-400);
-  /* teal Tokens */
-  --astro-code-token-alert: var(--color-teal-300);
-  --astro-code-token-symbol: var(--color-teal-300);
-  --astro-code-token-atrule: var(--color-teal-200);
-  --astro-code-token-selector: var(--color-teal-100);
-  --astro-code-token-inserted: var(--color-teal-100);
-  --astro-code-token-emphasis: var(--color-teal-100);
-  --astro-code-token-parameter: var(--color-teal-200);
-  --astro-code-token-punctuation: var(--color-teal-100);
-  --astro-code-token-string-expression: var(--color-teal-600);
-
   /* Yellow Tokens */
   --astro-code-token-string: var(--color-yellow-500);
   --astro-code-token-number: var(--color-yellow-400);
@@ -127,7 +125,6 @@
   --astro-code-token-constant: var(--color-yellow-400);
   --astro-code-token-property: var(--color-yellow-400);
   --astro-code-token-attr-value: var(--color-yellow-400);
-
   /* Blue Tokens */
   --astro-code-token-tag: var(--color-blue-500);
   --astro-code-token-cdata: var(--color-blue-300);
@@ -144,7 +141,6 @@
   --astro-code-token-attr-name: var(--color-blue-400);
   --astro-code-token-namespace: var(--color-blue-300);
   --astro-code-token-class-name: var(--color-blue-500);
-
   --astro-code-token-bold: inherit;
   --astro-code-token-: ;
   --astro-code-token-underline: underline;
@@ -160,7 +156,5 @@ code .line::before {
   margin-right: 1.5rem;
   display: inline-block;
   text-align: right;
-  color: #ffffff540;
+  color: #ffffff55;
 }
-
-

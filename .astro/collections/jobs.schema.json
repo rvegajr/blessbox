@@ -1,0 +1,28 @@
+{
+  "$ref": "#/definitions/jobs",
+  "definitions": {
+    "jobs": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "page",
+        "details"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
