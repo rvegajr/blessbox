@@ -17,13 +17,16 @@ import Navigation from "@/components/global/Navigation.astro";
     <BaseHead />
   </head>
   <body class="relative flex flex-col min-h-screen bg-white">
-    <Navigation />
-    <main class="grow">
-      <slot />
-    </main>
-    <Footer />
+    <div
+      class="bg-stripes max-w-7xl mx-auto border-x border-base-200 px-2 md:px-0 w-full lg:overflow-hidden"
+    >
+      <Navigation />
+      <main class="grow">
+        <slot />
+      </main>
+      <Footer />
+    </div>
     <!-- Scripts -->
     <AOSBody />
-    
   </body>
 </html>

@@ -26,15 +26,19 @@ const brands = [
 ---
 
 <div class={className} {...rest}>
-  {
-    brands.map((logo) => (
-      <Image
-        width={2000}
-        height={100}
-        class=" max-h-10"
-        src={logo.src}
-        alt={logo.alt}
-      />
-    ))
-  }
+  <div
+    class="items-center relative animate-quickMarquee flex gap-4 whitespace-nowrap"
+  >
+    {
+      brands.map((logo) => (
+        <Image
+          width={2000}
+          height={100}
+          class=" max-h-10"
+          src={logo.src}
+          alt={logo.alt}
+        />
+      ))
+    }
+  </div>
 </div>
