@@ -1,6 +1,7 @@
 ---
 // Assets
-import LimeStripe from "@/components/assets/LimeStripe.astro";
+import { Image } from "astro:assets";
+import LimeStripe from "@/images/assets/LimeStripe.png";
 // Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Text from "@/components/fundations/elements/Text.astro";
@@ -17,8 +18,10 @@ const allCustomers = await getCollection("customers");
 <BaseLayout>
   <section>
     <Wrapper variant="standard" class="relative py-12 lg:pt-32 overflow-hidden">
-      <LimeStripe
-        class="absolute inset-0 size-full pointer-events-none scale-300 top-100"
+      <Image
+        src={LimeStripe}
+        alt="Lime Stripe"
+        class="absolute inset-0 size-full pointer-events-none scale-300 top-90"
       />
       <div class="relative">
         <Text
