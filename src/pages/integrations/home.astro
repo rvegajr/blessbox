@@ -1,6 +1,7 @@
 ---
 // Assets
-import LimeStripe from "@/components/assets/LimeStripe.astro";
+import { Image } from "astro:assets";
+import LimeStripe from "@/images/assets/LimeStripe.png";
 // Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Text from "@/components/fundations/elements/Text.astro";
@@ -20,9 +21,12 @@ const allIntegrations = (await getCollection("integrations")).sort((a, b) =>
 <BaseLayout>
   <section>
     <Wrapper variant="standard" class="relative py-32 lg:pb-80 overflow-hidden">
-      <LimeStripe
+      <Image
+        src={LimeStripe}
+        alt="Lime Stripe"
         class="absolute inset-0 size-full pointer-events-none scale-180 rotate-x-180 top-100"
       />
+
       <div class="relative">
         <Text
           class="span"

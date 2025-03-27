@@ -6,7 +6,7 @@ import Button from "@/components/fundations/elements/Button.astro";
 import Wrapper from "@/components/fundations/containers/Wrapper.astro";
 // Component
 import BlogSearch from "@/components/blog/BlogSearch.astro";
-import BlogEntries2 from "@/components/blog/BlogEntries2.astro";
+import BlogEntries1 from "@/components/blog/BlogEntries1.astro";
 import SubscribeCta from "@/components/blog/SubscribeCta.astro";
 // Content
 import { getCollection } from "astro:content";
@@ -96,8 +96,8 @@ const tags = [...new Set(allPosts.map((post) => post.data.tags).flat())];
   </section>
   <section>
     <Wrapper variant="standard" class="py-4 border-t">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {allPosts.map((post) => <BlogEntries2 post={post} />)}
+      <div class="flex flex-col">
+        {allPosts.map((post) => <BlogEntries1 post={post} />)}
       </div>
     </Wrapper>
   </section>

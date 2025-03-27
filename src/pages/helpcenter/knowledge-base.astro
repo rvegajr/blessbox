@@ -1,6 +1,7 @@
 ---
 // Assets
-import LimeStripe from "@/components/assets/LimeStripe.astro";
+import { Image } from "astro:assets";
+import LimeStripe from "@/images/assets/LimeStripe.png";
 // Widgets
 import Chat from "@/components/widgets/Chat.astro";
 // Fundations
@@ -65,9 +66,12 @@ const data = [
   <section class="overflow-hidden relative">
     <Chat class="fixed bottom-5 right-5" />
     <Wrapper variant="standard" class="py-12 lg:pt-32 relative overflow-hidden">
-      <LimeStripe
-        class="absolute inset-0 size-full pointer-events-none scale-220 rotate-x-180 top-80"
+      <Image
+        src={LimeStripe}
+        alt="Lime Stripe"
+        class="absolute inset-0 size-full pointer-events-none scale-220 rotate-x-180 top-100"
       />
+
       <div class="relative">
         <Text
           class="span"
@@ -120,11 +124,7 @@ const data = [
                   )}
                   {section.icon === "User" && <User size="base" />}
                   {section.icon === "Phone" && <Phone size="base" />}
-                  <Text
-                    tag="h3"
-                    variant="textBase"
-                    class="font-medium "
-                  >
+                  <Text tag="h3" variant="textBase" class="font-medium ">
                     {section.category}
                   </Text>
                 </dt>

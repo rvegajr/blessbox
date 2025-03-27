@@ -8,10 +8,9 @@ const links = [
   {
     title: "Navigation",
     links: [
-      { label: "Overview", href: "/" },
-      { label: "Style Guide", href: "/system/styleguide" },
-      { label: "Links", href: "/system/links" },
+      { label: "Overview", href: "/system/overview" },
       { label: "Colors", href: "/system/colors" },
+      { label: "Links", href: "/system/links" },
       { label: "Buttons", href: "/system/buttons" },
       { label: "Typography", href: "/system/typography" },
     ],
@@ -65,7 +64,7 @@ const links = [
         {
           links.map((section) => (
             <div class="before:bg-white">
-              <div class="px-4 relative  before:absolute after:absolute before:bg-white before:top-0 before:left-0 before:h-6 before:w-px after:top-8 after:bottom-0 after:left-0 after:w-px">
+              <div>
                 <Text
                   tag="h3"
                   variant="textBase"

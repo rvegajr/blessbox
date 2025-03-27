@@ -1,7 +1,7 @@
 ---
 // Assets
-import Logo from "@/components/assets/Logo.astro";
-import LimeStripe from "@/components/assets/LimeStripe.astro";
+import { Image } from "astro:assets";
+import LimeStripe from "@/images/assets/LimeStripe.png";
 import VisualAsset1 from "@/components/assets/VisualAsset1.astro";
 // Fundations
 import Text from "@/components/fundations/elements/Text.astro";
@@ -16,7 +16,12 @@ import ChevronRight from "@/components/fundations/icons/ChevronRight.astro";
     variant="standard"
     class="relative overflow-hidden py-32 flex flex-col items-center justify-center h-dvh"
   >
-    <LimeStripe class="absolute inset-0 size-full scale-150" />
+    <Image
+      src={LimeStripe}
+      alt="Lime Stripe"
+      class="absolute inset-0 size-full scale-150"
+    />
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
       <div
         class="absolute hidden lg:inset-0 lg:left-1/2 lg:flex items-center justify-center overflow-hidden lg:border-l lg:border-base-200"

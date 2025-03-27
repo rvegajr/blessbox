@@ -1,6 +1,7 @@
 ---
 // Assetss
-import LimeStripe from "@/components/assets/LimeStripe.astro";
+import { Image } from "astro:assets";
+import LimeStripe from "@/images/assets/LimeStripe.png";
 // Fundations
 import Logo from "@/components/assets/Logo.astro";
 import Link from "@/components/fundations/elements/Link.astro";
@@ -72,7 +73,11 @@ const isAuthPage =
             class="fixed inset-0 bg-white bg-stripes  md:bg-none md:bg-transparent flex flex-col py-24 lg:p-0 h-full justify-between md:p-0 transform transition-all duration-300 ease-in-out opacity-0 -translate-y-4 pointer-events-none md:relative md:inset-auto md:opacity-100 md:pointer-events-auto md:translate-y-0"
           >
             <div class="absolute inset-0 pointer-events-none bg-white border-x border-base-200 mx-2 md:hidden" />
-            <LimeStripe class="absolute inset-0 size-full pointer-events-none scale-180  top-100 md:hidden " />
+            <Image
+              src={LimeStripe}
+              alt="Lime Stripe"
+              class="absolute inset-0 size-full pointer-events-none scale-180  top-100 md:hidden "
+            />
             <button
               id="menu-close"
               class="absolute top-4 right-4 md:hidden focus:outline-none text-base-800"
