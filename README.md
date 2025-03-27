@@ -38,6 +38,9 @@ All commands are run from the root of the project, from a terminal:
 
 Learn more - Explore more through Astro's official [documentation](https://docs.astro.build).
 
+----------------------------
+Updated on 27th March 2025
+- Change LimeStripe iframe for PNG image because of performance issues. No visuals affecrted 
 
 
 ----------------------------
@@ -47,6 +50,7 @@ Updated on 23th March 2025
 - Added Fuse Js Search on: Blog, Help Center, Jobs and Integrations.
 - AOS Animation on
 - Full redesign
+- Activated AOS
 
 On this version, Tailwind CSS is now V4, this means that there's no `tailwind.config.mjs` file anymore. 
 From now on, all style will be added on the `css` file. You can find the styles on the `src/styles/global.css` file.

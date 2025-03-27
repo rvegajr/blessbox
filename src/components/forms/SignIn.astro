@@ -1,7 +1,8 @@
 ---
 // Assets
 import Logo from "@/components/assets/Logo.astro";
-import LimeStripe from "@/components/assets/LimeStripe.astro";
+import { Image } from "astro:assets";
+import LimeStripe from "@/images/assets/LimeStripe.png";
 import VisualAsset1 from "@/components/assets/VisualAsset1.astro";
 // Fundations
 import Text from "@/components/fundations/elements/Text.astro";
@@ -25,14 +26,18 @@ import ChevronLeft from "@/components/fundations/icons/ChevronLeft.astro";
           class="bg-base-50 rounded-2xl overflow-hidden size-full
       flex items-center justify-center relative pointer-events-none"
         >
-          <LimeStripe class="absolute inset-0 size-full" />
+          <Image
+            src={LimeStripe}
+            alt="Lime Stripe"
+            class="absolute inset-0 size-full scale-150"
+          />
           <VisualAsset1
             class="max-w-sm w-full rounded-2xl shadow-2xl p-8 relative lg:scale-130"
           />
         </div>
       </div>
       <div>
-        <a href="/"><Logo class="h-8 text-yellow-600 mx-auto lg:mx-0" /></a>
+        <a href="/"><Logo class="h-4 text-yellow-600 mx-auto lg:mx-0" /></a>
         <div class="lg:text-balance text-center lg:text-left">
           <Text
             tag="h1"

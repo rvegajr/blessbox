@@ -1,7 +1,6 @@
 ---
 // Assets
 import { Image } from "astro:assets";
-import LimeStripe from "@/components/assets/LimeStripe.astro";
 // Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Text from "@/components/fundations/elements/Text.astro";
@@ -14,9 +13,6 @@ const { frontmatter } = Astro.props;
 <BaseLayout>
   <section>
     <Wrapper variant="standard" class="relative py-32 lg:pb-40 overflow-hidden">
-      <LimeStripe
-        class="absolute inset-0 size-full pointer-events-none scale-180 rotate-x-180 top-100"
-      />
       <div class="relative">
         <Text
           class="span"
@@ -83,7 +79,7 @@ const { frontmatter } = Astro.props;
           variant="textXL"
           data-aos="fade-up"
           data-aos-duration="1500"
-          class=" font-semibold  text-base-800 md:text-balance max-w-xl mx-auto"
+          class="font-semibold text-base-800 md:text-balance max-w-xl mx-auto"
         >
           "{frontmatter.testimonial}"
         </Text>
@@ -92,7 +88,7 @@ const { frontmatter } = Astro.props;
           height={500}
           src={frontmatter.avatar.url}
           alt={frontmatter.avatar.alt}
-           data-aos="fade-up"
+          data-aos="fade-up"
           data-aos-duration="2000"
           class="size-20 rounded-full mx-auto object-top object-cover mt-8"
         />

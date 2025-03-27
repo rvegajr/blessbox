@@ -1,6 +1,4 @@
 ---
-// Assets
-import LimeStripe from "@/components/assets/LimeStripe.astro";
 // Fundations
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Text from "@/components/fundations/elements/Text.astro";
@@ -17,9 +15,8 @@ const allTeam = await getCollection("team");
 <BaseLayout>
   <section>
     <Wrapper variant="standard" class="relative py-12 lg:pt-32 overflow-hidden">
-      <LimeStripe
-        class="absolute inset-0 size-full pointer-events-none scale-300 top-100"
-      />
+      
+
       <div class="relative">
         <Text
           class="span"
