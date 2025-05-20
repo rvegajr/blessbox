@@ -7,8 +7,11 @@ import AOSBody from "@/components/fundations/scripts/AOSBody.astro";
 // Components
 import Footer from "@/components/global/Footer.astro";
 import Navigation from "@/components/global/Navigation.astro";
+// Hides nav and footer on selected screens by passing
+// the hideNav and hideFooter props
+// <BaseLayout hideNav={true} hideFooter={true}>
+const { hideNav = false, hideFooter = false } = Astro.props;
 ---
-
 <html
   lang="en"
   class="scroll-smooth selection:bg-base-800 selection:text-teal-500"
@@ -20,11 +23,11 @@ import Navigation from "@/components/global/Navigation.astro";
     <div
       class="bg-stripes max-w-7xl mx-auto border-x border-base-200 px-2 md:px-0 w-full lg:overflow-hidden"
     >
-      <Navigation />
+      {!hideNav && <Navigation />}
       <main class="grow">
         <slot />
       </main>
-      <Footer />
+    { !hideFooter && <Footer /> }
     </div>
     <!-- Scripts -->
     <AOSBody />
