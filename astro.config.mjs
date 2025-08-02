@@ -2,8 +2,11 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
+import vercel from "@astrojs/vercel";
 // https://astro.build/config
 export default defineConfig({
+  output: 'server',
+  adapter: vercel(),
   vite: {
     plugins: [tailwindcss()],
   },
@@ -19,6 +22,6 @@ export default defineConfig({
     drafts: true
   },
   devToolbar: { enabled: false },
-  site: 'https://yourdomain.com',
+  site: 'https://blessbox.vercel.app',
   integrations: [ sitemap(), mdx()]
 });
