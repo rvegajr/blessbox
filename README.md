@@ -1,4 +1,14 @@
-# Buio
+# BlessBox
+
+## Project Overview
+BlessBox is a streamlined QR-based registration and verification system designed for organizations managing events like food distributions, seminar registrations, and volunteer sign-ups.
+
+## Features
+- **Organization Setup**: Simple registration and login system for organizations
+- **QR Code Generation**: Create custom QR codes for different event types
+- **Mobile-Friendly Scanning**: Users scan QR codes and fill forms on their phones
+- **Real-time Verification**: Staff can verify registrations and take appropriate actions
+- **Responsive Design**: Scales beautifully from mobile to large desktop screens
 
 ## Template Integrations
 - Tailwind CSS v4  
