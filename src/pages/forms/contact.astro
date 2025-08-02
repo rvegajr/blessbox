@@ -84,7 +84,7 @@ import InfoCircle from "@/components/fundations/icons/InfoCircle.astro";
           >
         </div>
       </div>
-      <form action="#" method="POST">
+      <form action="/api/contact" method="POST" id="contactForm">
         <div class="flex flex-col gap-y-4">
           <div>
             <label class="text-sm leading-normal text-base-500 font-medium">
@@ -166,12 +166,73 @@ import InfoCircle from "@/components/fundations/icons/InfoCircle.astro";
             </div>
           </div>
 
-          <Button type="submit" size="lg" variant="default" class="w-full">
-            Submit
+          <Button type="submit" size="lg" variant="default" class="w-full" id="submitBtn">
+            <span id="submitText">Submit</span>
+            <span id="submitLoader" class="hidden">Sending...</span>
           </Button>
+          
+          <!-- Success/Error Messages -->
+          <div id="formMessage" class="hidden p-4 rounded-lg text-sm font-medium"></div>
         </div>
       </form>
     </div>
   </Wrapper>
 </section>
 </BaseLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm') as HTMLFormElement;
+    const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+    const submitText = document.getElementById('submitText') as HTMLSpanElement;
+    const submitLoader = document.getElementById('submitLoader') as HTMLSpanElement;
+    const formMessage = document.getElementById('formMessage') as HTMLDivElement;
+
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitText.classList.add('hidden');
+        submitLoader.classList.remove('hidden');
+        formMessage.classList.add('hidden');
+
+        try {
+          const formData = new FormData(form);
+          const response = await fetch('/api/contact', {
+            method: 'POST',
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            // Show success message
+            formMessage.className = 'p-4 rounded-lg text-sm font-medium bg-green-50 text-green-800 border border-green-200';
+            formMessage.textContent = result.message;
+            formMessage.classList.remove('hidden');
+            
+            // Reset form
+            form.reset();
+          } else {
+            // Show error message
+            formMessage.className = 'p-4 rounded-lg text-sm font-medium bg-red-50 text-red-800 border border-red-200';
+            formMessage.textContent = result.message;
+            formMessage.classList.remove('hidden');
+          }
+        } catch (error) {
+          // Show error message
+          formMessage.className = 'p-4 rounded-lg text-sm font-medium bg-red-50 text-red-800 border border-red-200';
+          formMessage.textContent = 'Network error. Please check your connection and try again.';
+          formMessage.classList.remove('hidden');
+        } finally {
+          // Reset button state
+          submitBtn.disabled = false;
+          submitText.classList.remove('hidden');
+          submitLoader.classList.add('hidden');
+        }
+      });
+    }
+  });
+</script>
