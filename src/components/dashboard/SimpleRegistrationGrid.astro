@@ -1,0 +1,97 @@
+---
+/**
+ * Simple Registration Grid Component - Step by step approach! 💖
+ */
+
+import { RegistrationService } from '../../implementations/dashboard/RegistrationService';
+
+interface Props {
+  organizationId: string;
+}
+
+const { organizationId } = Astro.props;
+
+// Fetch data using our service
+const registrationService = new RegistrationService();
+let registrationData;
+let error = null;
+
+try {
+  registrationData = await registrationService.getRegistrations(
+    organizationId,
+    {},
+    { page: 1, limit: 10, sortBy: 'registeredAt', sortOrder: 'desc' }
+  );
+} catch (err) {
+  error = err instanceof Error ? err.message : 'Failed to load registrations';
+  console.error('❌ Error loading registrations:', err);
+}
+---
+
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <h2 class="text-xl font-bold text-gray-900 mb-4">Registrations</h2>
+  
+  {error ? (
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <p class="text-red-800">❌ Error: {error}</p>
+    </div>
+  ) : registrationData ? (
+    <div>
+      <p class="text-sm text-gray-600 mb-4">
+        Found {registrationData.totalCount} total registrations, showing {registrationData.registrations.length}
+      </p>
+      
+      <div class="space-y-4">
+        {registrationData.registrations.map((registration) => {
+          const data = registration.registrationData;
+          const firstName = data.firstName || '';
+          const lastName = data.lastName || '';
+          const email = data.email || '';
+          
+          return (
+            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-medium text-gray-900">
+                    {firstName} {lastName}
+                  </h3>
+                  <p class="text-sm text-gray-600">{email}</p>
+                  <p class="text-xs text-gray-500">
+                    QR: {registration.qrCodeId} • {new Date(registration.registeredAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  {registration.deliveryStatus === 'delivered' && (
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      ✅ Delivered
+                    </span>
+                  )}
+                  {registration.deliveryStatus === 'pending' && (
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      ⏳ Pending
+                    </span>
+                  )}
+                  {registration.deliveryStatus === 'failed' && (
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      ❌ Failed
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+      {registrationData.registrations.length === 0 && (
+        <div class="text-center py-8">
+          <p class="text-gray-500">No registrations found.</p>
+        </div>
+      )}
+    </div>
+  ) : (
+    <div class="text-center py-8">
+      <p class="text-gray-500">Loading registrations...</p>
+    </div>
+  )}
+</div>
