@@ -363,7 +363,40 @@ import Camera from "@/components/fundations/icons/Camera.astro";
               </div>
             </div>
             
-            <div class="bg-yellow-50 rounded-xl p-4">
+            <!-- Registration Form Demonstration -->
+            <div class="mt-6">
+              <div id="panel3-demo-step" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+                <div class="flex items-center mb-4">
+                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                    1
+                  </div>
+                  <Text tag="h3" variant="textLG" class="font-semibold text-blue-800">
+                    User Submits Registration Form
+                  </Text>
+                </div>
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                  <div class="space-y-3">
+                    <div class="flex justify-between">
+                      <Text tag="span" variant="textSM" class="text-gray-600">Name:</Text>
+                      <Text tag="span" variant="textSM" class="font-medium">Maria Rodriguez</Text>
+                    </div>
+                    <div class="flex justify-between">
+                      <Text tag="span" variant="textSM" class="text-gray-600">Family Size:</Text>
+                      <Text tag="span" variant="textSM" class="font-medium">4 members</Text>
+                    </div>
+                    <div class="flex justify-between">
+                      <Text tag="span" variant="textSM" class="text-gray-600">Phone:</Text>
+                      <Text tag="span" variant="textSM" class="font-medium">(555) 123-4567</Text>
+                    </div>
+                  </div>
+                  <Button variant="primary" size="small" class="w-full mt-4 animate-pulse">
+                    🎉 Submit Registration
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-yellow-50 rounded-xl p-4 mt-4">
               <Text tag="p" variant="textSM" class="text-yellow-700">
                 <strong>Example:</strong> Families can scan either QR code (Main Entrance or Side Door), fill out the same form on their phone, and submit registration instantly. Staff can track which entrance was used.
               </Text>
@@ -381,40 +414,9 @@ import Camera from "@/components/fundations/icons/Camera.astro";
               </Text>
             </div>
             
-            <!-- Interactive Demo Section -->
+                        <!-- Interactive Demo Section -->
             <div class="space-y-6">
               
-              <!-- Step 1: Form Submission -->
-              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
-                <div class="flex items-center mb-4">
-                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                    1
-                        </div>
-                  <Text tag="h3" variant="textLG" class="font-semibold text-blue-800">
-                    User Submits Registration Form
-                          </Text>
-                        </div>
-                <div class="bg-white rounded-lg p-4 shadow-sm">
-                  <div class="space-y-3">
-                    <div class="flex justify-between">
-                      <Text tag="span" variant="textSM" class="text-gray-600">Name:</Text>
-                      <Text tag="span" variant="textSM" class="font-medium">Maria Rodriguez</Text>
-                      </div>
-                    <div class="flex justify-between">
-                      <Text tag="span" variant="textSM" class="text-gray-600">Family Size:</Text>
-                      <Text tag="span" variant="textSM" class="font-medium">4 members</Text>
-                    </div>
-                    <div class="flex justify-between">
-                      <Text tag="span" variant="textSM" class="text-gray-600">Phone:</Text>
-                      <Text tag="span" variant="textSM" class="font-medium">(555) 123-4567</Text>
-                    </div>
-                  </div>
-                  <Button variant="primary" size="small" class="w-full mt-4 animate-pulse">
-                    🎉 Submit Registration
-                  </Button>
-                    </div>
-                  </div>
-                  
               <!-- Transformation Arrow -->
               <div class="flex justify-center">
                 <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white px-6 py-3 rounded-full shadow-lg transform rotate-3 animate-bounce">
@@ -422,18 +424,18 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                     ✨ INSTANT MAGIC! ✨
                           </Text>
                         </div>
-                      </div>
+              </div>
 
-              <!-- Step 2: QR Code Generation -->
+                            <!-- Step 1: QR Code Generation -->
               <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
                 <div class="flex items-center mb-4">
                   <div class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                    2
+                    1
                   </div>
                   <Text tag="h3" variant="textLG" class="font-semibold text-green-800">
                     QR Code Appears Instantly!
-                  </Text>
-                    </div>
+                          </Text>
+                        </div>
                 
                 <div class="bg-white rounded-lg p-6 shadow-sm text-center">
                   <!-- Demo QR Code -->
@@ -465,15 +467,15 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                         ⚠️ Keep this page open until checked in!
                           </Text>
                         </div>
-                  </div>
-                </div>
-              </div>
+                      </div>
+                    </div>
+                      </div>
 
-              <!-- Step 3: Staff Scanning -->
+                            <!-- Step 2: Staff Scanning -->
               <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
                 <div class="flex items-center mb-4">
                   <div class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                    3
+                    2
                   </div>
                   <Text tag="h3" variant="textLG" class="font-semibold text-purple-800">
                     Organization Worker Scans QR Code
@@ -499,11 +501,11 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                 </div>
               </div>
               
-              <!-- Step 4: Automatic Action -->
+              <!-- Step 3: Automatic Action -->
               <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border-2 border-orange-200">
                 <div class="flex items-center mb-4">
                   <div class="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
-                    4
+                    3
                   </div>
                   <Text tag="h3" variant="textLG" class="font-semibold text-orange-800">
                     Ready for Distribution, Action, Attendance!
@@ -786,8 +788,10 @@ import Camera from "@/components/fundations/icons/Camera.astro";
       function animateQRDemo() {
         console.log('🎉 Starting QR Demo Animation with PURE JOY!');
         
-        // Get all demo steps
-        const steps = document.querySelectorAll('[class*="bg-gradient-to-r from-blue-50"], [class*="bg-gradient-to-r from-green-50"], [class*="bg-gradient-to-r from-purple-50"], [class*="bg-gradient-to-r from-orange-50"]');
+        // Get all demo steps (now includes Panel 3 step 1 and Panel 4 steps)
+        const panel3Step = document.querySelector('#panel3-demo-step');
+        const panel4Steps = document.querySelectorAll('[class*="bg-gradient-to-r from-green-50"], [class*="bg-gradient-to-r from-purple-50"], [class*="bg-gradient-to-r from-orange-50"]');
+        const steps = panel3Step ? [panel3Step, ...panel4Steps] : [...panel4Steps];
         const magicArrow = document.querySelector('[class*="animate-bounce"]');
         const celebration = document.querySelector('[class*="bg-gradient-to-r from-green-400 to-blue-500"]');
         
@@ -814,25 +818,25 @@ import Camera from "@/components/fundations/icons/Camera.astro";
             
             // Special effects for each step
             if (currentStep === 0) {
-              // Form submission - make button pulse
+              // Form submission (Panel 3) - make button pulse
               const submitBtn = step.querySelector('button');
               if (submitBtn) {
                 submitBtn.style.animation = 'pulse 1s infinite';
               }
             } else if (currentStep === 1) {
-              // QR Code generation - make QR code spin
+              // QR Code generation (Panel 4 Step 1) - make QR code spin
               const qrCode = step.querySelector('[class*="w-32 h-32"]');
               if (qrCode) {
                 qrCode.style.animation = 'spin 2s linear infinite';
               }
             } else if (currentStep === 2) {
-              // Staff scanning - make camera bounce
+              // Staff scanning (Panel 4 Step 2) - make camera bounce
               const camera = step.querySelector('[class*="w-8 h-8"]');
               if (camera) {
                 camera.style.animation = 'bounce 1s infinite';
               }
             } else if (currentStep === 3) {
-              // Action cards - make them wiggle
+              // Action cards (Panel 4 Step 3) - make them wiggle
               const cards = step.querySelectorAll('[class*="bg-white rounded-lg"]');
               cards.forEach((card, index) => {
                 setTimeout(() => {
