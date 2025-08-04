@@ -41,7 +41,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 max-w-7xl mx-auto">
           
           <!-- Panel 1: Organization Login/Registration -->
-          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10" id="panel1-demo-step">
             <div class="flex items-center mb-6">
               <div class="bg-teal-100 p-3 rounded-xl mr-4">
                 <UsersGroup class="w-6 h-6 md:w-8 md:h-8 text-teal-600" />
@@ -167,7 +167,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
           </div>
 
           <!-- Panel 2: QR Code Creation -->
-          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10" id="panel2-demo-step">
             <div class="flex items-center mb-6">
               <div class="bg-blue-100 p-3 rounded-xl mr-4">
                 <Code class="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
@@ -282,7 +282,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
           </div>
 
           <!-- Panel 3: QR Display & Scanning -->
-          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10" id="panel3-demo-step">
             <div class="flex items-center mb-6">
               <div class="bg-yellow-100 p-3 rounded-xl mr-4">
                 <Camera class="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
@@ -297,14 +297,17 @@ import Camera from "@/components/fundations/icons/Camera.astro";
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <!-- QR Code 1 -->
                 <div class="bg-base-50 border-2 border-dashed border-base-200 rounded-xl p-6">
-                  <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-base-800 rounded-lg flex items-center justify-center">
-                    <div class="grid grid-cols-6 gap-1 p-2">
-                      <div class="w-1 h-1 bg-white"></div>
-                      <div class="w-1 h-1 bg-base-800"></div>
-                      <div class="w-1 h-1 bg-white"></div>
-                      <div class="w-1 h-1 bg-white"></div>
-                      <div class="w-1 h-1 bg-base-800"></div>
-                      <div class="w-1 h-1 bg-white"></div>
+                  <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-black rounded-lg relative">
+                    <!-- QR Code Pattern (same as Panel 4) -->
+                    <div class="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-0">
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
                     </div>
                   </div>
                   <Text tag="p" variant="textMD" class="font-medium text-base-700 mt-3">
@@ -317,14 +320,17 @@ import Camera from "@/components/fundations/icons/Camera.astro";
 
                 <!-- QR Code 2 -->
                 <div class="bg-base-50 border-2 border-dashed border-base-200 rounded-xl p-6">
-                  <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-base-800 rounded-lg flex items-center justify-center">
-                    <div class="grid grid-cols-6 gap-1 p-2">
-                      <div class="w-1 h-1 bg-base-800"></div>
-                      <div class="w-1 h-1 bg-white"></div>
-                      <div class="w-1 h-1 bg-base-800"></div>
-                      <div class="w-1 h-1 bg-base-800"></div>
-                      <div class="w-1 h-1 bg-white"></div>
-                      <div class="w-1 h-1 bg-base-800"></div>
+                  <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-black rounded-lg relative">
+                    <!-- QR Code Pattern (slightly different variant) -->
+                    <div class="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-0">
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-black"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                      <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                      <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
                     </div>
                   </div>
                   <Text tag="p" variant="textMD" class="font-medium text-base-700 mt-3">
@@ -404,7 +410,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
           </div>
 
           <!-- Panel 4: QR Magic Demonstration -->
-          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10" id="panel4-demo-step">
             <div class="flex items-center mb-6">
               <div class="bg-green-100 p-3 rounded-xl mr-4">
                 <Camera class="w-6 h-6 md:w-8 md:h-8 text-green-600" />
@@ -786,12 +792,15 @@ import Camera from "@/components/fundations/icons/Camera.astro";
       }
       
       function animateQRDemo() {
-        console.log('🎉 Starting QR Demo Animation with PURE JOY!');
+        console.log('🎉 Starting 4-Panel QR Demo Animation with PURE JOY!');
         
-        // Get all demo steps (now includes Panel 3 step 1 and Panel 4 steps)
+        // Get all 4 panel demo steps
+        const panel1Step = document.querySelector('#panel1-demo-step');
+        const panel2Step = document.querySelector('#panel2-demo-step');
         const panel3Step = document.querySelector('#panel3-demo-step');
-        const panel4Steps = document.querySelectorAll('[class*="bg-gradient-to-r from-green-50"], [class*="bg-gradient-to-r from-purple-50"], [class*="bg-gradient-to-r from-orange-50"]');
-        const steps = panel3Step ? [panel3Step, ...panel4Steps] : [...panel4Steps];
+        const panel4Step = document.querySelector('#panel4-demo-step');
+        const steps = [panel1Step, panel2Step, panel3Step, panel4Step].filter(step => step);
+        
         const magicArrow = document.querySelector('[class*="animate-bounce"]');
         const celebration = document.querySelector('[class*="bg-gradient-to-r from-green-400 to-blue-500"]');
         
@@ -810,45 +819,79 @@ import Camera from "@/components/fundations/icons/Camera.astro";
             
             // Highlight current step
             step.style.opacity = '1';
-            step.style.transform = 'scale(1.05)';
+            step.style.transform = 'scale(1.02)';
             step.style.transition = 'all 0.5s ease-in-out';
             
-            // Add glow effect
-            step.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.5)';
+            // Add glow effect with different colors for each panel
+            const glowColors = [
+              'rgba(20, 184, 166, 0.4)', // Panel 1 - Teal
+              'rgba(59, 130, 246, 0.4)', // Panel 2 - Blue
+              'rgba(245, 158, 11, 0.4)', // Panel 3 - Yellow
+              'rgba(34, 197, 94, 0.4)'   // Panel 4 - Green
+            ];
+            step.style.boxShadow = `0 0 30px ${glowColors[currentStep]}`;
             
-            // Special effects for each step
+            // Special effects for each panel
             if (currentStep === 0) {
-              // Form submission (Panel 3) - make button pulse
-              const submitBtn = step.querySelector('button');
-              if (submitBtn) {
-                submitBtn.style.animation = 'pulse 1s infinite';
+              // Panel 1: Organization Setup - make form inputs glow
+              const inputs = step.querySelectorAll('input');
+              inputs.forEach((input, index) => {
+                setTimeout(() => {
+                  input.style.borderColor = '#14b8a6';
+                  input.style.boxShadow = '0 0 0 3px rgba(20, 184, 166, 0.1)';
+                }, index * 300);
+              });
+              
+              const signUpBtn = step.querySelector('#signUpButton');
+              if (signUpBtn) {
+                setTimeout(() => {
+                  signUpBtn.style.animation = 'pulse 1s infinite';
+                }, 900);
               }
             } else if (currentStep === 1) {
-              // QR Code generation (Panel 4 Step 1) - make QR code spin
-              const qrCode = step.querySelector('[class*="w-32 h-32"]');
-              if (qrCode) {
-                qrCode.style.animation = 'spin 2s linear infinite';
+              // Panel 2: QR Code Creation - make form elements highlight
+              const generateBtn = step.querySelector('button');
+              if (generateBtn) {
+                generateBtn.style.animation = 'pulse 1s infinite';
+                generateBtn.style.transform = 'scale(1.05)';
               }
-            } else if (currentStep === 2) {
-              // Staff scanning (Panel 4 Step 2) - make camera bounce
-              const camera = step.querySelector('[class*="w-8 h-8"]');
-              if (camera) {
-                camera.style.animation = 'bounce 1s infinite';
-              }
-            } else if (currentStep === 3) {
-              // Action cards (Panel 4 Step 3) - make them wiggle
-              const cards = step.querySelectorAll('[class*="bg-white rounded-lg"]');
-              cards.forEach((card, index) => {
+              
+              const checkboxes = step.querySelectorAll('input[type="checkbox"]');
+              checkboxes.forEach((checkbox, index) => {
                 setTimeout(() => {
-                  card.style.animation = 'wiggle 0.5s ease-in-out';
+                  checkbox.style.transform = 'scale(1.2)';
+                  checkbox.style.accentColor = '#3b82f6';
                 }, index * 200);
               });
+            } else if (currentStep === 2) {
+              // Panel 3: QR Display - make QR codes spin
+              const qrCodes = step.querySelectorAll('[class*="w-24 h-24"], [class*="w-32 h-32"]');
+              qrCodes.forEach((qrCode, index) => {
+                setTimeout(() => {
+                  qrCode.style.animation = 'spin 2s linear infinite';
+                }, index * 500);
+              });
+            } else if (currentStep === 3) {
+              // Panel 4: QR Magic - make demo steps wiggle
+              const demoSteps = step.querySelectorAll('[class*="bg-gradient-to-r from-green-50"], [class*="bg-gradient-to-r from-purple-50"], [class*="bg-gradient-to-r from-orange-50"]');
+              demoSteps.forEach((demoStep, index) => {
+                setTimeout(() => {
+                  demoStep.style.animation = 'wiggle 0.5s ease-in-out';
+                  demoStep.style.transform = 'scale(1.02)';
+                }, index * 400);
+              });
+              
+              // Make the QR code in Panel 4 extra spinny
+              const panel4QR = step.querySelector('[class*="w-32 h-32"]');
+              if (panel4QR) {
+                panel4QR.style.animation = 'spin 1s linear infinite';
+              }
             }
             
             currentStep++;
             
             // Continue to next step
-            setTimeout(animateStep, 1500);
+            setTimeout(animateStep, 2000);
           } else {
             // CELEBRATION TIME! 🎉
             if (celebration) {
@@ -871,6 +914,31 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                 step.style.opacity = '1';
                 step.style.transform = 'scale(1)';
                 step.style.boxShadow = 'none';
+                
+                // Reset all special effects
+                const inputs = step.querySelectorAll('input');
+                inputs.forEach(input => {
+                  input.style.borderColor = '';
+                  input.style.boxShadow = '';
+                  input.style.transform = '';
+                });
+                
+                const buttons = step.querySelectorAll('button');
+                buttons.forEach(button => {
+                  button.style.animation = '';
+                  button.style.transform = '';
+                });
+                
+                const qrCodes = step.querySelectorAll('[class*="w-24 h-24"], [class*="w-32 h-32"]');
+                qrCodes.forEach(qr => {
+                  qr.style.animation = '';
+                });
+                
+                const demoSteps = step.querySelectorAll('[class*="bg-gradient-to-r"]');
+                demoSteps.forEach(demoStep => {
+                  demoStep.style.animation = '';
+                  demoStep.style.transform = '';
+                });
               });
               
               // Reset button text
@@ -890,7 +958,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
           magicArrow.style.animation = 'bounce 0.3s infinite';
           setTimeout(() => {
             magicArrow.style.animation = 'bounce 2s infinite';
-          }, 8000);
+          }, 10000); // Extended duration for 4-panel demo
         }
       }
       
