@@ -9,11 +9,6 @@
     "deploymentEnabled": true,
     "autoAlias": true
   },
-  "functions": {
-    "src/pages/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
   "env": {
     "NODE_ENV": "production",
     "PUBLIC_APP_URL": "https://blessbox.vercel.app"
