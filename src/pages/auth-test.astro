@@ -1,0 +1,207 @@
+---
+// Authentication Test Page
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout hideNav={true} hideFooter={true}>
+  <div class="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 py-12 px-4">
+    <div class="max-w-md mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-900">🔐 Auth Test</h1>
+        
+        <!-- Registration Form -->
+        <div id="registerForm" class="space-y-6">
+          <h2 class="text-xl font-semibold text-gray-800">Register</h2>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input 
+              type="email" 
+              id="regEmail" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              placeholder="your@email.com"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input 
+              type="password" 
+              id="regPassword" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              placeholder="Strong password"
+            >
+            <div id="passwordFeedback" class="mt-2 text-sm text-gray-600"></div>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Organization Name</label>
+            <input 
+              type="text" 
+              id="regOrgName" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              placeholder="My Organization"
+            >
+          </div>
+          
+          <button 
+            onclick="register()" 
+            class="w-full bg-teal-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-teal-700 transition-colors"
+          >
+            Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="space-y-6 mt-8 pt-8 border-t border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-800">Login</h2>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              placeholder="your@email.com"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+              placeholder="Your password"
+            >
+          </div>
+          
+          <button 
+            onclick="login()" 
+            class="w-full bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Login
+          </button>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="mt-8 p-4 rounded-xl hidden">
+          <pre id="resultText" class="text-sm overflow-auto"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Registration function
+    async function register() {
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const organizationName = document.getElementById('regOrgName').value;
+
+      if (!email || !password || !organizationName) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            organizationName,
+          }),
+        });
+
+        const result = await response.json();
+        showResult(result, response.status);
+
+        if (result.success) {
+          // Store token for testing
+          localStorage.setItem('authToken', result.token);
+          localStorage.setItem('refreshToken', result.refreshToken);
+        }
+      } catch (error) {
+        showResult({ error: error.message }, 500);
+      }
+    }
+
+    // Login function
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        });
+
+        const result = await response.json();
+        showResult(result, response.status);
+
+        if (result.success) {
+          // Store token for testing
+          localStorage.setItem('authToken', result.token);
+          localStorage.setItem('refreshToken', result.refreshToken);
+        }
+      } catch (error) {
+        showResult({ error: error.message }, 500);
+      }
+    }
+
+    // Show result function
+    function showResult(result, status) {
+      const resultsDiv = document.getElementById('results');
+      const resultText = document.getElementById('resultText');
+      
+      resultsDiv.className = `mt-8 p-4 rounded-xl ${
+        status < 400 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+      }`;
+      
+      resultText.textContent = JSON.stringify(result, null, 2);
+      resultsDiv.classList.remove('hidden');
+    }
+
+    // Password strength feedback
+    document.getElementById('regPassword').addEventListener('input', async (e) => {
+      const password = e.target.value;
+      if (!password) {
+        document.getElementById('passwordFeedback').textContent = '';
+        return;
+      }
+
+      // Simple client-side validation (server has the real validation)
+      const feedback = [];
+      if (password.length < 8) feedback.push('At least 8 characters');
+      if (!/[A-Z]/.test(password)) feedback.push('Uppercase letter');
+      if (!/[a-z]/.test(password)) feedback.push('Lowercase letter');
+      if (!/\d/.test(password)) feedback.push('Number');
+      if (!/[!@#$%^&*]/.test(password)) feedback.push('Special character');
+
+      const feedbackEl = document.getElementById('passwordFeedback');
+      if (feedback.length === 0) {
+        feedbackEl.textContent = '✅ Strong password!';
+        feedbackEl.className = 'mt-2 text-sm text-green-600';
+      } else {
+        feedbackEl.textContent = `Missing: ${feedback.join(', ')}`;
+        feedbackEl.className = 'mt-2 text-sm text-orange-600';
+      }
+    });
+  </script>
+</BaseLayout>
