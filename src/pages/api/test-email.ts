@@ -12,12 +12,12 @@ export const GET: APIRoute = async () => {
           success: false,
           message: 'Email configuration test failed',
           details: connectionTest.details,
-          recommendations: [
-            'Check your SMTP_HOST environment variable',
-            'Verify SMTP_USER and SMTP_PASS credentials',
-            'Ensure SMTP_PORT and SMTP_SECURE are correctly set',
-            'Check if your email provider requires app-specific passwords',
-          ],
+                  recommendations: [
+          'Check your SENDGRID_API_KEY environment variable',
+          'Verify your SendGrid API key starts with "SG."',
+          'Ensure SENDGRID_FROM_EMAIL is set to a verified sender',
+          'Check if your SendGrid account is active and not suspended',
+        ],
         }),
         {
           status: 500,
@@ -33,10 +33,9 @@ export const GET: APIRoute = async () => {
         success: true,
         message: 'Email configuration is working correctly!',
         config: {
-          host: process.env.SMTP_HOST || 'Not set',
-          port: process.env.SMTP_PORT || 'Not set',
-          user: process.env.SMTP_USER || 'Not set',
-          secure: process.env.SMTP_SECURE || 'Not set',
+          apiKey: process.env.SENDGRID_API_KEY ? 'Set (hidden)' : 'Not set',
+          fromEmail: process.env.SENDGRID_FROM_EMAIL || 'contact@yolovibecodebootcamp.com',
+          fromName: process.env.SENDGRID_FROM_NAME || 'BlessBox Contact',
         },
       }),
       {
@@ -74,7 +73,6 @@ export const POST: APIRoute = async () => {
     });
 
     const emailSent = await sendEmail({
-      from: `"BlessBox Test" <contact@yolovibecodebootcamp.com>`,
       to: 'contact@yolovibecodebootcamp.com',
       subject: '🧪 BlessBox Email Test - Configuration Working!',
       html,

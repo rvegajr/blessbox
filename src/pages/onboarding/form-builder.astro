@@ -1,0 +1,319 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Text from '@/components/fundations/elements/Text.astro';
+import Button from '@/components/fundations/elements/Button.astro';
+import Wrapper from '@/components/fundations/containers/Wrapper.astro';
+// Note: These imports are for server-side only
+// Client-side imports are handled in the script tag
+
+// Get stored data
+// Note: This will be handled client-side in the script tag
+const onboardingData = null;
+---
+
+<BaseLayout title="Form Builder - BlessBox" hideNav={true} hideFooter={true}>
+  <Wrapper class="py-16">
+    <div class="max-w-6xl mx-auto">
+      <!-- Progress Bar -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <Text tag="h2" variant="textXL" class="font-semibold">
+            Step 3 of 4: Registration Form
+          </Text>
+          <Text tag="span" variant="textSM" class="text-base-500">
+            75% Complete
+          </Text>
+        </div>
+        <div class="w-full bg-base-200 rounded-full h-2">
+          <div class="bg-teal-500 h-2 rounded-full" style="width: 75%"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Form Builder Panel -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <Text tag="h3" variant="textXL" class="font-semibold mb-6">
+            Customize Your Registration Form
+          </Text>
+          <Text tag="p" variant="textBase" class="text-base-600 mb-8">
+            Add, remove, or modify fields that attendees will fill out when they scan your QR codes.
+          </Text>
+
+          <!-- Current Fields List -->
+          <div class="mb-8">
+            <Text tag="h4" variant="textLG" class="font-medium mb-4">
+              Current Fields
+            </Text>
+            <div id="fieldsList" class="space-y-3">
+              <!-- Fields will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Add New Field -->
+          <div class="border-t pt-6">
+            <Text tag="h4" variant="textLG" class="font-medium mb-4">
+              Add New Field
+            </Text>
+            <form id="addFieldForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+                    Field Type
+                  </Text>
+                  <select 
+                    id="fieldType"
+                    name="type"
+                    class="w-full p-3 border border-base-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                  >
+                    <option value="text">Text Input</option>
+                    <option value="email">Email</option>
+                    <option value="tel">Phone Number</option>
+                    <option value="number">Number</option>
+                    <option value="select">Dropdown</option>
+                    <option value="checkbox">Checkbox</option>
+                  </select>
+                </div>
+                <div>
+                  <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+                    Field Label
+                  </Text>
+                  <input 
+                    type="text" 
+                    id="fieldLabel"
+                    name="label"
+                    placeholder="e.g., Emergency Contact" 
+                    class="w-full p-3 border border-base-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                  />
+                </div>
+              </div>
+              
+              <div class="flex items-center space-x-4">
+                <label class="flex items-center">
+                  <input type="checkbox" id="fieldRequired" name="required" class="mr-2">
+                  <Text tag="span" variant="textSM">Required field</Text>
+                </label>
+              </div>
+
+              <div id="selectOptions" class="hidden">
+                <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+                  Options (one per line)
+                </Text>
+                <textarea 
+                  id="fieldOptions"
+                  name="options"
+                  rows="3"
+                  placeholder="Option 1&#10;Option 2&#10;Option 3"
+                  class="w-full p-3 border border-base-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                ></textarea>
+              </div>
+
+              <Button 
+                type="submit"
+                variant="secondary" 
+                size="medium" 
+                class="w-full"
+              >
+                Add Field
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Form Preview Panel -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <Text tag="h3" variant="textXL" class="font-semibold mb-6">
+            Form Preview
+          </Text>
+          <Text tag="p" variant="textBase" class="text-base-600 mb-8">
+            This is how your registration form will appear to attendees.
+          </Text>
+
+          <!-- Preview Form -->
+          <div id="formPreview" class="space-y-4">
+            <!-- Preview will be populated by JavaScript -->
+          </div>
+
+          <!-- Continue Button -->
+          <div class="mt-8 pt-6 border-t">
+            <Button 
+              variant="primary" 
+              size="medium" 
+              class="w-full"
+              id="continueButton"
+              onclick="window.location.href = '/onboarding/qr-configuration'"
+            >
+              Continue to QR Configuration
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Wrapper>
+
+  <script>
+    import { SessionStorageService } from '../../implementations/services/SessionStorageService';
+    import { StorageKeys } from '../../interfaces/services/IStorageService';
+    import { DEFAULT_FIELDS } from '../../interfaces/components/IFormBuilder';
+
+    // Initialize services
+    const storage = new SessionStorageService();
+    const fieldsList = document.getElementById('fieldsList') as HTMLElement;
+    const formPreview = document.getElementById('formPreview') as HTMLElement;
+    const addFieldForm = document.getElementById('addFieldForm') as HTMLFormElement;
+    const fieldType = document.getElementById('fieldType') as HTMLSelectElement;
+    const selectOptions = document.getElementById('selectOptions') as HTMLElement;
+
+    // Get stored form configuration or use defaults
+    let formFields = storage.get(StorageKeys.FORM_CONFIG) || [...DEFAULT_FIELDS];
+
+    // Field counter for unique IDs
+    let fieldCounter = formFields.length + 1;
+
+    // Render fields list
+    function renderFieldsList() {
+      fieldsList.innerHTML = '';
+      
+      formFields.forEach((field, index) => {
+        const fieldElement = document.createElement('div');
+        fieldElement.className = 'flex items-center justify-between p-3 bg-base-50 rounded-lg';
+        fieldElement.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <span class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded">${field.type}</span>
+            <span class="font-medium">${field.label}</span>
+            ${field.required ? '<span class="text-red-500 text-xs">Required</span>' : ''}
+          </div>
+          <div class="flex items-center space-x-2">
+            <button type="button" onclick="moveField(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="text-base-400 hover:text-base-600 disabled:opacity-50">
+              ↑
+            </button>
+            <button type="button" onclick="moveField(${index}, 1)" ${index === formFields.length - 1 ? 'disabled' : ''} class="text-base-400 hover:text-base-600 disabled:opacity-50">
+              ↓
+            </button>
+            <button type="button" onclick="removeField(${index})" class="text-red-500 hover:text-red-700">
+              ×
+            </button>
+          </div>
+        `;
+        fieldsList.appendChild(fieldElement);
+      });
+    }
+
+    // Render form preview
+    function renderFormPreview() {
+      formPreview.innerHTML = '';
+      
+      formFields.forEach(field => {
+        const fieldElement = document.createElement('div');
+        fieldElement.className = 'space-y-2';
+        
+        let inputHtml = '';
+        switch (field.type) {
+          case 'text':
+          case 'email':
+          case 'tel':
+          case 'number':
+            inputHtml = `<input type="${field.type}" placeholder="${field.label}" class="w-full p-3 border border-base-300 rounded-xl" ${field.required ? 'required' : ''}>`;
+            break;
+          case 'select':
+            const options = field.options || [];
+            inputHtml = `
+              <select class="w-full p-3 border border-base-300 rounded-xl" ${field.required ? 'required' : ''}>
+                <option value="">Select ${field.label}</option>
+                ${options.map(option => `<option value="${option}">${option}</option>`).join('')}
+              </select>
+            `;
+            break;
+          case 'checkbox':
+            inputHtml = `<input type="checkbox" class="mr-2" ${field.required ? 'required' : ''}>`;
+            break;
+        }
+        
+        fieldElement.innerHTML = `
+          <label class="block">
+            <span class="text-base-600 font-medium">${field.label}${field.required ? ' *' : ''}</span>
+            <div class="mt-1">
+              ${inputHtml}
+            </div>
+          </label>
+        `;
+        formPreview.appendChild(fieldElement);
+      });
+    }
+
+    // Add new field
+    addFieldForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(addFieldForm);
+      const type = formData.get('type') as string;
+      const label = formData.get('label') as string;
+      const required = formData.get('required') === 'on';
+      const options = formData.get('options') as string;
+      
+      if (!label.trim()) {
+        alert('Please enter a field label');
+        return;
+      }
+      
+      const newField = {
+        id: `field_${fieldCounter++}`,
+        type: type as any,
+        label: label.trim(),
+        required,
+        order: formFields.length + 1,
+        ...(type === 'select' && options ? { options: options.split('\n').filter(o => o.trim()) } : {})
+      };
+      
+      formFields.push(newField);
+      storage.save(StorageKeys.FORM_CONFIG, formFields);
+      
+      renderFieldsList();
+      renderFormPreview();
+      
+      // Reset form
+      addFieldForm.reset();
+      selectOptions.classList.add('hidden');
+    });
+
+    // Handle field type change
+    fieldType.addEventListener('change', () => {
+      if (fieldType.value === 'select') {
+        selectOptions.classList.remove('hidden');
+      } else {
+        selectOptions.classList.add('hidden');
+      }
+    });
+
+    // Move field up/down
+    (window as any).moveField = (index: number, direction: number) => {
+      const newIndex = index + direction;
+      if (newIndex >= 0 && newIndex < formFields.length) {
+        [formFields[index], formFields[newIndex]] = [formFields[newIndex], formFields[index]];
+        // Update order
+        formFields.forEach((field, i) => field.order = i + 1);
+        storage.save(StorageKeys.FORM_CONFIG, formFields);
+        renderFieldsList();
+        renderFormPreview();
+      }
+    };
+
+    // Remove field
+    (window as any).removeField = (index: number) => {
+      if (formFields.length <= 3) {
+        alert('You must have at least 3 fields in your form');
+        return;
+      }
+      
+      formFields.splice(index, 1);
+      // Update order
+      formFields.forEach((field, i) => field.order = i + 1);
+      storage.save(StorageKeys.FORM_CONFIG, formFields);
+      renderFieldsList();
+      renderFormPreview();
+    };
+
+    // Initial render
+    renderFieldsList();
+    renderFormPreview();
+  </script>
+</BaseLayout> 
