@@ -1,6 +1,7 @@
 {
   "name": "blessbox",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "Streamlined QR-based registration and verification system for organizations managing events like food distributions, seminar registrations, and volunteer sign-ups",
   "private": true,
   "type": "module",
   "scripts": {
