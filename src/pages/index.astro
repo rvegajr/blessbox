@@ -8,6 +8,7 @@ import Button from "@/components/fundations/elements/Button.astro";
 import User from "@/components/fundations/icons/User.astro";
 import UsersGroup from "@/components/fundations/icons/UsersGroup.astro";
 import CircleCheck from "@/components/fundations/icons/CircleCheck.astro";
+import CircleX from "@/components/fundations/icons/CircleX.astro";
 import Shield from "@/components/fundations/icons/Shield.astro";
 import Code from "@/components/fundations/icons/Code.astro";
 import Camera from "@/components/fundations/icons/Camera.astro";
@@ -35,7 +36,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 max-w-7xl mx-auto">
           
           <!-- Panel 1: Organization Login/Registration -->
-          <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
             <div class="flex items-center mb-6">
               <div class="bg-teal-100 p-3 rounded-xl mr-4">
                 <UsersGroup class="w-6 h-6 md:w-8 md:h-8 text-teal-600" />
@@ -45,47 +46,111 @@ import Camera from "@/components/fundations/icons/Camera.astro";
               </Text>
             </div>
             
-            <div class="space-y-4 mb-6">
-              <div class="border-2 border-dashed border-base-200 rounded-xl p-6 text-center">
-                <User class="w-12 h-12 md:w-16 md:h-16 text-base-400 mx-auto mb-4" />
-                <Text tag="h3" variant="textLG" class="font-medium text-base-700 mb-2">
-                  Register Your Organization
-                </Text>
-                <Text tag="p" variant="textBase" class="text-base-500 mb-4">
-                  Create an account for your organization to manage registrations
-                </Text>
-                
-                <!-- Custom Domain Section -->
-                <div class="bg-base-50 rounded-lg p-4 mb-4 text-left">
-                  <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
-                    Choose Your Custom Domain
+            <div class="flex flex-col h-full">
+              <div class="flex-1 flex items-center justify-center">
+                <div class="w-full max-w-md">
+                  <User class="w-16 h-16 text-base-400 mx-auto mb-4" />
+                  <Text tag="h3" variant="textLG" class="font-medium text-base-700 mb-2 text-center">
+                    Register Your Organization
                   </Text>
-                  <div class="flex items-center">
-                    <span class="text-base-500 text-sm">blessbox.org/</span>
-                    <input 
-                      type="text" 
-                      placeholder="yourname" 
-                      class="flex-1 ml-1 p-2 border-b border-base-300 bg-transparent focus:border-teal-500 focus:outline-none text-sm"
-                      maxlength="20"
-                    />
+                  <Text tag="p" variant="textBase" class="text-base-500 mb-6 text-center">
+                    Create an account for your organization to manage registrations
+                  </Text>
+                  
+                  <div class="space-y-4">
+                    <!-- Organization Name -->
+                    <div>
+                      <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+                        Organization Name
+                      </Text>
+                      <input 
+                        type="text" 
+                        placeholder="e.g., Food Bank Central" 
+                        class="w-full p-3 border border-base-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        id="orgName"
+                      />
+                    </div>
+
+                    <!-- Event Name -->
+                    <div>
+                      <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+                        Event Name
+                      </Text>
+                      <input 
+                        type="text" 
+                        placeholder="e.g., Weekly Food Distribution" 
+                        class="w-full p-3 border border-base-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                        id="eventName"
+                      />
+                    </div>
+                    
+                    <!-- Custom Domain Section -->
+                    <div class="bg-base-50 rounded-xl p-6">
+                      <div class="flex items-center justify-between mb-2">
+                        <Text tag="label" variant="textSM" class="block text-base-600">
+                          Your Custom Domain
+                        </Text>
+                        <Text tag="span" variant="textXS" class="text-base-500" id="domainCharCount">
+                          0/255
+                        </Text>
+                      </div>
+                      <div class="flex items-center mb-3">
+                        <span class="text-base-500 text-base font-medium">blessbox.org/</span>
+                        <input 
+                          type="text" 
+                          placeholder="yourname" 
+                          class="flex-1 ml-2 p-3 border-b-2 border-base-300 bg-transparent focus:border-teal-500 focus:outline-none text-base"
+                          maxlength="255"
+                          id="domainName"
+                        />
+                      </div>
+                      <!-- Domain availability indicator -->
+                      <div id="domainStatus" class="hidden">
+                        <!-- Success state -->
+                        <div id="domainAvailable" class="hidden flex items-center space-x-2">
+                          <CircleCheck class="w-4 h-4 text-green-500" />
+                          <Text tag="p" variant="textXS" class="text-green-600">
+                            Domain available!
+                          </Text>
+                        </div>
+                        <!-- Error state -->
+                        <div id="domainTaken" class="hidden">
+                          <div class="flex items-center space-x-2 mb-2">
+                            <CircleX class="w-4 h-4 text-red-500" />
+                            <Text tag="p" variant="textXS" class="text-red-600">
+                              Domain already taken
+                            </Text>
+                          </div>
+                          <div class="bg-red-50 rounded-xl p-2">
+                            <Text tag="p" variant="textXS" class="text-red-700 mb-1">
+                              Try these suggestions:
+                            </Text>
+                            <div id="domainSuggestions" class="space-y-1">
+                              <!-- Suggestions will be added dynamically -->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      variant="primary" 
+                      size="medium" 
+                      class="w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                      id="signUpButton"
+                      disabled
+                    >
+                      Sign Up
+                    </Button>
+                    
+                    <div class="text-center">
+                      <Text tag="p" variant="textSM" class="text-base-500">
+                        Already have an account?
+                        <a href="#" class="text-teal-600 hover:text-teal-700 font-medium ml-1">Login</a>
+                      </Text>
+                    </div>
                   </div>
-                  <Text tag="p" variant="textXS" class="text-base-400 mt-1">
-                    Example: blessbox.org/foodbankcentral
-                  </Text>
                 </div>
-                
-                <Button variant="primary" size="medium" class="w-full ">
-                  Sign Up
-                </Button>
-              </div>
-              
-              <div class="text-center">
-                <Text tag="p" variant="textSM" class="text-base-500">
-                  Already have an account?
-                </Text>
-                <Button variant="secondary" size="small" class="mt-2 ">
-                  Login
-                </Button>
               </div>
             </div>
             
@@ -97,24 +162,40 @@ import Camera from "@/components/fundations/icons/Camera.astro";
           </div>
 
           <!-- Panel 2: QR Code Creation -->
-          <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
             <div class="flex items-center mb-6">
               <div class="bg-blue-100 p-3 rounded-xl mr-4">
                 <Code class="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
               </div>
               <Text tag="h2" variant="displayMD" class="font-semibold text-base-800">
-                2. Create QR Code
+                2. Create QR Codes
               </Text>
             </div>
             
             <!-- Demo content -->
             <div class="space-y-4 mb-6">
-              <div class="border-2 border-dashed border-base-200 rounded-xl p-6">
+              <div class="border-2 border-dashed border-base-200 rounded-2xl p-6">
                 <Text tag="h3" variant="textLG" class="font-medium text-base-700 mb-4">
-                  Event Configuration
+                  QR Code Configuration
                 </Text>
                 
-                <div class="space-y-3">
+                <div class="space-y-4">
+                  <!-- QR Code Label -->
+                  <div>
+                    <Text tag="label" variant="textSM" class="block text-base-600 mb-1">
+                      QR Code Label <span class="text-blue-500">(Optional)</span>
+                    </Text>
+                    <input 
+                      type="text" 
+                      placeholder="e.g., Main Entrance, Station A, Weekly Distribution"
+                      class="w-full p-3 border border-base-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                      maxlength="50"
+                    />
+                    <Text tag="p" variant="textXS" class="text-base-400 mt-1">
+                      Help staff identify different QR codes for the same event
+                    </Text>
+                  </div>
+
                   <div>
                     <Text tag="label" variant="textSM" class="block text-base-600 mb-1">
                       Event Type
@@ -146,23 +227,57 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                       </label>
                     </div>
                   </div>
+
+                  <!-- Multiple QR Code Options -->
+                  <div class="bg-blue-50 rounded-xl p-4">
+                    <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+                      Create Multiple QR Codes
+                    </Text>
+                    <div class="space-y-2">
+                      <label class="flex items-center">
+                        <input type="radio" name="qr-quantity" value="single" checked class="mr-2">
+                        <Text variant="textSM">Single QR Code</Text>
+                      </label>
+                      <label class="flex items-center">
+                        <input type="radio" name="qr-quantity" value="multiple" class="mr-2">
+                        <Text variant="textSM">Multiple QR Codes (for different locations/stations)</Text>
+                      </label>
+                    </div>
+                    
+                    <!-- Multiple QR Configuration (hidden by default) -->
+                    <div class="mt-3 space-y-2" style="display: none;" id="multiple-qr-config">
+                      <Text tag="label" variant="textXS" class="block text-base-500 mb-1">
+                        Number of QR Codes
+                      </Text>
+                      <input 
+                        type="number" 
+                        min="2" 
+                        max="10" 
+                        value="2" 
+                        class="w-20 p-2 border border-base-200 rounded text-sm"
+                      />
+                      <Text tag="p" variant="textXS" class="text-base-400">
+                        Each QR code can have its own label (e.g., "Station A", "Main Entrance")
+                      </Text>
+                    </div>
+                  </div>
                 </div>
                 
-                <Button variant="primary" size="medium" class="w-full mt-4 ">
-                  Generate QR Code
+                <Button variant="primary" size="medium" class="w-full mt-4">
+                  Generate QR Code(s)
                 </Button>
               </div>
             </div>
             
             <div class="bg-blue-50 rounded-xl p-4">
               <Text tag="p" variant="textSM" class="text-blue-700">
-                <strong>Example:</strong> Create QR for "Weekly Food Distribution" requiring name, phone, and family size
+                <strong>Example:</strong> Create multiple QR codes for "Weekly Food Distribution" - one labeled "Main Entrance" and another "Side Door" - both requiring name, phone, and family size
               </Text>
             </div>
           </div>
 
           <!-- Panel 3: QR Display & Scanning -->
-          <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
             <div class="flex items-center mb-6">
               <div class="bg-yellow-100 p-3 rounded-xl mr-4">
                 <Camera class="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
@@ -173,27 +288,52 @@ import Camera from "@/components/fundations/icons/Camera.astro";
             </div>
             
             <div class="text-center mb-6">
-              <!-- QR Code Display -->
-              <div class="bg-base-50 border-2 border-dashed border-base-200 rounded-xl p-8 mb-4">
-                <div class="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 mx-auto bg-base-800 rounded-lg flex items-center justify-center">
-                  <div class="grid grid-cols-8 gap-1 p-4">
-                    <div class="w-1 h-1 bg-white"></div>
-                    <div class="w-1 h-1 bg-base-800"></div>
-                    <div class="w-1 h-1 bg-white"></div>
-                    <div class="w-1 h-1 bg-white"></div>
-                    <div class="w-1 h-1 bg-base-800"></div>
-                    <div class="w-1 h-1 bg-white"></div>
-                    <div class="w-1 h-1 bg-base-800"></div>
-                    <div class="w-1 h-1 bg-white"></div>
+              <!-- Multiple QR Code Display -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- QR Code 1 -->
+                <div class="bg-base-50 border-2 border-dashed border-base-200 rounded-xl p-6">
+                  <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-base-800 rounded-lg flex items-center justify-center">
+                    <div class="grid grid-cols-6 gap-1 p-2">
+                      <div class="w-1 h-1 bg-white"></div>
+                      <div class="w-1 h-1 bg-base-800"></div>
+                      <div class="w-1 h-1 bg-white"></div>
+                      <div class="w-1 h-1 bg-white"></div>
+                      <div class="w-1 h-1 bg-base-800"></div>
+                      <div class="w-1 h-1 bg-white"></div>
+                    </div>
                   </div>
+                  <Text tag="p" variant="textMD" class="font-medium text-base-700 mt-3">
+                    Main Entrance
+                  </Text>
+                  <Text tag="p" variant="textXS" class="text-base-500">
+                    Food Distribution QR
+                  </Text>
                 </div>
-                <Text tag="p" variant="textLG" class="font-medium text-base-700 mt-4">
-                  Food Distribution QR
-                </Text>
-                <Text tag="p" variant="textSM" class="text-base-500">
-                  Scan with your phone camera
-                </Text>
+
+                <!-- QR Code 2 -->
+                <div class="bg-base-50 border-2 border-dashed border-base-200 rounded-xl p-6">
+                  <div class="w-24 h-24 md:w-32 md:h-32 mx-auto bg-base-800 rounded-lg flex items-center justify-center">
+                    <div class="grid grid-cols-6 gap-1 p-2">
+                      <div class="w-1 h-1 bg-base-800"></div>
+                      <div class="w-1 h-1 bg-white"></div>
+                      <div class="w-1 h-1 bg-base-800"></div>
+                      <div class="w-1 h-1 bg-base-800"></div>
+                      <div class="w-1 h-1 bg-white"></div>
+                      <div class="w-1 h-1 bg-base-800"></div>
+                    </div>
+                  </div>
+                  <Text tag="p" variant="textMD" class="font-medium text-base-700 mt-3">
+                    Side Door
+                  </Text>
+                  <Text tag="p" variant="textXS" class="text-base-500">
+                    Food Distribution QR
+                  </Text>
+                </div>
               </div>
+              
+              <Text tag="p" variant="textSM" class="text-base-500 mb-4">
+                Scan with your phone camera • Both QR codes lead to the same registration form
+              </Text>
               
               <!-- Mobile Interface Preview -->
               <div class="bg-base-800 rounded-2xl p-4 max-w-xs mx-auto">
@@ -220,13 +360,13 @@ import Camera from "@/components/fundations/icons/Camera.astro";
             
             <div class="bg-yellow-50 rounded-xl p-4">
               <Text tag="p" variant="textSM" class="text-yellow-700">
-                <strong>Example:</strong> Families scan QR code, fill out form on their phone, and submit registration instantly
+                <strong>Example:</strong> Families can scan either QR code (Main Entrance or Side Door), fill out the same form on their phone, and submit registration instantly. Staff can track which entrance was used.
               </Text>
             </div>
           </div>
 
           <!-- Panel 4: Verification & Action -->
-          <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 lg:p-10">
+          <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
             <div class="flex items-center mb-6">
               <div class="bg-green-100 p-3 rounded-xl mr-4">
                 <Shield class="w-6 h-6 md:w-8 md:h-8 text-green-600" />
@@ -245,16 +385,65 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                 
                 <div class="space-y-3">
                   <div class="flex items-center justify-between p-3 bg-base-50 rounded-lg">
-                    <div>
-                      <Text tag="p" variant="textSM" class="font-medium text-base-800">
-                        Maria Rodriguez
-                      </Text>
-                      <Text tag="p" variant="textXS" class="text-base-500">
-                        Family of 4 • (555) 123-4567
-                      </Text>
+                    <div class="flex-1">
+                      <div class="flex items-start justify-between">
+                        <div>
+                          <Text tag="p" variant="textSM" class="font-medium text-base-800">
+                            Maria Rodriguez
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-base-500">
+                            Family of 4 • (555) 123-4567
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-blue-600 font-medium">
+                            📍 Main Entrance
+                          </Text>
+                        </div>
+                        <div class="text-right ml-4">
+                          <Text tag="p" variant="textXS" class="text-base-400">
+                            Registered: 10:15 AM
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-green-600">
+                            Distributed: 10:25 AM
+                          </Text>
+                        </div>
+                      </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 ml-4">
                       <CircleCheck class="w-5 h-5 text-green-500 " />
+                      <Button variant="secondary" size="small" class="opacity-50 cursor-not-allowed" disabled>
+                        Distributed
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center justify-between p-3 bg-base-50 rounded-lg">
+                    <div class="flex-1">
+                      <div class="flex items-start justify-between">
+                        <div>
+                          <Text tag="p" variant="textSM" class="font-medium text-base-800">
+                            James Wilson
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-base-500">
+                            Family of 2 • (555) 987-6543
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-blue-600 font-medium">
+                            📍 Side Door
+                          </Text>
+                        </div>
+                        <div class="text-right ml-4">
+                          <Text tag="p" variant="textXS" class="text-base-400">
+                            Registered: 10:32 AM
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-orange-500">
+                            Pending distribution
+                          </Text>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-2 ml-4">
+                      <div class="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center">
+                        <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                      </div>
                       <Button variant="primary" size="small" >
                         Distribute
                       </Button>
@@ -262,16 +451,33 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                   </div>
                   
                   <div class="flex items-center justify-between p-3 bg-base-50 rounded-lg">
-                    <div>
-                      <Text tag="p" variant="textSM" class="font-medium text-base-800">
-                        James Wilson
-                      </Text>
-                      <Text tag="p" variant="textXS" class="text-base-500">
-                        Family of 2 • (555) 987-6543
-                      </Text>
+                    <div class="flex-1">
+                      <div class="flex items-start justify-between">
+                        <div>
+                          <Text tag="p" variant="textSM" class="font-medium text-base-800">
+                            Sarah Chen
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-base-500">
+                            Family of 3 • (555) 456-7890
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-blue-600 font-medium">
+                            📍 Main Entrance
+                          </Text>
+                        </div>
+                        <div class="text-right ml-4">
+                          <Text tag="p" variant="textXS" class="text-base-400">
+                            Registered: 10:45 AM
+                          </Text>
+                          <Text tag="p" variant="textXS" class="text-orange-500">
+                            Pending distribution
+                          </Text>
+                        </div>
+                      </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <CircleCheck class="w-5 h-5 text-green-500 " />
+                    <div class="flex items-center space-x-2 ml-4">
+                      <div class="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center">
+                        <div class="w-2 h-2 rounded-full bg-orange-500"></div>
+                      </div>
                       <Button variant="primary" size="small" >
                         Distribute
                       </Button>
@@ -293,7 +499,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
             
             <div class="bg-green-50 rounded-xl p-4">
               <Text tag="p" variant="textSM" class="text-green-700">
-                <strong>Example:</strong> Staff verify registrations and distribute appropriate food portions based on family size
+                <strong>Example:</strong> Staff can see which entrance each family used, verify registrations, and distribute appropriate food portions based on family size. This helps with crowd management and logistics.
               </Text>
             </div>
           </div>
@@ -316,4 +522,192 @@ import Camera from "@/components/fundations/icons/Camera.astro";
     </Wrapper>
   </section>
   </div>
+
+  <script>
+    // Handle multiple QR code configuration visibility
+    document.addEventListener('DOMContentLoaded', function() {
+      const singleRadio = document.querySelector('input[name="qr-quantity"][value="single"]');
+      const multipleRadio = document.querySelector('input[name="qr-quantity"][value="multiple"]');
+      const multipleConfig = document.getElementById('multiple-qr-config');
+
+      function toggleMultipleConfig() {
+        if (multipleRadio && multipleRadio.checked) {
+          multipleConfig.style.display = 'block';
+        } else {
+          multipleConfig.style.display = 'none';
+        }
+      }
+
+      if (singleRadio && multipleRadio) {
+        singleRadio.addEventListener('change', toggleMultipleConfig);
+        multipleRadio.addEventListener('change', toggleMultipleConfig);
+      }
+
+      // Domain availability check functionality
+      const orgNameInput = document.getElementById('orgName');
+      const eventNameInput = document.getElementById('eventName');
+      const domainNameInput = document.getElementById('domainName');
+      const domainStatus = document.getElementById('domainStatus');
+      const domainAvailable = document.getElementById('domainAvailable');
+      const domainTaken = document.getElementById('domainTaken');
+      const domainSuggestions = document.getElementById('domainSuggestions');
+
+      // Mock taken domains for demonstration
+      const takenDomains = ['foodbank', 'charity', 'help', 'volunteer', 'donate', 'community'];
+
+      function generateDomainSlug(text) {
+        return text.toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 255);
+      }
+
+      function generateDomainSuggestions(baseDomain) {
+        const suggestions = [];
+        const year = new Date().getFullYear();
+        const suffixes = ['org', 'center', 'hub', year.toString(), 'team', 'group'];
+        
+        for (let i = 0; i < 3 && i < suffixes.length; i++) {
+          suggestions.push(baseDomain + '-' + suffixes[i]);
+        }
+        
+        return suggestions;
+      }
+
+      function checkDomainAvailability(domain) {
+        if (!domain) {
+          domainStatus.classList.add('hidden');
+          return;
+        }
+
+        domainStatus.classList.remove('hidden');
+        
+        if (takenDomains.includes(domain)) {
+          // Domain is taken
+          domainAvailable.classList.add('hidden');
+          domainTaken.classList.remove('hidden');
+          
+          // Generate suggestions
+          const suggestions = generateDomainSuggestions(domain);
+          domainSuggestions.innerHTML = suggestions.map(sug => 
+            `<div class="text-xs text-red-600 cursor-pointer hover:text-red-800" onclick="document.getElementById('domainName').value='${sug}'; document.getElementById('domainName').dispatchEvent(new Event('input'));">
+              • blessbox.org/${sug}
+            </div>`
+          ).join('');
+        } else {
+          // Domain is available
+          domainAvailable.classList.remove('hidden');
+          domainTaken.classList.add('hidden');
+        }
+      }
+
+      // Auto-generate domain from org/event name
+      function updateDomainFromInputs() {
+        const orgName = orgNameInput.value.trim();
+        const eventName = eventNameInput.value.trim();
+        
+        if (orgName || eventName) {
+          const combined = orgName + (orgName && eventName ? '-' : '') + eventName;
+          const slug = generateDomainSlug(combined);
+          domainNameInput.value = slug;
+          // Update character counter when auto-generating domain
+          const charCount = slug.length;
+          domainCharCount.textContent = `${charCount}/255`;
+          checkDomainAvailability(slug);
+        }
+      }
+
+      // Track if user has manually edited domain
+      let userEditedDomain = false;
+      
+      // Form validation
+      const signUpButton = document.getElementById('signUpButton');
+      
+      function validateForm() {
+        const orgName = orgNameInput.value.trim();
+        const eventName = eventNameInput.value.trim();
+        const domainName = domainNameInput.value.trim();
+        
+        const isValid = orgName.length > 0 && eventName.length > 0 && domainName.length > 0;
+        
+        if (isValid) {
+          signUpButton.removeAttribute('disabled');
+          signUpButton.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+        } else {
+          signUpButton.setAttribute('disabled', 'true');
+          signUpButton.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+        }
+      }
+      
+      // Event listeners
+      orgNameInput.addEventListener('input', function() {
+        if (!userEditedDomain) {
+          updateDomainFromInputs();
+        }
+        validateForm();
+      });
+      
+      eventNameInput.addEventListener('input', function() {
+        if (!userEditedDomain) {
+          updateDomainFromInputs();
+        }
+        validateForm();
+      });
+      
+      // Character counter for domain name
+      const domainCharCount = document.getElementById('domainCharCount');
+      
+      // Initialize character counter on page load
+      if (domainNameInput.value) {
+        domainCharCount.textContent = `${domainNameInput.value.length}/255`;
+      }
+      
+      // Update character counter on manual input
+      domainNameInput.addEventListener('input', function(e) {
+        // Mark that user has manually edited the domain
+        userEditedDomain = true;
+        
+        const charCount = this.value.length;
+        domainCharCount.textContent = `${charCount}/255`;
+        
+        // Validate form
+        validateForm();
+        
+        // Only check availability if user stopped typing (debounce)
+        clearTimeout(this.availabilityTimeout);
+        this.availabilityTimeout = setTimeout(() => {
+          const domain = this.value.trim();
+          checkDomainAvailability(domain);
+        }, 500);
+      });
+      
+      // Reset the flag if domain field is cleared
+      domainNameInput.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+          userEditedDomain = false;
+        }
+      });
+      
+      // Sign Up button click handler
+      signUpButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Collect form data
+        const formData = {
+          organizationName: orgNameInput.value.trim(),
+          eventName: eventNameInput.value.trim(),
+          customDomain: domainNameInput.value.trim()
+        };
+        
+        // Store data in sessionStorage for the onboarding wizard
+        sessionStorage.setItem('onboardingData', JSON.stringify(formData));
+        
+        // Redirect to onboarding wizard
+        window.location.href = '/onboarding/organization-setup';
+      });
+      
+      // Initial validation
+      validateForm();
+    });
+  </script>
 </BaseLayout>
