@@ -1,0 +1,36 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "development": true
+    }
+  },
+  "github": {
+    "deploymentEnabled": true,
+    "autoAlias": true
+  },
+  "env": {
+    "TURSO_DATABASE_URL": "@turso-database-url",
+    "TURSO_AUTH_TOKEN": "@turso-auth-token",
+    "GMAIL_USER": "@gmail-user",
+    "GMAIL_APP_PASSWORD": "@gmail-app-password",
+    "SQUARE_APPLICATION_ID": "@square-application-id",
+    "SQUARE_ACCESS_TOKEN": "@square-access-token",
+    "SQUARE_ENVIRONMENT": "@square-environment",
+    "JWT_SECRET": "@jwt-secret",
+    "PUBLIC_APP_URL": "https://blessbox.vercel.app"
+  },
+  "build": {
+    "env": {
+      "TURSO_DATABASE_URL": "@turso-database-url-dev",
+      "TURSO_AUTH_TOKEN": "@turso-auth-token-dev",
+      "SQUARE_ENVIRONMENT": "sandbox",
+      "PUBLIC_APP_URL": "https://blessbox-git-development.vercel.app"
+    }
+  },
+  "functions": {
+    "src/pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}
