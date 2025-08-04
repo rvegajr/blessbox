@@ -3,9 +3,11 @@
 
 import type { APIRoute } from 'astro';
 import { RegistrationFormService } from '../../../implementations/registration/RegistrationFormService';
+import { CheckInTokenService } from '../../../implementations/checkin/CheckInTokenService';
 import { withSecurity } from '../../../middleware/security';
 
 const registrationService = new RegistrationFormService();
+const tokenService = new CheckInTokenService();
 
 export const POST: APIRoute = async (context) => {
   return withSecurity(context, async ({ request }) => {
@@ -57,6 +59,19 @@ export const POST: APIRoute = async (context) => {
 
       if (result.success) {
         console.log(`🎉 REGISTRATION SUCCESS! ID: ${result.registrationId} - PURE ECSTASY! ✨`);
+        
+        // 🎊 GENERATE CHECK-IN TOKEN - THE MAGICAL MOMENT! ✨
+        try {
+          const checkInToken = await tokenService.generateToken(result.registrationId);
+          console.log(`🪄 CHECK-IN TOKEN GENERATED: ${checkInToken} - READY FOR QR MAGIC!`);
+          
+          // Include token in response for QR generation
+          result.checkInToken = checkInToken;
+          result.redirectUrl = `/registration-success?id=${result.registrationId}`;
+        } catch (tokenError) {
+          console.error('⚠️ Token generation failed (non-critical):', tokenError);
+          // Continue without token - user can still register
+        }
       } else {
         console.log(`⚠️ Registration validation failed: ${result.message}`);
       }
