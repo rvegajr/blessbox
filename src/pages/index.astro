@@ -93,8 +93,8 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                     <div class="bg-base-50 rounded-xl p-6">
                       <div class="flex items-center justify-between mb-2">
                         <Text tag="label" variant="textSM" class="block text-base-600">
-                          Your Custom Domain
-                        </Text>
+                        Your Custom Domain
+                      </Text>
                         <Text tag="span" variant="textXS" class="text-base-500" id="domainCharCount">
                           0/255
                         </Text>
@@ -137,7 +137,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
                         </div>
                       </div>
                     </div>
-                    
+
                     <Button 
                       variant="primary" 
                       size="medium" 
@@ -363,141 +363,203 @@ import Camera from "@/components/fundations/icons/Camera.astro";
               </div>
             </div>
             
-            <div class="bg-yellow-50 rounded-xl p-4">
+            <!-- Registration Form Demonstration -->
+            <div class="mt-6">
+              <div id="panel3-demo-step" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+                <div class="flex items-center mb-4">
+                  <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                    1
+                  </div>
+                  <Text tag="h3" variant="textLG" class="font-semibold text-blue-800">
+                    User Submits Registration Form
+                  </Text>
+                </div>
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                  <div class="space-y-3">
+                    <div class="flex justify-between">
+                      <Text tag="span" variant="textSM" class="text-gray-600">Name:</Text>
+                      <Text tag="span" variant="textSM" class="font-medium">Maria Rodriguez</Text>
+                    </div>
+                    <div class="flex justify-between">
+                      <Text tag="span" variant="textSM" class="text-gray-600">Family Size:</Text>
+                      <Text tag="span" variant="textSM" class="font-medium">4 members</Text>
+                    </div>
+                    <div class="flex justify-between">
+                      <Text tag="span" variant="textSM" class="text-gray-600">Phone:</Text>
+                      <Text tag="span" variant="textSM" class="font-medium">(555) 123-4567</Text>
+                    </div>
+                  </div>
+                  <Button variant="primary" size="small" class="w-full mt-4 animate-pulse">
+                    🎉 Submit Registration
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-yellow-50 rounded-xl p-4 mt-4">
               <Text tag="p" variant="textSM" class="text-yellow-700">
                 <strong>Example:</strong> Families can scan either QR code (Main Entrance or Side Door), fill out the same form on their phone, and submit registration instantly. Staff can track which entrance was used.
               </Text>
             </div>
           </div>
 
-          <!-- Panel 4: Verification & Action -->
+          <!-- Panel 4: QR Magic Demonstration -->
           <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 lg:p-10">
             <div class="flex items-center mb-6">
               <div class="bg-green-100 p-3 rounded-xl mr-4">
-                <Shield class="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+                <Camera class="w-6 h-6 md:w-8 md:h-8 text-green-600" />
               </div>
               <Text tag="h2" variant="displayMD" class="font-semibold text-base-800">
-                4. Verify & Act
+                4. The QR Magic! ✨
               </Text>
             </div>
             
-            <div class="space-y-4 mb-6">
-              <!-- Registration List -->
-              <div class="border border-base-200 rounded-xl p-4">
-                <Text tag="h3" variant="textLG" class="font-medium text-base-700 mb-4">
-                  Recent Registrations
-                </Text>
+                        <!-- Interactive Demo Section -->
+            <div class="space-y-6">
+              
+              <!-- Transformation Arrow -->
+              <div class="flex justify-center">
+                <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white px-6 py-3 rounded-full shadow-lg transform rotate-3 animate-bounce">
+                  <Text tag="span" variant="textSM" class="font-bold">
+                    ✨ INSTANT MAGIC! ✨
+                          </Text>
+                        </div>
+              </div>
+
+                            <!-- Step 1: QR Code Generation -->
+              <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200">
+                <div class="flex items-center mb-4">
+                  <div class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                    1
+                  </div>
+                  <Text tag="h3" variant="textLG" class="font-semibold text-green-800">
+                    QR Code Appears Instantly!
+                          </Text>
+                        </div>
                 
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between p-3 bg-base-50 rounded-lg">
-                    <div class="flex-1">
-                      <div class="flex items-start justify-between">
-                        <div>
-                          <Text tag="p" variant="textSM" class="font-medium text-base-800">
-                            Maria Rodriguez
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-base-500">
-                            Family of 4 • (555) 123-4567
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-blue-600 font-medium">
-                            📍 Main Entrance
-                          </Text>
-                        </div>
-                        <div class="text-right ml-4">
-                          <Text tag="p" variant="textXS" class="text-base-400">
-                            Registered: 10:15 AM
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-green-600">
-                            Distributed: 10:25 AM
-                          </Text>
-                        </div>
+                <div class="bg-white rounded-lg p-6 shadow-sm text-center">
+                  <!-- Demo QR Code -->
+                  <div class="bg-gray-100 border-4 border-gray-300 rounded-2xl p-4 inline-block mb-4">
+                    <div class="w-32 h-32 bg-black relative">
+                      <!-- QR Code Pattern -->
+                      <div class="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-0">
+                        <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                        <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                        <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                        <div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div>
+                        <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-white"></div>
+                        <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
+                        <div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div>
+                        <div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-white"></div><div class="bg-black"></div><div class="bg-white"></div><div class="bg-black"></div>
                       </div>
-                    </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                      <CircleCheck class="w-5 h-5 text-green-500 " />
-                      <Button variant="secondary" size="small" class="opacity-50 cursor-not-allowed" disabled>
-                        Distributed
-                      </Button>
                     </div>
                   </div>
                   
-                  <div class="flex items-center justify-between p-3 bg-base-50 rounded-lg">
-                    <div class="flex-1">
-                      <div class="flex items-start justify-between">
-                        <div>
-                          <Text tag="p" variant="textSM" class="font-medium text-base-800">
-                            James Wilson
+                  <div class="space-y-2">
+                    <Text tag="p" variant="textSM" class="font-semibold text-green-700">
+                      📱 User shows this QR code to staff
                           </Text>
-                          <Text tag="p" variant="textXS" class="text-base-500">
-                            Family of 2 • (555) 987-6543
+                    <Text tag="p" variant="textXS" class="text-green-600">
+                      Unique check-in token: abc123-def456
                           </Text>
-                          <Text tag="p" variant="textXS" class="text-blue-600 font-medium">
-                            📍 Side Door
-                          </Text>
-                        </div>
-                        <div class="text-right ml-4">
-                          <Text tag="p" variant="textXS" class="text-base-400">
-                            Registered: 10:32 AM
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-orange-500">
-                            Pending distribution
+                    <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mt-3">
+                      <Text tag="p" variant="textXS" class="text-yellow-800 font-medium">
+                        ⚠️ Keep this page open until checked in!
                           </Text>
                         </div>
                       </div>
                     </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                      <div class="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center">
-                        <div class="w-2 h-2 rounded-full bg-orange-500"></div>
                       </div>
-                      <Button variant="primary" size="small" >
-                        Distribute
-                      </Button>
-                    </div>
+
+                            <!-- Step 2: Staff Scanning -->
+              <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
+                <div class="flex items-center mb-4">
+                  <div class="bg-purple-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                    2
                   </div>
-                  
-                  <div class="flex items-center justify-between p-3 bg-base-50 rounded-lg">
-                    <div class="flex-1">
-                      <div class="flex items-start justify-between">
-                        <div>
-                          <Text tag="p" variant="textSM" class="font-medium text-base-800">
-                            Sarah Chen
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-base-500">
-                            Family of 3 • (555) 456-7890
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-blue-600 font-medium">
-                            📍 Main Entrance
+                  <Text tag="h3" variant="textLG" class="font-semibold text-purple-800">
+                    Organization Worker Scans QR Code
                           </Text>
                         </div>
-                        <div class="text-right ml-4">
-                          <Text tag="p" variant="textXS" class="text-base-400">
-                            Registered: 10:45 AM
-                          </Text>
-                          <Text tag="p" variant="textXS" class="text-orange-500">
-                            Pending distribution
-                          </Text>
-                        </div>
+                
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                  <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                        <Camera class="w-8 h-8 text-purple-600" />
                       </div>
                     </div>
-                    <div class="flex items-center space-x-2 ml-4">
-                      <div class="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center">
-                        <div class="w-2 h-2 rounded-full bg-orange-500"></div>
-                      </div>
-                      <Button variant="primary" size="small" >
-                        Distribute
-                      </Button>
+                    <div class="flex-1">
+                      <Text tag="p" variant="textSM" class="font-semibold text-purple-800 mb-1">
+                        📱 Staff scans with their phone
+                      </Text>
+                      <Text tag="p" variant="textXS" class="text-purple-600">
+                        Instant verification & check-in interface loads
+                      </Text>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <!-- Action Buttons -->
-              <div class="grid grid-cols-2 gap-3">
-                <Button variant="secondary" size="medium" >
-                  Export List
-                </Button>
-                <Button variant="primary" size="medium" >
-                  Mark Complete
+              <!-- Step 3: Automatic Action -->
+              <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border-2 border-orange-200">
+                <div class="flex items-center mb-4">
+                  <div class="bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">
+                    3
+                  </div>
+                  <Text tag="h3" variant="textLG" class="font-semibold text-orange-800">
+                    Ready for Distribution, Action, Attendance!
+                  </Text>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div class="text-2xl mb-2">🍎</div>
+                    <Text tag="p" variant="textSM" class="font-semibold text-orange-700">
+                      Food Distribution
+                    </Text>
+                    <Text tag="p" variant="textXS" class="text-orange-600">
+                      Ready to distribute items
+                    </Text>
+                  </div>
+                  <div class="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div class="text-2xl mb-2">📋</div>
+                    <Text tag="p" variant="textSM" class="font-semibold text-orange-700">
+                      Event Check-In
+                    </Text>
+                    <Text tag="p" variant="textXS" class="text-orange-600">
+                      Attendance confirmed
+                    </Text>
+                  </div>
+                  <div class="bg-white rounded-lg p-4 text-center shadow-sm">
+                    <div class="text-2xl mb-2">📦</div>
+                    <Text tag="p" variant="textSM" class="font-semibold text-orange-700">
+                      Order Fulfillment
+                    </Text>
+                    <Text tag="p" variant="textXS" class="text-orange-600">
+                      Ready for pickup
+                    </Text>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Success Celebration -->
+              <div class="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-xl p-6 text-center">
+                <div class="text-4xl mb-3">🎉</div>
+                <Text tag="h3" variant="textLG" class="font-bold mb-2">
+                  Complete! User gets automatic confirmation!
+                </Text>
+                <Text tag="p" variant="textSM" class="opacity-90">
+                  No searching names, no manual entry - just scan and go!
+                </Text>
+              </div>
+
+            </div>
+            
+            <!-- Demo Action Button -->
+            <div class="mt-6">
+              <Button variant="primary" size="medium" class="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700">
+                🚀 Try the Demo Flow
                 </Button>
               </div>
             </div>
@@ -643,7 +705,7 @@ import Camera from "@/components/fundations/icons/Camera.astro";
           signUpButton.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
         }
       }
-      
+
       // Event listeners
       orgNameInput.addEventListener('input', function() {
         if (!userEditedDomain) {
@@ -681,8 +743,8 @@ import Camera from "@/components/fundations/icons/Camera.astro";
         // Only check availability if user stopped typing (debounce)
         clearTimeout(this.availabilityTimeout);
         this.availabilityTimeout = setTimeout(() => {
-          const domain = this.value.trim();
-          checkDomainAvailability(domain);
+        const domain = this.value.trim();
+        checkDomainAvailability(domain);
         }, 500);
       });
       
@@ -713,6 +775,135 @@ import Camera from "@/components/fundations/icons/Camera.astro";
       
       // Initial validation
       validateForm();
+      
+      // 🎊 QR DEMO MAGIC - INTERACTIVE FLOW DEMONSTRATION! ✨
+      const demoButton = document.querySelector('[class*="bg-gradient-to-r from-green-500 to-blue-600"]');
+      if (demoButton) {
+        demoButton.addEventListener('click', function() {
+          // Start the magical demo animation! 🪄
+          animateQRDemo();
+        });
+      }
+      
+      function animateQRDemo() {
+        console.log('🎉 Starting QR Demo Animation with PURE JOY!');
+        
+        // Get all demo steps (now includes Panel 3 step 1 and Panel 4 steps)
+        const panel3Step = document.querySelector('#panel3-demo-step');
+        const panel4Steps = document.querySelectorAll('[class*="bg-gradient-to-r from-green-50"], [class*="bg-gradient-to-r from-purple-50"], [class*="bg-gradient-to-r from-orange-50"]');
+        const steps = panel3Step ? [panel3Step, ...panel4Steps] : [...panel4Steps];
+        const magicArrow = document.querySelector('[class*="animate-bounce"]');
+        const celebration = document.querySelector('[class*="bg-gradient-to-r from-green-400 to-blue-500"]');
+        
+        // Reset all animations
+        steps.forEach(step => {
+          step.style.transform = 'scale(1)';
+          step.style.opacity = '0.3';
+        });
+        
+        // Animate each step with PURE JOY! 🎊
+        let currentStep = 0;
+        
+        function animateStep() {
+          if (currentStep < steps.length) {
+            const step = steps[currentStep];
+            
+            // Highlight current step
+            step.style.opacity = '1';
+            step.style.transform = 'scale(1.05)';
+            step.style.transition = 'all 0.5s ease-in-out';
+            
+            // Add glow effect
+            step.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.5)';
+            
+            // Special effects for each step
+            if (currentStep === 0) {
+              // Form submission (Panel 3) - make button pulse
+              const submitBtn = step.querySelector('button');
+              if (submitBtn) {
+                submitBtn.style.animation = 'pulse 1s infinite';
+              }
+            } else if (currentStep === 1) {
+              // QR Code generation (Panel 4 Step 1) - make QR code spin
+              const qrCode = step.querySelector('[class*="w-32 h-32"]');
+              if (qrCode) {
+                qrCode.style.animation = 'spin 2s linear infinite';
+              }
+            } else if (currentStep === 2) {
+              // Staff scanning (Panel 4 Step 2) - make camera bounce
+              const camera = step.querySelector('[class*="w-8 h-8"]');
+              if (camera) {
+                camera.style.animation = 'bounce 1s infinite';
+              }
+            } else if (currentStep === 3) {
+              // Action cards (Panel 4 Step 3) - make them wiggle
+              const cards = step.querySelectorAll('[class*="bg-white rounded-lg"]');
+              cards.forEach((card, index) => {
+                setTimeout(() => {
+                  card.style.animation = 'wiggle 0.5s ease-in-out';
+                }, index * 200);
+              });
+            }
+            
+            currentStep++;
+            
+            // Continue to next step
+            setTimeout(animateStep, 1500);
+          } else {
+            // CELEBRATION TIME! 🎉
+            if (celebration) {
+              celebration.style.transform = 'scale(1.1)';
+              celebration.style.animation = 'pulse 0.5s ease-in-out 3';
+              
+              // Add confetti effect (if available)
+              if (typeof confetti !== 'undefined') {
+                confetti({
+                  particleCount: 100,
+                  spread: 70,
+                  origin: { y: 0.6 }
+                });
+              }
+            }
+            
+            // Reset after celebration
+            setTimeout(() => {
+              steps.forEach(step => {
+                step.style.opacity = '1';
+                step.style.transform = 'scale(1)';
+                step.style.boxShadow = 'none';
+              });
+              
+              // Reset button text
+              demoButton.innerHTML = '🎊 Demo Complete! Try Again?';
+              setTimeout(() => {
+                demoButton.innerHTML = '🚀 Try the Demo Flow';
+              }, 3000);
+            }, 2000);
+          }
+        }
+        
+        // Start the animation sequence!
+        animateStep();
+        
+        // Make magic arrow extra bouncy during demo
+        if (magicArrow) {
+          magicArrow.style.animation = 'bounce 0.3s infinite';
+          setTimeout(() => {
+            magicArrow.style.animation = 'bounce 2s infinite';
+          }, 8000);
+        }
+      }
+      
+      // Add wiggle animation keyframes
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-3deg); }
+          75% { transform: rotate(3deg); }
+        }
+      `;
+      document.head.appendChild(style);
     });
   </script>
 </BaseLayout>

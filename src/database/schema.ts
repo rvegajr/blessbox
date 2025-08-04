@@ -48,11 +48,19 @@ export const registrations = sqliteTable('registrations', {
   deliveryStatus: text('delivery_status').default('pending').notNull(), // pending, delivered, failed
   deliveredAt: text('delivered_at'),
   registeredAt: text('registered_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  // 🎉 CHECK-IN MAGIC FIELDS - THE FUTURE IS HERE! ✨
+  checkInToken: text('check_in_token').unique(), // UUID token for QR code scanning
+  checkedInAt: text('checked_in_at'), // When they were checked in
+  checkedInBy: text('checked_in_by'), // Organization worker who scanned
+  tokenStatus: text('token_status').default('active').notNull(), // active, used, expired
 }, (table) => ({
   // Indexes for LIGHTNING FAST dashboard queries! ⚡
   qrCodeSetIdIdx: index('registrations_qr_code_set_id_idx').on(table.qrCodeSetId),
   deliveryStatusIdx: index('registrations_delivery_status_idx').on(table.deliveryStatus),
   registeredAtIdx: index('registrations_registered_at_idx').on(table.registeredAt),
+  // 🚀 CHECK-IN PERFORMANCE INDEXES - SPEED OF LIGHT! ⚡
+  checkInTokenIdx: index('registrations_check_in_token_idx').on(table.checkInToken),
+  tokenStatusIdx: index('registrations_token_status_idx').on(table.tokenStatus),
 }));
 
 // Verification codes table - EMAIL SECURITY! 🔐
