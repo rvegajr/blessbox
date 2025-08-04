@@ -14,6 +14,28 @@ const defaultClass = [
   "hover:bg-base-900",
   "ring-base-800",
 ];
+// Primary button
+const primaryClass = [
+  "text-white",
+  "bg-blue-600",
+  "hover:bg-blue-700",
+  "ring-blue-600",
+];
+// Secondary button
+const secondaryClass = [
+  "text-base-700",
+  "bg-base-200",
+  "hover:bg-base-300",
+  "ring-base-300",
+];
+// Ghost button
+const ghostClass = [
+  "text-base-600",
+  "bg-transparent",
+  "hover:bg-base-100",
+  "ring-transparent",
+  "shadow-none",
+];
 // Accent button
 const accentClass = ["text-base-900", "bg-teal-500 ", "ring-teal-600"];
 // Muted button
@@ -23,12 +45,12 @@ const mutedClass = [
   "hover:bg-base-100",
   "ring-base-200",
 ];
-const xs = ["h-8", "px-3", "py-2", "text-xs rounded-md"];
-const sm = ["h-9", "px-4", "py-2", "text-sm rounded-md"];
-const base = ["h-10", "px-4", "py-3", "text-base rounded-lg"];
-const md = ["h-11", "px-5", "py-3", "text-md rounded-lg"];
-const lg = ["h-12", "px-5", "py-3", "text-lg rounded-lg"];
-const xl = ["h-13", "px-6", "py-3", "text-xl rounded-lg"];
+const xs = ["h-8", "px-4", "py-2", "text-xs rounded-full"];
+const sm = ["h-9", "px-5", "py-2", "text-sm rounded-full"];
+const base = ["h-10", "px-6", "py-3", "text-base rounded-full"];
+const md = ["h-11", "px-7", "py-3", "text-md rounded-full"];
+const lg = ["h-12", "px-8", "py-3", "text-lg rounded-full"];
+const xl = ["h-13", "px-9", "py-3", "text-xl rounded-full"];
 // Gap
 const gapXS = ["gap-2"];
 const gapSM = ["gap-4"];
@@ -59,6 +81,9 @@ const additionalClasses = className ? className.split(" ") : [];
     "focus:outline-teal-300 ",
     "inset-shadow-xs inset-shadow-white/30 ring  active:inset-shadow-transparent",
     variant === "default" && defaultClass,
+    variant === "primary" && primaryClass,
+    variant === "secondary" && secondaryClass,
+    variant === "ghost" && ghostClass,
     variant === "accent" && accentClass,
     variant === "muted" && mutedClass,
     variant === "none" && [], // No additional classes for "none" variant

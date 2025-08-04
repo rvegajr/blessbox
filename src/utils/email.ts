@@ -1,87 +1,41 @@
-import nodemailer from 'nodemailer';
+// Updated email utility using the new abstracted EmailService
+import { EmailService } from '../services/EmailService';
+import type { EmailMessage } from '../interfaces/EmailProvider';
 
-export interface EmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
-}
+// Lazy initialization of email service
+let emailService: EmailService | null = null;
 
-export interface EmailData {
-  from: string;
-  to: string;
-  subject: string;
-  html: string;
-  text?: string;
-}
-
-// Email configuration for YOLOVibeCode domain
-export const getEmailConfig = (): EmailConfig => {
-  // You'll need to set these environment variables
-  return {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com', // Update with your actual SMTP host
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER || 'contact@yolovibecodebootcamp.com',
-      pass: process.env.SMTP_PASS || '', // App password or SMTP password
-    },
-  };
-};
-
-// Create transporter
-export const createEmailTransporter = () => {
-  const config = getEmailConfig();
-  return nodemailer.createTransporter(config);
-};
-
-// Send email function
-export const sendEmail = async (emailData: EmailData): Promise<boolean> => {
-  try {
-    const transporter = createEmailTransporter();
-    
-    // Verify connection configuration
-    await transporter.verify();
-    console.log('✅ SMTP server connection verified');
-    
-    // Send email
-    const info = await transporter.sendMail(emailData);
-    console.log('✅ Email sent successfully:', info.messageId);
-    
-    return true;
-  } catch (error) {
-    console.error('❌ Error sending email:', error);
-    return false;
+const getEmailService = (): EmailService => {
+  if (!emailService) {
+    try {
+      emailService = EmailService.createFromEnv();
+    } catch (error) {
+      console.error('Failed to initialize email service:', error);
+      throw error;
+    }
   }
+  return emailService;
 };
 
-// Test email function
-export const testEmailConnection = async (): Promise<{
-  success: boolean;
-  message: string;
-  details?: any;
-}> => {
-  try {
-    const transporter = createEmailTransporter();
-    await transporter.verify();
-    
-    return {
-      success: true,
-      message: '✅ Email configuration is working correctly!',
-    };
-  } catch (error: any) {
-    return {
-      success: false,
-      message: '❌ Email configuration failed',
-      details: error.message,
-    };
-  }
+// Main send email function - now provider agnostic
+export const sendEmail = async (message: EmailMessage) => {
+  const service = getEmailService();
+  return service.send(message);
 };
 
-// Email templates
+// Verify email configuration
+export const verifyEmailConfig = async () => {
+  const service = getEmailService();
+  return service.verify();
+};
+
+// Get current provider name
+export const getEmailProvider = () => {
+  const service = getEmailService();
+  return service.getProviderName();
+};
+
+// Email templates (unchanged)
 export const createContactEmailTemplate = (data: {
   name: string;
   email: string;
@@ -130,6 +84,9 @@ export const createContactEmailTemplate = (data: {
           This message was sent from the BlessBox contact form<br>
           <span style="color: #64748b;">A Proud YOLOVibeCode Project - DBA Noctusoft, Inc</span>
         </p>
+        <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
+          Sent via ${getEmailProvider()}
+        </p>
       </div>
     </div>
   `;
@@ -147,7 +104,89 @@ ${data.message}
 ---
 This message was sent from the BlessBox contact form
 A Proud YOLOVibeCode Project - DBA Noctusoft, Inc
+Sent via ${getEmailProvider()}
   `;
 
   return { html, text };
 };
+
+// Email verification template
+export const createVerificationEmailTemplate = (data: {
+  email: string;
+  code: string;
+  organizationName?: string;
+}) => {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #0d9488 0%, #1e40af 100%); padding: 30px; border-radius: 10px; margin-bottom: 20px;">
+        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">BlessBox Email Verification</h1>
+        <p style="color: #e0f2fe; margin: 10px 0 0 0;">Verify your account to continue</p>
+      </div>
+      
+      <div style="background: #f8fafc; padding: 30px; border-radius: 10px; border-left: 4px solid #0d9488;">
+        <h2 style="color: #1e293b; margin-top: 0;">Verification Code</h2>
+        
+        <p style="color: #475569; font-size: 16px; line-height: 1.6;">
+          Hello! We received a request to verify your email address for ${data.organizationName || 'your organization'}.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <div style="background: white; display: inline-block; padding: 20px 40px; border-radius: 10px; border: 2px solid #0d9488; font-size: 32px; font-weight: bold; color: #0d9488; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+            ${data.code}
+          </div>
+        </div>
+        
+        <p style="color: #475569; font-size: 16px; line-height: 1.6;">
+          Enter this 6-digit code in your browser to verify your email address. This code will expire in <strong>15 minutes</strong>.
+        </p>
+        
+        <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 20px 0;">
+          <p style="color: #92400e; margin: 0; font-size: 14px;">
+            <strong>Security Note:</strong> If you didn't request this verification, please ignore this email. Never share this code with anyone.
+          </p>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 30px; padding: 20px; background: #1e293b; border-radius: 10px;">
+        <p style="color: #94a3b8; margin: 0; font-size: 14px;">
+          This verification email was sent from BlessBox<br>
+          <span style="color: #64748b;">A Proud YOLOVibeCode Project - DBA Noctusoft, Inc</span>
+        </p>
+        <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
+          Sent via ${getEmailProvider()}
+        </p>
+      </div>
+    </div>
+  `;
+
+  const text = `
+BlessBox Email Verification
+
+Hello! We received a request to verify your email address for ${data.organizationName || 'your organization'}.
+
+Your verification code is: ${data.code}
+
+Enter this 6-digit code in your browser to verify your email address. This code will expire in 15 minutes.
+
+Security Note: If you didn't request this verification, please ignore this email. Never share this code with anyone.
+
+---
+This verification email was sent from BlessBox
+A Proud YOLOVibeCode Project - DBA Noctusoft, Inc
+Sent via ${getEmailProvider()}
+  `;
+
+  return { html, text };
+};
+
+// Verification code utilities
+export const generateVerificationCode = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+export const isValidVerificationCode = (code: string): boolean => {
+  return /^\d{6}$/.test(code);
+};
+
+// Legacy compatibility exports
+export const testEmailConnection = verifyEmailConfig;
