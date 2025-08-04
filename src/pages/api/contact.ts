@@ -53,7 +53,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Send email
     const emailSent = await sendEmail({
-      from: `"BlessBox Contact Form" <contact@yolovibecodebootcamp.com>`,
       to: 'contact@yolovibecodebootcamp.com',
       subject: `New BlessBox Contact: ${name}${company ? ` from ${company}` : ''}`,
       html,
