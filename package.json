@@ -16,10 +16,28 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "test:e2e": "TEST_ENV=production npx playwright test",
+    "test:e2e:dev": "TEST_ENV=development npx playwright test",
+    "test:e2e:local": "TEST_ENV=local npx playwright test",
+    "test:e2e:headed": "TEST_ENV=production npx playwright test --headed",
+    "test:e2e:debug": "TEST_ENV=production npx playwright test --debug",
+    "test:e2e:interactive": "node scripts/run-e2e-tests.js",
+    "test:e2e:business": "TEST_ENV=production npx playwright test tests/e2e/blessbox-business-flow.spec.ts",
+    "test:e2e:business:headed": "TEST_ENV=production npx playwright test tests/e2e/blessbox-business-flow.spec.ts --headed",
+    "test:report": "npx playwright show-report",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit push",
     "db:setup": "tsx scripts/database/setup-database.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "validate:env": "tsx scripts/validate-environment.ts",
+    "test:email": "node scripts/tests/test-email-system.js",
+    "test:db": "tsx scripts/database/setup-database.ts --test",
+    "health:check": "curl -s http://localhost:3000/api/system/health-check | jq .",
+    "diagnostics": "open http://localhost:3000/system/diagnostics",
+    "setup:env": "tsx scripts/setup-environment.ts",
+    "setup:vercel": "./scripts/setup-vercel.sh",
+    "env:pull": "vercel env pull .env.local",
+    "env:list": "vercel env ls"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.2.6",
@@ -47,9 +65,11 @@
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/user-event": "^14.6.1",
     "happy-dom": "^18.0.1",
+    "playwright": "^1.54.2",
     "tsx": "^4.20.3",
     "vitest": "^3.2.4"
   }

@@ -38,3 +38,9 @@ pnpm-debug.log*
 *.tmp
 Thumbs.db
 .vercel
+.env*.local
+
+# Playwright test artifacts
+playwright-report/
+test-results/
+playwright/.cache/
