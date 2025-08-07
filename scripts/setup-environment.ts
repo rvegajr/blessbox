@@ -68,7 +68,7 @@ EMAIL_FROM_NAME=BlessBox Development
 
 # Option 2: SendGrid (uncomment and configure if preferred)
 # EMAIL_PROVIDER=sendgrid
-# SENDGRID_API_KEY=SG.REDACTED
+# SENDGRID_API_KEY=SG.your-sendgrid-api-key
 # SENDGRID_FROM_EMAIL=noreply@yourdomain.com
 # SENDGRID_FROM_NAME=BlessBox
 
@@ -209,7 +209,7 @@ GMAIL_PASS=your-16-character-app-password
 # 1. Create account: https://sendgrid.com
 # 2. Verify sender identity
 # 3. Generate API key with "Mail Send" permission
-# SENDGRID_API_KEY=SG.REDACTED
+# SENDGRID_API_KEY=SG.your-api-key-here
 # SENDGRID_FROM_EMAIL=noreply@yourdomain.com
 # SENDGRID_FROM_NAME=BlessBox
 
