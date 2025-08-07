@@ -42,7 +42,7 @@ echo "your-app-password" | vercel env add GMAIL_PASS production
 
 # OR SendGrid:
 echo "sendgrid" | vercel env add EMAIL_PROVIDER production
-echo "SG.REDACTED" | vercel env add SENDGRID_API_KEY production
+echo "SG.your-api-key" | vercel env add SENDGRID_API_KEY production
 echo "noreply@yourdomain.com" | vercel env add SENDGRID_FROM_EMAIL production
 
 # Security

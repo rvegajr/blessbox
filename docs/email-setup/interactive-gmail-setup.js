@@ -89,7 +89,7 @@ EMAIL_FROM_NAME=BlessBox Contact
 CONTACT_EMAIL=${gmailAddress}
 
 # SendGrid Configuration (backup - ready to switch)
-SENDGRID_API_KEY=SG.REDACTED
+SENDGRID_API_KEY=SG.your-sendgrid-api-key-here
 SENDGRID_FROM_EMAIL=contact@yolovibecodebootcamp.com
 SENDGRID_FROM_NAME=BlessBox Contact
 
