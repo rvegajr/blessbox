@@ -192,7 +192,7 @@ const onboardingData = null;
                 const currentData = storage.get(StorageKeys.ONBOARDING_DATA) || {};
                 
                 // Call verification API
-                const response = await fetch('/api/onboarding/verify-code-simple', {
+                const response = await fetch('/api/onboarding/verify-code', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
@@ -239,7 +239,7 @@ const onboardingData = null;
                 const currentData = storage.get(StorageKeys.ONBOARDING_DATA) || {};
                 
                 // Call send verification API
-                const response = await fetch('/api/onboarding/send-verification-simple', {
+                const response = await fetch('/api/onboarding/send-verification', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
