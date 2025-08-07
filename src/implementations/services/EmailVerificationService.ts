@@ -19,7 +19,7 @@ export class EmailVerificationService implements IEmailVerification {
     }
 
     try {
-      const response = await fetch('/api/onboarding/send-verification-simple', {
+      const response = await fetch('/api/onboarding/send-verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ export class EmailVerificationService implements IEmailVerification {
     }
 
     try {
-      const response = await fetch('/api/onboarding/verify-code-simple', {
+      const response = await fetch('/api/onboarding/verify-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
