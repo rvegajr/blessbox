@@ -1,5 +1,6 @@
 // Gmail Email Provider using Nodemailer
 import type { EmailProvider, EmailMessage, EmailResponse } from '../interfaces/EmailProvider';
+import { logEmailAttempt } from '../pages/api/admin/email-logs';
 
 export class GmailProvider implements EmailProvider {
   private transporter: any;
@@ -40,11 +41,21 @@ export class GmailProvider implements EmailProvider {
   }
 
   async send(message: EmailMessage): Promise<EmailResponse> {
+    const timestamp = new Date().toISOString();
+    const fromAddress = message.from || this.fromEmail;
+    
+    // Log email attempt with full details
+    console.log(`📧 [${timestamp}] EMAIL SEND ATTEMPT - Gmail`);
+    console.log(`   To: ${message.to}`);
+    console.log(`   From: ${fromAddress} (${this.fromName})`);
+    console.log(`   Subject: ${message.subject}`);
+    console.log(`   Provider: Gmail`);
+    
     try {
       const transporter = await this.initializeTransporter();
       
       const mailOptions = {
-        from: `"${this.fromName}" <${message.from || this.fromEmail}>`,
+        from: `"${this.fromName}" <${fromAddress}>`,
         to: message.to,
         subject: message.subject,
         text: message.text,
@@ -53,15 +64,50 @@ export class GmailProvider implements EmailProvider {
 
       const result = await transporter.sendMail(mailOptions);
       
+      // Log successful send with message ID
+      console.log(`✅ [${timestamp}] EMAIL SENT SUCCESSFULLY - Gmail`);
+      console.log(`   To: ${message.to}`);
+      console.log(`   Message ID: ${result.messageId}`);
+      console.log(`   Response: ${result.response}`);
+      
+      // Log to centralized email logs
+      logEmailAttempt({
+        timestamp,
+        provider: 'Gmail',
+        to: message.to,
+        from: fromAddress,
+        subject: message.subject,
+        success: true,
+        messageId: result.messageId
+      });
+      
       return {
         success: true,
         messageId: result.messageId,
       };
     } catch (error) {
-      console.error('Gmail send error:', error);
+      // Log detailed error information
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`❌ [${timestamp}] EMAIL SEND FAILED - Gmail`);
+      console.error(`   To: ${message.to}`);
+      console.error(`   From: ${fromAddress}`);
+      console.error(`   Subject: ${message.subject}`);
+      console.error(`   Error: ${errorMessage}`);
+      
+      // Log to centralized email logs
+      logEmailAttempt({
+        timestamp,
+        provider: 'Gmail',
+        to: message.to,
+        from: fromAddress,
+        subject: message.subject,
+        success: false,
+        error: errorMessage
+      });
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
       };
     }
   }
