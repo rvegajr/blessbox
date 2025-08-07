@@ -285,7 +285,7 @@ const onboardingData = null;
                 const currentData = storage.get(StorageKeys.ONBOARDING_DATA) || {};
                 
                 // Send verification email
-                const response = await fetch('/api/onboarding/send-verification', {
+                const response = await fetch('/api/onboarding/send-verification-simple', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
