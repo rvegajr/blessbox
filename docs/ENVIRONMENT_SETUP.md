@@ -169,7 +169,7 @@ For other hosting platforms, set these environment variables in their respective
 #### SendGrid Setup
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `SENDGRID_API_KEY` | SendGrid API key | `SG.REDACTED` |
+| `SENDGRID_API_KEY` | SendGrid API key | `SG.xxxxx...` |
 | `SENDGRID_FROM_EMAIL` | Verified sender | `noreply@domain.com` |
 | `SENDGRID_FROM_NAME` | Sender name | `BlessBox` |
 
@@ -244,7 +244,7 @@ turso db tokens create blessbox-prod --expiration never
 4. **Configure Environment**
    ```env
    EMAIL_PROVIDER=sendgrid
-   SENDGRID_API_KEY=SG.REDACTED
+   SENDGRID_API_KEY=SG.your-key-here
    SENDGRID_FROM_EMAIL=verified@domain.com
    ```
 

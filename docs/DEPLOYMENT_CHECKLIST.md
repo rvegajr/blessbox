@@ -84,7 +84,7 @@ open http://localhost:3000/system/diagnostics
 - [ ] **Configure environment**:
   ```env
   EMAIL_PROVIDER=sendgrid
-  SENDGRID_API_KEY=SG.REDACTED
+  SENDGRID_API_KEY=SG.your-api-key-here
   SENDGRID_FROM_EMAIL=verified@yourdomain.com
   SENDGRID_FROM_NAME=BlessBox
   ```
