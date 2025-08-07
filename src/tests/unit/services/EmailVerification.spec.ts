@@ -29,7 +29,7 @@ describe('EmailVerification', () => {
       
       expect(result).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/onboarding/send-verification-simple'),
+        expect.stringContaining('/api/onboarding/send-verification'),
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
