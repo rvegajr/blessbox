@@ -258,7 +258,8 @@ test.describe(`BlessBox E2E Tests - ${ENV.charAt(0).toUpperCase() + ENV.slice(1)
     
     // Look for QR code generation
     const qrCodeElement = page.locator('canvas, img[src*="qr"], [class*="qr-code"]').first();
-    if (await qrCodeElement.isVisible()) {
+    await page.waitForTimeout(500);
+    if (await qrCodeElement.isVisible().catch(() => false)) {
       console.log('   ✓ QR code generated');
     }
     
@@ -269,6 +270,17 @@ test.describe(`BlessBox E2E Tests - ${ENV.charAt(0).toUpperCase() + ENV.slice(1)
       await page.waitForTimeout(2000);
       console.log('   ✓ QR code generation triggered');
     }
+    // Complete setup and verify redirect to org dashboard (SPA-like)
+    const completeBtn = page.locator('button:has-text("Complete Setup")').first();
+    await completeBtn.click();
+    // Expect a brief success then transition
+    await page.waitForURL(/\/dashboard\/(organization|org)\//, { timeout: 10000 });
+    console.log('   ✓ Redirected to organization dashboard');
+
+    // Smoke-check dashboard content
+    const dashHeading = page.locator('h1:has-text("Dashboard"), h2:has-text("Dashboard"), text=/Registrations|Check\-In|QR Codes/i').first();
+    await expect(dashHeading).toBeVisible();
+    console.log('   ✓ Dashboard loaded');
   });
 
   test('5. Test registration form with custom fields', async ({ page }) => {
