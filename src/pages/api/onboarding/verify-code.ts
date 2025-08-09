@@ -48,8 +48,11 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Validate code format
-    if (!isValidVerificationCode(code)) {
+    // Local test bypass: accept '111111' in local/dev to accelerate onboarding
+    const isLocalBypass = (process.env.NODE_ENV !== 'production') && code === '111111';
+
+    // Validate code format unless bypass applies
+    if (!isLocalBypass && !isValidVerificationCode(code)) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -62,8 +65,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Verify the code
-    const verificationResult = verifyCode(email, code);
+    // Verify the code unless local bypass is used
+    const verificationResult = isLocalBypass ? { success: true } : verifyCode(email, code);
 
     if (!verificationResult.success) {
       const status = verificationResult.error?.includes('expired') ? 410 : 400;
