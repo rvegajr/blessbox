@@ -53,8 +53,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Generate verification code
-    const code = generateVerificationCode();
+    // Generate verification code (fixed in local/dev to 111111 for easier manual testing)
+    const code = (process.env.NODE_ENV !== 'production') ? '111111' : generateVerificationCode();
 
     // Store verification code
     storeVerificationCode(email, code);
