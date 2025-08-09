@@ -48,8 +48,15 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Local test bypass: accept '111111' in local/dev to accelerate onboarding
-    const isLocalBypass = (process.env.NODE_ENV !== 'production') && code === '111111';
+    // Magic-code bypass: allow a fixed code on approved hosts (dev + local)
+    const hostname = new URL(request.url).hostname;
+    const MAGIC_CODE = process.env.MAGIC_VERIFICATION_CODE || '111111';
+    const ALLOW_MAGIC_HOSTS = (process.env.ALLOW_MAGIC_CODE_HOSTS || 'localhost,127.0.0.1,dev.blessbox.org')
+      .split(',')
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean);
+    const isMagicHost = ALLOW_MAGIC_HOSTS.includes(hostname.toLowerCase());
+    const isLocalBypass = isMagicHost && code === MAGIC_CODE;
 
     // Validate code format unless bypass applies
     if (!isLocalBypass && !isValidVerificationCode(code)) {
@@ -65,7 +72,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Verify the code unless local bypass is used
+    // Verify the code unless magic bypass is used
     const verificationResult = isLocalBypass ? { success: true } : verifyCode(email, code);
 
     if (!verificationResult.success) {
