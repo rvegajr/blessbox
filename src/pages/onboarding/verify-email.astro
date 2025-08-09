@@ -46,8 +46,18 @@ const onboardingData = null;
             Verify Your Email
           </Text>
           <Text tag="p" variant="textBase" class="text-base-600">
-            We've sent a verification code to <strong>{onboardingData?.email}</strong>
+            We've sent a verification code to
+            <strong id="emailDisplay">your email</strong>
           </Text>
+          <div class="mt-2">
+            <button
+              type="button"
+              class="text-teal-600 hover:text-teal-700 text-sm font-medium underline"
+              onclick="window.location.href = '/onboarding/organization-setup'"
+            >
+              Wrong email? Change email address
+            </button>
+          </div>
         </div>
 
         <form id="verificationForm" class="space-y-6">
@@ -147,6 +157,7 @@ const onboardingData = null;
     const submitButton = document.getElementById('submitButton');
     const resendButton = document.getElementById('resendButton');
     const resendMessage = document.getElementById('resendMessage');
+    const emailDisplay = document.getElementById('emailDisplay');
 
     // Get stored data
     const onboardingData = storage.get(StorageKeys.ONBOARDING_DATA);
@@ -154,6 +165,12 @@ const onboardingData = null;
     if (!onboardingData?.email) {
       // Redirect back if no email
       window.location.href = '/onboarding/organization-setup';
+    }
+
+    // Reflect the email address on the page so the user can confirm it
+    if (emailDisplay && onboardingData?.email) {
+      emailDisplay.textContent = onboardingData.email;
+      emailDisplay.setAttribute('aria-label', `Verification email sent to ${onboardingData.email}`);
     }
 
     // Form validation
