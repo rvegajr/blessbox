@@ -19,6 +19,7 @@ const onboardingData = null;
 >
   <Wrapper class="py-16">
     <div class="max-w-4xl mx-auto">
+      <link rel="prefetch" href="/dashboard" />
       <!-- Progress Bar -->
       <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
@@ -466,20 +467,37 @@ const onboardingData = null;
         }
         successMessage.classList.remove('hidden');
         
+        // Prefetch the upcoming dashboard route (best effort)
+        const orgSlug = currentData.organizationSlug || currentData.organizationId || '';
+        const targetUrl = `/dashboard/organization/${orgSlug}`;
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = targetUrl;
+        document.head.appendChild(link);
+
+        // Brief success reveal, then smooth transition into dashboard
         setTimeout(() => {
           successMessage.scrollIntoView({ behavior: 'smooth' });
-          
-          // Show detailed success info
+
           setTimeout(() => {
-            alert(`🎉 Onboarding completed successfully!\n\nGenerated ${result.qrCodes.length} QR code(s) for ${currentData.organizationName || 'your organization'}.\n\nYour registration system is now ready!`);
-            
-            // In a real app, redirect to dashboard
-            console.log('Onboarding complete! Data:', storage.get(StorageKeys.ONBOARDING_DATA));
-            
-            // For demo, redirect back to home
-            window.location.href = '/';
-          }, 2000);
-        }, 100);
+            // Persist a minimal dashboard bootstrap for client
+            storage.save(StorageKeys.ONBOARDING_DATA, {
+              ...storage.get(StorageKeys.ONBOARDING_DATA),
+              organizationSlug: orgSlug,
+              lastVisited: 'dashboard'
+            });
+
+            // Use view transitions where supported to feel SPA-smooth
+            const go = () => (window.location.href = targetUrl);
+            // @ts-ignore
+            if (document.startViewTransition) {
+              // @ts-ignore
+              document.startViewTransition(() => go());
+            } else {
+              go();
+            }
+          }, 900);
+        }, 250);
 
       } catch (error) {
         console.error('Failed to complete setup:', error);

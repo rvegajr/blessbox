@@ -82,7 +82,7 @@ export const createContactEmailTemplate = (data: {
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: #1e293b; border-radius: 10px;">
         <p style="color: #94a3b8; margin: 0; font-size: 14px;">
           This message was sent from the BlessBox contact form<br>
-          <span style="color: #64748b;">A Proud YOLOVibeCode Project - DBA Noctusoft, Inc</span>
+          <span style="color: #64748b;">A Proud YOLOVibeCode Project - Copyright 2025 Noctusoft, Inc ®</span>
         </p>
         <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
           Sent via ${getEmailProvider()}
@@ -103,7 +103,7 @@ ${data.message}
 
 ---
 This message was sent from the BlessBox contact form
-A Proud YOLOVibeCode Project - DBA Noctusoft, Inc
+A Proud YOLOVibeCode Project - Copyright 2025 Noctusoft, Inc ®
 Sent via ${getEmailProvider()}
   `;
 
@@ -150,7 +150,7 @@ export const createVerificationEmailTemplate = (data: {
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: #1e293b; border-radius: 10px;">
         <p style="color: #94a3b8; margin: 0; font-size: 14px;">
           This verification email was sent from BlessBox<br>
-          <span style="color: #64748b;">A Proud YOLOVibeCode Project - DBA Noctusoft, Inc</span>
+          <span style="color: #64748b;">A Proud YOLOVibeCode Project - Copyright 2025 Noctusoft, Inc ®</span>
         </p>
         <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
           Sent via ${getEmailProvider()}
@@ -172,7 +172,7 @@ Security Note: If you didn't request this verification, please ignore this email
 
 ---
 This verification email was sent from BlessBox
-A Proud YOLOVibeCode Project - DBA Noctusoft, Inc
+A Proud YOLOVibeCode Project - Copyright 2025 Noctusoft, Inc ®
 Sent via ${getEmailProvider()}
   `;
 
