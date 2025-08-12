@@ -1,7 +1,8 @@
 // API endpoint for migrating onboarding data from sessionStorage to database
 import type { APIRoute } from 'astro';
 import { DataMigrationService } from '../../../implementations/migration/DataMigrationService';
-import { MockOrganizationRepository } from '../../../implementations/repositories/MockOrganizationRepository';
+import { OrganizationRepository } from '../../../implementations/repositories/OrganizationRepository';
+import { QRCodeRepository } from '../../../implementations/repositories/QRCodeRepository';
 import { withSecurity } from '../../../middleware/security';
 import type { OnboardingSessionData } from '../../../interfaces/migration/IDataMigration';
 
@@ -32,8 +33,8 @@ class MockQRCodeRepository {
   }
 }
 
-const organizationRepo = new MockOrganizationRepository();
-const qrCodeRepo = new MockQRCodeRepository();
+const organizationRepo = new OrganizationRepository();
+const qrCodeRepo = new QRCodeRepository();
 const migrationService = new DataMigrationService(organizationRepo, qrCodeRepo);
 
 export const POST: APIRoute = async (context) => {
