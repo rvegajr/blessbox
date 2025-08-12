@@ -15,10 +15,17 @@ let db: ReturnType<typeof drizzle> | null = null;
 
 // Create TURSO database connection - EDGE-POWERED MAGIC! 🌟
 export function createDatabaseConnection(config?: TursoConfig) {
-  // Use environment variables if config not provided - SO CLEAN! 
+  // Resolve env from process.env or import.meta.env
+  const readEnv = (key: string): string | undefined => {
+    // @ts-ignore
+    const metaEnv = typeof import !== 'undefined' && typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
+    return process.env[key] || (metaEnv ? metaEnv[key] : undefined);
+  };
+
+  // Prefer provided config → env → local file fallback to avoid 401s
   const tursoConfig: TursoConfig = config || {
-    url: process.env.TURSO_DATABASE_URL || 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io',
-    authToken: process.env.TURSO_AUTH_TOKEN || '',
+    url: readEnv('TURSO_DATABASE_URL') || 'file:./.tmp/dev-db.sqlite',
+    authToken: readEnv('TURSO_AUTH_TOKEN') || '',
   };
 
   // Create Turso client if it doesn't exist - BLAZING FAST! 🔥
