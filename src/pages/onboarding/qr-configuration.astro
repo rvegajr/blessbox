@@ -449,12 +449,42 @@ const onboardingData = null;
         }
 
         // Save complete onboarding data
-        storage.save(StorageKeys.ONBOARDING_DATA, {
+        const completedData = {
           ...currentData,
           qrCodes: result.qrCodes,
           onboardingComplete: true,
           completedAt: new Date().toISOString()
-        });
+        };
+        storage.save(StorageKeys.ONBOARDING_DATA, completedData);
+
+        // Persist to backend (migrate onboarding → DB). In local/dev, assume email is verified if not set
+        try {
+          const hostname = window.location.hostname.toLowerCase();
+          const allowMagic = ['localhost','127.0.0.1','dev.blessbox.org'].includes(hostname);
+          const sessionData = {
+            ...completedData,
+            emailVerified: completedData.emailVerified ?? allowMagic ?? false,
+          };
+          const migrateResp = await fetch('/api/migration/migrate-onboarding', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionData })
+          });
+          if (migrateResp.ok) {
+            const migrateJson = await migrateResp.json();
+            if (migrateJson?.organizationId) {
+              // Store IDs for dashboard bootstrap
+              storage.save(StorageKeys.ONBOARDING_DATA, {
+                ...sessionData,
+                organizationId: migrateJson.organizationId,
+              });
+            }
+          } else {
+            console.warn('Onboarding migration failed', await migrateResp.text());
+          }
+        } catch (e) {
+          console.warn('Onboarding migration error', e);
+        }
 
         // Also save QR configuration for compatibility
         storage.save(StorageKeys.QR_CONFIG, {
