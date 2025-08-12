@@ -99,6 +99,9 @@ export const POST: APIRoute = async (context) => {
       );
 
       console.log(`✅ Migration completed for organization: ${orgMigrationResult.organizationId}`);
+      if (orgMigrationResult.organizationId) {
+        console.log(`[Migration] Organization created: ${orgMigrationResult.organizationId} (${sessionData.organizationName} / ${sessionData.contactEmail})`);
+      }
 
       return new Response(
         JSON.stringify({
