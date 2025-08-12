@@ -20,6 +20,12 @@ rateLimiter.configureLimits('/api/auth/login', {
   blockDurationMs: 15 * 60 * 1000, // 15 minutes
 });
 
+rateLimiter.configureLimits('/api/auth/request-magic-link', {
+  maxRequests: 5,
+  windowMs: 15 * 60 * 1000,
+  blockDurationMs: 15 * 60 * 1000,
+});
+
 rateLimiter.configureLimits('/api/onboarding/send-verification', {
   maxRequests: 3,
   windowMs: 5 * 60 * 1000, // 5 minutes
@@ -168,6 +174,15 @@ async function validateRequestBody(body: any, endpoint: string): Promise<{ isVal
       break;
 
     case '/api/auth/login':
+      if (body.email) {
+        const emailValidation = inputValidator.validateEmail(body.email);
+        if (!emailValidation.isValid) {
+          errors.push(...emailValidation.errors);
+        }
+      }
+      break;
+
+    case '/api/auth/request-magic-link':
       if (body.email) {
         const emailValidation = inputValidator.validateEmail(body.email);
         if (!emailValidation.isValid) {

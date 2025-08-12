@@ -12,8 +12,7 @@ import Wrapper from '../../components/fundations/containers/Wrapper.astro';
 import Text from '../../components/fundations/elements/Text.astro';
 import Button from '../../components/fundations/elements/Button.astro';
 
-// For now, we'll use the test organization ID
-// In the future, this will come from authentication
+// If we have a slug in session (client), we’ll redirect there. Fallback keeps demo grid.
 const organizationId = Astro.url.searchParams.get('orgId') || '1bbc39f6-6253-47af-be3b-d3fb45f2830f';
 
 // Get current URL for filter state management
@@ -31,6 +30,19 @@ const currentFilters = {
   hideNav={false}
   hideFooter={false}
 >
+  <script>
+    // Client-side redirect if we have an org slug in session from onboarding
+    try {
+      const data = sessionStorage.getItem('blessbox_onboarding_data');
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (parsed?.organizationSlug) {
+          const target = `/dashboard/organization/${parsed.organizationSlug}`;
+          if (location.pathname !== target) location.replace(target);
+        }
+      }
+    } catch {}
+  </script>
   <Wrapper>
     <!-- Dashboard Header -->
     <div class="dashboard-header py-8 border-b border-gray-200 mb-8">
