@@ -1,0 +1,95 @@
+---
+/**
+ * Organization Dashboard (slug-based)
+ * Server-first page that renders the same dashboard UI but scoped by org slug.
+ * For now, we fall back to the demo organizationId until a real lookup is wired.
+ */
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import SimpleRegistrationGrid from '../../../components/dashboard/SimpleRegistrationGrid.astro';
+import Wrapper from '../../../components/fundations/containers/Wrapper.astro';
+import Text from '../../../components/fundations/elements/Text.astro';
+import Button from '../../../components/fundations/elements/Button.astro';
+
+// Params from the route
+const { slug } = Astro.params as { slug: string };
+
+// TODO: Replace with real lookup of organizationId by slug
+// e.g., const organizationId = await getOrganizationIdBySlug(slug)
+const organizationId = '1bbc39f6-6253-47af-be3b-d3fb45f2830f';
+
+const url = new URL(Astro.request.url);
+const currentFilters = {
+  deliveryStatus: url.searchParams.get('deliveryStatus') || '',
+  qrCodeLabels: url.searchParams.get('qrCodeLabels') || '',
+  search: url.searchParams.get('search') || '',
+};
+---
+
+<BaseLayout 
+  title={`Dashboard - ${slug}`}
+  description="Manage your registrations, QR codes, and event data with BlessBox's comprehensive dashboard. View real-time statistics and track attendee entries."
+  hideNav={false}
+  hideFooter={false}
+>
+  <Wrapper>
+    <div class="dashboard-header py-8 border-b border-gray-200 mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <Text tag="h1" variant="textXL" class="font-bold text-gray-900">
+            {slug} Dashboard
+          </Text>
+          <Text tag="p" variant="textBase" class="text-gray-600 mt-2">
+            Manage your registrations, QR codes, and event data
+          </Text>
+        </div>
+        <div class="flex space-x-4">
+          <Button variant="secondary" size="medium">Export Data</Button>
+          <Button variant="primary" size="medium">New QR Code</Button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-section bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <form method="GET" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <input id="search" name="search" value={currentFilters.search} class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500" />
+          </div>
+          <div>
+            <label for="deliveryStatus" class="block text-sm font-medium text-gray-700 mb-2">Delivery Status</label>
+            <select id="deliveryStatus" name="deliveryStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+              <option value="">All Statuses</option>
+              <option value="pending" selected={currentFilters.deliveryStatus === 'pending'}>Pending</option>
+              <option value="delivered" selected={currentFilters.deliveryStatus === 'delivered'}>Delivered</option>
+              <option value="failed" selected={currentFilters.deliveryStatus === 'failed'}>Failed</option>
+            </select>
+          </div>
+          <div>
+            <label for="qrCodeLabels" class="block text-sm font-medium text-gray-700 mb-2">QR Code</label>
+            <select id="qrCodeLabels" name="qrCodeLabels" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500">
+              <option value="">All QR Codes</option>
+              <option value="main-entry" selected={currentFilters.qrCodeLabels === 'main-entry'}>Main Entry</option>
+              <option value="vip-entry" selected={currentFilters.qrCodeLabels === 'vip-entry'}>VIP Entry</option>
+              <option value="staff-entry" selected={currentFilters.qrCodeLabels === 'staff-entry'}>Staff Entry</option>
+            </select>
+          </div>
+          <div class="flex items-end space-x-2">
+            <Button type="submit" variant="primary" size="medium" class="flex-1">Apply Filters</Button>
+            <Button type="button" variant="secondary" size="medium" onclick="window.location.href = window.location.pathname">Clear</Button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <SimpleRegistrationGrid organizationId={organizationId} />
+  </Wrapper>
+</BaseLayout>
+
+<style>
+  .dashboard-header { background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%); border-radius: 0.75rem; margin: -2rem -2rem 2rem -2rem; padding: 2rem; }
+  .filters-section { backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95); }
+</style>
+
+

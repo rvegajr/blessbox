@@ -15,6 +15,16 @@ export class SendGridProvider implements EmailProvider {
     sgMail.setApiKey(config.apiKey);
     this.fromEmail = config.fromEmail || 'contact@yolovibecodebootcamp.com';
     this.fromName = config.fromName || 'BlessBox Contact';
+
+    // Debug: log redacted key and from for runtime verification
+    try {
+      const key = config.apiKey || '';
+      const redacted = key.length >= 12
+        ? `${key.slice(0, 6)}...${key.slice(-6)}`
+        : `${key.slice(0, 3)}...${key.slice(-3)}`;
+      // Intentionally minimal, redacted output only
+      console.log(`[Email] SendGrid initialized (key=${redacted}, from=${this.fromEmail})`);
+    } catch {}
   }
 
   async send(message: EmailMessage): Promise<EmailResponse> {

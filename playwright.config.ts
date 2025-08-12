@@ -75,8 +75,9 @@ export default defineConfig({
   // Run local dev server before tests if needed
   ...(process.env.TEST_ENV === 'local' ? {
     webServer: {
+      // Match project dev port (package.json uses 7777)
       command: 'npm run dev',
-      port: 4321,
+      port: 7777,
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,
     },
