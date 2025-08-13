@@ -53,12 +53,32 @@ export const POST: APIRoute = async (context) => {
         );
       }
 
+      // Debug: log incoming payload (redacted if needed)
+      try {
+        const { organizationName, contactEmail, emailVerified, onboardingComplete } = sessionData as any;
+        console.log('[Migration] Incoming sessionData', {
+          organizationName,
+          contactEmail,
+          emailVerified,
+          onboardingComplete,
+          hasQrCodes: Array.isArray((sessionData as any)?.qrCodes) && (sessionData as any).qrCodes.length > 0,
+        });
+      } catch {}
+
       // Check if migration is needed
-      if (!migrationService.needsMigration(sessionData)) {
+      const ready = migrationService.needsMigration(sessionData);
+      if (!ready) {
+        const missing: string[] = [];
+        if (!sessionData.onboardingComplete) missing.push('onboardingComplete');
+        if (!sessionData.emailVerified) missing.push('emailVerified');
+        if (!sessionData.organizationName) missing.push('organizationName');
+        if (!sessionData.contactEmail) missing.push('contactEmail');
+        console.warn('[Migration] needsMigration=false', { missing });
         return new Response(
           JSON.stringify({
             success: false,
             error: 'Data is not ready for migration. Complete onboarding first.',
+            missing,
           }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
