@@ -15,11 +15,16 @@ let db: ReturnType<typeof drizzle> | null = null;
 
 // Create TURSO database connection - EDGE-POWERED MAGIC! 🌟
 export function createDatabaseConnection(config?: TursoConfig) {
-  // Resolve env from process.env or import.meta.env
+  // Resolve env from process.env; fall back to import.meta.env if available
   const readEnv = (key: string): string | undefined => {
-    // @ts-ignore
-    const metaEnv = typeof import !== 'undefined' && typeof import.meta !== 'undefined' ? (import.meta as any).env : undefined;
-    return process.env[key] || (metaEnv ? metaEnv[key] : undefined);
+    if (process?.env?.[key]) return process.env[key];
+    try {
+      // @ts-ignore - import.meta may not exist in some runtimes
+      const v = (import.meta as any)?.env?.[key];
+      return v;
+    } catch {
+      return undefined;
+    }
   };
 
   // Prefer provided config → env → local file fallback to avoid 401s
