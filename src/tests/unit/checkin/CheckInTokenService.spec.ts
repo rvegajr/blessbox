@@ -16,7 +16,8 @@ describe('🎉 CheckInTokenService - THE MAGICAL TOKEN GENERATOR!', () => {
   beforeEach(async () => {
     // Set up test environment with PURE JOY! 🌟
     process.env.TURSO_DATABASE_URL = 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io';
-    process.env.TURSO_AUTH_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTQ5MTkyMTIsImlhdCI6MTc1NDMxNDQxMiwiaWQiOiI4MjFmMjdkOS0zNDIzLTQ1YTAtYWFiMy01MzcyNTQ3MjcyNDAiLCJyaWQiOiJiM2MwZjdhYS05YzFjLTQ5NjUtYjgwNi1jZmI0OGEwMTFmZTAifQ.EJyaZVzuYv2ietM6l7CZbqR_PNUE0fPOeOHZYeFHEZGRsnq9xDtvZLR6HEQcSsGlr2vs1owJyGySrVtigh7VCg';
+    // Use environment variable for auth token (set in test environment)
+    process.env.TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || 'test-token-placeholder';
     
     tokenService = new CheckInTokenService();
     
