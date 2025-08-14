@@ -54,7 +54,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Generate verification code
-    const code = generateVerificationCode();
+    const hostname = new URL(request.url).hostname;
+    const MAGIC_CODE = process.env.MAGIC_VERIFICATION_CODE || '111111';
+    const ALLOW_MAGIC_HOSTS = (process.env.ALLOW_MAGIC_CODE_HOSTS || 'localhost,127.0.0.1')
+      .split(',')
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean);
+    const isMagicHost = ALLOW_MAGIC_HOSTS.includes(hostname.toLowerCase()) && (process.env.NODE_ENV !== 'production');
+    const code = isMagicHost ? MAGIC_CODE : generateVerificationCode();
 
     // Store verification code
     storeVerificationCode(email, code);
