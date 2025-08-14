@@ -10,13 +10,34 @@ import SimpleRegistrationGrid from '../../../components/dashboard/SimpleRegistra
 import Wrapper from '../../../components/fundations/containers/Wrapper.astro';
 import Text from '../../../components/fundations/elements/Text.astro';
 import Button from '../../../components/fundations/elements/Button.astro';
+import { OrganizationRepository } from '../../../implementations/repositories/OrganizationRepository';
 
 // Params from the route
 const { slug } = Astro.params as { slug: string };
 
-// TODO: Replace with real lookup of organizationId by slug
-// e.g., const organizationId = await getOrganizationIdBySlug(slug)
-const organizationId = '1bbc39f6-6253-47af-be3b-d3fb45f2830f';
+// Resolve the organization from the slug using real database data
+const orgRepo = new OrganizationRepository();
+let organization = await orgRepo.findByDomain(slug);
+if (!organization) {
+  organization = await orgRepo.findById(slug);
+}
+
+// Fallback: support slugified organization name (e.g., 
+// "My Org Name" → "my-org-name") to allow pretty URLs
+if (!organization) {
+  const slugify = (text: string) => text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  const list = await orgRepo.findAll(100, 0);
+  organization = list.find((org) => slugify(org.name) === slug) || null as any;
+}
+
+if (!organization) {
+  throw new Error('Organization not found');
+}
+
+const organizationId = organization.id;
 
 const url = new URL(Astro.request.url);
 const currentFilters = {
@@ -27,7 +48,7 @@ const currentFilters = {
 ---
 
 <BaseLayout 
-  title={`Dashboard - ${slug}`}
+  title={`Dashboard - ${organization.name}`}
   description="Manage your registrations, QR codes, and event data with BlessBox's comprehensive dashboard. View real-time statistics and track attendee entries."
   hideNav={false}
   hideFooter={false}
@@ -37,7 +58,7 @@ const currentFilters = {
       <div class="flex items-center justify-between">
         <div>
           <Text tag="h1" variant="textXL" class="font-bold text-gray-900">
-            {slug} Dashboard
+            {organization.name} Dashboard
           </Text>
           <Text tag="p" variant="textBase" class="text-gray-600 mt-2">
             Manage your registrations, QR codes, and event data

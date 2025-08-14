@@ -59,7 +59,9 @@
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.4",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "nodemailer": "^7.0.5",
+    "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.1.7"
