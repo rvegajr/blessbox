@@ -8,12 +8,27 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SimpleRegistrationGrid from '../../components/dashboard/SimpleRegistrationGrid.astro';
+import { OrganizationRepository } from '../../implementations/repositories/OrganizationRepository';
 import Wrapper from '../../components/fundations/containers/Wrapper.astro';
 import Text from '../../components/fundations/elements/Text.astro';
 import Button from '../../components/fundations/elements/Button.astro';
 
-// If we have a slug in session (client), we’ll redirect there. Fallback keeps demo grid.
-const organizationId = Astro.url.searchParams.get('orgId') || '1bbc39f6-6253-47af-be3b-d3fb45f2830f';
+// Resolve organization context from query, domain, or recently created org
+const orgRepo = new OrganizationRepository();
+let organizationId = Astro.url.searchParams.get('orgId');
+if (!organizationId) {
+  const host = Astro.request.headers.get('host') || '';
+  const domain = host.split(':')[0];
+  const org = await orgRepo.findByDomain(domain);
+  if (org) {
+    organizationId = org.id;
+  }
+}
+// As a final fallback, load the first organization to avoid demo placeholders
+if (!organizationId) {
+  const all = await orgRepo.findAll(1, 0);
+  organizationId = all[0]?.id || '';
+}
 
 // Get current URL for filter state management
 const url = new URL(Astro.request.url);
@@ -58,7 +73,7 @@ const currentFilters = {
         
         <!-- Quick Actions -->
         <div class="flex space-x-4">
-          <Button variant="secondary" size="medium">
+          <Button variant="secondary" size="medium" onclick={`window.location.href='/api/registrations/export?orgId=${organizationId}&format=csv'`}>
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
