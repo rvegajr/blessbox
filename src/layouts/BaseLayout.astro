@@ -32,6 +32,12 @@ const {
     <!-- Dynamic title override -->
     <title>{title}</title>
     <meta name="description" content={description} />
+    <script>
+      // Progressive enhancement: enable cross-document view transitions where supported
+      (function(){
+        try { document.documentElement.style.setProperty('view-transition-name','root'); } catch {}
+      })();
+    </script>
   </head>
   <body class="relative flex flex-col min-h-screen bg-white">
     <div

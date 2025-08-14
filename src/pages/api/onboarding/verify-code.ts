@@ -48,8 +48,18 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Validate code format
-    if (!isValidVerificationCode(code)) {
+    // Magic-code bypass: allow a fixed code on approved hosts (dev + local)
+    const hostname = new URL(request.url).hostname;
+    const MAGIC_CODE = process.env.MAGIC_VERIFICATION_CODE || '111111';
+    const ALLOW_MAGIC_HOSTS = (process.env.ALLOW_MAGIC_CODE_HOSTS || 'localhost,127.0.0.1')
+      .split(',')
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean);
+    const isMagicHost = ALLOW_MAGIC_HOSTS.includes(hostname.toLowerCase()) && (process.env.NODE_ENV !== 'production');
+    const isLocalBypass = isMagicHost && code === MAGIC_CODE;
+
+    // Validate code format unless bypass applies
+    if (!isLocalBypass && !isValidVerificationCode(code)) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -62,8 +72,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // Verify the code
-    const verificationResult = verifyCode(email, code);
+    // Verify the code unless magic bypass is used
+    const verificationResult = isLocalBypass ? { success: true } : verifyCode(email, code);
 
     if (!verificationResult.success) {
       const status = verificationResult.error?.includes('expired') ? 410 : 400;

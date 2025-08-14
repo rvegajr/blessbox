@@ -1,7 +1,8 @@
 // API endpoint for migrating onboarding data from sessionStorage to database
 import type { APIRoute } from 'astro';
 import { DataMigrationService } from '../../../implementations/migration/DataMigrationService';
-import { MockOrganizationRepository } from '../../../implementations/repositories/MockOrganizationRepository';
+import { OrganizationRepository } from '../../../implementations/repositories/OrganizationRepository';
+import { QRCodeRepository } from '../../../implementations/repositories/QRCodeRepository';
 import { withSecurity } from '../../../middleware/security';
 import type { OnboardingSessionData } from '../../../interfaces/migration/IDataMigration';
 
@@ -32,8 +33,8 @@ class MockQRCodeRepository {
   }
 }
 
-const organizationRepo = new MockOrganizationRepository();
-const qrCodeRepo = new MockQRCodeRepository();
+const organizationRepo = new OrganizationRepository();
+const qrCodeRepo = new QRCodeRepository();
 const migrationService = new DataMigrationService(organizationRepo, qrCodeRepo);
 
 export const POST: APIRoute = async (context) => {
@@ -52,12 +53,32 @@ export const POST: APIRoute = async (context) => {
         );
       }
 
+      // Debug: log incoming payload (redacted if needed)
+      try {
+        const { organizationName, contactEmail, emailVerified, onboardingComplete } = sessionData as any;
+        console.log('[Migration] Incoming sessionData', {
+          organizationName,
+          contactEmail,
+          emailVerified,
+          onboardingComplete,
+          hasQrCodes: Array.isArray((sessionData as any)?.qrCodes) && (sessionData as any).qrCodes.length > 0,
+        });
+      } catch {}
+
       // Check if migration is needed
-      if (!migrationService.needsMigration(sessionData)) {
+      const ready = migrationService.needsMigration(sessionData);
+      if (!ready) {
+        const missing: string[] = [];
+        if (!sessionData.onboardingComplete) missing.push('onboardingComplete');
+        if (!sessionData.emailVerified) missing.push('emailVerified');
+        if (!sessionData.organizationName) missing.push('organizationName');
+        if (!sessionData.contactEmail) missing.push('contactEmail');
+        console.warn('[Migration] needsMigration=false', { missing });
         return new Response(
           JSON.stringify({
             success: false,
             error: 'Data is not ready for migration. Complete onboarding first.',
+            missing,
           }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
@@ -98,6 +119,9 @@ export const POST: APIRoute = async (context) => {
       );
 
       console.log(`✅ Migration completed for organization: ${orgMigrationResult.organizationId}`);
+      if (orgMigrationResult.organizationId) {
+        console.log(`[Migration] Organization created: ${orgMigrationResult.organizationId} (${sessionData.organizationName} / ${sessionData.contactEmail})`);
+      }
 
       return new Response(
         JSON.stringify({
