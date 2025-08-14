@@ -4,7 +4,8 @@ import { createClient } from '@libsql/client';
 
 // Set environment variables
 process.env.TURSO_DATABASE_URL = 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io';
-process.env.TURSO_AUTH_TOKEN = '***JWT_REDACTED***';
+// Use environment variable for auth token (set in environment)
+process.env.TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || 'test-token-placeholder';
 
 console.log('🚀 Testing Turso connection...');
 
