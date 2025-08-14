@@ -1,0 +1,187 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Email Logs - Admin Dashboard | BlessBox">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Email Logs Dashboard</h1>
+            <p class="mt-2 text-gray-600">Monitor all email sending attempts and delivery status</p>
+          </div>
+          <div class="flex gap-4">
+            <button
+              id="refreshButton"
+              class="px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:from-teal-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              Refresh
+            </button>
+            <select id="filterSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              <option value="">All Emails</option>
+              <option value="success">Successful Only</option>
+              <option value="failed">Failed Only</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div id="statsCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+          <div class="bg-gradient-to-r from-green-400 to-green-600 rounded-xl p-6 text-white">
+            <h3 class="text-sm font-medium opacity-90">Total Emails</h3>
+            <p id="totalCount" class="text-3xl font-bold">-</p>
+          </div>
+          <div class="bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl p-6 text-white">
+            <h3 class="text-sm font-medium opacity-90">Successful</h3>
+            <p id="successCount" class="text-3xl font-bold">-</p>
+          </div>
+          <div class="bg-gradient-to-r from-red-400 to-red-600 rounded-xl p-6 text-white">
+            <h3 class="text-sm font-medium opacity-90">Failed</h3>
+            <p id="failedCount" class="text-3xl font-bold">-</p>
+          </div>
+          <div class="bg-gradient-to-r from-purple-400 to-purple-600 rounded-xl p-6 text-white">
+            <h3 class="text-sm font-medium opacity-90">SendGrid</h3>
+            <p id="sendgridCount" class="text-3xl font-bold">-</p>
+          </div>
+          <div class="bg-gradient-to-r from-orange-400 to-orange-600 rounded-xl p-6 text-white">
+            <h3 class="text-sm font-medium opacity-90">Gmail</h3>
+            <p id="gmailCount" class="text-3xl font-bold">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email Logs Table -->
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Recent Email Activity</h2>
+        
+        <div id="loadingSpinner" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
+          <span class="ml-4 text-gray-600">Loading email logs...</span>
+        </div>
+
+        <div id="emailLogsTable" class="hidden overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Error</th>
+              </tr>
+            </thead>
+            <tbody id="emailLogsBody" class="bg-white divide-y divide-gray-200">
+              <!-- Logs will be populated here -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="noLogsMessage" class="hidden text-center py-12 text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-4 4m0 0l-4-4m4 4V3"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No email logs found</h3>
+          <p class="mt-1 text-sm text-gray-500">Email logs will appear here as emails are sent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentFilter = '';
+    
+    async function loadEmailLogs() {
+      try {
+        document.getElementById('loadingSpinner').classList.remove('hidden');
+        document.getElementById('emailLogsTable').classList.add('hidden');
+        document.getElementById('noLogsMessage').classList.add('hidden');
+        
+        const params = new URLSearchParams();
+        if (currentFilter) {
+          params.append('filter', currentFilter);
+        }
+        params.append('limit', '50');
+        
+        const response = await fetch(`/api/admin/email-logs?${params}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // Update stats
+          document.getElementById('totalCount').textContent = data.stats.total;
+          document.getElementById('successCount').textContent = data.stats.successful;
+          document.getElementById('failedCount').textContent = data.stats.failed;
+          document.getElementById('sendgridCount').textContent = data.stats.sendgridCount;
+          document.getElementById('gmailCount').textContent = data.stats.gmailCount;
+          
+          // Update table
+          const tbody = document.getElementById('emailLogsBody');
+          tbody.innerHTML = '';
+          
+          if (data.logs.length === 0) {
+            document.getElementById('noLogsMessage').classList.remove('hidden');
+          } else {
+            data.logs.forEach(log => {
+              const row = document.createElement('tr');
+              row.className = 'hover:bg-gray-50';
+              
+              const statusBadge = log.success 
+                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Success</span>'
+                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Failed</span>';
+              
+              const providerBadge = log.provider === 'SendGrid'
+                ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">SendGrid</span>'
+                : '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Gmail</span>';
+              
+              row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${new Date(log.timestamp).toLocaleString()}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${providerBadge}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${log.to}</td>
+                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${log.subject}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                  ${log.messageId ? `<span title="${log.messageId}">${log.messageId.substring(0, 20)}...</span>` : '-'}
+                </td>
+                <td class="px-6 py-4 text-sm text-red-600 max-w-xs truncate">
+                  ${log.error || '-'}
+                </td>
+              `;
+              
+              tbody.appendChild(row);
+            });
+            
+            document.getElementById('emailLogsTable').classList.remove('hidden');
+          }
+        } else {
+          console.error('Failed to load email logs:', data.error);
+        }
+      } catch (error) {
+        console.error('Error loading email logs:', error);
+      } finally {
+        document.getElementById('loadingSpinner').classList.add('hidden');
+      }
+    }
+    
+    // Event listeners
+    document.getElementById('refreshButton').addEventListener('click', loadEmailLogs);
+    
+    document.getElementById('filterSelect').addEventListener('change', (e) => {
+      currentFilter = e.target.value;
+      loadEmailLogs();
+    });
+    
+    // Load logs on page load
+    loadEmailLogs();
+    
+    // Auto-refresh every 30 seconds
+    setInterval(loadEmailLogs, 30000);
+  </script>
+</BaseLayout>

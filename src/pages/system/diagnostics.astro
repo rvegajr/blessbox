@@ -1,0 +1,359 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="System Diagnostics | BlessBox">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <!-- Header -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">System Diagnostics Dashboard</h1>
+            <p class="mt-2 text-gray-600">Real-time health monitoring and configuration validation</p>
+          </div>
+          <button
+            id="refreshButton"
+            class="px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg hover:from-teal-600 hover:to-blue-700 transition-all duration-200 flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+        
+        <!-- Overall Status -->
+        <div id="overallStatus" class="bg-gray-50 rounded-xl p-6">
+          <div class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+            <span class="ml-3 text-gray-600">Loading system status...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Services Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div id="servicesGrid" class="col-span-full">
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-center py-12">
+              <div class="animate-pulse text-gray-400">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Environment Variables -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Environment Configuration</h2>
+        <div id="envVarsContainer" class="space-y-4">
+          <div class="text-center py-8 text-gray-500">
+            <p>Loading configuration...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div id="recommendationsContainer" class="hidden">
+        <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            Recommendations
+          </h2>
+          <ul id="recommendationsList" class="space-y-3">
+          </ul>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-8 flex flex-wrap gap-4 justify-center">
+        <a href="/api/system/health-check" target="_blank" 
+           class="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors duration-200">
+          View Raw JSON
+        </a>
+        <button id="copyEnvButton" 
+                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+          Copy .env Template
+        </button>
+        <a href="/email-test" 
+           class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+          Test Email Service
+        </a>
+        <button id="exportReportButton"
+                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+          Export Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let healthData: any = null;
+
+    // Status badge component
+    function getStatusBadge(status: string): string {
+      const badges = {
+        healthy: `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+          </svg>
+          Healthy
+        </span>`,
+        degraded: `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+          </svg>
+          Degraded
+        </span>`,
+        unhealthy: `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+          <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+          </svg>
+          Unhealthy
+        </span>`
+      };
+      return badges[status] || badges.unhealthy;
+    }
+
+    // Service card component
+    function createServiceCard(service: any): string {
+      const bgColor = service.status === 'healthy' ? 'bg-green-50 border-green-200' :
+                     service.status === 'degraded' ? 'bg-yellow-50 border-yellow-200' :
+                     'bg-red-50 border-red-200';
+      
+      const icon = service.service.includes('Database') ? '🗄️' :
+                   service.service.includes('Email') ? '📧' :
+                   service.service.includes('Payment') ? '💳' :
+                   service.service.includes('JWT') ? '🔐' :
+                   service.service.includes('App URL') ? '🌐' : '⚙️';
+      
+      return `
+        <div class="bg-white rounded-xl shadow-lg border-2 ${bgColor} overflow-hidden">
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">${icon}</span>
+                <div>
+                  <h3 class="font-bold text-gray-900">${service.service}</h3>
+                  ${service.required ? '<span class="text-xs text-red-600 font-medium">REQUIRED</span>' : ''}
+                </div>
+              </div>
+              ${getStatusBadge(service.status)}
+            </div>
+            <p class="text-gray-600 text-sm mb-3">${service.message}</p>
+            ${service.details ? `
+              <div class="mt-4 pt-4 border-t border-gray-200">
+                <details class="cursor-pointer">
+                  <summary class="text-sm font-medium text-gray-700 hover:text-gray-900">View Details</summary>
+                  <pre class="mt-2 text-xs bg-gray-100 p-3 rounded overflow-x-auto">${JSON.stringify(service.details, null, 2)}</pre>
+                </details>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Environment variable row component
+    function createEnvVarRow(envVar: any): string {
+      const statusIcon = envVar.status === 'configured' ? '✅' :
+                        envVar.status === 'invalid' ? '❌' : '⚠️';
+      
+      const bgColor = envVar.status === 'configured' ? 'bg-green-50' :
+                     envVar.status === 'invalid' ? 'bg-red-50' : 'bg-yellow-50';
+      
+      return `
+        <div class="flex items-center justify-between p-4 rounded-lg ${bgColor} border border-gray-200">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">${statusIcon}</span>
+            <div>
+              <code class="font-mono font-bold text-gray-900">${envVar.name}</code>
+              ${envVar.required ? '<span class="ml-2 text-xs text-red-600 font-medium">REQUIRED</span>' : ''}
+              ${envVar.recommendation ? `<p class="text-sm text-gray-600 mt-1">${envVar.recommendation}</p>` : ''}
+            </div>
+          </div>
+          <div class="text-right">
+            ${envVar.value ? `<code class="text-xs text-gray-500 font-mono">${envVar.value}</code>` : 
+              '<span class="text-xs text-gray-400">Not set</span>'}
+          </div>
+        </div>
+      `;
+    }
+
+    // Load health check data
+    async function loadHealthCheck() {
+      try {
+        const response = await fetch('/api/system/health-check');
+        healthData = await response.json();
+        
+        // Update overall status
+        const overallStatusEl = document.getElementById('overallStatus');
+        if (overallStatusEl) {
+          const statusColor = healthData.status === 'healthy' ? 'green' :
+                            healthData.status === 'degraded' ? 'yellow' : 'red';
+          
+          overallStatusEl.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">System Status</h3>
+                <p class="text-sm text-gray-600 mt-1">
+                  ${healthData.summary.healthy} healthy, 
+                  ${healthData.summary.degraded} degraded, 
+                  ${healthData.summary.unhealthy} unhealthy
+                </p>
+              </div>
+              <div class="text-right">
+                ${getStatusBadge(healthData.status)}
+                <p class="text-xs text-gray-500 mt-2">Updated: ${new Date(healthData.timestamp).toLocaleString()}</p>
+              </div>
+            </div>
+            ${healthData.summary.criticalIssues > 0 ? `
+              <div class="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg">
+                <p class="text-red-800 font-medium">⚠️ ${healthData.summary.criticalIssues} critical issue(s) detected</p>
+              </div>
+            ` : ''}
+          `;
+        }
+        
+        // Update services grid
+        const servicesGrid = document.getElementById('servicesGrid');
+        if (servicesGrid && healthData.services) {
+          servicesGrid.innerHTML = healthData.services.map(createServiceCard).join('');
+        }
+        
+        // Update environment variables
+        const envVarsContainer = document.getElementById('envVarsContainer');
+        if (envVarsContainer && healthData.configuration?.variables) {
+          const requiredVars = healthData.configuration.variables.filter((v: any) => v.required);
+          const optionalVars = healthData.configuration.variables.filter((v: any) => !v.required);
+          
+          envVarsContainer.innerHTML = `
+            ${requiredVars.length > 0 ? `
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Required Variables</h3>
+                <div class="space-y-2">
+                  ${requiredVars.map(createEnvVarRow).join('')}
+                </div>
+              </div>
+            ` : ''}
+            ${optionalVars.length > 0 ? `
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Optional Variables</h3>
+                <div class="space-y-2">
+                  ${optionalVars.map(createEnvVarRow).join('')}
+                </div>
+              </div>
+            ` : ''}
+          `;
+        }
+        
+        // Update recommendations
+        const recommendationsContainer = document.getElementById('recommendationsContainer');
+        const recommendationsList = document.getElementById('recommendationsList');
+        
+        if (recommendationsContainer && recommendationsList && healthData.recommendations?.length > 0) {
+          recommendationsContainer.classList.remove('hidden');
+          recommendationsList.innerHTML = healthData.recommendations.map((rec: string) => 
+            `<li class="text-gray-700">${rec}</li>`
+          ).join('');
+        } else if (recommendationsContainer) {
+          recommendationsContainer.classList.add('hidden');
+        }
+        
+      } catch (error) {
+        console.error('Failed to load health check:', error);
+        const overallStatusEl = document.getElementById('overallStatus');
+        if (overallStatusEl) {
+          overallStatusEl.innerHTML = `
+            <div class="p-4 bg-red-100 border border-red-300 rounded-lg">
+              <p class="text-red-800 font-medium">Failed to load system status</p>
+              <p class="text-red-600 text-sm mt-1">${error instanceof Error ? error.message : 'Unknown error'}</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Copy environment template
+    function copyEnvTemplate() {
+      const template = `# BlessBox Environment Configuration
+# Copy this to .env.local and fill in your values
+
+# Database Configuration (Required)
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
+
+# Email Configuration (Required - Choose One)
+EMAIL_PROVIDER=gmail # or sendgrid
+
+# For Gmail:
+GMAIL_USER=your-email@gmail.com
+GMAIL_PASS=your-app-password
+
+# For SendGrid:
+# SENDGRID_API_KEY=SG.your-api-key
+# SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+
+# Security (Required)
+JWT_SECRET=your-super-secret-jwt-key-at-least-32-chars
+
+# Payment (Optional)
+SQUARE_APPLICATION_ID=your-square-app-id
+SQUARE_ACCESS_TOKEN=your-square-access-token
+SQUARE_ENVIRONMENT=sandbox # or production
+
+# App Configuration (Optional)
+PUBLIC_APP_URL=http://localhost:3000`;
+
+      navigator.clipboard.writeText(template).then(() => {
+        const button = document.getElementById('copyEnvButton');
+        if (button) {
+          const originalText = button.textContent;
+          button.textContent = '✅ Copied!';
+          button.classList.add('bg-green-600');
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('bg-green-600');
+          }, 2000);
+        }
+      });
+    }
+
+    // Export diagnostic report
+    function exportReport() {
+      if (!healthData) return;
+      
+      const report = {
+        ...healthData,
+        exportedAt: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      };
+      
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `blessbox-diagnostics-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Event listeners
+    document.getElementById('refreshButton')?.addEventListener('click', loadHealthCheck);
+    document.getElementById('copyEnvButton')?.addEventListener('click', copyEnvTemplate);
+    document.getElementById('exportReportButton')?.addEventListener('click', exportReport);
+
+    // Load on page load
+    loadHealthCheck();
+    
+    // Auto-refresh every 30 seconds
+    setInterval(loadHealthCheck, 30000);
+  </script>
+</BaseLayout>

@@ -11,7 +11,8 @@ echo "🗑️  Running comprehensive cache cleanup..."
 
 # Set Turso Database Environment Variables - EDGE POWER! 🚀
 export TURSO_DATABASE_URL="libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io"
-export TURSO_AUTH_TOKEN="***JWT_REDACTED***"
+# Set auth token for local development (get from Turso CLI: turso db tokens create blessbox-local-rvegajr)
+export TURSO_AUTH_TOKEN="${TURSO_AUTH_TOKEN:-your-turso-auth-token-here}"
 
 # Set Email Provider Configuration
 export EMAIL_PROVIDER="sendgrid"
