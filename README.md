@@ -1,304 +1,288 @@
-# BlessBox
+# BlessBox - Next.js QR-based Registration & Verification System
 
-## Project Overview
-BlessBox is a streamlined QR-based registration and verification system designed for organizations managing events like food distributions, seminar registrations, and volunteer sign-ups.
+A comprehensive QR-based registration and verification system built with Next.js 15, featuring organization management, dynamic form building, QR code generation, and real-time analytics.
 
-## Features
-- **Organization Setup**: Simple registration and login system for organizations
-- **QR Code Generation**: Create custom QR codes for different event types
-- **Mobile-Friendly Scanning**: Users scan QR codes and fill forms on their phones
-- **Real-time Verification**: Staff can verify registrations and take appropriate actions
-- **Responsive Design**: Scales beautifully from mobile to large desktop screens
-- **Square Payment Integration**: Real payment processing with Square
-- **Multi-Entry QR Codes**: Track different entry points (doors, lanes, etc.)
-- **Subscription Management**: Free, Standard, and Enterprise plans
-- **Passwordless Authentication**: Email-based login with verification codes
+## 🚀 Quick Start
 
-## 🔐 **SUPER ADMIN ACCESS**
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- SQLite database (or Turso for production)
 
-For development and system administration, use these credentials:
+### Installation
 
-**Super Admin Email**: `admin@blessbox.app`  
-**Super Admin Password**: `BlessBox2024!Admin`
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd BlessBox
+   ```
 
-> 🚨 **IMPORTANT**: Change these credentials in production! These are for development only.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### Default Test Accounts
-- **Test Organization**: `test@example.com` / `TestPassword123!`
-- **Demo Organization**: `demo@blessbox.app` / `DemoPassword123!`
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env.local
+   ```
+   
+   Update `.env.local` with your configuration:
+   ```env
+   # Database
+   DATABASE_URL="file:./blessbox.db"
+   
+   # Authentication
+   NEXTAUTH_SECRET="your-secret-key-here"
+   NEXTAUTH_URL="http://localhost:7777"
+   
+   # Email Configuration
+   SMTP_HOST="smtp.gmail.com"
+   SMTP_PORT="587"
+   SMTP_USER="your-email@gmail.com"
+   SMTP_PASS="your-app-password"
+   
+   # Square Payment (Optional)
+   SQUARE_APPLICATION_ID="your-square-app-id"
+   SQUARE_ACCESS_TOKEN="your-square-access-token"
+   SQUARE_ENVIRONMENT="sandbox"
+   ```
 
-## Template Integrations
-- Tailwind CSS v4  
-- Astro SEO - Powered by [@astrolib/seo](https://github.com/onwidget/astrolib/tree/main/packages/seo)
-- Astro Sitemap - https://docs.astro.build/en/guides/integrations-guide/sitemap/
+4. **Set up the database**
+   ```bash
+   npx drizzle-kit generate
+   npx drizzle-kit migrate
+   ```
 
-## Template Structure
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-The template follows a typical Astro project structure. You'll find the following key directories and files:
+6. **Open your browser**
+   Navigate to [http://localhost:7777](http://localhost:7777)
 
+## 🏗️ Architecture
 
-```
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+### Technology Stack
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Database**: SQLite with Drizzle ORM
+- **Authentication**: NextAuth.js (Auth.js)
+- **Email**: Nodemailer with SMTP
+- **QR Codes**: QRCode library
+- **Testing**: Vitest + Playwright
+- **Deployment**: Vercel
 
-- `src/pages/`: Contains `.astro` and `.md` files. Each file becomes a route in your project based on its name.
-- `src/components/`: Ideal for placing your Astro/React/Vue/Svelte/Preact components.
-- `public/`: For static assets such as images that you want to serve directly.
-
-## 🚀 **QUICK START**
-
-### 1. Environment Setup
-Create a `.env.local` file in the root directory:
-
-```bash
-# Database Configuration (Turso)
-TURSO_DATABASE_URL=libsql://your-database-url.turso.io
-TURSO_AUTH_TOKEN=your-auth-token
-
-# Email Configuration (Gmail SMTP)
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-app-password
-
-# Square Payment Configuration
-SQUARE_APPLICATION_ID=your-square-app-id
-SQUARE_ACCESS_TOKEN=your-square-access-token
-SQUARE_ENVIRONMENT=sandbox
-
-# JWT Secret
-JWT_SECRET=your-super-secret-jwt-key
-
-# App URL
-PUBLIC_APP_URL=http://localhost:3000
-```
-
-### 2. Database Setup
-```bash
-# Install dependencies
-npm install
-
-# Run database migrations
-npm run db:migrate
-
-# Start development server
-npm run dev
-```
-
-## Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                | Action                                           |
-| :--------------------- | :----------------------------------------------- |
-| `npm install`          | Installs dependencies                            |
-| `npm run dev`          | Starts local dev server at `localhost:3000`      |
-| `npm run build`        | Build your production site to `./dist/`          |
-| `npm run preview`      | Preview your build locally, before deploying     |
-| `npm run db:migrate`   | Run database migrations                          |
-| `npm run test`         | Run unit tests with Vitest                      |
-| `npm run astro ...`    | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro --help` | Get help using the Astro CLI                     |
-
-## 🔗 **API ENDPOINTS**
-
-### Authentication
-- `POST /api/auth/register` - Register new organization
-- `POST /api/auth/login` - Login (password or verification code)
-- `POST /api/auth/request-login-code` - Request passwordless login code
-
-### Onboarding
-- `POST /api/onboarding/send-verification` - Send email verification code
-- `POST /api/onboarding/generate-qr` - Generate QR codes with entry points
-
-### Registration
-- `POST /api/registration/submit` - Submit registration form
-- `GET /api/registration/form/[qrCodeId]` - Get registration form data
-
-### Payments
-- `POST /api/payment/create-intent` - Create payment intent
-- `POST /api/payment/process` - Process Square payment
-- `POST /api/payment/validate-coupon` - Validate coupon codes
-
-### Testing
-- `POST /api/test-email` - Test email system
-- `GET /api/contact` - Test contact form
-
-## 🎯 **REGISTRATION URLS**
-
-QR codes generate user-friendly URLs like:
-- `https://blessbox.app/register/acme-corp/main-entrance`
-- `https://blessbox.app/register/food-bank/west-door`
-- `https://blessbox.app/register/conference/vip-entrance`
-
-## 🏗️ **ARCHITECTURE HIGHLIGHTS**
-
-- **Interface Segregation Principle (ISP)** - Clean, focused interfaces
-- **Test-Driven Development (TDD)** - Comprehensive test coverage
-- **Real Database Integration** - Turso SQLite with zero mocks
-- **Square Payment Processing** - Real money transactions
-- **Multi-Entry QR Codes** - Track specific doors/lanes
-- **Passwordless Authentication** - Email-based login system
-- **Subscription Management** - Free, Standard, Enterprise plans
-
-## 📁 **KEY DIRECTORIES**
-
+### Project Structure
 ```
 src/
-├── interfaces/           # ISP-compliant interfaces
-├── implementations/      # Service implementations
-├── pages/api/           # API endpoints
-├── pages/register/      # Dynamic registration forms
-├── database/            # Schema and connections
-├── providers/           # Email providers (Gmail, SendGrid)
-└── tests/              # TDD test suites
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Dashboard pages
+│   ├── onboarding/        # Onboarding flow
+│   └── register/          # Registration pages
+├── components/            # React components
+│   ├── ui/               # UI components (shadcn/ui)
+│   └── dashboard/        # Dashboard components
+├── lib/                  # Utilities and configurations
+├── services/             # Business logic services
+├── interfaces/           # TypeScript interfaces
+└── database/             # Database schema and connection
 ```
 
-## 🚀 **VERCEL DEPLOYMENT**
+## 🎯 Features
 
-### Branch-Based Deployments
-- **Production** (`main` branch): `https://blessbox.vercel.app`
-- **Development** (`development` branch): `https://blessbox-git-development.vercel.app`
+### Core Functionality
+- **Organization Management**: Create and manage multiple organizations
+- **QR Code Generation**: Generate QR codes for events and registrations
+- **Dynamic Forms**: Build custom registration forms
+- **Email Verification**: Secure email verification system
+- **Real-time Analytics**: Track QR code scans and registrations
+- **Multi-tenant Support**: Support for multiple organizations
 
-### Environment Variables Setup in Vercel
+### Onboarding Flow
+1. **Organization Setup**: Create organization with contact details
+2. **Email Verification**: Verify organization email address
+3. **Form Builder**: Create custom registration forms
+4. **QR Configuration**: Set up QR codes and entry points
+5. **Dashboard Access**: Complete setup and access dashboard
 
-#### Production Environment Variables:
+### QR Code System
+- **QR Code Generation**: Real QR code image generation
+- **Multiple Entry Points**: Different QR codes for different purposes
+- **Analytics Tracking**: Track scans, conversions, and performance
+- **Mobile Optimization**: Mobile-friendly registration flow
+
+### Authentication & Security
+- **NextAuth.js Integration**: Secure authentication system
+- **Email Verification**: Multi-step email verification
+- **JWT Tokens**: Secure session management
+- **Password Hashing**: bcryptjs for password security
+
+## 🛠️ Development
+
+### Available Scripts
 ```bash
-TURSO_DATABASE_URL=libsql://blessbox-prod.turso.io
-TURSO_AUTH_TOKEN=your-prod-auth-token
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-app-password
-SQUARE_APPLICATION_ID=your-square-app-id
-SQUARE_ACCESS_TOKEN=your-prod-square-token
-SQUARE_ENVIRONMENT=production
-JWT_SECRET=your-super-secret-jwt-key
-PUBLIC_APP_URL=https://blessbox.vercel.app
+npm run dev          # Start development server on port 7777
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run test         # Run unit tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage
 ```
 
-#### Development Environment Variables:
+### Database Management
 ```bash
-TURSO_DATABASE_URL=libsql://blessbox-dev.turso.io
-TURSO_AUTH_TOKEN=your-dev-auth-token
-GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-app-password
-SQUARE_APPLICATION_ID=your-square-app-id
-SQUARE_ACCESS_TOKEN=your-sandbox-square-token
-SQUARE_ENVIRONMENT=sandbox
-JWT_SECRET=your-dev-jwt-secret
-PUBLIC_APP_URL=https://blessbox-git-development.vercel.app
+npx drizzle-kit generate    # Generate migrations
+npx drizzle-kit migrate     # Run migrations
+npx drizzle-kit studio      # Open database studio
 ```
 
-### Vercel CLI Setup
+### Testing
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+# Unit tests
+npm run test
 
-# Link your project
-vercel link
+# E2E tests
+npx playwright test
 
-# Set environment variables
-vercel env add TURSO_DATABASE_URL
-vercel env add TURSO_AUTH_TOKEN
-# ... add all other variables
-
-# Deploy specific branch
-vercel --prod  # for main branch
-vercel         # for development branch
+# Test coverage
+npm run test:coverage
 ```
 
-### Automatic Deployments
-With the `vercel.json` configuration:
-- **Push to `main`** → Deploys to production
-- **Push to `development`** → Deploys to dev environment
-- **Pull Requests** → Creates preview deployments
+## 📊 API Endpoints
 
-Learn more - Explore more through Astro's official [documentation](https://docs.astro.build).
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+
+### Organizations
+- `POST /api/organizations` - Create organization
+- `GET /api/organizations` - Get user organizations
+- `PUT /api/organizations/[id]` - Update organization
+
+### Onboarding
+- `POST /api/onboarding/organization-setup` - Organization setup
+- `POST /api/onboarding/verify-email` - Email verification
+- `POST /api/onboarding/resend-verification` - Resend verification
+- `POST /api/onboarding/form-builder` - Form configuration
+- `POST /api/onboarding/qr-configuration` - QR code setup
+
+### QR Codes
+- `POST /api/qr-codes` - Create QR code set
+- `GET /api/qr-codes` - Get QR code sets
+- `GET /api/qr-codes/[id]` - Get QR code set details
+- `PUT /api/qr-codes/[id]` - Update QR code set
+- `DELETE /api/qr-codes/[id]` - Delete QR code set
+
+### Registrations
+- `POST /api/registrations` - Create registration
+- `GET /api/registrations` - Get registrations
+
+### Dashboard
+- `GET /api/dashboard/stats` - Get organization statistics
+- `GET /api/dashboard/activities` - Get recent activities
+
+## 🚀 Deployment
+
+### Vercel Deployment
+1. **Connect to Vercel**
+   ```bash
+   npx vercel
+   ```
+
+2. **Set environment variables** in Vercel dashboard:
+   - `NEXTAUTH_SECRET`
+   - `NEXTAUTH_URL`
+   - `DATABASE_URL`
+   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+
+3. **Deploy**
+   ```bash
+   npx vercel --prod
+   ```
+
+### Environment Variables
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXTAUTH_SECRET` | Secret for JWT signing | Yes |
+| `NEXTAUTH_URL` | Application URL | Yes |
+| `DATABASE_URL` | Database connection string | Yes |
+| `SMTP_HOST` | SMTP server host | Yes |
+| `SMTP_PORT` | SMTP server port | Yes |
+| `SMTP_USER` | SMTP username | Yes |
+| `SMTP_PASS` | SMTP password | Yes |
+
+## 🧪 Testing
+
+### Unit Tests
+- **Framework**: Vitest
+- **Coverage**: V8 coverage reporting
+- **Location**: `src/tests/`
+
+### E2E Tests
+- **Framework**: Playwright
+- **Configuration**: `playwright.config.ts`
+- **Location**: `tests/e2e/`
+
+### Test Commands
+```bash
+# Run all tests
+npm run test
+
+# Run E2E tests
+npx playwright test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+## 📝 Development Guidelines
+
+### Code Style
+- **TypeScript**: Strict mode enabled
+- **ESLint**: Next.js recommended rules
+- **Prettier**: Code formatting
+- **Husky**: Pre-commit hooks
+
+### Architecture Principles
+- **Interface Segregation**: Focused, single-purpose interfaces
+- **Test-Driven Development**: Write tests first
+- **Real Implementations**: No mocks in production code
+- **Event-Driven**: Decoupled components
+
+### Component Guidelines
+- **Server Components**: Use for data fetching
+- **Client Components**: Use for interactivity
+- **Error Boundaries**: Comprehensive error handling
+- **Loading States**: Skeleton loaders for better UX
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Run the test suite
+6. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- **Documentation**: Check this README
+- **Issues**: Create a GitHub issue
+- **Email**: Contact the development team
 
 ---
 
-🎉 **Built with ORGASMIC JOY by the HAPPIEST developers in the universe!** 🚀✨
+**BlessBox** - Streamlining organization registration and verification with QR codes.
 
-----------------------------
-Updated on 27th March 2025
-- Change LimeStripe iframe for PNG image because of performance issues. No visuals affecrted 
-
-
-----------------------------
-Updated on 23th March 2025
-
-## This update includes:
-- Added Fuse Js Search on: Blog, Help Center, Jobs and Integrations.
-- AOS Animation on
-- Full redesign
-- Activated AOS
-
-On this version, Tailwind CSS is now V4, this means that there's no `tailwind.config.mjs` file anymore. 
-From now on, all style will be added on the `css` file. You can find the styles on the `src/styles/global.css` file.
-
-- Added Image component from Astro
-The Astro Image component is coming back to the themes
-
-- Reusable components
-This template now includes reusable components, such as the `Text`, `Button`, `Link` and `Wrapper` components.
-
-- Text Component  
-A versatile and reusable component for handling text across your project, ensuring consistency and easy customization.  
-
-- **HTML Tags:** Easily change the HTML element (like `p`, `h1`, `span`, `a`) using the `tag` prop, with `p` being the default.  
-- **Variants:** Pick from preset text styles (such as `displayXL` or `textBase`) for a consistent look.  
-- **Custom Classes:** Add or adjust styles with the `class` prop.  
-- **Accessibility:** Customize with additional props like `id`, `href`, `title`, and `style`.  
-- **Content Slot:** Add any content inside the component, including optional left and right icons. 
-Example usage:
-```astro
-<Text tag="h1" variant="displayXL" class="text-center">
-  Welcome to the new version!
-</Text>
-``` 
-
-- Button Component  
-A customizable button component with options to fit your design needs:  
-
-- **Variants:** Choose from predefined styles like `primary` (dark background) and `secondary` (lighter background), with support for dark mode.  
-- **Sizes:** Select `small` or `medium` for different button heights and padding.  
-- **Gaps:** Control the spacing between content with the `gapSize` prop (either `small` or `medium`).  
-- **Custom Classes:** Apply additional styles using the `class` prop.  
-- **Slots:** Include icons or extra content with optional `left-icon` and `right-icon` slots.  
-Example usage:
-```astro
-<Button size="small" variant="primary">Primary small</Button>
-```
-
--  Wrapper Component  
-A flexible layout component that helps with consistent spacing and alignment.  
-
-- **Variants:** The default `standard` variant includes responsive widths, centered content, and padding.  
-- **Custom Classes:** Add or change styles with the `class` prop.  
-- **Content Slot:** Easily add any child components or content inside.
-
-```astro
-<Wrapper variant="standard">
-Your content goes here
-</Wrapper>
-```
------
-------
-Updated on 30th December 2024
-
-## This update includes:
-- Added Tailwind CSS v4
-On this version, Tailwind CSS is now beta version from Tailwind CSS V4, this means that there's no `tailwind.config.mjs` file anymore. From now on, all style will be added on the `css` file. You can find the styles on the `src/styles/global.css` file.
-
-- Astro V5
-This update includes Astro V5, which is a major update that includes several new features and improvements.
-
-
-- Astro SEO by @astrolib/seo
-This update includes the integration of the Astro SEO package by @astrolib/seo, is an integration that makes managing your SEO easier in Astro projects. It is fully based on the excellent Next SEO library
-
-### [Support](https://lexingtonthemes.com/legal/support/)
-  ### [Documentation](https://lexingtonthemes.com/documentation/)
-### [Get your bundle](https://lexingtonthemes.com)
