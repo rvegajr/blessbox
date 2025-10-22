@@ -1,71 +1,18 @@
 /**
- * Vitest setup file
- * Global test configuration and utilities
+ * Test Setup
+ * 
+ * Global test configuration and setup
  */
 
-// Mock sessionStorage for tests
-const sessionStorageMock = (() => {
-  let store: Record<string, string> = {};
+// Mock environment variables
+process.env.NEXTAUTH_SECRET = 'test-secret'
+process.env.NEXTAUTH_URL = 'http://localhost:3000'
+process.env.DATABASE_URL = 'file:./test.db'
 
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: (index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    }
-  };
-})();
+// Mock crypto for UUID generation
+Object.defineProperty(global, 'crypto', {
+  value: {
+    randomUUID: () => `test-uuid-${Math.random().toString(36).substr(2, 9)}`
+  }
+})
 
-// Mock localStorage for tests
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: (index: number) => {
-      const keys = Object.keys(store);
-      return keys[index] || null;
-    }
-  };
-})();
-
-// Assign to global
-Object.defineProperty(window, 'sessionStorage', {
-  value: sessionStorageMock,
-  writable: true
-});
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-  writable: true
-});
-
-// Clear storage before each test
-beforeEach(() => {
-  sessionStorageMock.clear();
-  localStorageMock.clear();
-});

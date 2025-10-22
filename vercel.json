@@ -1,22 +1,24 @@
 {
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "development": true
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
     }
-  },
-  "github": {
-    "deploymentEnabled": true,
-    "autoAlias": true
-  },
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
   "env": {
-    "NODE_ENV": "production",
-    "PUBLIC_APP_URL": "https://blessbox.vercel.app"
+    "NEXTAUTH_URL": "https://blessbox.vercel.app"
   },
-  "build": {
-    "env": {
-      "NODE_ENV": "development", 
-      "PUBLIC_APP_URL": "https://blessbox-git-development.vercel.app"
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
     }
   }
 }
+
