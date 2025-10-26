@@ -4,23 +4,14 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { DashboardService } from '@/services/DashboardService'
+import { DashboardMetrics } from '@/interfaces/IDashboardService'
 
 interface AnalyticsDashboardProps {
   organizationId: string
 }
 
-interface AnalyticsData {
-  totalRegistrations: number
-  totalScans: number
-  conversionRate: number
-  dailyRegistrations: Array<{ date: string; count: number }>
-  topPerformingQRCodes: Array<{ id: string; name: string; scans: number }>
-  deviceBreakdown: Record<string, number>
-  locationBreakdown: Record<string, number>
-}
-
 export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) {
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [analytics, setAnalytics] = useState<DashboardMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
   const [dashboardService] = useState(new DashboardService())
@@ -30,16 +21,9 @@ export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) 
   }, [organizationId, timeRange])
 
   const loadAnalytics = async () => {
-    setIsLoading(true)
     try {
-      const filters = {
-        timeRange: {
-          start: new Date(Date.now() - (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90) * 24 * 60 * 60 * 1000),
-          end: new Date()
-        }
-      }
-
-      const result = await dashboardService.getDashboardMetrics(organizationId, filters)
+      setIsLoading(true)
+      const result = await dashboardService.getLiveMetrics(organizationId)
       
       if (result.success && result.data) {
         setAnalytics(result.data)
@@ -75,6 +59,16 @@ export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) 
     )
   }
 
+  if (!analytics) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">No analytics data available</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-6 px-4">
@@ -91,7 +85,6 @@ export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) 
                   key={range}
                   variant={timeRange === range ? 'default' : 'outline'}
                   onClick={() => setTimeRange(range)}
-                  size="sm"
                 >
                   {range === '7d' ? '7 Days' : range === '30d' ? '30 Days' : '90 Days'}
                 </Button>
@@ -100,189 +93,104 @@ export function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) 
           </div>
         </div>
 
-        {analytics && (
-          <>
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <div className="text-2xl">📊</div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total Registrations</p>
-                      <p className="text-2xl font-bold text-gray-900">{formatNumber(analytics.totalRegistrations)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Registrations</CardTitle>
+              <div className="h-4 w-4 text-muted-foreground">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatNumber(analytics.registrations.current)}</div>
+              <p className="text-xs text-muted-foreground">
+                {analytics.registrations.change > 0 ? '+' : ''}{analytics.registrations.change}% from previous period
+              </p>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <div className="text-2xl">📱</div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total Scans</p>
-                      <p className="text-2xl font-bold text-gray-900">{formatNumber(analytics.totalScans)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Scans</CardTitle>
+              <div className="h-4 w-4 text-muted-foreground">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatNumber(analytics.scans.current)}</div>
+              <p className="text-xs text-muted-foreground">
+                {analytics.scans.change > 0 ? '+' : ''}{analytics.scans.change}% from previous period
+              </p>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <div className="text-2xl">📈</div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                      <p className="text-2xl font-bold text-gray-900">{formatPercentage(analytics.conversionRate)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+              <div className="h-4 w-4 text-muted-foreground">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatPercentage(analytics.conversionRate.current)}</div>
+              <p className="text-xs text-muted-foreground">
+                {analytics.conversionRate.change > 0 ? '+' : ''}{analytics.conversionRate.change}% from previous period
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      <div className="text-2xl">⚡</div>
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Avg. Check-in Time</p>
-                      <p className="text-2xl font-bold text-gray-900">2.1m</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+        {/* Additional Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Check-ins</CardTitle>
+              <CardDescription>Total check-ins completed</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatNumber(analytics.checkIns.current)}</div>
+              <p className="text-xs text-muted-foreground">
+                {analytics.checkIns.change > 0 ? '+' : ''}{analytics.checkIns.change}% from previous period
+              </p>
+            </CardContent>
+          </Card>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              {/* Daily Registrations Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Daily Registrations</CardTitle>
-                  <CardDescription>Registration trends over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 flex items-end justify-between space-x-1">
-                    {analytics.dailyRegistrations.map((day, index) => {
-                      const maxCount = Math.max(...analytics.dailyRegistrations.map(d => d.count))
-                      const height = (day.count / maxCount) * 200
-                      return (
-                        <div key={index} className="flex flex-col items-center space-y-2">
-                          <div
-                            className="bg-blue-500 rounded-t w-8 transition-all duration-300 hover:bg-blue-600"
-                            style={{ height: `${height}px` }}
-                            title={`${day.date}: ${day.count} registrations`}
-                          />
-                          <span className="text-xs text-gray-500">
-                            {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Device Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Device Breakdown</CardTitle>
-                  <CardDescription>Registrations by device type</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {Object.entries(analytics.deviceBreakdown).map(([device, count]) => {
-                      const total = Object.values(analytics.deviceBreakdown).reduce((a, b) => a + b, 0)
-                      const percentage = total > 0 ? (count / total) * 100 : 0
-                      return (
-                        <div key={device} className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            <span className="text-sm font-medium text-gray-700 capitalize">{device}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-600">{count}</span>
-                            <span className="text-sm text-gray-500">({formatPercentage(percentage)})</span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Top Performing QR Codes */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Top Performing QR Codes</CardTitle>
-                <CardDescription>Most scanned QR codes in the selected period</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analytics.topPerformingQRCodes.map((qr, index) => (
-                    <div key={qr.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{qr.name}</p>
-                          <p className="text-sm text-gray-600">QR Code ID: {qr.id}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-gray-900">{formatNumber(qr.scans)}</p>
-                        <p className="text-sm text-gray-600">scans</p>
-                      </div>
-                    </div>
-                  ))}
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Summary</CardTitle>
+              <CardDescription>Overall performance metrics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Registrations:</span>
+                  <span className="text-sm font-medium">{formatNumber(analytics.registrations.current)}</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Location Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Geographic Distribution</CardTitle>
-                <CardDescription>Registrations by location</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(analytics.locationBreakdown).map(([location, count]) => {
-                    const total = Object.values(analytics.locationBreakdown).reduce((a, b) => a + b, 0)
-                    const percentage = total > 0 ? (count / total) * 100 : 0
-                    return (
-                      <div key={location} className="p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-900">{location}</span>
-                          <span className="text-sm text-gray-600">{formatPercentage(percentage)}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">{count} registrations</p>
-                      </div>
-                    )
-                  })}
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Scans:</span>
+                  <span className="text-sm font-medium">{formatNumber(analytics.scans.current)}</span>
                 </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Check-ins:</span>
+                  <span className="text-sm font-medium">{formatNumber(analytics.checkIns.current)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Conversion Rate:</span>
+                  <span className="text-sm font-medium">{formatPercentage(analytics.conversionRate.current)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
 }
-

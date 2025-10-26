@@ -32,7 +32,7 @@ export function CheckInInterface({ organizationId, staffId }: CheckInInterfacePr
     setResult(null)
 
     try {
-      const checkInResult = await registrationService.processCheckIn(checkInToken, staffId)
+      const checkInResult = await registrationService.processCheckIn(checkInToken, staffId || '')
       
       if (checkInResult.success) {
         setResult({
@@ -44,9 +44,9 @@ export function CheckInInterface({ organizationId, staffId }: CheckInInterfacePr
         // Add to recent check-ins
         setRecentCheckIns(prev => [
           {
-            id: checkInResult.data?.id,
-            name: checkInResult.data?.registrationData?.name || 'Unknown',
-            email: checkInResult.data?.registrationData?.email || 'Unknown',
+            id: checkInResult.data?.registration?.id || 'unknown',
+            name: checkInResult.data?.registration?.registrationData?.name || 'Unknown',
+            email: checkInResult.data?.registration?.registrationData?.email || 'Unknown',
             checkedInAt: new Date().toISOString(),
             staffId
           },

@@ -63,33 +63,30 @@ async function createTestData() {
   try {
     // Create test organization
     const [testOrg] = await db.insert(organizations).values({
-      id: 'test-org-123',
       name: 'Test Organization',
       slug: 'test-org',
-      description: 'Test organization for E2E tests',
-      isActive: true,
+      contactEmail: 'test@example.com',
+      contactPhone: '+1234567890',
+      emailVerified: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }).returning()
 
     // Create test user
     const [testUser] = await db.insert(users).values({
-      id: 'test-user-123',
       name: 'Test User',
       email: 'test@example.com',
-      password: '$2b$10$hashedpassword', // This would be properly hashed
-      isActive: true,
-      emailVerified: true,
+      phone: '+1234567890',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }).returning()
 
     // Associate user with organization
     await db.insert(userOrganizations).values({
-      userId: testUser.id,
+      userEmail: testUser.email,
       organizationId: testOrg.id,
       role: 'admin',
-      createdAt: new Date().toISOString()
+      joinedAt: new Date().toISOString()
     })
 
     console.log('✅ Test data created successfully')

@@ -80,7 +80,8 @@ export function ExportInterface({ organizationId }: ExportInterfaceProps) {
   }
 
   const downloadFile = (data: string | Buffer, filename: string) => {
-    const blob = new Blob([data], { type: 'text/plain' })
+    const blobData = data instanceof Buffer ? data.toString('utf8') : data
+    const blob = new Blob([blobData as any], { type: 'text/plain' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url

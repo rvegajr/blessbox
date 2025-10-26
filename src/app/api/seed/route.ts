@@ -7,8 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/database/connection'
 import { 
   organizations, 
-  qrCodeSets,
-  qrCodes, 
+  qrCodeSets, 
   registrations, 
   users,
   userOrganizations
@@ -108,7 +107,6 @@ export async function POST(request: NextRequest) {
 
     // Clear existing data
     await db.delete(registrations)
-    await db.delete(qrCodes)
     await db.delete(qrCodeSets)
     await db.delete(userOrganizations)
     await db.delete(organizations)
@@ -164,29 +162,17 @@ export async function POST(request: NextRequest) {
       
       for (const laneName of orgData.lanes) {
         const [qrCodeSet] = await db.insert(qrCodeSets).values({
-          id: crypto.randomUUID(),
           organizationId: org.id,
           name: laneName,
-          description: `QR codes for ${laneName}`,
-          quantity: 1,
+          language: 'en',
+          formFields: JSON.stringify([]),
+          qrCodes: JSON.stringify([]),
           isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }).returning()
-
-        const qrToken = crypto.randomBytes(32).toString('hex')
-        const [qrCode] = await db.insert(qrCodes).values({
-          id: crypto.randomUUID(),
-          qrCodeSetId: qrCodeSet.id,
-          organizationId: org.id,
-          token: qrToken,
-          isActive: true,
-          createdAt: new Date().toISOString(),
         }).returning()
 
         qrCodeSetRecords.push({
           id: qrCodeSet.id,
-          qrCodes: [{id: qrCode.id, token: qrToken}]
+          qrCodes: [] // No individual QR codes in this schema
         })
       }
 

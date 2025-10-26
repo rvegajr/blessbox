@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
       .where(
         and(
           eq(verificationCodes.email, validatedData.email),
-          eq(verificationCodes.type, 'email_verification'),
           gt(verificationCodes.expiresAt, new Date().toISOString())
         )
       )
@@ -53,9 +52,7 @@ export async function POST(request: NextRequest) {
     await db.insert(verificationCodes).values({
       email: validatedData.email,
       code: verificationCode,
-      type: 'email_verification',
-      expiresAt: expiresAt.toISOString(),
-      createdAt: new Date().toISOString()
+      expiresAt: expiresAt.toISOString()
     })
 
     // Send verification email

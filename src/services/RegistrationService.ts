@@ -56,16 +56,16 @@ export class RegistrationService implements IRegistrationService {
         registrationData: JSON.stringify(data.registrationData),
         deliveryStatus: 'pending',
         ipAddress: data.ipAddress,
-        userAgent: data.userAgent,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        userAgent: data.userAgent
       }).returning()
 
       return {
         success: true,
         data: {
           ...newRegistration[0],
-          registrationData: JSON.parse(newRegistration[0].registrationData as string)
+          registrationData: JSON.parse(newRegistration[0].registrationData as string),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         } as Registration
       }
     } catch (error) {
@@ -95,7 +95,9 @@ export class RegistrationService implements IRegistrationService {
         success: true,
         data: {
           ...registration[0],
-          registrationData: JSON.parse(registration[0].registrationData as string)
+          registrationData: JSON.parse(registration[0].registrationData as string),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         } as Registration
       }
     } catch (error) {
@@ -109,47 +111,41 @@ export class RegistrationService implements IRegistrationService {
 
   async getRegistrationsByOrganization(orgId: string, filters?: RegistrationFilters): Promise<RegistrationServiceResult<Registration[]>> {
     try {
-      let query = db.select()
-        .from(registrations)
-        .where(eq(registrations.organizationId, orgId))
+      let whereConditions = [eq(registrations.organizationId, orgId)]
 
       // Apply filters
       if (filters) {
         if (filters.status) {
-          query = query.where(and(
-            eq(registrations.organizationId, orgId),
-            eq(registrations.deliveryStatus, filters.status)
-          ))
+          whereConditions.push(eq(registrations.deliveryStatus, filters.status))
         }
 
         if (filters.dateRange) {
-          query = query.where(and(
-            eq(registrations.organizationId, orgId),
-            gte(registrations.createdAt, filters.dateRange.start),
-            lte(registrations.createdAt, filters.dateRange.end)
-          ))
+          whereConditions.push(
+            gte(registrations.registeredAt, filters.dateRange.start),
+            lte(registrations.registeredAt, filters.dateRange.end)
+          )
         }
 
         if (filters.searchQuery) {
-          query = query.where(and(
-            eq(registrations.organizationId, orgId),
-            like(registrations.registrationData, `%${filters.searchQuery}%`)
-          ))
+          whereConditions.push(like(registrations.registrationData, `%${filters.searchQuery}%`))
         }
 
         if (filters.qrCodeId) {
-          query = query.where(and(
-            eq(registrations.organizationId, orgId),
-            eq(registrations.qrCodeId, filters.qrCodeId)
-          ))
+          whereConditions.push(eq(registrations.qrCodeId, filters.qrCodeId))
         }
       }
 
-      const registrationsList = await query.orderBy(desc(registrations.createdAt))
+      const query = db.select()
+        .from(registrations)
+        .where(and(...whereConditions))
+
+      const registrationsList = await query.orderBy(desc(registrations.registeredAt))
 
       const formattedRegistrations = registrationsList.map(reg => ({
         ...reg,
-        registrationData: JSON.parse(reg.registrationData as string)
+        registrationData: JSON.parse(reg.registrationData as string),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       })) as Registration[]
 
       return {
@@ -170,8 +166,7 @@ export class RegistrationService implements IRegistrationService {
       const updatedRegistration = await db.update(registrations)
         .set({
           ...data,
-          registrationData: data.registrationData ? JSON.stringify(data.registrationData) : undefined,
-          updatedAt: new Date().toISOString()
+          registrationData: data.registrationData ? JSON.stringify(data.registrationData) : undefined
         })
         .where(eq(registrations.id, id))
         .returning()
@@ -187,7 +182,9 @@ export class RegistrationService implements IRegistrationService {
         success: true,
         data: {
           ...updatedRegistration[0],
-          registrationData: JSON.parse(updatedRegistration[0].registrationData as string)
+          registrationData: JSON.parse(updatedRegistration[0].registrationData as string),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         } as Registration
       }
     } catch (error) {
@@ -229,8 +226,7 @@ export class RegistrationService implements IRegistrationService {
     try {
       const updatedRegistration = await db.update(registrations)
         .set({
-          deliveryStatus: status.status,
-          updatedAt: new Date().toISOString()
+          deliveryStatus: status.status
         })
         .where(eq(registrations.id, registrationId))
         .returning()
@@ -246,7 +242,9 @@ export class RegistrationService implements IRegistrationService {
         success: true,
         data: {
           ...updatedRegistration[0],
-          registrationData: JSON.parse(updatedRegistration[0].registrationData as string)
+          registrationData: JSON.parse(updatedRegistration[0].registrationData as string),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         } as Registration
       }
     } catch (error) {
@@ -266,11 +264,13 @@ export class RegistrationService implements IRegistrationService {
           eq(registrations.organizationId, orgId),
           eq(registrations.deliveryStatus, status)
         ))
-        .orderBy(desc(registrations.createdAt))
+        .orderBy(desc(registrations.registeredAt))
 
       const formattedRegistrations = registrationsList.map(reg => ({
         ...reg,
-        registrationData: JSON.parse(reg.registrationData as string)
+        registrationData: JSON.parse(reg.registrationData as string),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       })) as Registration[]
 
       return {
@@ -294,8 +294,7 @@ export class RegistrationService implements IRegistrationService {
       // Store token in registration (in a real implementation, you'd have a separate tokens table)
       await db.update(registrations)
         .set({
-          checkInToken: token,
-          updatedAt: new Date().toISOString()
+          checkInToken: token
         })
         .where(eq(registrations.id, registrationId))
 
@@ -332,8 +331,7 @@ export class RegistrationService implements IRegistrationService {
         .set({
           deliveryStatus: 'checked-in',
           checkedInAt: new Date().toISOString(),
-          checkedInBy: staffId,
-          updatedAt: new Date().toISOString()
+          checkedInBy: staffId
         })
         .where(eq(registrations.id, registration[0].id))
         .returning()
@@ -344,7 +342,9 @@ export class RegistrationService implements IRegistrationService {
           success: true,
           registration: {
             ...updatedRegistration[0],
-            registrationData: JSON.parse(updatedRegistration[0].registrationData as string)
+            registrationData: JSON.parse(updatedRegistration[0].registrationData as string),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           } as Registration,
           message: 'Check-in processed successfully'
         }
@@ -376,7 +376,9 @@ export class RegistrationService implements IRegistrationService {
         success: true,
         data: {
           ...registration[0],
-          registrationData: JSON.parse(registration[0].registrationData as string)
+          registrationData: JSON.parse(registration[0].registrationData as string),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         } as Registration
       }
     } catch (error) {
@@ -390,17 +392,18 @@ export class RegistrationService implements IRegistrationService {
 
   async getRegistrationStats(orgId: string, timeRange?: TimeRange): Promise<RegistrationServiceResult<RegistrationStats>> {
     try {
-      let query = db.select()
-        .from(registrations)
-        .where(eq(registrations.organizationId, orgId))
+      let whereConditions = [eq(registrations.organizationId, orgId)]
 
       if (timeRange) {
-        query = query.where(and(
-          eq(registrations.organizationId, orgId),
-          gte(registrations.createdAt, timeRange.startDate),
-          lte(registrations.createdAt, timeRange.endDate)
-        ))
+        whereConditions.push(
+          gte(registrations.registeredAt, timeRange.startDate),
+          lte(registrations.registeredAt, timeRange.endDate)
+        )
       }
+
+      const query = db.select()
+        .from(registrations)
+        .where(and(...whereConditions))
 
       const allRegistrations = await query
       const totalRegistrations = allRegistrations.length

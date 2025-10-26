@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test'
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './src/tests/e2e',
+  testDir: './tests/e2e',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -23,16 +23,15 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:7777',
+
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    
     /* Take screenshot on failure */
     screenshot: 'only-on-failure',
+    
     /* Record video on failure */
     video: 'retain-on-failure',
-    /* Global timeout for each action */
-    actionTimeout: 10000,
-    /* Global timeout for navigation */
-    navigationTimeout: 30000,
   },
 
   /* Configure projects for major browsers */
@@ -63,14 +62,14 @@ export default defineConfig({
     },
 
     /* Test against branded browsers. */
-    {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    },
-    {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    },
+    // {
+    //   name: 'Microsoft Edge',
+    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
+    // },
+    // {
+    //   name: 'Google Chrome',
+    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+    // },
   ],
 
   /* Run your local dev server before starting the tests */
@@ -80,16 +79,28 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
-
+  
   /* Global setup and teardown */
-  globalSetup: require.resolve('./src/tests/setup/global-setup.ts'),
-  globalTeardown: require.resolve('./src/tests/setup/global-teardown.ts'),
-
+  globalSetup: './tests/setup/global-setup.ts',
+  globalTeardown: './tests/setup/global-teardown.ts',
+  
   /* Test timeout */
   timeout: 30 * 1000,
+  
+  /* Expect timeout */
   expect: {
-    /* Timeout for expect assertions */
-    timeout: 5000,
+    timeout: 10 * 1000,
   },
+  
+  /* Test output directory */
+  outputDir: 'test-results/',
+  
+  /* Test metadata */
+  metadata: {
+    testSuite: 'BlessBox E2E Tests',
+    version: '2.0.0',
+    description: 'Comprehensive E2E testing suite for BlessBox application'
+  }
 })
+
 

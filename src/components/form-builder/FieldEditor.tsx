@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { FormField, FormFieldType } from '@/interfaces/IFormBuilderService'
+import { FormField } from '@/interfaces/IFormBuilderService'
 
 interface FieldEditorProps {
   field: FormField
@@ -54,7 +54,7 @@ export function FieldEditor({
     handleOptionsChange(newOptions)
   }
 
-  const getFieldIcon = (type: FormFieldType) => {
+  const getFieldIcon = (type: FormField['type']) => {
     const icons = {
       text: '📝',
       email: '📧',
@@ -69,7 +69,7 @@ export function FieldEditor({
     return icons[type] || '📝'
   }
 
-  const getFieldLabel = (type: FormFieldType) => {
+  const getFieldLabel = (type: FormField['type']) => {
     const labels = {
       text: 'Text Input',
       email: 'Email',

@@ -18,15 +18,12 @@ test.describe('Complete User Journey Tests', () => {
     await page.click('text=Get Started')
     await expect(page).toHaveURL(/.*\/auth\/register/)
 
-    // Fill organization registration form
-    await page.fill('input[name="organizationName"]', 'Test Organization')
-    await page.fill('input[name="organizationSlug"]', 'test-org')
-    await page.fill('input[name="adminName"]', 'John Doe')
-    await page.fill('input[name="adminEmail"]', 'john@testorg.com')
-    await page.fill('input[name="adminPassword"]', 'SecurePassword123!')
-    await page.fill('input[name="confirmPassword"]', 'SecurePassword123!')
+    // Fill personal information form (Step 1)
+    await page.fill('input[name="name"]', 'John Doe')
+    await page.fill('input[name="email"]', 'john@testorg.com')
+    await page.fill('input[name="phone"]', '+1234567890')
 
-    await page.click('button[type="submit"]')
+    await page.click('button:has-text("Next Step")')
     await expect(page).toHaveURL(/.*\/onboarding\/email-verification/)
 
     // 2. Email verification

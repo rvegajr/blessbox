@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FormField, FormFieldType, FormSettings } from '@/interfaces/IFormBuilderService'
+import { FormField, FormSettings } from '@/interfaces/IFormBuilderService'
 import { FieldEditor } from './FieldEditor'
 import { FormPreview } from './FormPreview'
 import { FormSettingsPanel } from './FormSettingsPanel'
@@ -30,13 +30,14 @@ export function FormBuilder({
   const [activeTab, setActiveTab] = useState<'builder' | 'preview' | 'settings'>('builder')
   const [draggedField, setDraggedField] = useState<FormField | null>(null)
 
-  const addField = useCallback((type: FormFieldType) => {
+  const addField = useCallback((type: FormField['type']) => {
     const newField: FormField = {
       id: `field_${Date.now()}`,
       type,
       label: '',
       placeholder: '',
       required: false,
+      order: fields.length + 1,
       options: type === 'select' || type === 'radio' ? ['Option 1', 'Option 2'] : undefined
     }
     setFields(prev => [...prev, newField])
@@ -143,7 +144,7 @@ export function FormBuilder({
                     <div
                       key={fieldType.type}
                       draggable
-                      onDragStart={() => addField(fieldType.type as FormFieldType)}
+                      onDragStart={() => addField(fieldType.type as FormField['type'])}
                       className="p-3 border border-gray-200 rounded-lg cursor-move hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex items-center space-x-2">

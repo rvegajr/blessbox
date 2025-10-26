@@ -139,8 +139,8 @@ export function FormSettingsPanel({ settings, onUpdate }: FormSettingsPanelProps
               Confirmation Message
             </label>
             <textarea
-              value={settings.confirmationMessage || ''}
-              onChange={(e) => handleTextChange('confirmationMessage', e.target.value)}
+              value={settings.successMessage || ''}
+              onChange={(e) => handleTextChange('successMessage', e.target.value)}
               placeholder="Thank you for your submission! We'll be in touch soon."
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

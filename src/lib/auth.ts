@@ -1,13 +1,15 @@
 import NextAuth from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import EmailProvider from 'next-auth/providers/email'
+import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from './database/connection'
-import { users, organizations, userOrganizations } from './database/schema'
+import { users, organizations, userOrganizations, accounts, sessions, nextauthUsers, verificationTokens } from './database/schema'
 import { eq, and } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: DrizzleAdapter(db),
   providers: [
     EmailProvider({
       server: {
@@ -82,18 +84,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (token.userId) {
         session.user.id = token.userId as string
-        session.user.type = token.userType as string
+        // Note: user.type is not part of the standard User interface
+        // If needed, extend the User interface or use a different approach
       }
       return session
     },
   },
   pages: {
     signIn: '/auth/login',
-    signUp: '/auth/register',
     error: '/auth/error',
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'database',
   },
   secret: process.env.NEXTAUTH_SECRET,
 })
