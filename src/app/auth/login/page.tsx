@@ -52,9 +52,9 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Failed to send login code')
+        setError('Failed to send magic link')
       } else {
-        setError('Check your email for a login link')
+        setError('Check your email for a magic link')
       }
     } catch (error) {
       setError('An error occurred')
@@ -181,7 +181,7 @@ export default function LoginPage() {
                     onClick={handlePasswordlessLogin}
                     disabled={isLoading}
                   >
-                    Send Login Code
+                    Send Magic Link
                   </Button>
                 </div>
               )}

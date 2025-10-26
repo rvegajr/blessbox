@@ -7,7 +7,7 @@
 
 import { db } from '@/lib/database/connection'
 import { organizations, userOrganizations } from '@/lib/database/schema'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { 
   IOrganizationService, 
   OrganizationCreateData, 
@@ -308,12 +308,13 @@ export class OrganizationService implements IOrganizationService {
 
   async validateSlug(slug: string, excludeOrgId?: string): Promise<boolean> {
     try {
-      let query = db.select().from(organizations).where(eq(organizations.slug, slug))
+      let whereConditions = [eq(organizations.slug, slug)]
       
       if (excludeOrgId) {
-        query = query.where(eq(organizations.id, excludeOrgId))
+        whereConditions.push(sql`${organizations.id} != ${excludeOrgId}`)
       }
 
+      const query = db.select().from(organizations).where(and(...whereConditions))
       const existing = await query.limit(1)
       return existing.length === 0
     } catch (error) {

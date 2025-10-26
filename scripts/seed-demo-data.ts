@@ -13,8 +13,7 @@
 import { db } from '../src/lib/database/connection'
 import { 
   organizations, 
-  qrCodeSets,
-  qrCodes, 
+  qrCodeSets, 
   registrations, 
   users,
   userOrganizations
@@ -128,7 +127,7 @@ async function seedData() {
     // Clear existing data
     console.log("\n🗑️  Clearing existing data...")
     await db.delete(registrations)
-    await db.delete(qrCodes)
+    // No separate qrCodes table - they're part of qrCodeSets
     await db.delete(qrCodeSets)
     await db.delete(userOrganizations)
     await db.delete(organizations)
@@ -197,30 +196,20 @@ async function seedData() {
       
       for (const laneName of orgData.lanes) {
         const [qrCodeSet] = await db.insert(qrCodeSets).values({
-          id: crypto.randomUUID(),
           organizationId: org.id,
           name: laneName,
-          description: `QR codes for ${laneName}`,
-          quantity: 1,
+          language: 'en',
+          formFields: JSON.stringify([]),
+          qrCodes: JSON.stringify([]),
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }).returning()
 
-        // Create individual QR code for this set
-        const qrToken = crypto.randomBytes(32).toString('hex')
-        const [qrCode] = await db.insert(qrCodes).values({
-          id: crypto.randomUUID(),
-          qrCodeSetId: qrCodeSet.id,
-          organizationId: org.id,
-          token: qrToken,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        }).returning()
-
+        // Store QR code set record for reference
         qrCodeSetRecords.push({
           id: qrCodeSet.id,
-          qrCodes: [{id: qrCode.id, token: qrToken}]
+          qrCodes: [] // No individual QR codes in this schema
         })
         
         totalQRCodes++

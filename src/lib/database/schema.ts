@@ -139,7 +139,7 @@ export const forms = sqliteTable('forms', {
   description: text('description'),
   fields: text('fields', { mode: 'json' }).notNull(), // FormField[] as JSON
   settings: text('settings', { mode: 'json' }).notNull(), // FormSettings as JSON
-  validation: text('validation', { mode: 'json' }).notNull(), // FormValidation as JSON
+  validation: text('validation', { mode: 'json' }).default('[]'), // FormValidation as JSON
   conditionalLogic: text('conditional_logic', { mode: 'json' }).default('[]'), // ConditionalLogic[] as JSON
   status: text('status').default('draft').notNull(), // draft, published, archived
   version: integer('version').default(1).notNull(),
@@ -429,6 +429,9 @@ export const paymentTransactionsRelations = relations(paymentTransactions, ({ on
     references: [subscriptionPlans.id],
   }),
 }));
+
+// Import NextAuth tables
+export * from './nextauth-schema';
 
 // Export types
 export type User = typeof users.$inferSelect;

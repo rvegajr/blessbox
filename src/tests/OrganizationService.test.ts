@@ -104,7 +104,12 @@ class MockOrganizationService implements IOrganizationService {
   }
 
   async generateSlug(name: string) {
-    return name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
   }
 
   async validateSlug(slug: string, excludeOrgId?: string) {

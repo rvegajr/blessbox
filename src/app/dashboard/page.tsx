@@ -7,6 +7,7 @@ import OrganizationStats from '@/components/dashboard/OrganizationStats'
 import QRCodeSetsList from '@/components/dashboard/QRCodeSetsList'
 import RecentActivity from '@/components/dashboard/RecentActivity'
 import { SignOutButton } from '@/components/auth/SignOutButton'
+import { DashboardTutorialButton } from './DashboardClient'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -39,25 +40,25 @@ export default async function DashboardPage() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Organization Stats */}
-          <div className="mb-8">
+          <div className="mb-8" id="dashboard-stats">
             <OrganizationStats />
           </div>
 
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* QR Code Sets */}
-            <div>
+            <div id="qr-codes-section">
               <QRCodeSetsList />
             </div>
 
             {/* Recent Activity */}
-            <div>
+            <div id="recent-activity">
               <RecentActivity />
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-8">
+          <div className="mt-8" id="quick-actions">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Button asChild className="h-20 flex flex-col">
@@ -154,6 +155,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Tutorial Button - Floating */}
+      <DashboardTutorialButton />
     </div>
   )
 }

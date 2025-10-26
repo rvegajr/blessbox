@@ -17,9 +17,8 @@ async function globalTeardown(config: FullConfig) {
     console.log('🗑️ Cleaning up test data...')
     await cleanupTestData()
 
-    // Close database connections
-    console.log('🔌 Closing database connections...')
-    await db.$disconnect()
+    // Database connections are automatically managed for SQLite
+    console.log('🔌 Database connections managed automatically')
 
     console.log('✅ Global teardown completed successfully')
   } catch (error) {

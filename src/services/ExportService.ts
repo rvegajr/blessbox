@@ -7,7 +7,7 @@
 
 import { db } from '@/lib/database/connection'
 import { registrations, qrScans, organizations } from '@/lib/database/schema'
-import { eq, and, gte, lte, desc } from 'drizzle-orm'
+import { eq, and, gte, lte, desc, sql } from 'drizzle-orm'
 
 export interface ExportOptions {
   format: 'csv' | 'pdf' | 'excel'
@@ -88,13 +88,21 @@ export class ExportService {
       // Get comprehensive organization data
       const reportData = await this.getOrganizationReportData(orgId, options)
       
+      // Convert report data to array format for export
+      const exportData = [
+        { type: 'organization', ...reportData.organization },
+        { type: 'summary', ...reportData.summary },
+        ...reportData.registrations.map(reg => ({ type: 'registration', ...reg })),
+        ...reportData.analytics.map(analytics => ({ type: 'analytics', ...analytics }))
+      ]
+
       switch (options.format) {
         case 'csv':
-          return this.exportToCSV(reportData, 'organization-report')
+          return this.exportToCSV(exportData, 'organization-report')
         case 'pdf':
-          return this.exportToPDF(reportData, 'organization-report')
+          return this.exportToPDF(exportData, 'organization-report')
         case 'excel':
-          return this.exportToExcel(reportData, 'organization-report')
+          return this.exportToExcel(exportData, 'organization-report')
         default:
           return {
             success: false,
@@ -111,37 +119,53 @@ export class ExportService {
   }
 
   private async getRegistrationsData(orgId: string, options: ExportOptions) {
+    let whereConditions = [eq(registrations.organizationId, orgId)]
+    
+    // Apply date range filter
+    if (options.dateRange) {
+      whereConditions.push(
+        gte(registrations.registeredAt, options.dateRange.start.toISOString()),
+        lte(registrations.registeredAt, options.dateRange.end.toISOString())
+      )
+    }
+
     const query = db
       .select({
         id: registrations.id,
         qrCodeId: registrations.qrCodeId,
         registrationData: registrations.registrationData,
-        checkInStatus: registrations.checkInStatus,
-        registeredAt: registrations.registeredAt,
-        checkedInAt: registrations.checkedInAt
+        checkedInAt: registrations.checkedInAt,
+        registeredAt: registrations.registeredAt
       })
       .from(registrations)
-      .where(eq(registrations.organizationId, orgId))
+      .where(and(...whereConditions))
 
-    // Apply date range filter
-    if (options.dateRange) {
-      query.where(and(
-        gte(registrations.registeredAt, options.dateRange.start.toISOString()),
-        lte(registrations.registeredAt, options.dateRange.end.toISOString())
-      ))
-    }
-
-    // Apply status filter
+    // Apply status filter (check if checked in or not)
     if (options.filters?.status) {
-      query.where(eq(registrations.checkInStatus, options.filters.status as any))
+      if (options.filters.status === 'checked_in') {
+        whereConditions.push(sql`${registrations.checkedInAt} IS NOT NULL`)
+      } else if (options.filters.status === 'not_checked_in') {
+        whereConditions.push(sql`${registrations.checkedInAt} IS NULL`)
+      }
     }
 
     // Apply QR code filter
     if (options.filters?.qrCodeId) {
-      query.where(eq(registrations.qrCodeId, options.filters.qrCodeId))
+      whereConditions.push(eq(registrations.qrCodeId, options.filters.qrCodeId))
     }
 
-    const data = await query.orderBy(desc(registrations.registeredAt))
+    const finalQuery = db
+      .select({
+        id: registrations.id,
+        qrCodeId: registrations.qrCodeId,
+        registrationData: registrations.registrationData,
+        checkedInAt: registrations.checkedInAt,
+        registeredAt: registrations.registeredAt
+      })
+      .from(registrations)
+      .where(and(...whereConditions))
+
+    const data = await finalQuery.orderBy(desc(registrations.registeredAt))
 
     // Transform data for export
     return data.map(registration => ({
@@ -150,13 +174,23 @@ export class ExportService {
       'Name': JSON.parse(registration.registrationData as string)?.name || 'N/A',
       'Email': JSON.parse(registration.registrationData as string)?.email || 'N/A',
       'Phone': JSON.parse(registration.registrationData as string)?.phone || 'N/A',
-      'Status': registration.checkInStatus,
+      'Status': registration.checkedInAt ? 'Checked In' : 'Not Checked In',
       'Registered At': new Date(registration.registeredAt).toLocaleString(),
       'Checked In At': registration.checkedInAt ? new Date(registration.checkedInAt).toLocaleString() : 'Not checked in'
     }))
   }
 
   private async getQRAnalyticsData(orgId: string, options: ExportOptions) {
+    let whereConditions = [eq(qrScans.organizationId, orgId)]
+
+    // Apply date range filter
+    if (options.dateRange) {
+      whereConditions.push(
+        gte(qrScans.scannedAt, options.dateRange.start.toISOString()),
+        lte(qrScans.scannedAt, options.dateRange.end.toISOString())
+      )
+    }
+
     const query = db
       .select({
         qrCodeId: qrScans.qrCodeId,
@@ -168,15 +202,7 @@ export class ExportService {
         ipAddress: qrScans.ipAddress
       })
       .from(qrScans)
-      .where(eq(qrScans.organizationId, orgId))
-
-    // Apply date range filter
-    if (options.dateRange) {
-      query.where(and(
-        gte(qrScans.scannedAt, options.dateRange.start.toISOString()),
-        lte(qrScans.scannedAt, options.dateRange.end.toISOString())
-      ))
-    }
+      .where(and(...whereConditions))
 
     const data = await query.orderBy(desc(qrScans.scannedAt))
 

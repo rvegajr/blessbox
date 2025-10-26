@@ -8,7 +8,7 @@
 import { db } from '@/lib/database/connection'
 import { qrCodeSets, qrScans } from '@/lib/database/schema'
 import { eq, and, desc, count } from 'drizzle-orm'
-import QRCode from 'qrcode'
+import QRCodeLib from 'qrcode'
 import { 
   IQRCodeService, 
   QRCodeSetConfig, 
@@ -86,11 +86,11 @@ export class QRCodeService implements IQRCodeService {
 
   async getQRCodeSetsByOrganization(orgId: string): Promise<QRCodeServiceResult<QRCodeSet[]>> {
     try {
-      const qrCodeSets = await db.select()
+      const qrCodeSetsList = await db.select()
         .from(qrCodeSets)
         .where(eq(qrCodeSets.organizationId, orgId))
 
-      const sets = qrCodeSets.map(set => ({
+      const sets = qrCodeSetsList.map(set => ({
         ...set,
         formFields: JSON.parse(set.formFields as string),
         qrCodes: JSON.parse(set.qrCodes as string)
@@ -177,7 +177,7 @@ export class QRCodeService implements IQRCodeService {
       const opts = { ...this.getDefaultQRImageOptions(), ...options }
       
       // Generate QR code with real QRCode library
-      const qrCodeBuffer = await QRCode.toBuffer(url, {
+      const qrCodeBuffer = await QRCodeLib.toBuffer(url, {
         width: opts.size,
         margin: opts.margin,
         color: {
@@ -212,7 +212,7 @@ export class QRCodeService implements IQRCodeService {
       const opts = { ...this.getDefaultQRImageOptions(), ...options }
       
       // Generate QR code as base64 data URL
-      const qrCodeBase64 = await QRCode.toDataURL(url, {
+      const qrCodeBase64 = await QRCodeLib.toDataURL(url, {
         width: opts.size,
         margin: opts.margin,
         color: {
@@ -240,7 +240,7 @@ export class QRCodeService implements IQRCodeService {
   }
 
   generateCheckInURL(checkInToken: string): string {
-    return `${process.env.NEXTAUTH_URL || 'http://localhost:7777'}/checkin/${checkInToken}`
+    return `${process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:7777'}/checkin/${checkInToken}`
   }
 
   async trackQRCodeScan(scanData: QRScanData): Promise<QRCodeServiceResult<void>> {

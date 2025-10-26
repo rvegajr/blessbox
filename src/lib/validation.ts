@@ -163,7 +163,7 @@ export const validateEmailDomain = async (email: string): Promise<boolean> => {
     const domain = email.split('@')[1]
     // In a real implementation, you would check if the domain exists
     // For now, we'll just check if it looks like a valid domain
-    return domain && domain.includes('.') && domain.length > 3
+    return Boolean(domain && domain.includes('.') && domain.length > 3)
   } catch {
     return false
   }

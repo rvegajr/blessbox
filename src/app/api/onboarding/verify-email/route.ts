@@ -22,7 +22,6 @@ export async function POST(request: NextRequest) {
         and(
           eq(verificationCodes.email, validatedData.email),
           eq(verificationCodes.code, validatedData.verificationCode),
-          eq(verificationCodes.type, 'email_verification'),
           gt(verificationCodes.expiresAt, new Date().toISOString())
         )
       )
