@@ -29,7 +29,7 @@ export function createDatabaseConnection(config?: TursoConfig) {
 
   // Prefer provided config → env → local file fallback to avoid 401s
   const tursoConfig: TursoConfig = config || {
-    url: readEnv('TURSO_DATABASE_URL') || 'file:./.tmp/dev-db.sqlite',
+    url: readEnv('TURSO_DATABASE_URL') || 'file:./blessbox.db',
     authToken: readEnv('TURSO_AUTH_TOKEN') || '',
   };
 
