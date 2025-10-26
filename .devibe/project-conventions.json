@@ -1,0 +1,81 @@
+{
+  "docsFolder": {
+    "path": "documents",
+    "exists": true,
+    "structure": {
+      "hasSpecifications": false,
+      "hasImplementation": false,
+      "hasGuides": false,
+      "hasAPI": false,
+      "customFolders": []
+    }
+  },
+  "scriptsFolder": {
+    "path": "scripts",
+    "exists": true,
+    "types": [
+      "build",
+      "deploy",
+      "setup",
+      "test"
+    ]
+  },
+  "rootFileConventions": {
+    "readmeInRoot": true,
+    "changelogInRoot": false,
+    "contributingInRoot": false,
+    "licenseInRoot": false,
+    "customRootFiles": [
+      "COMPREHENSIVE_E2E_TESTING_PLAN.md",
+      "COMPREHENSIVE_TESTING_COVERAGE_REPORT.md",
+      "DEPLOYMENT_READINESS_CHECKLIST.md",
+      "DOCUMENTATION_IMPLEMENTATION_SUMMARY.md",
+      "DOCUMENTATION_README.md",
+      "DOCUMENTATION_VISUAL_GUIDE.md",
+      "DONATION_FLOW_TEST_GUIDE.md",
+      "DONATION_FLOW_TEST_SUMMARY.md",
+      "E2E_TESTING_GUIDE.md",
+      "GETTING_STARTED_CHECKLIST.md",
+      "IMPLEMENTATION_COMPLETE.md",
+      "ISP_AUDIT_REPORT.md",
+      "MAGIC_LINK_E2E_TESTING_SUMMARY.md",
+      "NEXTAUTH_EMAIL_PROVIDER_ENABLEMENT_CHECKLIST.md",
+      "NEXTAUTH_EMAIL_PROVIDER_FINAL_SUMMARY.md",
+      "NEXTAUTH_EMAIL_PROVIDER_IMPLEMENTATION_SUMMARY.md",
+      "PRODUCTION_DEPLOYMENT_GUIDE.md",
+      "PRODUCTION_DEPLOYMENT_SUCCESS.md",
+      "PRODUCTION_ENVIRONMENT_CONFIG.md",
+      "PRODUCTION_SENDGRID_CONFIGURATION.md",
+      "PRODUCTION_SENDGRID_VERIFICATION_COMPLETE.md",
+      "PROJECT_STRUCTURE_FIX_SUCCESS.md",
+      "QUICK_START_100_PERCENT.md",
+      "SPECIFICATION_ANALYSIS_SUMMARY.md",
+      "START_HERE.md",
+      "TDD_ISP_COMPLETION_CHECKLIST.md",
+      "TEST_COVERAGE_REPORT.md",
+      "TUTORIAL_IMPLEMENTATION_GUIDE.md",
+      "TUTORIAL_QUICKSTART.md",
+      "USER_QUICK_START.md",
+      "VERCEL_DEPLOYMENT_STRUCTURE_GUIDE.md",
+      "VERCEL_ENVIRONMENT_SETUP_SUMMARY.md",
+      "VERCEL_QUICK_REFERENCE.md",
+      "VERCEL_SENDGRID_NEXTAUTH_SETUP.md"
+    ]
+  },
+  "testConventions": {
+    "location": "centralized",
+    "folderName": "tests"
+  },
+  "recommendations": {
+    "shouldCreateDocsFolder": false,
+    "shouldCreateScriptsFolder": false,
+    "keepFilesInRoot": [
+      "README.md",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "LICENSE",
+      "CODE_OF_CONDUCT.md"
+    ]
+  },
+  "analyzedAt": "2025-10-26T18:01:19.847Z"
+}
