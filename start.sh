@@ -26,7 +26,7 @@ echo "📊 URL: $TURSO_DATABASE_URL"
 
 echo ""
 echo "✨ Starting fresh development server..."
-echo "📡 Server will be available at: http://localhost:7777"
+echo "📡 Server will be available at: http://localhost:7777 (DEFAULT PORT)"
 echo "🌐 Opening Microsoft Edge automatically..."
 echo ""
 echo "Press Ctrl+C to stop the server"

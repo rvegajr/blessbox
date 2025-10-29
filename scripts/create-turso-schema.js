@@ -2,9 +2,9 @@
 
 import { createClient } from '@libsql/client';
 
-// Set environment variables
-process.env.TURSO_DATABASE_URL = 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io';
-process.env.TURSO_AUTH_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTQ4ODEzNjQsImlhdCI6MTc1NDI3NjU2NCwiaWQiOiI4MjFmMjdkOS0zNDIzLTQ1YTAtYWFiMy01MzcyNTQ3MjcyNDAiLCJyaWQiOiJiM2MwZjdhYS05YzFjLTQ5NjUtYjgwNi1jZmI0OGEwMTFmZTAifQ.UBi6bacAdcSpA26FIhJgdWhh6Qos4jY5JuSMb3aWJ65gvjFiqAYcCqudtU_ddAko2c0wkd_meGF2x3rrLp_UCw';
+// Load environment variables from .env.local
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
 console.log('🚀 Creating Turso schema...');
 
@@ -107,6 +107,120 @@ try {
     )
   `);
   console.log('✅ Created subscription_plans table');
+
+  // Create classes table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS classes (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      description TEXT,
+      capacity INTEGER NOT NULL,
+      timezone TEXT DEFAULT 'UTC' NOT NULL,
+      status TEXT DEFAULT 'active' NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+  console.log('✅ Created classes table');
+
+  // Create class_sessions table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS class_sessions (
+      id TEXT PRIMARY KEY,
+      class_id TEXT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+      session_date TEXT NOT NULL,
+      session_time TEXT NOT NULL,
+      duration_minutes INTEGER DEFAULT 60 NOT NULL,
+      location TEXT,
+      instructor_name TEXT,
+      status TEXT DEFAULT 'scheduled' NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+  console.log('✅ Created class_sessions table');
+
+  // Create participants table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS participants (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      emergency_contact TEXT,
+      emergency_phone TEXT,
+      notes TEXT,
+      status TEXT DEFAULT 'active' NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+  console.log('✅ Created participants table');
+
+  // Create enrollments table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS enrollments (
+      id TEXT PRIMARY KEY,
+      participant_id TEXT NOT NULL REFERENCES participants(id) ON DELETE CASCADE,
+      class_id TEXT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+      session_id TEXT REFERENCES class_sessions(id) ON DELETE CASCADE,
+      enrollment_status TEXT DEFAULT 'pending' NOT NULL,
+      enrolled_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      confirmed_at TEXT,
+      attended_at TEXT,
+      notes TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+  console.log('✅ Created enrollments table');
+
+  // Create email_templates table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS email_templates (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      template_type TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      html_content TEXT NOT NULL,
+      text_content TEXT,
+      is_active INTEGER DEFAULT 1 NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )
+  `);
+  console.log('✅ Created email_templates table');
+
+  // Create email_logs table
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS email_logs (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      recipient_email TEXT NOT NULL,
+      template_type TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      status TEXT NOT NULL,
+      sent_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      error_message TEXT,
+      metadata TEXT
+    )
+  `);
+  console.log('✅ Created email_logs table');
+
+  // Create additional indexes for performance
+  await client.execute('CREATE INDEX IF NOT EXISTS classes_organization_id_idx ON classes(organization_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS class_sessions_class_id_idx ON class_sessions(class_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS participants_organization_id_idx ON participants(organization_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS participants_email_idx ON participants(email)');
+  await client.execute('CREATE INDEX IF NOT EXISTS enrollments_participant_id_idx ON enrollments(participant_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS enrollments_class_id_idx ON enrollments(class_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS enrollments_session_id_idx ON enrollments(session_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS email_logs_organization_id_idx ON email_logs(organization_id)');
+  await client.execute('CREATE INDEX IF NOT EXISTS email_logs_recipient_email_idx ON email_logs(recipient_email)');
+  console.log('✅ Created additional indexes');
 
   // Create remaining tables...
   console.log('✅ Schema creation completed successfully!');
