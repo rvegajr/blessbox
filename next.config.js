@@ -4,9 +4,10 @@ const nextConfig = {
   images: {
     domains: ['localhost:7777', 'blessbox.org', 'dev.blessbox.org']
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@libsql/client']
+  // Default port configuration
+  env: {
+    PORT: '7777'
   }
 }
 
-module.exports = nextConfig
+export default nextConfig
