@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 
+// Force dynamic rendering for client-side interactivity
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   const [domain, setDomain] = useState('');
   const [domainStatus, setDomainStatus] = useState<'available' | 'taken' | null>(null);
@@ -33,10 +36,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <main>
         {/* Header */}
-        <section className="py-12">
+        <section id="welcome-section" className="py-12" data-tutorial-target="welcome-section">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="font-black text-6xl md:text-7xl lg:text-8xl mb-4 bg-gradient-to-r from-blue-900 via-blue-700 to-indigo-800 bg-clip-text text-transparent">
+              <h1 className="font-black text-6xl md:text-7xl lg:text-8xl mb-4 bg-gradient-to-r from-blue-900 via-blue-700 to-indigo-800 bg-clip-text text-transparent" style={{ 
+                WebkitTextStroke: '2px rgb(30, 64, 175)',
+                filter: 'drop-shadow(0 4px 6px rgba(30, 64, 175, 0.15))'
+              }}>
                 BlessBox
               </h1>
               <p className="text-gray-600 max-w-2xl mx-auto text-lg">
@@ -52,7 +58,7 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               
               {/* Panel 1: Organization Login/Registration */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 transition-shadow duration-200 [box-shadow:0_20px_25px_-5px_rgba(59,130,246,0.1),0_8px_10px_-6px_rgba(59,130,246,0.1)] hover:[box-shadow:0_25px_50px_-12px_rgba(59,130,246,0.15),0_10px_15px_-8px_rgba(59,130,246,0.1)]">
                 <div className="flex items-center mb-6">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +84,7 @@ export default function HomePage() {
                       <input 
                         type="text" 
                         placeholder="e.g., Food Bank Central" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
                       />
                     </div>
 
@@ -88,7 +94,7 @@ export default function HomePage() {
                       <input 
                         type="text" 
                         placeholder="e.g., Weekly Food Distribution" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
                       />
                     </div>
 
@@ -113,26 +119,26 @@ export default function HomePage() {
                           placeholder="yourname" 
                           value={domain}
                           onChange={(e) => handleDomainChange(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
                           maxLength={255}
                         />
                       </div>
                     </div>
                     
-                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                    <button id="create-org-btn" className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm hover:shadow-md transition-all duration-200" disabled>
                       Sign Up
                     </button>
                     
                     <div className="text-center">
                       <p className="text-sm text-gray-600">
                         Already have an account?
-                        <a href="#" className="text-blue-600 hover:text-blue-500 font-medium ml-1">Login</a>
+                        <a href="/dashboard" id="dashboard-link" className="text-blue-600 hover:text-blue-500 font-medium ml-1">Login</a>
                       </p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 shadow-sm">
                   <p className="text-sm text-blue-800">
                     <strong>Example:</strong> "Food Bank Central" registers to manage food donation distributions
                   </p>
@@ -140,7 +146,7 @@ export default function HomePage() {
               </div>
 
               {/* Panel 2: QR Code Creation */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 transition-shadow duration-200 [box-shadow:0_20px_25px_-5px_rgba(59,130,246,0.1),0_8px_10px_-6px_rgba(59,130,246,0.1)] hover:[box-shadow:0_25px_50px_-12px_rgba(59,130,246,0.15),0_10px_15px_-8px_rgba(59,130,246,0.1)]">
                 <div className="flex items-center mb-6">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +157,7 @@ export default function HomePage() {
                 </div>
                 
                 <div className="mb-6">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">QR Code Configuration</h3>
                     
                     <div className="space-y-4">
@@ -160,7 +166,7 @@ export default function HomePage() {
                         <input 
                           type="text" 
                           placeholder="e.g., Main Entrance, Station A, Weekly Distribution"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
                           maxLength={50}
                         />
                         <p className="text-xs text-gray-500 mt-1">Help staff identify different QR codes for the same event</p>
@@ -168,7 +174,7 @@ export default function HomePage() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
-                        <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md">
                           <option>Food Donation</option>
                           <option>Seminar Registration</option>
                           <option>Volunteer Sign-up</option>
@@ -210,14 +216,14 @@ export default function HomePage() {
                         </div>
                       </div>
                       
-                      <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                      <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow-md transition-all duration-200">
                         Generate QR Code(s)
                       </button>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 shadow-sm">
                   <p className="text-sm text-blue-800">
                     <strong>Example:</strong> Create multiple QR codes for "Weekly Food Distribution" - one labeled "Main Entrance" and another "Side Door" - both requiring name, phone, and family size
                   </p>
@@ -225,7 +231,7 @@ export default function HomePage() {
               </div>
 
               {/* Panel 3: QR Display & Scanning */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 transition-shadow duration-200 [box-shadow:0_20px_25px_-5px_rgba(234,179,8,0.1),0_8px_10px_-6px_rgba(234,179,8,0.1)] hover:[box-shadow:0_25px_50px_-12px_rgba(234,179,8,0.15),0_10px_15px_-8px_rgba(234,179,8,0.1)]">
                 <div className="flex items-center mb-6">
                   <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +244,7 @@ export default function HomePage() {
                 
                 <div className="text-center mb-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4">
+                      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-4 shadow-sm">
                       <div className="w-24 h-24 mx-auto bg-black rounded-lg relative mb-3">
                         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-0">
                           <div className="bg-black"></div><div className="bg-white"></div><div className="bg-black"></div><div className="bg-black"></div><div className="bg-white"></div><div className="bg-black"></div><div className="bg-white"></div><div className="bg-black"></div>
@@ -255,7 +261,7 @@ export default function HomePage() {
                       <p className="text-xs text-gray-500">Food Distribution QR</p>
                     </div>
 
-                    <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4">
+                      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-4 shadow-sm">
                       <div className="w-24 h-24 mx-auto bg-black rounded-lg relative mb-3">
                         <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 gap-0">
                           <div className="bg-white"></div><div className="bg-black"></div><div className="bg-white"></div><div className="bg-white"></div><div className="bg-black"></div><div className="bg-white"></div><div className="bg-black"></div><div className="bg-white"></div>
@@ -276,7 +282,7 @@ export default function HomePage() {
                   <p className="text-sm text-gray-600 mb-4">Scan with your phone camera • Both QR codes lead to the same registration form</p>
 
                   {/* Registration Form Preview */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 max-w-sm mx-auto">
+                  <div className="bg-white border border-gray-200 rounded-xl p-4 max-w-sm mx-auto shadow-sm">
                     <h4 className="text-sm font-semibold text-gray-900 mb-3">Registration Form</h4>
                     <div className="space-y-2">
                       <input type="text" placeholder="Full Name" className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" />
@@ -292,7 +298,7 @@ export default function HomePage() {
                   </div>
 
                   {/* User Submits Registration */}
-                  <div className="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="mt-6 bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-2">1</div>
                       <h3 className="text-sm font-semibold text-gray-900">User Submits Registration Form</h3>
@@ -317,7 +323,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 shadow-sm">
                   <p className="text-sm text-yellow-800">
                     <strong>Example:</strong> Families can scan either QR code (Main Entrance or Side Door), fill out the same form on their phone, and submit registration instantly. Staff can track which entrance was used.
                   </p>
@@ -325,7 +331,7 @@ export default function HomePage() {
               </div>
 
               {/* Panel 4: QR Magic Demonstration */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 transition-shadow duration-200 [box-shadow:0_20px_25px_-5px_rgba(34,197,94,0.1),0_8px_10px_-6px_rgba(34,197,94,0.1)] hover:[box-shadow:0_25px_50px_-12px_rgba(34,197,94,0.15),0_10px_15px_-8px_rgba(34,197,94,0.1)]">
                 <div className="flex items-center mb-6">
                   <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                     <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -344,7 +350,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Step 1: QR Code Appears */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
                     <div className="flex items-center mb-3">
                       <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">1</div>
                       <h3 className="text-lg font-semibold text-green-800">QR Code Appears Instantly!</h3>
@@ -375,7 +381,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Step 2: Staff Scans */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">2</div>
                       <h3 className="text-lg font-semibold text-blue-800">Organization Worker Scans QR Code</h3>
@@ -396,7 +402,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Step 3: Ready for Action */}
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 shadow-sm">
                     <div className="flex items-center mb-3">
                       <div className="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">3</div>
                       <h3 className="text-lg font-semibold text-purple-800">Ready for Distribution, Action, Attendance!</h3>
@@ -421,20 +427,20 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-lg p-4 text-center">
+                  <div className="bg-gradient-to-r from-green-400 to-blue-500 text-white rounded-xl p-4 text-center shadow-lg">
                     <div className="text-3xl mb-2">🎉</div>
                     <h3 className="text-lg font-bold mb-1">Complete! User gets automatic confirmation!</h3>
                     <p className="text-sm opacity-90">No searching names, no manual entry - just scan and go!</p>
                   </div>
 
                   <div className="mt-4">
-                    <button className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white py-2 px-4 rounded-md transition-colors">
+                    <button className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
                       🚀 Try the Demo Flow
                     </button>
                   </div>
                 </div>
                 
-                <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-4">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 mt-4 shadow-sm">
                   <p className="text-sm text-green-800">
                     <strong>Example:</strong> Staff can see which entrance each family used, verify registrations, and distribute appropriate food portions based on family size. This helps with crowd management and logistics.
                   </p>
