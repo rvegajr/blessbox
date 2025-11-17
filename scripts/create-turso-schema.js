@@ -2,9 +2,16 @@
 
 import { createClient } from '@libsql/client';
 
+<<<<<<< HEAD
 // Load environment variables from .env.local
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
+=======
+// Set environment variables
+process.env.TURSO_DATABASE_URL = 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io';
+// Use environment variable for auth token (set in environment)
+process.env.TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || 'test-token-placeholder';
+>>>>>>> origin/main
 
 console.log('🚀 Creating Turso schema...');
 
@@ -108,6 +115,7 @@ try {
   `);
   console.log('✅ Created subscription_plans table');
 
+<<<<<<< HEAD
   // Create classes table
   await client.execute(`
     CREATE TABLE IF NOT EXISTS classes (
@@ -222,6 +230,8 @@ try {
   await client.execute('CREATE INDEX IF NOT EXISTS email_logs_recipient_email_idx ON email_logs(recipient_email)');
   console.log('✅ Created additional indexes');
 
+=======
+>>>>>>> origin/main
   // Create remaining tables...
   console.log('✅ Schema creation completed successfully!');
   

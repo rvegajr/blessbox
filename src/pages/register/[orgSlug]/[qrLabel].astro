@@ -1,0 +1,267 @@
+---
+// 🎉 DYNAMIC REGISTRATION FORM PAGE - PURE URL MAGIC! ✨
+// Simple, beautiful, and PERFECTLY functional! 🚀
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { RegistrationFormService } from '../../../implementations/registration/RegistrationFormService';
+
+const { orgSlug, qrLabel } = Astro.params;
+const registrationService = new RegistrationFormService();
+
+// 🔍 Get QR code info by organization slug and QR label
+let registrationForm = null;
+let error = null;
+
+try {
+  // For now, we'll need to find the QR code by organization slug and label
+  // This will be a simple lookup in our BEAUTIFUL database! 🗄️✨
+  registrationForm = await registrationService.getRegistrationFormBySlug(orgSlug!, qrLabel!);
+  
+  if (!registrationForm) {
+    error = 'Registration form not found. Please check your QR code! 🔍';
+  }
+} catch (e) {
+  console.error('💔 Failed to load registration form:', e);
+  error = 'Unable to load registration form. Please try again later.';
+}
+
+// 🎯 Get entry point from URL params
+const entryPoint = Astro.url.searchParams.get('entry') || undefined;
+---
+
+<BaseLayout 
+  title={registrationForm ? `Register - ${registrationForm.organizationName}` : 'Registration'}
+  description={registrationForm ? `Register for ${registrationForm.eventName || registrationForm.organizationName}` : 'Registration form'}
+  hideNav={true}
+  hideFooter={true}
+>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div class="max-w-2xl mx-auto">
+      {error ? (
+        <!-- 😅 Error State - Still beautiful! -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div class="text-6xl mb-4">😅</div>
+          <h1 class="text-2xl font-bold text-gray-900 mb-4">Oops!</h1>
+          <p class="text-gray-600 mb-6">{error}</p>
+          <a 
+            href="/" 
+            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"
+          >
+            🏠 Go Home
+          </a>
+        </div>
+      ) : registrationForm && (
+        <!-- 🎊 Registration Form - PURE JOY! -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-8 text-center">
+            <h1 class="text-3xl font-bold mb-2">{registrationForm.organizationName}</h1>
+            {registrationForm.eventName && (
+              <p class="text-blue-100 text-lg">{registrationForm.eventName}</p>
+            )}
+            <div class="mt-4 flex items-center justify-center space-x-4 text-sm text-blue-100">
+              <span>📱 {registrationForm.qrCodeLabel}</span>
+              {entryPoint && <span>🚪 {entryPoint}</span>}
+            </div>
+          </div>
+
+          <!-- Form -->
+          <div class="p-8">
+            <form id="registrationForm" class="space-y-6">
+              {registrationForm.formFields.map((field) => (
+                <div key={field.id}>
+                  <label 
+                    for={field.name}
+                    class="block text-sm font-semibold text-gray-700 mb-2"
+                  >
+                    {field.label}
+                    {field.required && <span class="text-red-500 ml-1">*</span>}
+                  </label>
+
+                  {field.type === 'textarea' ? (
+                    <textarea
+                      id={field.name}
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      rows="4"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    ></textarea>
+                  ) : field.type === 'select' ? (
+                    <select
+                      id={field.name}
+                      name={field.name}
+                      required={field.required}
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">Select {field.label}</option>
+                      {field.options?.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  ) : field.type === 'checkbox' ? (
+                    <div class="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={field.name}
+                        name={field.name}
+                        required={field.required}
+                        class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <span class="ml-3 text-gray-700">{field.placeholder || field.label}</span>
+                    </div>
+                  ) : (
+                    <input
+                      type={field.type}
+                      id={field.name}
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                  )}
+
+                  <div id={`${field.name}-error`} class="hidden text-red-500 text-sm mt-1"></div>
+                </div>
+              ))}
+
+              <!-- Submit Button -->
+              <div class="pt-6">
+                <button
+                  type="submit"
+                  id="submitButton"
+                  class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:ring-4 focus:ring-blue-200 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  <span id="submitText">🎉 Submit Registration</span>
+                  <span id="submitLoading" class="hidden">⏳ Submitting...</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="hidden mt-8 p-6 bg-green-50 border border-green-200 rounded-xl">
+              <div class="flex items-center">
+                <div class="text-2xl mr-3">🎉</div>
+                <div>
+                  <h3 class="text-lg font-semibold text-green-800">Registration Successful!</h3>
+                  <p class="text-green-600 mt-1">Thank you for registering! We've received your information.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden mt-8 p-6 bg-red-50 border border-red-200 rounded-xl">
+              <div class="flex items-center">
+                <div class="text-2xl mr-3">😅</div>
+                <div>
+                  <h3 class="text-lg font-semibold text-red-800">Registration Failed</h3>
+                  <p id="errorText" class="text-red-600 mt-1">Please try again.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <script define:vars={{ registrationForm, entryPoint }}>
+    // 🎊 REGISTRATION FORM MAGIC - Pure client-side joy! ✨
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!registrationForm) return;
+
+      const form = document.getElementById('registrationForm');
+      const submitButton = document.getElementById('submitButton');
+      const submitText = document.getElementById('submitText');
+      const submitLoading = document.getElementById('submitLoading');
+      const successMessage = document.getElementById('successMessage');
+      const errorMessage = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        console.log('🚀 Submitting registration with PURE JOY!');
+
+        // 🎯 Clear previous errors
+        document.querySelectorAll('[id$="-error"]').forEach(el => {
+          el.classList.add('hidden');
+          el.textContent = '';
+        });
+
+        // 🎊 Show loading state
+        submitButton.disabled = true;
+        submitText.classList.add('hidden');
+        submitLoading.classList.remove('hidden');
+
+        try {
+          // 📝 Collect form data with EXCITEMENT!
+          const formData = new FormData(form);
+          const data = {};
+          
+          for (const [key, value] of formData.entries()) {
+            if (value) data[key] = value;
+          }
+
+          console.log('📊 Form data collected:', data);
+
+          // 🚀 Submit to our BEAUTIFUL API!
+          const response = await fetch('/api/registration/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              qrCodeId: registrationForm.id,
+              entryPoint: entryPoint,
+              formData: data
+            })
+          });
+
+          const result = await response.json();
+          console.log('🎉 Registration result:', result);
+
+          if (result.success) {
+            // 🎊 SUCCESS! Pure joy! Redirect to success page! ✨
+            console.log('🎉 REGISTRATION SUCCESS! Redirecting to success page! ✨');
+            console.log('🎯 Registration ID:', result.registrationId);
+            console.log('🪄 Check-in token:', result.checkInToken);
+            
+            // 🚀 REDIRECT TO SUCCESS PAGE WITH QR CODE! 
+            if (result.redirectUrl) {
+              window.location.href = result.redirectUrl;
+            } else {
+              // Fallback redirect
+              window.location.href = `/registration-success?id=${result.registrationId}`;
+            }
+          } else {
+            // 😅 Handle validation errors
+            if (result.errors && result.errors.length > 0) {
+              result.errors.forEach(error => {
+                const errorEl = document.getElementById(`${error.field}-error`);
+                if (errorEl) {
+                  errorEl.textContent = error.message;
+                  errorEl.classList.remove('hidden');
+                }
+              });
+            } else {
+              // 📢 Show general error
+              errorText.textContent = result.message || 'Registration failed. Please try again.';
+              errorMessage.classList.remove('hidden');
+            }
+          }
+
+        } catch (error) {
+          console.error('💔 Registration failed:', error);
+          errorText.textContent = 'Registration failed. Please check your connection and try again.';
+          errorMessage.classList.remove('hidden');
+        } finally {
+          // 🔄 Reset button state
+          submitButton.disabled = false;
+          submitText.classList.remove('hidden');
+          submitLoading.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</BaseLayout>
