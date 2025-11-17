@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# BlessBox Pre-Commit Hook
+# Runs error detection before allowing commits
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linting and type checking
+npm run lint
+
+if [ $? -ne 0 ]; then
+    echo "❌ Pre-commit checks failed!"
+    echo "💡 Please fix the errors above before committing."
+    echo "🔧 To bypass (not recommended): git commit --no-verify"
+    exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
+exit 0
+
+
+
+

@@ -6,6 +6,6 @@ export default {
   dialect: 'sqlite',
   dbCredentials: {
     url: process.env.TURSO_DATABASE_URL || 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io',
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    ...(process.env.TURSO_AUTH_TOKEN && { token: process.env.TURSO_AUTH_TOKEN }),
   },
 } satisfies Config;
