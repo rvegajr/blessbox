@@ -51,7 +51,11 @@ async function setupDevelopmentEnv() {
 # ============================================
 # Using existing Turso database from start.sh
 TURSO_DATABASE_URL=libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io
+<<<<<<< HEAD
+TURSO_AUTH_TOKEN=***JWT_REDACTED***
+=======
 TURSO_AUTH_TOKEN=your-turso-auth-token-here
+>>>>>>> origin/main
 
 # ============================================
 # EMAIL CONFIGURATION

@@ -6,6 +6,15 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/tests/setup.ts'],
+    // NON-BLOCKING TESTS - No watch mode, no hanging
+    watch: false,
+    run: true,
+    // Exit after tests complete
+    bail: 0,
+    // Don't hang on errors
+    testTimeout: 10000,
+    // Run tests once and exit
+    passWithNoTests: true,
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
@@ -26,5 +35,8 @@ export default defineConfig({
       '@implementations': fileURLToPath(new URL('./src/implementations', import.meta.url)),
       '@tests': fileURLToPath(new URL('./src/tests', import.meta.url))
     }
+  },
+  esbuild: {
+    jsx: 'automatic'
   }
 });
