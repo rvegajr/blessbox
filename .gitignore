@@ -125,3 +125,5 @@ temp/
 
 # Test artifacts
 /test-results-non-blocking/
+.env.local.bak
+.env.local.backup*
