@@ -1,0 +1,304 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Text from '@/components/fundations/elements/Text.astro';
+import Button from '@/components/fundations/elements/Button.astro';
+import Wrapper from '@/components/fundations/containers/Wrapper.astro';
+// Note: These imports are for server-side only
+// Client-side imports are handled in the script tag
+
+// Get stored data
+// Note: This will be handled client-side in the script tag
+const onboardingData = null;
+---
+
+<BaseLayout 
+  title="Email Verification - BlessBox" 
+  description="Verify your email address to complete your BlessBox organization setup. Enter the verification code sent to your email."
+  hideNav={true} 
+  hideFooter={true}
+>
+  <Wrapper class="py-16">
+    <div class="max-w-2xl mx-auto">
+      <!-- Progress Bar -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <Text tag="h2" variant="textXL" class="font-semibold">
+            Step 2 of 4: Email Verification
+          </Text>
+          <Text tag="span" variant="textSM" class="text-base-500">
+            50% Complete
+          </Text>
+        </div>
+        <div class="w-full bg-base-200 rounded-full h-2">
+          <div class="bg-teal-500 h-2 rounded-full" style="width: 50%"></div>
+        </div>
+      </div>
+
+      <!-- Email Verification Form -->
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <Text tag="h3" variant="textXL" class="font-semibold mb-2">
+            Verify Your Email
+          </Text>
+          <Text tag="p" variant="textBase" class="text-base-600">
+            We've sent a verification code to
+            <strong id="emailDisplay">your email</strong>
+          </Text>
+          <div class="mt-2">
+            <button
+              type="button"
+              class="text-teal-600 hover:text-teal-700 text-sm font-medium underline"
+              onclick="window.location.href = '/onboarding/organization-setup'"
+            >
+              Wrong email? Change email address
+            </button>
+          </div>
+        </div>
+
+        <form id="verificationForm" class="space-y-6">
+          <!-- Verification Code -->
+          <div>
+            <Text tag="label" variant="textSM" class="block text-base-600 mb-2">
+              Verification Code *
+            </Text>
+            <input 
+              type="text" 
+              id="verificationCode"
+              name="code"
+              placeholder="Enter 6-digit code" 
+              maxlength="6"
+              class="w-full p-3 border border-base-300 rounded-xl focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 text-center text-lg font-mono"
+              required
+            />
+            <div id="codeError" class="hidden text-red-500 text-sm mt-1"></div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-6">
+            <Button 
+              variant="primary" 
+              size="medium" 
+              class="w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              id="submitButton"
+              disabled
+            >
+              Verify Email
+            </Button>
+          </div>
+
+          <!-- Resend Code -->
+          <div class="text-center">
+            <Text tag="p" variant="textSM" class="text-base-500 mb-2">
+              Didn't receive the code?
+            </Text>
+            <button 
+              type="button" 
+              id="resendButton"
+              class="text-teal-600 hover:text-teal-700 font-medium"
+            >
+              Resend Code
+            </button>
+            <div id="resendMessage" class="hidden text-green-600 text-sm mt-2">
+              Code resent successfully!
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Help Section -->
+      <div class="mt-8 bg-base-50 rounded-xl p-6">
+        <Text tag="h4" variant="textLG" class="font-medium mb-3">
+          Need Help?
+        </Text>
+        <Text tag="p" variant="textSM" class="text-base-600 mb-4">
+          Check your spam folder if you don't see the email. The verification code expires in 15 minutes.
+        </Text>
+        <div class="flex items-center space-x-4">
+          <button 
+            type="button" 
+            class="text-teal-600 hover:text-teal-700 font-medium"
+            onclick="window.history.back()"
+          >
+            ← Go Back
+          </button>
+          <button 
+            type="button" 
+            class="text-teal-600 hover:text-teal-700 font-medium"
+            onclick="window.location.href = '/'"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
+    </div>
+  </Wrapper>
+
+  <script>
+    // Simplified storage for demo
+    const storage = {
+      save: (key, data) => sessionStorage.setItem(key, JSON.stringify(data)),
+      get: (key) => {
+        const item = sessionStorage.getItem(key);
+        return item ? JSON.parse(item) : null;
+      }
+    };
+
+    const StorageKeys = {
+      ONBOARDING_DATA: 'blessbox_onboarding_data'
+    };
+
+    // Initialize form elements
+    const form = document.getElementById('verificationForm');
+    const submitButton = document.getElementById('submitButton');
+    const resendButton = document.getElementById('resendButton');
+    const resendMessage = document.getElementById('resendMessage');
+    const emailDisplay = document.getElementById('emailDisplay');
+
+    // Get stored data
+    const onboardingData = storage.get(StorageKeys.ONBOARDING_DATA);
+    
+    if (!onboardingData?.email) {
+      // Redirect back if no email
+      window.location.href = '/onboarding/organization-setup';
+    }
+
+    // Reflect the email address on the page so the user can confirm it
+    if (emailDisplay && onboardingData?.email) {
+      emailDisplay.textContent = onboardingData.email;
+      emailDisplay.setAttribute('aria-label', `Verification email sent to ${onboardingData.email}`);
+    }
+
+    // Form validation
+    function validateForm() {
+      const code = document.getElementById('verificationCode').value;
+      const isValid = code.length === 6 && /^\d{6}$/.test(code);
+      
+      submitButton.disabled = !isValid;
+      return isValid;
+    }
+
+    // Real-time validation
+    const codeInput = document.getElementById('verificationCode');
+    codeInput.addEventListener('input', (e) => {
+      const target = e.target;
+      // Only allow digits
+      target.value = target.value.replace(/\D/g, '');
+      validateForm();
+    });
+
+                // Form submission
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              
+              if (!validateForm()) return;
+
+              const formData = new FormData(form);
+              const code = formData.get('code');
+
+              // Show loading state
+              submitButton.disabled = true;
+              submitButton.textContent = 'Verifying...';
+
+              try {
+                // Get stored data
+                const currentData = storage.get(StorageKeys.ONBOARDING_DATA) || {};
+                
+                // Call verification API
+                const response = await fetch('/api/onboarding/verify-code', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    email: currentData.email,
+                    code: code
+                  })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                  throw new Error(result.error || 'Verification failed');
+                }
+
+                // Save verification status
+                storage.save(StorageKeys.ONBOARDING_DATA, {
+                  ...currentData,
+                  emailVerified: true,
+                  verificationToken: result.token
+                });
+
+                // Success! Redirect to next step
+                window.location.href = '/onboarding/form-builder';
+
+              } catch (error) {
+                console.error('Verification failed:', error);
+                const errorElement = document.getElementById('codeError');
+                errorElement.textContent = error.message || 'Invalid verification code. Please try again.';
+                errorElement.classList.remove('hidden');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Verify Email';
+              }
+            });
+
+                // Resend code functionality
+            resendButton.addEventListener('click', async () => {
+              resendButton.disabled = true;
+              resendButton.textContent = 'Sending...';
+
+              try {
+                // Get stored data
+                const currentData = storage.get(StorageKeys.ONBOARDING_DATA) || {};
+                
+                // Call send verification API
+                const response = await fetch('/api/onboarding/send-verification', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    email: currentData.email,
+                    organizationName: currentData.organizationName
+                  })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                  throw new Error(result.error || 'Failed to resend code');
+                }
+                
+                resendMessage.textContent = 'Code resent successfully!';
+                resendMessage.classList.remove('hidden');
+                resendButton.textContent = 'Resend Code';
+                resendButton.disabled = false;
+                
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                  resendMessage.classList.add('hidden');
+                }, 5000);
+              } catch (error) {
+                console.error('Failed to resend code:', error);
+                resendMessage.textContent = `Failed to resend: ${error.message}`;
+                resendMessage.classList.remove('hidden');
+                resendMessage.classList.add('text-red-600');
+                resendButton.textContent = 'Resend Code';
+                resendButton.disabled = false;
+                
+                // Hide error after 5 seconds
+                setTimeout(() => {
+                  resendMessage.classList.add('hidden');
+                  resendMessage.classList.remove('text-red-600');
+                }, 5000);
+              }
+            });
+
+    // Initial validation
+    validateForm();
+  </script>
+</BaseLayout> 
