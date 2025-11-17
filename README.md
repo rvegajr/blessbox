@@ -72,8 +72,8 @@ SQUARE_ENVIRONMENT=sandbox
 # JWT Secret
 JWT_SECRET=your-super-secret-jwt-key
 
-# App URL
-PUBLIC_APP_URL=http://localhost:3000
+# App URL (Default Port 7777)
+PUBLIC_APP_URL=http://localhost:7777
 ```
 
 ### 2. Database Setup
@@ -88,6 +88,19 @@ npm run db:migrate
 npm run dev
 ```
 
+### 3. Local MailHog (Email Testing)
+```bash
+# Check if MailHog is running locally (UI: http://localhost:8025, SMTP: 127.0.0.1:1025)
+npm run mailhog:check
+```
+To use local SMTP (MailHog), set in `.env.local`:
+```bash
+EMAIL_PROVIDER=smtp
+SMTP_HOST=127.0.0.1
+SMTP_PORT=1025
+SMTP_SECURE=false
+```
+
 ## Commands
 
 All commands are run from the root of the project, from a terminal:
@@ -95,7 +108,7 @@ All commands are run from the root of the project, from a terminal:
 | Command                | Action                                           |
 | :--------------------- | :----------------------------------------------- |
 | `npm install`          | Installs dependencies                            |
-| `npm run dev`          | Starts local dev server at `localhost:3000`      |
+| `npm run dev`          | Starts local dev server at `localhost:7777`      |
 | `npm run build`        | Build your production site to `./dist/`          |
 | `npm run preview`      | Preview your build locally, before deploying     |
 | `npm run db:migrate`   | Run database migrations                          |
