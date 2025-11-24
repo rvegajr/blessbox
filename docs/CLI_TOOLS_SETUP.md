@@ -249,3 +249,5 @@ source ~/.bashrc
 ---
 
 **Need Help?** Run `./scripts/check-cli-tools.sh` to diagnose any issues.
+
+

@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  * Tests the live production system end-to-end
  */
 
-const BASE_URL = 'https://www.blessbox.org';
+const BASE_URL = process.env.BASE_URL || 'https://www.blessbox.org';
 const TEST_EMAIL = `production-test-${Date.now()}@example.com`;
 const TEST_ORG_NAME = `Production Test Org ${Date.now()}`;
 
