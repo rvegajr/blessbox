@@ -127,3 +127,29 @@ temp/
 /test-results-non-blocking/
 .env.local.bak
 .env.local.backup*
+
+# devibe/unvibe directories
+# These directories contain backups and temporary files from devibe
+.devibe/
+.unvibe/
+
+# Backup and cache files
+*.backup
+*.backup*
+*.bak
+.cache_*
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Test artifacts
+test-results/
+playwright-report/
+
+# Pre-commit
+.pre-commit-config.yaml
