@@ -46,6 +46,8 @@
     "scripts/**/*",
     "tests/**/*",
     "src/tests/**/*",
+    "src/pages/**/*",
+    "src/**/*.astro",
     "vitest.config.ts"
   ]
 }

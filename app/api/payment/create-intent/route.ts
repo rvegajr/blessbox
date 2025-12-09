@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/authOptions';
+import { getServerSession } from '@/lib/auth-helper';
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession();
   const body = await req.json().catch(() => ({}));
   const { planType = 'standard', amount = null, currency = 'USD' } = body || {};
 
