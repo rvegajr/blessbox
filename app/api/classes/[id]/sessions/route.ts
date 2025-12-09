@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../auth/[...nextauth]/authOptions';
+import { getServerSession } from '@/lib/auth-helper';
 import { ClassService } from '@/lib/services/ClassService';
 import { getOrganizationByEmail } from '@/lib/subscriptions';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
+  const session = await getServerSession();
 
   if (!session || !session.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,8 +22,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
+export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
+  const session = await getServerSession();
 
   if (!session || !session.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
