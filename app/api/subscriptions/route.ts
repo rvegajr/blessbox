@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]/authOptions';
+import { getServerSession } from '@/lib/auth-helper';
 import { createSubscription, getActiveSubscription, getOrCreateOrganizationForEmail, PlanType } from '@/lib/subscriptions';
 
 export async function GET() {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession();
   const email = session?.user?.email;
   if (!email) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   const org = await getOrCreateOrganizationForEmail(email);
@@ -14,7 +13,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSession();
   const email = session?.user?.email;
   if (!email) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   const { planType = 'standard', billingCycle = 'monthly', currency = 'USD' } = await req.json().catch(() => ({}));

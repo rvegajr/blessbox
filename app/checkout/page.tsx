@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import SquarePaymentForm from '@/components/payment/SquarePaymentForm';
 
@@ -10,7 +10,7 @@ interface SquareConfig {
   environment: string;
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<string>('');
@@ -98,5 +98,18 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600">Loading checkout...</span>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }
