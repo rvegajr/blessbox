@@ -69,9 +69,15 @@ export class VerificationService implements IVerificationService {
     // So we send directly without using the template system
     try {
       await this.sendVerificationEmailDirect(email, code);
+      console.log(`✅ Verification email sent successfully to ${email}`);
     } catch (error) {
-      console.error('Failed to send verification email:', error);
+      console.error('❌ Failed to send verification email:', error);
+      console.error('Email configuration check:');
+      console.error('  SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'SET' : 'NOT SET');
+      console.error('  SMTP_HOST:', process.env.SMTP_HOST || 'NOT SET');
+      console.error('  SMTP_USER:', process.env.SMTP_USER ? 'SET' : 'NOT SET');
       // Continue even if email fails - code is still stored
+      // But log the error for debugging
     }
 
     // In development/test mode, return the code
@@ -242,66 +248,87 @@ export class VerificationService implements IVerificationService {
   private async sendVerificationEmailDirect(email: string, code: string): Promise<void> {
     // Try to use SendGrid if available
     if (process.env.SENDGRID_API_KEY) {
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      try {
+        const sgMail = require('@sendgrid/mail');
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-      const html = `
-        <h2>Verify Your BlessBox Email</h2>
-        <p>Your verification code is: <strong>${code}</strong></p>
-        <p>This code will expire in 15 minutes.</p>
-        <p>If you didn't request this code, please ignore this email.</p>
-      `;
-      const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
+        const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@blessbox.app';
+        
+        const html = `
+          <h2>Verify Your BlessBox Email</h2>
+          <p>Your verification code is: <strong>${code}</strong></p>
+          <p>This code will expire in 15 minutes.</p>
+          <p>If you didn't request this code, please ignore this email.</p>
+        `;
+        const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
-      await sgMail.send({
-        to: email,
-        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@blessbox.app',
-        subject: 'Verify Your BlessBox Email',
-        html,
-        text,
-      });
-      return;
+        const result = await sgMail.send({
+          to: email,
+          from: fromEmail,
+          subject: 'Verify Your BlessBox Email',
+          html,
+          text,
+        });
+        
+        console.log(`✅ SendGrid email sent to ${email}, status: ${result[0]?.statusCode}`);
+        return;
+      } catch (sendGridError: any) {
+        console.error('❌ SendGrid error:', sendGridError);
+        console.error('SendGrid response:', sendGridError.response?.body);
+        throw new Error(`SendGrid failed: ${sendGridError.message}`);
+      }
     }
 
     // Fallback to Gmail SMTP if SendGrid not available
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const nodemailer = require('nodemailer');
-      
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+      try {
+        const nodemailer = require('nodemailer');
+        
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: process.env.SMTP_PORT === '465', // SSL for port 465
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
 
-      const html = `
-        <h2>Verify Your BlessBox Email</h2>
-        <p>Your verification code is: <strong>${code}</strong></p>
-        <p>This code will expire in 15 minutes.</p>
-        <p>If you didn't request this code, please ignore this email.</p>
-      `;
-      const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
+        const html = `
+          <h2>Verify Your BlessBox Email</h2>
+          <p>Your verification code is: <strong>${code}</strong></p>
+          <p>This code will expire in 15 minutes.</p>
+          <p>If you didn't request this code, please ignore this email.</p>
+        `;
+        const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: email,
-        subject: 'Verify Your BlessBox Email',
-        html,
-        text,
-      });
-      return;
+        const info = await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: email,
+          subject: 'Verify Your BlessBox Email',
+          html,
+          text,
+        });
+        
+        console.log(`✅ SMTP email sent to ${email}, messageId: ${info.messageId}`);
+        return;
+      } catch (smtpError: any) {
+        console.error('❌ SMTP error:', smtpError);
+        throw new Error(`SMTP failed: ${smtpError.message}`);
+      }
     }
 
     // In development, just log (for testing without email setup)
     if (process.env.NODE_ENV === 'development') {
       console.log(`📧 [DEV] Verification code for ${email}: ${code}`);
+      console.log('⚠️  [DEV] No email service configured - code logged to console only');
       return;
     }
 
-    throw new Error('Email service not configured');
+    // In production, this is an error
+    const errorMsg = 'Email service not configured. Please set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL, or SMTP_HOST, SMTP_USER, and SMTP_PASS in Vercel environment variables.';
+    console.error('❌', errorMsg);
+    throw new Error(errorMsg);
   }
 
   private mapRowToVerificationCode(row: any): VerificationCode {
