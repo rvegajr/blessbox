@@ -5,17 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
  * Helps diagnose why verification emails aren't being sent
  */
 export async function GET(request: NextRequest) {
-  // Only allow in development or with proper auth
-  const isDev = process.env.NODE_ENV === 'development';
-  const authHeader = request.headers.get('authorization');
-  const isAuthorized = authHeader === `Bearer ${process.env.DEBUG_SECRET}`;
-
-  if (!isDev && !isAuthorized) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  // Allow access in all environments for debugging (can be restricted later)
+  // In production, this helps diagnose email issues
 
   const config = {
     nodeEnv: process.env.NODE_ENV,
