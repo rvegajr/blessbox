@@ -212,7 +212,11 @@ export default function FormBuilderPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           organizationId,
-          formFields: formData.fields,
+          // Backend expects an explicit `order` field; derive it from current UI ordering.
+          formFields: (formData.fields || []).map((f, idx) => ({
+            ...f,
+            order: idx,
+          })),
           language: 'en',
         }),
       });
@@ -230,11 +234,9 @@ export default function FormBuilderPage() {
         sessionStorage.setItem('onboarding_formSaved', 'true');
         sessionStorage.setItem('onboarding_step', '4'); // Move to step 4
       }
-      
-      // Auto-navigate after saving
-      setTimeout(() => {
-        router.push('/onboarding/qr-configuration');
-      }, 1000);
+
+      // Navigate immediately after saving
+      router.push('/onboarding/qr-configuration');
     } catch (error) {
       console.error('Save form config error:', error);
       alert(error instanceof Error ? error.message : 'Failed to save');
@@ -300,10 +302,18 @@ export default function FormBuilderPage() {
             currentStep={2}
             onStepChange={(step) => {
               const paths = ['/onboarding/organization-setup', '/onboarding/email-verification', '/onboarding/form-builder', '/onboarding/qr-configuration'];
+              // When the user clicks Next to proceed to QR configuration, persist the form config first.
+              if (step === 3) {
+                void handleSave();
+                return;
+              }
               router.push(paths[step]);
             }}
             onComplete={handleSave}
-            onSkip={() => router.push('/onboarding/qr-configuration')}
+            onSkip={() => {
+              // Skip should still persist so the registration form works.
+              void handleSave();
+            }}
           />
         </div>
       </div>

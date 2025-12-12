@@ -65,6 +65,9 @@ export async function getServerSession(): Promise<Session | null> {
             name: decoded.name || 'User',
             id: decoded.id || decoded.sub || '1',
             image: decoded.image || null,
+            // non-standard extra fields used by client pages
+            ...(decoded.organizationId ? { organizationId: decoded.organizationId } : {}),
+            ...(decoded.role ? { role: decoded.role } : {}),
           },
           expires: decoded.exp ? new Date(decoded.exp * 1000).toISOString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         } as Session;
