@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { QRConfigProps } from '@/components/OnboardingWizard.interface';
 
 export function QRConfigWizard({
@@ -20,8 +20,13 @@ export function QRConfigWizard({
     }))
   );
 
+  // Use ref to store onChange to avoid infinite loops
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  // Notify parent of changes without including onChange in dependencies
   useEffect(() => {
-    onChange({
+    onChangeRef.current({
       qrCodes: entryPoints.map(ep => ({
         id: `qr_${ep.slug}`,
         label: ep.label,
@@ -30,7 +35,7 @@ export function QRConfigWizard({
       })),
       settings: data.settings,
     });
-  }, [entryPoints, data.settings, onChange]);
+  }, [entryPoints, data.settings]);
 
   const addEntryPoint = () => {
     const newEntryPoint = {

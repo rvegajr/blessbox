@@ -60,7 +60,7 @@ export class CouponService implements ICouponService {
     const coupon = (result.rows as any[])[0];
     
     if (!coupon) {
-      return { valid: false, error: 'Coupon not found' };
+      return { valid: false, error: 'Invalid coupon code' };
     }
 
     if (coupon.active !== 1) {
@@ -68,11 +68,11 @@ export class CouponService implements ICouponService {
     }
 
     if (this.isExpired(coupon.expires_at)) {
-      return { valid: false, error: 'Coupon has expired' };
+      return { valid: false, error: 'Coupon expired' };
     }
 
     if (this.isExhausted(coupon)) {
-      return { valid: false, error: 'Coupon has reached maximum uses' };
+      return { valid: false, error: 'Coupon limit reached' };
     }
 
     return {
@@ -112,8 +112,10 @@ export class CouponService implements ICouponService {
       discountedAmount = amount - coupon.discountValue;
     }
 
-    // Ensure minimum $1 (or $0 for 100% coupons)
-    const minimumAmount = coupon.discountValue >= 100 ? 0 : 100;
+    // Ensure minimum $1 (100 cents) for paid plans, except true 100% coupons which can be $0.
+    // NOTE: `amount` is treated as cents throughout the app.
+    const isFreeCoupon = coupon.discountType === 'percentage' && coupon.discountValue >= 100;
+    const minimumAmount = isFreeCoupon ? 0 : 100;
     return Math.max(discountedAmount, minimumAmount);
   }
 

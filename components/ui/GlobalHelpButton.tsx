@@ -296,22 +296,22 @@ export function GlobalHelpButton({
                 </h3>
                 <div className="space-y-2">
                   <a
-                    href="/docs"
+                    href="/dashboard"
                     className="block p-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
                   >
-                    Documentation
+                    Dashboard
                   </a>
                   <a
-                    href="/support"
+                    href="mailto:support@blessbox.org"
                     className="block p-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
                   >
                     Contact Support
                   </a>
                   <a
-                    href="/faq"
+                    href="/pricing"
                     className="block p-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
                   >
-                    FAQ
+                    Pricing & Plans
                   </a>
                 </div>
               </section>

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
+import { ensureDbReady } from '@/lib/db-ready';
 
 export async function GET(request: NextRequest) {
   try {
+    await ensureDbReady();
     const db = getDbClient();
     
     // Test simple query

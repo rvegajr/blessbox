@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { ClassService } from '@/lib/services/ClassService';
 import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { ensureDbReady } from '@/lib/db-ready';
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
@@ -12,7 +13,20 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
   }
 
   try {
+    await ensureDbReady();
+    const organization = await getOrganizationByEmail(session.user.email);
+    if (!organization) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+    }
+
     const classService = new ClassService();
+    const cls = await classService.getClass(params.id);
+    if (!cls) {
+      return NextResponse.json({ error: 'Class not found' }, { status: 404 });
+    }
+    if ((cls as any).organization_id !== organization.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const sessions = await classService.getSessionsByClass(params.id);
 
     return NextResponse.json(sessions);
@@ -31,6 +45,12 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   }
 
   try {
+    await ensureDbReady();
+    const organization = await getOrganizationByEmail(session.user.email);
+    if (!organization) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+    }
+
     const { session_date, session_time, duration_minutes, location, instructor_name } = await req.json();
 
     if (!session_date || !session_time) {
@@ -38,6 +58,13 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     }
 
     const classService = new ClassService();
+    const cls = await classService.getClass(params.id);
+    if (!cls) {
+      return NextResponse.json({ error: 'Class not found' }, { status: 404 });
+    }
+    if ((cls as any).organization_id !== organization.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const newSession = await classService.createSession({
       class_id: params.id,
       session_date,
