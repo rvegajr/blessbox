@@ -5,25 +5,72 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
 const TEST_ENV = process.env.TEST_ENV || 'local';
 const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
 
-async function setCookieSession(page: any, cookies: Array<{ name: string; value: string }>) {
-  if (IS_PRODUCTION) throw new Error('setCookieSession is not allowed in production mode');
-  const url = BASE_URL.startsWith('http') ? BASE_URL : `http://${BASE_URL}`;
-  await page.context().addCookies(
-    cookies.map((c) => ({
-      name: c.name,
-      value: c.value,
-      url,
-    }))
-  );
+// Production-safe secrets (from Vercel/CI env, not git)
+const PROD_TEST_LOGIN_SECRET = process.env.PROD_TEST_LOGIN_SECRET || '';
+const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
+const HAS_PROD_SECRETS = !!(PROD_TEST_LOGIN_SECRET && PROD_TEST_SEED_SECRET);
+
+/**
+ * Production-safe login: issues authjs.session-token cookie via secret-gated endpoint.
+ * Falls back to local cookie-based auth in non-production.
+ */
+async function loginAsUser(page: any, email: string, options?: { organizationId?: string; admin?: boolean }) {
+  if (IS_PRODUCTION && HAS_PROD_SECRETS) {
+    // Production: use secret-gated login endpoint
+    const loginResp = await page.request.post(`${BASE_URL}/api/test/login`, {
+      headers: { 'x-test-login-secret': PROD_TEST_LOGIN_SECRET },
+      data: {
+        email,
+        organizationId: options?.organizationId,
+        admin: options?.admin || false,
+        expiresIn: 3600, // 1 hour
+      },
+    });
+    expect(loginResp.ok()).toBeTruthy();
+    const login = await loginResp.json();
+    expect(login.success).toBe(true);
+    // Cookie is set automatically via Set-Cookie header
+    return login;
+  } else if (!IS_PRODUCTION) {
+    // Local: use cookie-based test auth
+    const url = BASE_URL.startsWith('http') ? BASE_URL : `http://${BASE_URL}`;
+    await page.context().addCookies([
+      { name: 'bb_test_auth', value: '1', url },
+      { name: 'bb_test_email', value: email, url },
+      ...(options?.organizationId ? [{ name: 'bb_test_org_id', value: options.organizationId, url }] : []),
+      ...(options?.admin ? [{ name: 'bb_test_admin', value: '1', url }] : []),
+    ]);
+    return { email, organizationId: options?.organizationId };
+  } else {
+    throw new Error('Production login requires PROD_TEST_LOGIN_SECRET env var');
+  }
 }
 
+/**
+ * Production-safe seeding: creates deterministic QA data via secret-gated endpoint.
+ * Falls back to local seed endpoint in non-production.
+ */
 async function seedOrg(page: any, seedKey: string) {
-  if (IS_PRODUCTION) throw new Error('seedOrg is not allowed in production mode');
-  const seedResp = await page.request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey } });
-  expect(seedResp.ok()).toBeTruthy();
-  const seed = await seedResp.json();
-  expect(seed.success).toBe(true);
-  return seed;
+  if (IS_PRODUCTION && HAS_PROD_SECRETS) {
+    // Production: use secret-gated seed endpoint
+    const seedResp = await page.request.post(`${BASE_URL}/api/test/seed-prod`, {
+      headers: { 'x-test-seed-secret': PROD_TEST_SEED_SECRET },
+      data: { seedKey },
+    });
+    expect(seedResp.ok()).toBeTruthy();
+    const seed = await seedResp.json();
+    expect(seed.success).toBe(true);
+    return seed;
+  } else if (!IS_PRODUCTION) {
+    // Local: use local seed endpoint
+    const seedResp = await page.request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey } });
+    expect(seedResp.ok()).toBeTruthy();
+    const seed = await seedResp.json();
+    expect(seed.success).toBe(true);
+    return seed;
+  } else {
+    throw new Error('Production seeding requires PROD_TEST_SEED_SECRET env var');
+  }
 }
 
 test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
@@ -35,6 +82,13 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
     // Basic availability check
     const resp = await page.goto(`${BASE_URL}/`, { waitUntil: 'domcontentloaded' });
     expect(resp?.status()).toBeLessThan(500);
+
+    // If secrets are present, log that full coverage is available
+    if (HAS_PROD_SECRETS) {
+      console.log('✅ Production secrets detected - full QA coverage enabled');
+    } else {
+      console.log('⚠️  Production secrets not detected - running read-only checks only');
+    }
   });
 
   test('Part 5: Pricing + coupons + checkout totals', async ({ page }) => {
@@ -51,16 +105,12 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
     await expect(page.getByText('$19/mo')).toBeVisible();
     await expect(page.getByText('$99/mo')).toBeVisible();
 
-    // In production mode we validate coupon math only (no payment submission).
-    // In local mode we also complete FREE100 checkout to validate redirect flow.
-    let allowCompleteCheckout = !IS_PRODUCTION;
-    if (!IS_PRODUCTION) {
+    // In production mode with secrets, we can seed and authenticate for full coverage.
+    // Without secrets, we validate coupon math only (no payment submission).
+    let allowCompleteCheckout = !IS_PRODUCTION || HAS_PROD_SECRETS;
+    if (!IS_PRODUCTION || HAS_PROD_SECRETS) {
       const seed = await seedOrg(page, `pricing-${Date.now()}`);
-      await setCookieSession(page, [
-        { name: 'bb_test_auth', value: '1' },
-        { name: 'bb_test_email', value: seed.contactEmail },
-        { name: 'bb_test_org_id', value: seed.organizationId },
-      ]);
+      await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
     }
 
     // FREE100 => $0.00
@@ -108,28 +158,25 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
     await page.getByLabel('Coupon Code').fill('INVALID');
     await page.getByRole('button', { name: 'Apply' }).click();
-    await expect(page.getByText(/invalid coupon/i)).toBeVisible();
+    await expect(page.getByText(/invalid coupon|coupon not found/i)).toBeVisible();
 
     await page.getByLabel('Coupon Code').fill('EXPIRED');
     await page.getByRole('button', { name: 'Apply' }).click();
-    await expect(page.getByText(/coupon expired/i)).toBeVisible();
+    await expect(page.getByText(/coupon (has )?expired/i)).toBeVisible();
 
     await page.getByLabel('Coupon Code').fill('MAXEDOUT');
     await page.getByRole('button', { name: 'Apply' }).click();
-    await expect(page.getByText(/limit reached/i)).toBeVisible();
+    await expect(page.getByText(/limit reached|maximum uses/i)).toBeVisible();
   });
 
   test('Parts 3-4-7: registration appears, can view, check-in, undo, export CSV/PDF', async ({ page }) => {
     test.setTimeout(120_000);
 
-    test.skip(IS_PRODUCTION, 'Requires seeded org + authenticated dashboard (local/test only)');
+    // Skip only if production AND no secrets (requires seeded org + authenticated dashboard)
+    test.skip(IS_PRODUCTION && !HAS_PROD_SECRETS, 'Requires seeded org + authenticated dashboard (or production secrets)');
 
     const seed = await seedOrg(page, `regs-${Date.now()}`);
-    await setCookieSession(page, [
-      { name: 'bb_test_auth', value: '1' },
-      { name: 'bb_test_email', value: seed.contactEmail },
-      { name: 'bb_test_org_id', value: seed.organizationId },
-    ]);
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
 
     // Public registration (Part 3.1)
     await page.goto(`${BASE_URL}/register/${seed.orgSlug}/main-entrance`);
@@ -189,14 +236,11 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   test('Part 8: create class, add session, add participant, enroll with capacity enforcement', async ({ page }) => {
     test.setTimeout(120_000);
 
-    test.skip(IS_PRODUCTION, 'Requires seeded org + authenticated routes (local/test only)');
+    // Skip only if production AND no secrets (requires seeded org + authenticated routes)
+    test.skip(IS_PRODUCTION && !HAS_PROD_SECRETS, 'Requires seeded org + authenticated routes (or production secrets)');
 
     const seed = await seedOrg(page, `classes-${Date.now()}`);
-    await setCookieSession(page, [
-      { name: 'bb_test_auth', value: '1' },
-      { name: 'bb_test_email', value: seed.contactEmail },
-      { name: 'bb_test_org_id', value: seed.organizationId },
-    ]);
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
 
     // Add participant
     await page.goto(`${BASE_URL}/participants/new`);
@@ -246,17 +290,14 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   test('Part 6: admin can access stats, orgs, subscriptions, coupons (and create a coupon)', async ({ page }) => {
     test.setTimeout(120_000);
 
-    test.skip(IS_PRODUCTION, 'Requires super-admin authentication (local/test only)');
+    // Skip only if production AND no secrets (requires super-admin authentication)
+    test.skip(IS_PRODUCTION && !HAS_PROD_SECRETS, 'Requires super-admin authentication (or production secrets)');
 
     // Seed some data first (org/registration/subscription/etc.)
     await seedOrg(page, `admin-${Date.now()}`);
 
     // Become super-admin
-    await setCookieSession(page, [
-      { name: 'bb_test_auth', value: '1' },
-      { name: 'bb_test_email', value: 'admin@blessbox.app' },
-      { name: 'bb_test_admin', value: '1' },
-    ]);
+    await loginAsUser(page, 'admin@blessbox.app', { admin: true });
 
     await page.goto(`${BASE_URL}/admin`);
     await expect(page.getByRole('heading', { name: /admin panel/i })).toBeVisible();

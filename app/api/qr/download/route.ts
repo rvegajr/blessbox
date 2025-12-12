@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const format = (body?.format || 'png') as 'png' | 'pdf' | 'both';
 
     if (qrCodes.length === 0) {
-      return NextResponse.json({ success: false, error: 'qrCodes is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'qrCodes array is required' }, { status: 400 });
     }
 
     const zip = new JSZip();

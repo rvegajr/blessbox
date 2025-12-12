@@ -99,7 +99,15 @@ describe('FormConfigService', () => {
       const configData: FormConfigCreate = {
         organizationId: 'non-existent',
         name: 'Registration Form',
-        formFields: [],
+        formFields: [
+          {
+            id: 'email',
+            type: 'email',
+            label: 'Email Address',
+            required: true,
+            order: 0,
+          },
+        ],
       };
 
       // Mock organization check - not found

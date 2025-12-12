@@ -17,7 +17,8 @@ test.describe('Production E2E Tests - Real Data', () => {
       { url: '/api/dashboard/stats', method: 'GET', expectedStatus: [200, 401] },
       { url: '/api/dashboard/analytics', method: 'GET', expectedStatus: [200, 401] },
       { url: '/api/qr-codes', method: 'GET', expectedStatus: [200, 401] },
-      { url: '/api/registrations', method: 'GET', expectedStatus: [200, 401, 404] },
+      // GET /api/registrations can be 400 when required params/auth are missing; that's still a valid "responds" signal.
+      { url: '/api/registrations', method: 'GET', expectedStatus: [200, 400, 401, 404] },
       { url: '/api/onboarding/save-organization', method: 'POST', expectedStatus: [201, 400] },
       { url: '/api/payment/validate-coupon', method: 'POST', expectedStatus: [200, 400] },
       { url: '/api/coupons/validate', method: 'POST', expectedStatus: [200, 400, 404] },
