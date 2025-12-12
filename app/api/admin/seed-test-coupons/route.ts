@@ -12,8 +12,8 @@ import { ensureDbReady } from '@/lib/db-ready';
  */
 export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === 'production';
-  const secret = process.env.SEED_TEST_COUPONS_SECRET || '';
-  const provided = req.headers.get('x-seed-secret') || '';
+  const secret = (process.env.SEED_TEST_COUPONS_SECRET || '').trim();
+  const provided = (req.headers.get('x-seed-secret') || '').trim();
 
   if (isProd) {
     if (!secret || !provided || provided !== secret) {
