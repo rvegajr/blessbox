@@ -53,14 +53,14 @@ export class CouponService implements ICouponService {
     await this.ensureSchema();
     
     const result = await this.db.execute({
-      sql: `SELECT * FROM coupons WHERE code = ? AND active = 1`,
+      sql: `SELECT * FROM coupons WHERE code = ?`,
       args: [code.toUpperCase().trim()]
     });
 
     const coupon = (result.rows as any[])[0];
     
     if (!coupon) {
-      return { valid: false, error: 'Invalid coupon code' };
+      return { valid: false, error: 'Coupon not found' };
     }
 
     if (coupon.active !== 1) {
@@ -68,11 +68,11 @@ export class CouponService implements ICouponService {
     }
 
     if (this.isExpired(coupon.expires_at)) {
-      return { valid: false, error: 'Coupon expired' };
+      return { valid: false, error: 'Coupon has expired' };
     }
 
     if (this.isExhausted(coupon)) {
-      return { valid: false, error: 'Coupon limit reached' };
+      return { valid: false, error: 'Coupon has reached maximum uses' };
     }
 
     return {

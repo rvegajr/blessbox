@@ -21,14 +21,15 @@ export default function EmailVerificationPage() {
       const storedEmail = sessionStorage.getItem('onboarding_contactEmail');
       if (storedEmail) {
         setEmail(storedEmail);
-        // Auto-send verification code
-        handleSendCode();
+        // Auto-send verification code (use storedEmail directly to avoid state timing issues)
+        void handleSendCode(storedEmail);
       }
     }
   }, []);
 
-  const handleSendCode = async () => {
-    if (!email) {
+  const handleSendCode = async (emailOverride?: string) => {
+    const targetEmail = (emailOverride ?? email).trim();
+    if (!targetEmail) {
       setError('Please enter your email address');
       return;
     }
@@ -41,7 +42,7 @@ export default function EmailVerificationPage() {
       const response = await fetch('/api/onboarding/send-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: targetEmail }),
       });
 
       const data = await response.json();

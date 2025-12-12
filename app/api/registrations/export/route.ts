@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     if (!orgId) {
       return NextResponse.json(
-        { success: false, error: 'orgId query parameter is required' },
+        { success: false, error: 'orgId is required' },
         { status: 400 }
       );
     }

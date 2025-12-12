@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
+const TEST_ENV = process.env.TEST_ENV || 'local';
+const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
+
+const PROD_TEST_LOGIN_SECRET = process.env.PROD_TEST_LOGIN_SECRET || '';
+const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
+const HAS_PROD_SECRETS = !!(PROD_TEST_LOGIN_SECRET && PROD_TEST_SEED_SECRET);
 
 type RouteCase = {
   name: string;
@@ -29,6 +35,48 @@ async function setTestAuthCookies(page: any, cookies: Array<{ name: string; valu
   );
 }
 
+async function seedOrg(page: any, seedKey: string) {
+  if (IS_PRODUCTION) {
+    if (!HAS_PROD_SECRETS) throw new Error('Production seeding requires PROD_TEST_SEED_SECRET');
+    const resp = await page.request.post(`${BASE_URL}/api/test/seed-prod`, {
+      headers: { 'x-test-seed-secret': PROD_TEST_SEED_SECRET },
+      data: { seedKey },
+    });
+    expect(resp.ok()).toBeTruthy();
+    const data = await resp.json();
+    expect(data.success).toBe(true);
+    return data;
+  }
+
+  const resp = await page.request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey } });
+  expect(resp.ok()).toBeTruthy();
+  const data = await resp.json();
+  expect(data.success).toBe(true);
+  return data;
+}
+
+async function loginAsUser(page: any, email: string, opts?: { organizationId?: string; admin?: boolean }) {
+  if (IS_PRODUCTION) {
+    if (!HAS_PROD_SECRETS) throw new Error('Production login requires PROD_TEST_LOGIN_SECRET');
+    const resp = await page.request.post(`${BASE_URL}/api/test/login`, {
+      headers: { 'x-test-login-secret': PROD_TEST_LOGIN_SECRET },
+      data: { email, organizationId: opts?.organizationId, admin: !!opts?.admin, expiresIn: 3600 },
+    });
+    expect(resp.ok()).toBeTruthy();
+    const body = await resp.json();
+    expect(body.success).toBe(true);
+    return body;
+  }
+
+  // Local/dev: cookie-based bypass
+  await setTestAuthCookies(page, [
+    { name: 'bb_test_auth', value: '1' },
+    { name: 'bb_test_email', value: email },
+    ...(opts?.organizationId ? [{ name: 'bb_test_org_id', value: opts.organizationId }] : []),
+    ...(opts?.admin ? [{ name: 'bb_test_admin', value: '1' }] : []),
+  ]);
+}
+
 test.describe('App Inventory Smoke (route coverage)', () => {
   test('Core routes load (or redirect) without 404/500', async ({ page }) => {
     test.setTimeout(120_000);
@@ -38,13 +86,8 @@ test.describe('App Inventory Smoke (route coverage)', () => {
     });
 
     // Seed an org and set a test user session so protected routes are fully testable.
-    const seed = await page.request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey: `inv-${Date.now()}` } });
-    const seedData = await seed.json();
-    await setTestAuthCookies(page, [
-      { name: 'bb_test_auth', value: '1' },
-      { name: 'bb_test_email', value: seedData.contactEmail || 'seed-local@example.com' },
-      { name: 'bb_test_org_id', value: seedData.organizationId || 'org_test_local' },
-    ]);
+    const seedData = await seedOrg(page, `inv-${Date.now()}`);
+    await loginAsUser(page, seedData.contactEmail || 'seed-local@example.com', { organizationId: seedData.organizationId || 'org_test_local' });
 
     const routes: RouteCase[] = [
       // Public marketing
@@ -81,11 +124,7 @@ test.describe('App Inventory Smoke (route coverage)', () => {
 
       // For admin routes, switch to super-admin identity
       if (r.path.startsWith('/admin')) {
-        await setTestAuthCookies(page, [
-          { name: 'bb_test_auth', value: '1' },
-          { name: 'bb_test_email', value: 'admin@blessbox.app' },
-          { name: 'bb_test_admin', value: '1' },
-        ]);
+        await loginAsUser(page, 'admin@blessbox.app', { admin: true });
       }
 
       const resp = await page.goto(`${BASE_URL}${r.path}`, { waitUntil: 'domcontentloaded' });
@@ -104,8 +143,8 @@ test.describe('App Inventory Smoke (route coverage)', () => {
           /\/api\/auth\/signin/i.test(url) ||
           (await page.locator('text=/sign in|login/i').first().isVisible().catch(() => false));
         if (looksLikeAuth) {
-          // With test auth enabled, we should NOT be redirected to auth UI.
-          throw new Error(`[${r.name}] ${r.path} redirected to auth UI even with test auth`);
+          // With QA auth enabled, we should NOT be redirected to auth UI.
+          throw new Error(`[${r.name}] ${r.path} redirected to auth UI even with QA auth`);
         }
       }
 
