@@ -19,6 +19,8 @@ declare global {
 interface SquarePaymentFormProps {
   amount: number;
   currency: string;
+  planType: 'free' | 'standard' | 'enterprise';
+  billingCycle?: 'monthly' | 'yearly';
   onPaymentSuccess: (paymentResult: any) => void;
   onPaymentError: (error: string) => void;
   applicationId: string;
@@ -28,6 +30,8 @@ interface SquarePaymentFormProps {
 export default function SquarePaymentForm({
   amount,
   currency,
+  planType,
+  billingCycle = 'monthly',
   onPaymentSuccess,
   onPaymentError,
   applicationId,
@@ -115,6 +119,8 @@ export default function SquarePaymentForm({
             paymentToken: result.token,
             amount: amount,
             currency: currency,
+            planType,
+            billingCycle,
           }),
         });
 

@@ -9,11 +9,7 @@ config({ path: '.env.local' });
 
 const tursoClient = createClient({
   url: process.env.TURSO_DATABASE_URL || 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io',
-<<<<<<< HEAD
-  authToken: process.env.TURSO_AUTH_TOKEN || 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTQ5MTkyMTIsImlhdCI6MTc1NDMxNDQxMiwiaWQiOiI4MjFmMjdkOS0zNDIzLTQ1YTAtYWFiMy01MzcyNTQ3MjcyNDAiLCJyaWQiOiJiM2MwZjdhYS05YzFjLTQ5NjUtYjgwNi1jZmI0OGEwMTFmZTAifQ.EJyaZVzuYv2ietM6l7CZbqR_PNUE0fPOeOHZYeFHEZGRsnq9xDtvZLR6HEQcSsGlr2vs1owJyGySrVtigh7VCg',
-=======
-  authToken: process.env.TURSO_AUTH_TOKEN || 'test-token-placeholder',
->>>>>>> origin/main
+  authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 async function addCheckInFields() {

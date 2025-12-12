@@ -73,13 +73,32 @@ export async function createSubscription(params: {
   const amount = params.amountCents ?? planPricingCents[planType];
   const registrationLimit = planRegistrationLimits[planType];
   const start = nowIso();
+  const end =
+    billingCycle === 'yearly'
+      ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   await client.execute({
     sql: `INSERT INTO subscription_plans (
       id, organization_id, plan_type, status, registration_limit, current_registration_count,
-      billing_cycle, amount, currency, start_date, created_at, updated_at
-    ) VALUES (?, ?, ?, 'active', ?, 0, ?, ?, ?, ?, ?, ?)`,
-    args: [id, organizationId, planType, registrationLimit, billingCycle, amount, currency, start, start, start],
+      billing_cycle, amount, currency, current_period_start, current_period_end,
+      start_date, end_date, created_at, updated_at
+    ) VALUES (?, ?, ?, 'active', ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      id,
+      organizationId,
+      planType,
+      registrationLimit,
+      billingCycle,
+      amount,
+      currency,
+      start,
+      end,
+      start,
+      end,
+      start,
+      start,
+    ],
   });
 
   const res = await client.execute({ sql: `SELECT * FROM subscription_plans WHERE id = ?`, args: [id] });

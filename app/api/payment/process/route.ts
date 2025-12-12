@@ -21,25 +21,37 @@ export async function POST(req: NextRequest) {
 
   // If payment token is provided, process with Square
   if (paymentToken && amount) {
+    const shouldMockPayment =
+      process.env.NODE_ENV !== 'production' &&
+      (process.env.TEST_ENV === 'local' || !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_APPLICATION_ID);
+
     try {
-      const squarePaymentService = new SquarePaymentService();
-      
-      // Process payment with Square
-      const paymentResult = await squarePaymentService.processPayment(
-        paymentToken, // This is the card nonce from Square
-        paymentToken, // Square uses the same token for both parameters
-        email
-      );
+      if (!shouldMockPayment) {
+        const squarePaymentService = new SquarePaymentService();
+        
+        // Process payment with Square
+        const paymentResult = await squarePaymentService.processPayment(
+          paymentToken, // This is the card nonce from Square
+          paymentToken, // Square uses the same token for both parameters
+          email
+        );
 
-      if (!paymentResult.success) {
-        return new Response(JSON.stringify({ 
-          success: false, 
-          error: paymentResult.error || 'Payment failed',
-          message: paymentResult.message
-        }), { status: 400 });
+        if (!paymentResult.success) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: paymentResult.error || 'Payment failed',
+              message: paymentResult.message,
+            }),
+            { status: 400 }
+          );
+        }
+
+        console.log(`Square payment successful: ${paymentResult.transactionId}`);
+      } else {
+        // Local/dev: allow checkout flows without Square credentials.
+        console.log(`[mock-payment] accepted token for ${email}, amount=${amount} ${currency}`);
       }
-
-      console.log(`Square payment successful: ${paymentResult.transactionId}`);
     } catch (error) {
       console.error('Square payment processing error:', error);
       return new Response(JSON.stringify({ 

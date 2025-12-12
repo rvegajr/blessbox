@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { ClassService } from '@/lib/services/ClassService';
 import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { ensureDbReady } from '@/lib/db-ready';
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession();
@@ -11,6 +12,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    await ensureDbReady();
     const organization = await getOrganizationByEmail(session.user.email);
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
@@ -34,6 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    await ensureDbReady();
     const organization = await getOrganizationByEmail(session.user.email);
     if (!organization) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });

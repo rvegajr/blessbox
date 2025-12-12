@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation';
 
 const plans = [
-  { key: 'free', name: 'Free', price: 0, features: ['Up to 100 registrations'] },
-  { key: 'standard', name: 'Standard', price: 19, features: ['Up to 5,000 registrations', 'Email support'] },
-  { key: 'enterprise', name: 'Enterprise', price: 99, features: ['Up to 50,000 registrations', 'Priority support'] },
+  { key: 'free', name: 'Free Plan', price: 0, features: ['Up to 100 registrations'] },
+  { key: 'standard', name: 'Standard Plan', price: 19, features: ['Up to 5,000 registrations', 'Email support'] },
+  { key: 'enterprise', name: 'Enterprise Plan', price: 99, features: ['Up to 50,000 registrations', 'Priority support'] },
 ] as const;
 
 export default function PricingPage() {

@@ -387,6 +387,35 @@ export class RegistrationService implements IRegistrationService {
     return this.getRegistration(id) as Promise<Registration>;
   }
 
+  async undoCheckInRegistration(id: string): Promise<Registration> {
+    const registration = await this.getRegistration(id);
+    if (!registration) {
+      throw new Error('Registration not found');
+    }
+
+    const currentReg = await this.db.execute({
+      sql: 'SELECT checked_in_at FROM registrations WHERE id = ?',
+      args: [id],
+    });
+    const row = currentReg.rows[0] as any;
+    if (!row?.checked_in_at) {
+      throw new Error('Registration is not checked in');
+    }
+
+    await this.db.execute({
+      sql: `
+        UPDATE registrations
+        SET checked_in_at = NULL,
+            checked_in_by = NULL,
+            token_status = 'active'
+        WHERE id = ?
+      `,
+      args: [id],
+    });
+
+    return this.getRegistration(id) as Promise<Registration>;
+  }
+
   async getRegistrationStats(organizationId: string): Promise<{
     total: number;
     pending: number;

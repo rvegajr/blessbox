@@ -113,44 +113,83 @@ export default function RegistrationsPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Registrations</h1>
             <p className="text-gray-600">Manage and view all registration submissions</p>
           </div>
-          <button
-            id="export-data"
-            data-tutorial-target="export-data"
-            onClick={async () => {
-              try {
-                const response = await fetch('/api/export/registrations', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                    format: 'csv',
-                    filters: {
-                      deliveryStatus: filters.deliveryStatus || undefined
-                    }
-                  })
-                });
-                
-                if (response.ok) {
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  window.URL.revokeObjectURL(url);
-                } else {
-                  alert('Failed to export registrations');
+          <div className="flex items-center gap-2">
+            <button
+              id="export-csv"
+              data-tutorial-target="export-data"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/export/registrations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      format: 'csv',
+                      filters: {
+                        deliveryStatus: filters.deliveryStatus || undefined,
+                      },
+                    }),
+                  });
+
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } else {
+                    alert('Failed to export registrations');
+                  }
+                } catch (err) {
+                  alert('Error exporting registrations');
                 }
-              } catch (err) {
-                alert('Error exporting registrations');
-              }
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
-          >
-            <span>📥</span>
-            <span>Export CSV</span>
-          </button>
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
+            >
+              <span>📥</span>
+              <span>Export CSV</span>
+            </button>
+            <button
+              id="export-pdf"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/export/registrations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      format: 'pdf',
+                      filters: {
+                        deliveryStatus: filters.deliveryStatus || undefined,
+                      },
+                    }),
+                  });
+
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `registrations-${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } else {
+                    alert('Failed to export registrations');
+                  }
+                } catch (err) {
+                  alert('Error exporting registrations');
+                }
+              }}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center space-x-2"
+            >
+              <span>🧾</span>
+              <span>Export PDF</span>
+            </button>
+          </div>
         </div>
 
         {/* Filters */}

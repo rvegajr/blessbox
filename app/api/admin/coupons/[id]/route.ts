@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { CouponService } from '@/lib/coupons';
+import { isSuperAdminEmail } from '@/lib/auth';
 
 /**
  * GET /api/admin/coupons/[id]
@@ -16,6 +17,9 @@ export async function GET(
     const session = await getServerSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!isSuperAdminEmail(session.user.email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const couponService = new CouponService();
@@ -33,7 +37,17 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      coupon,
+      coupon: {
+        id: coupon.id,
+        code: coupon.code,
+        description: '',
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        isActive: !!coupon.active,
+        expiresAt: coupon.expiresAt || null,
+        createdAt: coupon.createdAt,
+        maxRedemptions: coupon.maxUses ?? null,
+      },
       analytics
     });
 
@@ -61,16 +75,36 @@ export async function PUT(
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!isSuperAdminEmail(session.user.email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
     const couponService = new CouponService();
     const body = await request.json();
 
     // Update coupon using CouponService
-    const updatedCoupon = await couponService.updateCoupon(params.id, body);
+    const updatePayload: any = { ...body };
+    if (body.maxRedemptions !== undefined && body.maxUses === undefined) {
+      updatePayload.maxUses = body.maxRedemptions;
+    }
+    if (body.isActive !== undefined && body.active === undefined) {
+      updatePayload.active = !!body.isActive;
+    }
+    const updatedCoupon = await couponService.updateCoupon(params.id, updatePayload);
 
     return NextResponse.json({
       success: true,
-      coupon: updatedCoupon
+      coupon: {
+        id: updatedCoupon.id,
+        code: updatedCoupon.code,
+        description: '',
+        discountType: updatedCoupon.discountType,
+        discountValue: updatedCoupon.discountValue,
+        isActive: !!updatedCoupon.active,
+        expiresAt: updatedCoupon.expiresAt || null,
+        createdAt: updatedCoupon.createdAt,
+        maxRedemptions: updatedCoupon.maxUses ?? null,
+      }
     });
 
   } catch (error) {
@@ -96,6 +130,9 @@ export async function DELETE(
     const session = await getServerSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!isSuperAdminEmail(session.user.email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const couponService = new CouponService();
