@@ -32,6 +32,7 @@ export default function RegistrationDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkingIn, setCheckingIn] = useState(false);
+  const [undoing, setUndoing] = useState(false);
 
   const registrationId = params.id as string;
 
@@ -44,8 +45,9 @@ export default function RegistrationDetailsPage() {
       const response = await fetch(`/api/registrations/${registrationId}`);
       const result = await response.json();
       
-      if (result.success && result.data) {
-        setRegistration(result.data);
+      const reg = result?.data || result?.registration;
+      if (result.success && reg) {
+        setRegistration(reg);
       } else {
         setError(result.error || 'Registration not found');
       }
@@ -77,6 +79,24 @@ export default function RegistrationDetailsPage() {
       alert('Error checking in registration');
     } finally {
       setCheckingIn(false);
+    }
+  };
+
+  const handleUndoCheckIn = async () => {
+    if (!registration || !registration.checkedInAt) return;
+    setUndoing(true);
+    try {
+      const response = await fetch(`/api/registrations/${registrationId}/undo-check-in`, { method: 'POST' });
+      if (response.ok) {
+        await fetchRegistration();
+      } else {
+        const result = await response.json().catch(() => ({}));
+        alert(result.error || 'Failed to undo check-in');
+      }
+    } catch (err) {
+      alert('Error undoing check-in');
+    } finally {
+      setUndoing(false);
     }
   };
 
@@ -143,16 +163,27 @@ export default function RegistrationDetailsPage() {
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">Registration Details</h1>
           </div>
-          {!registration.checkedInAt && (
-            <button
-              onClick={handleCheckIn}
-              disabled={checkingIn}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span>{checkingIn ? '⏳' : '✓'}</span>
-              <span>{checkingIn ? 'Checking In...' : 'Check In'}</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {!registration.checkedInAt ? (
+              <button
+                onClick={handleCheckIn}
+                disabled={checkingIn}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>{checkingIn ? '⏳' : '✓'}</span>
+                <span>{checkingIn ? 'Checking In...' : 'Check In'}</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleUndoCheckIn}
+                disabled={undoing}
+                className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>{undoing ? '⏳' : '↩︎'}</span>
+                <span>{undoing ? 'Undoing...' : 'Undo Check-in'}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Status Card */}
