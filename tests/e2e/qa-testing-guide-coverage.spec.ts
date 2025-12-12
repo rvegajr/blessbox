@@ -44,17 +44,10 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
     // Pricing page
     await page.goto(`${BASE_URL}/pricing`);
     await expect(page.getByRole('heading', { name: 'Pricing' })).toBeVisible();
-    if (IS_PRODUCTION) {
-      // Production currently uses "Free/Standard/Enterprise" headings (no "Plan" suffix)
-      await expect(page.getByRole('heading', { name: /^free$/i })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /^standard$/i })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /^enterprise$/i })).toBeVisible();
-    } else {
-      // Local app uses "... Plan" suffix (keeps QA guide language)
-      await expect(page.getByText(/free plan/i)).toBeVisible();
-      await expect(page.getByText(/standard plan/i)).toBeVisible();
-      await expect(page.getByText(/enterprise plan/i)).toBeVisible();
-    }
+    // Accept both "Free" and "Free Plan" variants
+    await expect(page.getByRole('heading', { name: /^free(\s+plan)?$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^standard(\s+plan)?$/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^enterprise(\s+plan)?$/i })).toBeVisible();
     await expect(page.getByText('$19/mo')).toBeVisible();
     await expect(page.getByText('$99/mo')).toBeVisible();
 
@@ -72,7 +65,7 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
 
     // FREE100 => $0.00
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
-    await expect(page.getByRole('heading', { name: /checkout/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^checkout$/i })).toBeVisible();
     if (IS_PRODUCTION && !requireCouponUi) {
       // "Public-only" production validation mode (useful pre-deploy)
       // - Confirms checkout page loads
