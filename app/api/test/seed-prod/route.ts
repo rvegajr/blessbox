@@ -85,11 +85,12 @@ export async function POST(req: NextRequest) {
     const orgSlug = slugify(body.orgSlug || orgName) || `qa-prod-${seedKey}`;
     const orgId = uuidv4();
 
-    // Check if organization already exists (by slug or email) - update if exists
+    // Check if organization already exists (by slug/custom_domain) - update if exists.
+    // NOTE: contact_email is not unique (multi-org per email), so we MUST NOT de-dupe by email.
     const existingOrg = await db
       .execute({
-        sql: `SELECT id, name, contact_email FROM organizations WHERE custom_domain = ? OR contact_email = ? LIMIT 1`,
-        args: [orgSlug, contactEmail],
+        sql: `SELECT id, name, contact_email FROM organizations WHERE custom_domain = ? LIMIT 1`,
+        args: [orgSlug],
       })
       .then((r) => r.rows[0] as any)
       .catch(() => null);

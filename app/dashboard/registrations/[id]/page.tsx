@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,7 @@ export default function RegistrationDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { ready } = useRequireActiveOrganization();
   const [registration, setRegistration] = useState<Registration | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +39,10 @@ export default function RegistrationDetailsPage() {
   const registrationId = params.id as string;
 
   useEffect(() => {
+    if (!session?.user) return;
+    if (!ready) return;
     fetchRegistration();
-  }, [registrationId]);
+  }, [ready, registrationId, session]);
 
   const fetchRegistration = async () => {
     try {

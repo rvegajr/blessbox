@@ -21,7 +21,7 @@ export async function ensureSubscriptionSchema(): Promise<void> {
       name TEXT,
       event_name TEXT,
       custom_domain TEXT UNIQUE,
-      contact_email TEXT NOT NULL UNIQUE,
+      contact_email TEXT NOT NULL,
       contact_phone TEXT,
       contact_address TEXT,
       contact_city TEXT,
@@ -30,6 +30,30 @@ export async function ensureSubscriptionSchema(): Promise<void> {
       email_verified INTEGER DEFAULT 0 NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )`
+  );
+
+  // Account identity + org membership (fresh codebase supports multi-org per email)
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )`
+  );
+
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS memberships (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      organization_id TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'admin',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      UNIQUE(user_id, organization_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
     )`
   );
 

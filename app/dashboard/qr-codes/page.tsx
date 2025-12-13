@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -34,6 +35,7 @@ interface QRCodeSet {
 
 export default function QRCodesPage() {
   const { data: session } = useSession();
+  const { ready } = useRequireActiveOrganization();
   const [qrCodes, setQRCodes] = useState<QRCode[]>([]);
   const [qrCodeSets, setQRCodeSets] = useState<QRCodeSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,7 @@ export default function QRCodesPage() {
       setLoading(false);
       return;
     }
+    if (!ready) return;
 
     const fetchData = async () => {
       try {
@@ -80,7 +83,7 @@ export default function QRCodesPage() {
     };
 
     fetchData();
-  }, [session]);
+  }, [ready, session]);
 
   const filteredQRCodes = qrCodes.filter(qr => {
     const matchesSearch = !filters.search || 

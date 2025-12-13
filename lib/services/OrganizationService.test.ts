@@ -19,7 +19,6 @@ describe('OrganizationService', () => {
 
   it('createOrganization creates organization with valid data', async () => {
     mockDb.execute
-      .mockResolvedValueOnce({ rows: [] }) // checkEmailUniqueness
       .mockResolvedValueOnce({ rows: [] }) // insert
       .mockResolvedValueOnce({
         rows: [
@@ -58,12 +57,17 @@ describe('OrganizationService', () => {
     expect(org.emailVerified).toBe(false);
   });
 
-  it('createOrganization throws error for duplicate email', async () => {
+  it('createOrganization throws error for duplicate domain', async () => {
+    // checkDomainUniqueness -> rows exist => not unique => throws
     mockDb.execute.mockResolvedValueOnce({ rows: [{ id: 'existing-org' }] });
 
     await expect(
-      service.createOrganization({ name: 'Test Org', contactEmail: 'existing@example.com' })
-    ).rejects.toThrow('Organization with this email already exists');
+      service.createOrganization({
+        name: 'Test Org',
+        contactEmail: 'same@email.example',
+        customDomain: 'my-domain',
+      })
+    ).rejects.toThrow('Organization with this domain already exists');
   });
 
   it('getOrganization returns organization for valid ID', async () => {
@@ -148,12 +152,10 @@ describe('OrganizationService', () => {
   });
 
   it('checkEmailUniqueness returns true when unique', async () => {
-    mockDb.execute.mockResolvedValueOnce({ rows: [] });
     await expect(service.checkEmailUniqueness('unique@example.com')).resolves.toBe(true);
   });
 
-  it('checkEmailUniqueness returns false when exists', async () => {
-    mockDb.execute.mockResolvedValueOnce({ rows: [{ id: 'x' }] });
-    await expect(service.checkEmailUniqueness('existing@example.com')).resolves.toBe(false);
+  it('checkEmailUniqueness always returns true (multi-org per email)', async () => {
+    await expect(service.checkEmailUniqueness('existing@example.com')).resolves.toBe(true);
   });
 });

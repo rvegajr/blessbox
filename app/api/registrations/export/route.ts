@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
 import { RegistrationService } from '@/lib/services/RegistrationService';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 

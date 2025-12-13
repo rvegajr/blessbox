@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed';
 import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
+  const { status } = useSession();
+  const { ready } = useRequireActiveOrganization();
   const [subscription, setSubscription] = useState<any | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
@@ -18,6 +22,7 @@ export default function DashboardPage() {
   useEffect(() => {
     let ignore = false;
     async function load() {
+      if (!ready || status === 'loading') return;
       try {
         const [subscriptionRes, classesRes, participantsRes] = await Promise.all([
           fetch('/api/subscriptions'),
@@ -43,7 +48,7 @@ export default function DashboardPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [ready, status]);
 
   return (
     <div className="min-h-screen bg-gray-50">
