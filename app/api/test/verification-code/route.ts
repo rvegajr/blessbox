@@ -25,7 +25,14 @@ export async function POST(req: NextRequest) {
 
   if (isProd) {
     if (!secret || !provided || provided !== secret) {
-      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Forbidden',
+          debug: { hasSecret: !!secret, hasProvided: !!provided, matches: !!secret && !!provided && provided === secret },
+        },
+        { status: 403 }
+      );
     }
   }
 
