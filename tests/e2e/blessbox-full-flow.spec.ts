@@ -54,15 +54,36 @@ async function primeOnboardingSession(page: Page, data: { organizationId: string
 }
 
 async function fetchVerificationCode(request: any, email: string): Promise<string> {
-  const resp = await request.post(`${BASE_URL}/api/test/verification-code`, {
-    headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
-    data: { email },
-  });
-  expect(resp.ok()).toBeTruthy();
-  const body = await resp.json();
-  expect(body.success).toBe(true);
-  expect(body.code).toMatch(/^\d{6}$/);
-  return body.code;
+  // In production, verification code writes can be slightly delayed. Retry briefly if we get "No code found".
+  const maxAttempts = IS_PRODUCTION ? 10 : 1;
+  const delayMs = 500;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const resp = await request.post(`${BASE_URL}/api/test/verification-code`, {
+      headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
+      data: { email },
+    });
+
+    const body = await resp.json().catch(() => ({} as any));
+
+    if (resp.ok() && body?.success && typeof body?.code === 'string' && /^\d{6}$/.test(body.code)) {
+      return body.code;
+    }
+
+    // Retry only for the expected "not ready yet" case.
+    const isNotReady = resp.status() === 404 && String(body?.error || '').toLowerCase().includes('no code');
+    if (attempt < maxAttempts && isNotReady) {
+      await new Promise((r) => setTimeout(r, delayMs));
+      continue;
+    }
+
+    // Otherwise fail with context.
+    expect(resp.ok()).toBeTruthy();
+    expect(body?.success).toBe(true);
+    expect(body?.code).toMatch(/^\d{6}$/);
+  }
+
+  throw new Error('Unable to fetch verification code');
 }
 
 // Test data storage for cleanup
