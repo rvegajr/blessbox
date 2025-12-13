@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { ClassService } from '@/lib/services/ClassService';
 import { ensureDbReady } from '@/lib/db-ready';
 
@@ -14,9 +14,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
 
   try {
     await ensureDbReady();
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Organization selection required' }, { status: 409 });
     }
 
     const classService = new ClassService();

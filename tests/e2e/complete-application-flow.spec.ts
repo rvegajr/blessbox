@@ -345,15 +345,15 @@ test.describe('Complete Application Flow - Full E2E Test', () => {
     expect(missingFieldsResponse.status()).toBe(400);
     console.log('   ✅ Missing required fields rejected');
 
-    // Test duplicate email
+    // Multi-org per email: duplicate contactEmail is allowed
     const duplicateEmailResponse = await request.post(`${BASE_URL}/api/onboarding/save-organization`, {
       data: {
         name: 'Another Org',
         contactEmail: TEST_EMAIL, // Same as created org
       },
     });
-    expect(duplicateEmailResponse.status()).toBe(409);
-    console.log('   ✅ Duplicate email rejected');
+    expect([201, 200]).toContain(duplicateEmailResponse.status());
+    console.log('   ✅ Duplicate email allowed (multi-org)');
 
     console.log('\n✅ Complete Application Flow Test Finished!\n');
     console.log('📊 Summary:');

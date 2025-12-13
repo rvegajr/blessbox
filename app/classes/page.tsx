@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ClassList from '@/components/classes/ClassList';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 export default function ClassesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { ready } = useRequireActiveOrganization();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,10 +20,11 @@ export default function ClassesPage() {
       return;
     }
     
+    if (!ready) return;
     setLoading(false);
-  }, [session, status, router]);
+  }, [ready, session, status, router]);
 
-  if (loading || status === 'loading') {
+  if (loading || status === 'loading' || !ready) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

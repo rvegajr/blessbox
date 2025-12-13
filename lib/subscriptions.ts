@@ -1,4 +1,5 @@
 import { getDbClient, ensureSubscriptionSchema, nowIso } from './db';
+import type { Session } from 'next-auth';
 
 export type PlanType = 'free' | 'standard' | 'enterprise';
 export type BillingCycle = 'monthly' | 'yearly';
@@ -18,7 +19,8 @@ export const planRegistrationLimits: Record<PlanType, number> = {
 export async function getOrganizationByEmail(email: string): Promise<{ id: string; contact_email: string } | null> {
   const db = getDbClient();
   const result = await db.execute({
-    sql: 'SELECT id, contact_email FROM organizations WHERE contact_email = ?',
+    // Multi-org per email: return most recently created org for legacy callers.
+    sql: 'SELECT id, contact_email FROM organizations WHERE contact_email = ? ORDER BY created_at DESC LIMIT 1',
     args: [email],
   });
   if (result.rows.length > 0) {
@@ -27,12 +29,65 @@ export async function getOrganizationByEmail(email: string): Promise<{ id: strin
   return null;
 }
 
+export async function getOrganizationById(id: string): Promise<{ id: string; contact_email: string } | null> {
+  const db = getDbClient();
+  const result = await db.execute({
+    sql: 'SELECT id, contact_email FROM organizations WHERE id = ? LIMIT 1',
+    args: [id],
+  });
+  if (result.rows.length > 0) {
+    return result.rows[0] as { id: string; contact_email: string };
+  }
+  return null;
+}
+
+async function getOrganizationIdsForUser(userId: string): Promise<string[]> {
+  const client = getDbClient();
+  await ensureSubscriptionSchema();
+  const res = await client.execute({
+    sql: `SELECT organization_id FROM memberships WHERE user_id = ? ORDER BY created_at DESC`,
+    args: [userId],
+  });
+  return (res.rows as any[]).map((r) => String(r.organization_id));
+}
+
+/**
+ * Resolve the active organization for a session:
+ * - Prefer explicit session.user.organizationId (active org context)
+ * - If missing, auto-select only when user has exactly one membership
+ * - Fallback to legacy email->organization mapping for older data
+ */
+export async function resolveOrganizationForSession(session: Session): Promise<{ id: string; contact_email: string } | null> {
+  const explicitOrgId = (session.user as any)?.organizationId as string | undefined;
+  if (explicitOrgId) {
+    return await getOrganizationById(explicitOrgId);
+  }
+
+  const userId = session.user?.id;
+  if (userId) {
+    const orgIds = await getOrganizationIdsForUser(String(userId));
+    if (orgIds.length === 1) {
+      return await getOrganizationById(orgIds[0]);
+    }
+    if (orgIds.length > 1) {
+      // Multiple orgs, none selected yet.
+      return null;
+    }
+  }
+
+  const email = session.user?.email;
+  return email ? await getOrCreateOrganizationForEmail(email) : null;
+}
+
 export async function getOrCreateOrganizationForEmail(email: string): Promise<{ id: string; contact_email: string } | null> {
   if (!email) return null;
   const client = getDbClient();
   await ensureSubscriptionSchema();
 
-  const existing = await client.execute({ sql: `SELECT id, contact_email FROM organizations WHERE contact_email = ?`, args: [email] });
+  const existing = await client.execute({
+    sql: `SELECT id, contact_email FROM organizations WHERE contact_email = ? ORDER BY created_at DESC LIMIT 1`,
+    args: [email],
+  });
   if ((existing.rows as any[]).length > 0) {
     const row: any = existing.rows[0];
     return { id: String(row.id), contact_email: String(row.contact_email) };

@@ -18,12 +18,6 @@ export class OrganizationService implements IOrganizationService {
       throw new Error(`Validation failed: ${validation.errors?.join(', ')}`);
     }
 
-    // Check email uniqueness
-    const emailExists = await this.checkEmailUniqueness(data.contactEmail);
-    if (!emailExists) {
-      throw new Error('Organization with this email already exists');
-    }
-
     // Check domain uniqueness if provided
     if (data.customDomain) {
       const domainExists = await this.checkDomainUniqueness(data.customDomain);
@@ -90,7 +84,8 @@ export class OrganizationService implements IOrganizationService {
 
   async getOrganizationByEmail(email: string): Promise<Organization | null> {
     const result = await this.db.execute({
-      sql: 'SELECT * FROM organizations WHERE contact_email = ?',
+      // Multi-org per email: return the most recently created organization for this email.
+      sql: 'SELECT * FROM organizations WHERE contact_email = ? ORDER BY created_at DESC LIMIT 1',
       args: [email]
     });
 
@@ -250,16 +245,11 @@ export class OrganizationService implements IOrganizationService {
   }
 
   async checkEmailUniqueness(email: string, excludeId?: string): Promise<boolean> {
-    let sql = 'SELECT id FROM organizations WHERE contact_email = ?';
-    const args: any[] = [email];
-
-    if (excludeId) {
-      sql += ' AND id != ?';
-      args.push(excludeId);
-    }
-
-    const result = await this.db.execute({ sql, args });
-    return result.rows.length === 0;
+    // Multi-org per email: organization contact_email is no longer unique.
+    // Keep for backward compatibility with existing callers.
+    void email;
+    void excludeId;
+    return true;
   }
 
   async checkDomainUniqueness(domain: string, excludeId?: string): Promise<boolean> {

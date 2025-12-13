@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 interface Participant {
   id: string;
@@ -18,6 +19,7 @@ interface Participant {
 export default function ParticipantsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { ready } = useRequireActiveOrganization();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,9 +30,10 @@ export default function ParticipantsPage() {
       router.push('/');
       return;
     }
+    if (!ready) return;
     fetchParticipants();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, status]);
+  }, [ready, session, status]);
 
   const fetchParticipants = async () => {
     setLoading(true);
@@ -47,7 +50,7 @@ export default function ParticipantsPage() {
     }
   };
 
-  if (loading || status === 'loading') {
+  if (loading || status === 'loading' || !ready) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

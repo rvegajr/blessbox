@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -53,6 +54,7 @@ export default function ClassDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { ready } = useRequireActiveOrganization();
   const classId = params.id as string;
 
   const [cls, setCls] = useState<ClassRecord | null>(null);
@@ -75,9 +77,10 @@ export default function ClassDetailsPage() {
       router.push('/');
       return;
     }
+    if (!ready) return;
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, status, classId]);
+  }, [ready, session, status, classId]);
 
   const loadAll = async () => {
     setLoading(true);

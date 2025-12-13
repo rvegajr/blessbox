@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { getDbClient } from '@/lib/db';
 
 // GET /api/dashboard/recent-activity - Get recent activity feed
@@ -14,11 +14,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 
@@ -41,10 +41,10 @@ export async function GET(request: NextRequest) {
         JOIN qr_code_sets qcs ON r.qr_code_set_id = qcs.id
         LEFT JOIN (
           SELECT 
-            id as qr_id,
-            json_extract(value, '$.label') as label
-          FROM qr_code_sets, json_each(qr_codes)
-          WHERE organization_id = ?
+            json_extract(je.value, '$.id') as qr_id,
+            json_extract(je.value, '$.label') as label
+          FROM qr_code_sets qcs2, json_each(qcs2.qr_codes) je
+          WHERE qcs2.organization_id = ?
         ) qr ON r.qr_code_id = qr.qr_id
         WHERE qcs.organization_id = ?
         ORDER BY r.registered_at DESC

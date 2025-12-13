@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 export default function NewParticipantPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { ready } = useRequireActiveOrganization();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -25,7 +27,7 @@ export default function NewParticipantPage() {
     if (!session) router.push('/');
   }, [session, status, router]);
 
-  if (status === 'loading' || !session) {
+  if (status === 'loading' || !session || !ready) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

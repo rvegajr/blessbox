@@ -72,10 +72,13 @@ export default function EmailVerificationPage() {
     setError(null);
 
     try {
+      const orgId =
+        typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_organizationId') : null;
+
       const response = await fetch('/api/onboarding/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, organizationId: orgId }),
       });
 
       const data = await response.json();
@@ -90,6 +93,7 @@ export default function EmailVerificationPage() {
       // Mark email verification as complete
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('onboarding_emailVerified', 'true');
+        if (data.userId) sessionStorage.setItem('onboarding_userId', String(data.userId));
         sessionStorage.setItem('onboarding_step', '3'); // Move to step 3
       }
       

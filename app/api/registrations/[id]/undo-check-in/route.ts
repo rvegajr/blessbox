@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RegistrationService } from '@/lib/services/RegistrationService';
 import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 
 const registrationService = new RegistrationService();
 
@@ -14,9 +14,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
-      return NextResponse.json({ success: false, error: 'Organization not found' }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Organization selection required' }, { status: 409 });
     }
 
     const { id } = await params;

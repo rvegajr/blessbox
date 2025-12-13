@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { RegistrationService } from '@/lib/services/RegistrationService';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
@@ -17,11 +17,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 

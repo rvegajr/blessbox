@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { QRCodeService } from '@/lib/services/QRCodeService';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 
 const qrCodeService = new QRCodeService();
 
@@ -20,11 +20,11 @@ export async function GET(
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
-    if (!organization) {
+    const activeOrg = await resolveOrganizationForSession(session);
+    if (!activeOrg) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 
@@ -48,7 +48,7 @@ export async function GET(
       );
     }
 
-    if (qrCodeSet.organizationId !== organization.id && (session.user as any).role !== 'super_admin') {
+    if (qrCodeSet.organizationId !== activeOrg.id && (session.user as any).role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -88,11 +88,11 @@ export async function PUT(
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
-    if (!organization) {
+    const activeOrg = await resolveOrganizationForSession(session);
+    if (!activeOrg) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 
@@ -118,7 +118,7 @@ export async function PUT(
       );
     }
 
-    if (qrCodeSet.organizationId !== organization.id && (session.user as any).role !== 'super_admin') {
+    if (qrCodeSet.organizationId !== activeOrg.id && (session.user as any).role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
@@ -151,11 +151,11 @@ export async function DELETE(
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
-    if (!organization) {
+    const activeOrg = await resolveOrganizationForSession(session);
+    if (!activeOrg) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 
@@ -179,7 +179,7 @@ export async function DELETE(
       );
     }
 
-    if (qrCodeSet.organizationId !== organization.id && (session.user as any).role !== 'super_admin') {
+    if (qrCodeSet.organizationId !== activeOrg.id && (session.user as any).role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }

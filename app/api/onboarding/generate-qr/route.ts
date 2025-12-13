@@ -6,7 +6,9 @@ import QRCode from 'qrcode';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { organizationId, entryPoints } = body;
+    const { organizationId, qrCodeSetId } = body;
+    // Backward compatible: UI uses `entryPoints`, some tests/clients send `qrCodes`
+    const entryPoints = Array.isArray(body.entryPoints) ? body.entryPoints : body.qrCodes;
 
     // Validate inputs
     if (!organizationId || typeof organizationId !== 'string') {
@@ -52,15 +54,26 @@ export async function POST(request: NextRequest) {
     const orgSlug = organization.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
     // Get or create QR code set
-    let qrSetResult = await db.execute({
-      sql: `SELECT id, form_fields FROM qr_code_sets WHERE organization_id = ? LIMIT 1`,
-      args: [organizationId],
-    });
-
     const now = new Date().toISOString();
     let qrSetId: string;
 
-    if (qrSetResult.rows.length === 0) {
+    if (typeof qrCodeSetId === 'string' && qrCodeSetId.trim()) {
+      // Use provided QR code set ID (the onboarding form-config ID is the qr_code_sets id)
+      qrSetId = qrCodeSetId.trim();
+      const existingSet = await db.execute({
+        sql: `SELECT id FROM qr_code_sets WHERE id = ? AND organization_id = ? LIMIT 1`,
+        args: [qrSetId, organizationId],
+      });
+      if (existingSet.rows.length === 0) {
+        return NextResponse.json({ success: false, error: 'QR code set not found' }, { status: 404 });
+      }
+    } else {
+      const qrSetResult = await db.execute({
+        sql: `SELECT id FROM qr_code_sets WHERE organization_id = ? ORDER BY created_at DESC LIMIT 1`,
+        args: [organizationId],
+      });
+
+      if (qrSetResult.rows.length === 0) {
       // Create new QR code set
       qrSetId = uuidv4();
       await db.execute({
@@ -81,15 +94,16 @@ export async function POST(request: NextRequest) {
           now,
         ],
       });
-    } else {
-      qrSetId = (qrSetResult.rows[0] as any).id;
+      } else {
+        qrSetId = (qrSetResult.rows[0] as any).id;
+      }
     }
 
     // Generate QR codes for each entry point
     const qrCodes = [];
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_VERCEL_URL 
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` 
-      : 'http://localhost:7777';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:7777');
 
     for (const entryPoint of entryPoints) {
       const qrCodeId = uuidv4();
@@ -108,10 +122,13 @@ export async function POST(request: NextRequest) {
 
       qrCodes.push({
         id: qrCodeId,
-        label: entryPoint.label,
+        // IMPORTANT: Registration routes use the URL segment as `qrLabel`.
+        // Our form-config lookup matches `label === qrLabel`, so label must be the slug.
+        label: entryPoint.slug,
         slug: entryPoint.slug,
         url: registrationUrl,
         dataUrl: qrDataUrl,
+        description: entryPoint.label,
       });
     }
 

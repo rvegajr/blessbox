@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { QRCodeService } from '@/lib/services/QRCodeService';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { parseODataQuery } from '@/lib/utils/odataParser';
 
 const qrCodeService = new QRCodeService();
@@ -17,19 +17,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
-    if (!organization) {
+    const activeOrg = await resolveOrganizationForSession(session);
+    if (!activeOrg) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const organizationId = searchParams.get('organizationId') || organization.id;
+    const organizationId = searchParams.get('organizationId') || activeOrg.id;
 
     // Verify user has access to this organization
-    if (organizationId !== organization.id && (session.user as any).role !== 'super_admin') {
+    if (organizationId !== activeOrg.id && (session.user as any).role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { createSubscription, getOrCreateOrganizationForEmail, PlanType } from '@/lib/subscriptions';
+import { createSubscription, getOrCreateOrganizationForEmail, PlanType, resolveOrganizationForSession } from '@/lib/subscriptions';
 import { SquarePaymentService } from '@/lib/services/SquarePaymentService';
 
 export async function POST(req: NextRequest) {
@@ -62,9 +62,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const org = await getOrCreateOrganizationForEmail(email);
+  const org =
+    session ? await resolveOrganizationForSession(session as any) : await getOrCreateOrganizationForEmail(email);
   if (!org) {
-    return new Response(JSON.stringify({ success: false, error: 'Organization not found' }), { status: 400 });
+    return new Response(JSON.stringify({ success: false, error: 'Organization selection required' }), { status: 409 });
   }
 
   const sub = await createSubscription({ 
