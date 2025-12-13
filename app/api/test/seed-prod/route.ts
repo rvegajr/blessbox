@@ -6,6 +6,8 @@ import { createSubscription } from '@/lib/subscriptions';
 import { CouponService } from '@/lib/coupons';
 import { ClassService } from '@/lib/services/ClassService';
 
+export const runtime = 'nodejs';
+
 function slugify(input: string): string {
   return input
     .toLowerCase()
