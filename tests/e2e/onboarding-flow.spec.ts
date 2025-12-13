@@ -9,7 +9,7 @@ const HAS_PROD_SEED = !!PROD_TEST_SEED_SECRET;
 
 async function getLatestVerificationCode(request: any, email: string) {
   const resp = await request.post(`${BASE_URL}/api/test/verification-code`, {
-    headers: IS_PRODUCTION ? { 'x-test-seed-secret': PROD_TEST_SEED_SECRET } : undefined,
+    headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
     data: { email },
   });
   expect(resp.ok()).toBeTruthy();

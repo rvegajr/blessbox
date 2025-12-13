@@ -46,7 +46,7 @@ test.describe('Complete Application Flow - Full E2E Test', () => {
       console.log('   ℹ️  Verification code not returned; fetching via QA helper');
       if (IS_PRODUCTION && !HAS_PROD_SEED) throw new Error('Production flow test requires PROD_TEST_SEED_SECRET');
       const codeResp = await request.post(`${BASE_URL}/api/test/verification-code`, {
-        headers: IS_PRODUCTION ? { 'x-test-seed-secret': PROD_TEST_SEED_SECRET } : undefined,
+        headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
         data: { email: TEST_EMAIL },
       });
       expect(codeResp.ok()).toBeTruthy();
