@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureDbReady } from '@/lib/db-ready';
 import { getDbClient } from '@/lib/db';
 
+export const runtime = 'nodejs';
+
 /**
  * POST /api/test/verification-code
  *
