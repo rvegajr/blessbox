@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { isSuperAdminEmail } from '@/lib/auth';
+import { ensureDbReady } from '@/lib/db-ready';
+import { getDbClient } from '@/lib/db';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * POST /api/test/login
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const email: string = typeof body.email === 'string' && body.email ? body.email.trim() : '';
-    const organizationId: string | undefined = typeof body.organizationId === 'string' ? body.organizationId.trim() : undefined;
+    let organizationId: string | undefined = typeof body.organizationId === 'string' ? body.organizationId.trim() : undefined;
     const admin = body.admin === true || body.admin === 'true';
     const expiresInSeconds = typeof body.expiresIn === 'number' && body.expiresIn > 0 ? body.expiresIn : 3600; // Default 1 hour
 
@@ -47,10 +50,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'email is required' }, { status: 400 });
     }
 
+    await ensureDbReady();
+    const db = getDbClient();
+    const normalizedEmail = email.toLowerCase();
+    const now = new Date().toISOString();
+
+    // Ensure a stable user identity for this email (multi-org support)
+    const newUserId = uuidv4();
+    await db.execute({
+      sql: `
+        INSERT INTO users (id, email, created_at, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(email) DO UPDATE SET updated_at = excluded.updated_at
+      `,
+      args: [newUserId, normalizedEmail, now, now],
+    });
+    const userRow = await db.execute({ sql: `SELECT id FROM users WHERE email = ? LIMIT 1`, args: [normalizedEmail] });
+    const userId = String((userRow.rows?.[0] as any)?.id || newUserId);
+
+    // If an orgId was supplied, ensure membership exists for this user.
+    if (organizationId) {
+      await db.execute({
+        sql: `
+          INSERT INTO memberships (id, user_id, organization_id, role, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?)
+          ON CONFLICT(user_id, organization_id) DO UPDATE SET updated_at = excluded.updated_at
+        `,
+        args: [uuidv4(), userId, organizationId, admin ? 'super_admin' : 'admin', now, now],
+      });
+    } else {
+      // If not supplied, auto-pick only when the user has exactly one org.
+      const memberships = await db.execute({
+        sql: `SELECT organization_id FROM memberships WHERE user_id = ? ORDER BY created_at DESC`,
+        args: [userId],
+      });
+      if (memberships.rows?.length === 1) {
+        organizationId = String((memberships.rows[0] as any).organization_id);
+      }
+    }
+
     // Determine role based on email
     const role = admin || isSuperAdminEmail(email) ? 'superadmin' : 'user';
-    const userId = 'test-user'; // Test users use a fixed ID
-
     // Create JWT token matching NextAuth format
     const tokenPayload: any = {
       email,

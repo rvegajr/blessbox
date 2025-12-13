@@ -9,7 +9,8 @@ export const organizations = sqliteTable('organizations', {
   name: text('name').notNull(),
   eventName: text('event_name'),
   customDomain: text('custom_domain').unique(),
-  contactEmail: text('contact_email').notNull().unique(),
+  // Multi-org per email: organizations can share contact_email; account identity is in users.email
+  contactEmail: text('contact_email').notNull(),
   contactPhone: text('contact_phone'),
   contactAddress: text('contact_address'),
   contactCity: text('contact_city'),
@@ -18,6 +19,24 @@ export const organizations = sqliteTable('organizations', {
   passwordHash: text('password_hash'), // 🎉 NULLABLE for passwordless magic!
   lastLoginAt: text('last_login_at'),
   emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Users table - ACCOUNT IDENTITY! 👤
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text('email').notNull().unique(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Memberships table - USER ↔ ORG! 🤝
+export const memberships = sqliteTable('memberships', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  organizationId: text('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  role: text('role').notNull().default('admin'), // admin, member, etc.
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -225,6 +244,16 @@ export const organizationsRelations = relations(organizations, ({ many, one }) =
   savedSearches: many(savedSearches),
   exportJobs: many(exportJobs),
   usageAlerts: many(usageAlerts),
+  memberships: many(memberships),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  memberships: many(memberships),
+}));
+
+export const membershipsRelations = relations(memberships, ({ one }) => ({
+  user: one(users, { fields: [memberships.userId], references: [users.id] }),
+  organization: one(organizations, { fields: [memberships.organizationId], references: [organizations.id] }),
 }));
 
 export const qrCodeSetsRelations = relations(qrCodeSets, ({ one, many }) => ({

@@ -1,5 +1,77 @@
 import { createClient } from '@libsql/client';
 
+async function organizationsHasUniqueIndexOn(client: any, column: string): Promise<boolean> {
+  try {
+    const idxList = await client.execute(`PRAGMA index_list('organizations');`);
+    const indexes = (idxList.rows || []) as any[];
+    for (const idx of indexes) {
+      if (!idx?.name || !idx?.unique) continue;
+      const info = await client.execute(`PRAGMA index_info('${idx.name}');`);
+      const cols = (info.rows || []).map((r: any) => r?.name).filter(Boolean);
+      if (cols.length === 1 && cols[0] === column) return true;
+    }
+  } catch {
+    // If PRAGMA fails, assume not present.
+  }
+  return false;
+}
+
+async function migrateOrganizationsDropContactEmailUnique(client: any): Promise<void> {
+  const tableInfo = await client.execute(`PRAGMA table_info('organizations');`);
+  if (!tableInfo.rows || tableInfo.rows.length === 0) return;
+
+  const hasUnique = await organizationsHasUniqueIndexOn(client, 'contact_email');
+  if (!hasUnique) return;
+
+  await client.execute(`PRAGMA foreign_keys=OFF;`);
+  await client.execute(`BEGIN;`);
+  try {
+    await client.execute(`
+      CREATE TABLE IF NOT EXISTS organizations_new (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        event_name TEXT,
+        custom_domain TEXT UNIQUE,
+        contact_email TEXT NOT NULL,
+        contact_phone TEXT,
+        contact_address TEXT,
+        contact_city TEXT,
+        contact_state TEXT,
+        contact_zip TEXT,
+        password_hash TEXT,
+        last_login_at TEXT,
+        email_verified INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+        updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+      );
+    `);
+
+    await client.execute(`
+      INSERT INTO organizations_new (
+        id, name, event_name, custom_domain, contact_email,
+        contact_phone, contact_address, contact_city, contact_state, contact_zip,
+        password_hash, last_login_at, email_verified, created_at, updated_at
+      )
+      SELECT
+        id, name, event_name, custom_domain, contact_email,
+        contact_phone, contact_address, contact_city, contact_state, contact_zip,
+        password_hash, last_login_at, email_verified, created_at, updated_at
+      FROM organizations;
+    `);
+
+    await client.execute(`DROP TABLE organizations;`);
+    await client.execute(`ALTER TABLE organizations_new RENAME TO organizations;`);
+    await client.execute(`CREATE INDEX IF NOT EXISTS organizations_contact_email_idx ON organizations(contact_email);`);
+
+    await client.execute(`COMMIT;`);
+  } catch (e) {
+    await client.execute(`ROLLBACK;`);
+    throw e;
+  } finally {
+    await client.execute(`PRAGMA foreign_keys=ON;`);
+  }
+}
+
 export async function ensureLibsqlSchema(config?: { url?: string; authToken?: string }) {
   const url = config?.url || process.env.TURSO_DATABASE_URL || 'file:./.tmp/test-db.sqlite';
   const authToken = config?.authToken || process.env.TURSO_AUTH_TOKEN || '';
@@ -13,7 +85,7 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
       name TEXT NOT NULL,
       event_name TEXT,
       custom_domain TEXT UNIQUE,
-      contact_email TEXT NOT NULL UNIQUE,
+      contact_email TEXT NOT NULL,
       contact_phone TEXT,
       contact_address TEXT,
       contact_city TEXT,
@@ -24,6 +96,27 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
       email_verified INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+    );`,
+
+    // users (account identity)
+    `CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+    );`,
+
+    // memberships (user <-> organization)
+    `CREATE TABLE IF NOT EXISTS memberships (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      organization_id TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'admin',
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      UNIQUE(user_id, organization_id),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
     );`,
 
     // qr_code_sets
@@ -289,6 +382,9 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
   for (const sql of statements) {
     await client.execute(sql);
   }
+
+  // Structural migration for legacy DBs (drop UNIQUE on organizations.contact_email)
+  await migrateOrganizationsDropContactEmailUnique(client);
 
   // Lightweight migrations for older local DB files (safe to re-run; ignore "duplicate column" errors)
   const tryExec = async (sql: string) => {

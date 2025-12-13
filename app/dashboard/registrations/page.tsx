@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 interface Registration {
   id: string;
@@ -22,6 +23,7 @@ interface Registration {
 
 export default function RegistrationsPage() {
   const { data: session } = useSession();
+  const { ready, activeOrganizationId } = useRequireActiveOrganization();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,8 @@ export default function RegistrationsPage() {
 
   useEffect(() => {
     if (!session?.user) return;
-    const organizationId = (session.user as any).organizationId;
+    if (!ready) return;
+    const organizationId = activeOrganizationId || ((session.user as any).organizationId as string | undefined);
     if (!organizationId) return;
     
     const fetchRegistrations = async () => {
@@ -53,7 +56,7 @@ export default function RegistrationsPage() {
     };
 
     fetchRegistrations();
-  }, [session]);
+  }, [activeOrganizationId, ready, session]);
 
   const filteredRegistrations = registrations.filter(reg => {
     const data = JSON.parse(reg.registrationData);

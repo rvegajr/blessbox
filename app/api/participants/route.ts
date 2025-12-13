@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { ClassService } from '@/lib/services/ClassService';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { ensureDbReady } from '@/lib/db-ready';
 
 export async function GET(req: NextRequest) {
@@ -13,9 +13,9 @@ export async function GET(req: NextRequest) {
 
   try {
     await ensureDbReady();
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Organization selection required' }, { status: 409 });
     }
 
     const classService = new ClassService();
@@ -37,9 +37,9 @@ export async function POST(req: NextRequest) {
 
   try {
     await ensureDbReady();
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
-      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Organization selection required' }, { status: 409 });
     }
 
     const { first_name, last_name, email, phone, emergency_contact, emergency_phone, notes } = await req.json();
