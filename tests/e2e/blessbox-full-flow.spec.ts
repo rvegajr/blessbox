@@ -22,7 +22,7 @@ async function seedQaOrg(request: any, seedKey: string) {
   if (IS_PRODUCTION) {
     if (!HAS_PROD_SEED) throw new Error('Production tests require PROD_TEST_SEED_SECRET');
     const resp = await request.post(`${BASE_URL}/api/test/seed-prod`, {
-      headers: { 'x-test-seed-secret': PROD_TEST_SEED_SECRET },
+      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
       data: { seedKey },
     });
     expect(resp.ok()).toBeTruthy();
@@ -55,7 +55,7 @@ async function primeOnboardingSession(page: Page, data: { organizationId: string
 
 async function fetchVerificationCode(request: any, email: string): Promise<string> {
   const resp = await request.post(`${BASE_URL}/api/test/verification-code`, {
-    headers: IS_PRODUCTION ? { 'x-test-seed-secret': PROD_TEST_SEED_SECRET } : undefined,
+    headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
     data: { email },
   });
   expect(resp.ok()).toBeTruthy();

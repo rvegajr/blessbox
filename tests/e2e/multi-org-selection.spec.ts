@@ -15,7 +15,7 @@ async function seedOrg(
   if (IS_PRODUCTION) {
     if (!HAS_PROD_SECRETS) throw new Error('Production seeding requires PROD_TEST_SEED_SECRET');
     const resp = await page.request.post(`${BASE_URL}/api/test/seed-prod`, {
-      headers: { 'x-test-seed-secret': PROD_TEST_SEED_SECRET },
+      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
       data: {
         seedKey: params.seedKey,
         contactEmail: params.contactEmail,
@@ -51,7 +51,7 @@ async function login(page: any, email: string, opts?: { organizationId?: string 
   if (IS_PRODUCTION) {
     if (!HAS_PROD_SECRETS) throw new Error('Production login requires PROD_TEST_LOGIN_SECRET');
     const resp = await page.request.post(`${BASE_URL}/api/test/login`, {
-      headers: { 'x-test-login-secret': PROD_TEST_LOGIN_SECRET },
+      headers: { 'x-qa-login-token': PROD_TEST_LOGIN_SECRET },
       data: { email, organizationId: opts?.organizationId, expiresIn: 3600 },
     });
     expect(resp.ok()).toBeTruthy();
