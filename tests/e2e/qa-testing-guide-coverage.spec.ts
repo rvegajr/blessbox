@@ -18,7 +18,7 @@ async function loginAsUser(page: any, email: string, options?: { organizationId?
   if (IS_PRODUCTION && HAS_PROD_SECRETS) {
     // Production: use secret-gated login endpoint
     const loginResp = await page.request.post(`${BASE_URL}/api/test/login`, {
-      headers: { 'x-test-login-secret': PROD_TEST_LOGIN_SECRET },
+      headers: { 'x-qa-login-token': PROD_TEST_LOGIN_SECRET },
       data: {
         email,
         organizationId: options?.organizationId,
@@ -54,7 +54,7 @@ async function seedOrg(page: any, seedKey: string) {
   if (IS_PRODUCTION && HAS_PROD_SECRETS) {
     // Production: use secret-gated seed endpoint
     const seedResp = await page.request.post(`${BASE_URL}/api/test/seed-prod`, {
-      headers: { 'x-test-seed-secret': PROD_TEST_SEED_SECRET },
+      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
       data: { seedKey },
     });
     expect(seedResp.ok()).toBeTruthy();

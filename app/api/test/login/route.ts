@@ -29,7 +29,9 @@ export const runtime = 'nodejs';
 export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === 'production';
   const secret = (process.env.PROD_TEST_LOGIN_SECRET || '').trim();
-  const provided = (req.headers.get('x-test-login-secret') || '').trim();
+  // NOTE: Some production CDNs/WAFs may strip headers containing the word "secret".
+  // Prefer token-style header names, but keep backward compatibility.
+  const provided = (req.headers.get('x-qa-login-token') || req.headers.get('x-test-login-secret') || '').trim();
 
   if (isProd) {
     if (!secret || !provided || provided !== secret) {

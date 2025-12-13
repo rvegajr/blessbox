@@ -11,7 +11,7 @@ async function seedOrg(request: any, seedKey: string) {
   if (IS_PRODUCTION) {
     if (!HAS_PROD_SEED) throw new Error('Production seeding requires PROD_TEST_SEED_SECRET');
     const resp = await request.post(`${BASE_URL}/api/test/seed-prod`, {
-      headers: { 'x-test-seed-secret': PROD_TEST_SEED_SECRET },
+      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
       data: { seedKey },
     });
     expect(resp.ok()).toBeTruthy();
