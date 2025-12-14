@@ -80,7 +80,14 @@ export default function DashboardPage() {
             {/* Usage Bar */}
             {usage && (
               <div id="usage-bar" data-tutorial-target="usage-bar">
-                <UsageBar usage={usage} showUpgradeLink={usage.planType !== 'enterprise'} />
+                <UsageBar 
+                  usage={usage} 
+                  showUpgradeLink={usage.planType !== 'enterprise'} 
+                  onUpgradeSuccess={() => {
+                    // Reload all data after upgrade
+                    window.location.reload();
+                  }}
+                />
               </div>
             )}
 
