@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Square Web Payments SDK types
 declare global {
@@ -10,6 +10,7 @@ declare global {
         card: () => Promise<{
           tokenize: () => Promise<{ status: string; token?: string }>;
           attach: (selector: string) => Promise<void>;
+          destroy: () => Promise<void>;
         }>;
       };
     };
@@ -43,27 +44,34 @@ export default function SquarePaymentForm({
   const [card, setCard] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [containerReady, setContainerReady] = useState(false);
-
-  // Wait for container to be in DOM before initializing Square
-  useEffect(() => {
-    const checkContainer = () => {
-      const container = document.getElementById('card-container');
-      if (container) {
-        setContainerReady(true);
-      } else {
-        // Try again in 50ms
-        setTimeout(checkContainer, 50);
-      }
-    };
-    checkContainer();
-  }, []);
+  const initializingRef = useRef(false);
+  const cardRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!containerReady || !applicationId || !locationId) return;
+    // Prevent double initialization (React Strict Mode)
+    if (initializingRef.current) return;
+    if (!applicationId || !locationId) return;
+
+    initializingRef.current = true;
 
     const initializeSquare = async () => {
       try {
+        // Wait for container to be in DOM
+        let container = document.getElementById('card-container');
+        let attempts = 0;
+        while (!container && attempts < 20) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          container = document.getElementById('card-container');
+          attempts++;
+        }
+        
+        if (!container) {
+          throw new Error('Card container not found');
+        }
+
+        // Clear any existing content (in case of re-initialization)
+        container.innerHTML = '';
+
         // Load Square Web Payments SDK if not already loaded
         if (!window.Square) {
           const script = document.createElement('script');
@@ -108,17 +116,32 @@ export default function SquarePaymentForm({
 
         // Attach card to container
         await card.attach('#card-container');
+        cardRef.current = card;
         setCard(card);
         setIsInitializing(false);
       } catch (error) {
         console.error('Failed to initialize Square Payments:', error);
         setIsInitializing(false);
+        initializingRef.current = false;
         onPaymentError('Failed to initialize payment form');
       }
     };
 
     initializeSquare();
-  }, [containerReady, applicationId, locationId, environment, onPaymentError]);
+
+    // Cleanup on unmount
+    return () => {
+      if (cardRef.current) {
+        try {
+          cardRef.current.destroy();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        cardRef.current = null;
+      }
+      initializingRef.current = false;
+    };
+  }, [applicationId, locationId, environment, onPaymentError]);
 
   const handlePayment = async () => {
     if (!card || !payments) {
@@ -174,13 +197,14 @@ export default function SquarePaymentForm({
         
         {/* Square Card Input - always rendered so Square can attach to it */}
         <div id="card-container" className="mb-4 min-h-[50px]">
-          {isInitializing && (
-            <div className="flex items-center justify-center p-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
-            </div>
-          )}
+          {/* Square will inject the card form here */}
         </div>
+        {isInitializing && (
+          <div className="flex items-center justify-center p-2 mb-4">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
+          </div>
+        )}
 
         <div className="bg-gray-50 p-4 rounded-lg mb-4">
           <div className="flex justify-between items-center">
