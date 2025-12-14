@@ -47,7 +47,7 @@ function CheckoutContent() {
         const res = await fetch('/api/square/config');
         const config = await res.json();
         
-        if (config.error) {
+        if (config.error || !config.enabled) {
           // Local/dev may not have Square configured; checkout can still proceed via mock payment.
           setStatus(`Payment provider not configured (using test checkout)`);
           return;
