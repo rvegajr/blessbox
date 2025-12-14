@@ -16,6 +16,22 @@ import type {
 vi.mock('../db', () => ({
   getDbClient: () => ({
     execute: vi.fn()
+  }),
+  ensureSubscriptionSchema: vi.fn()
+}));
+
+// Create a controllable mock for UsageLimitChecker
+const mockCanRegister = vi.fn().mockResolvedValue({
+  allowed: true,
+  currentCount: 0,
+  limit: 100,
+  remaining: 100,
+  planType: 'free'
+});
+
+vi.mock('./UsageLimitChecker', () => ({
+  getUsageLimitChecker: () => ({
+    canRegister: mockCanRegister
   })
 }));
 
@@ -276,6 +292,54 @@ describe('RegistrationService', () => {
       await expect(
         service.submitRegistration('invalid-org', 'invalid-qr', formData)
       ).rejects.toThrow('Form configuration not found');
+    });
+
+    it('should throw RegistrationLimitError when limit is exceeded', async () => {
+      // Mock the limit checker to return not allowed
+      mockCanRegister.mockResolvedValueOnce({
+        allowed: false,
+        currentCount: 100,
+        limit: 100,
+        remaining: 0,
+        planType: 'free',
+        message: 'Registration limit reached. Your free plan allows 100 registrations.',
+        upgradeUrl: '/pricing'
+      });
+
+      // Mock form config lookup (still needs to succeed first)
+      mockDb.execute
+        .mockResolvedValueOnce({
+          rows: [{
+            id: 'org-123',
+            name: 'Test Organization',
+            custom_domain: 'test-org'
+          }]
+        })
+        .mockResolvedValueOnce({
+          rows: [{
+            id: 'qr-set-123',
+            organization_id: 'org-123',
+            name: 'Test Registration Form',
+            language: 'en',
+            form_fields: JSON.stringify([]),
+            qr_codes: JSON.stringify([
+              {
+                id: 'qr-123',
+                label: 'test-qr',
+                url: 'https://blessbox.app/register/test-org/test-qr'
+              }
+            ])
+          }]
+        });
+
+      const formData: RegistrationFormData = {
+        name: 'John Doe',
+        email: 'john@example.com'
+      };
+
+      await expect(
+        service.submitRegistration('test-org', 'test-qr', formData)
+      ).rejects.toThrow('Registration limit reached');
     });
   });
 
