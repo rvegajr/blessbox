@@ -221,6 +221,7 @@ function CheckoutContent() {
               onPaymentError={handlePaymentError}
               applicationId={squareConfig.applicationId}
               locationId={squareConfig.locationId}
+              environment={squareConfig.environment as 'sandbox' | 'production'}
             />
           ) : (
             <div className="space-y-4">
