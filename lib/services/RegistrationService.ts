@@ -11,6 +11,23 @@ import type {
 } from '../interfaces/IRegistrationService';
 import { EmailService } from './EmailService';
 import { NotificationService } from './NotificationService';
+import { getUsageLimitChecker } from './UsageLimitChecker';
+
+// Custom error for limit exceeded
+export class RegistrationLimitError extends Error {
+  public readonly code = 'LIMIT_EXCEEDED';
+  public readonly upgradeUrl: string;
+  public readonly currentCount: number;
+  public readonly limit: number;
+
+  constructor(message: string, currentCount: number, limit: number, upgradeUrl: string) {
+    super(message);
+    this.name = 'RegistrationLimitError';
+    this.currentCount = currentCount;
+    this.limit = limit;
+    this.upgradeUrl = upgradeUrl;
+  }
+}
 
 export class RegistrationService implements IRegistrationService {
   private db = getDbClient();
@@ -86,6 +103,19 @@ export class RegistrationService implements IRegistrationService {
       throw new Error('Form configuration not found');
     }
 
+    // Check registration limits BEFORE proceeding
+    const usageLimitChecker = getUsageLimitChecker();
+    const limitCheck = await usageLimitChecker.canRegister(formConfig.organizationId);
+    
+    if (!limitCheck.allowed) {
+      throw new RegistrationLimitError(
+        limitCheck.message || 'Registration limit reached',
+        limitCheck.currentCount,
+        limitCheck.limit,
+        limitCheck.upgradeUrl || '/pricing'
+      );
+    }
+
     // Validate required fields
     this.validateFormData(formData, formConfig.formFields);
 
@@ -119,6 +149,9 @@ export class RegistrationService implements IRegistrationService {
         now
       ]
     });
+
+    // Increment registration counter in subscription
+    await this.incrementRegistrationCount(formConfig.organizationId);
 
     const registration: Registration = {
       id: registrationId,
@@ -519,6 +552,27 @@ export class RegistrationService implements IRegistrationService {
       if (field.required && (formData[field.id] === undefined || formData[field.id] === '')) {
         throw new Error(`Missing required field: ${field.id}`);
       }
+    }
+  }
+
+  /**
+   * Increment the registration count for an organization's active subscription.
+   * This keeps the subscription_plans.current_registration_count in sync.
+   */
+  private async incrementRegistrationCount(organizationId: string): Promise<void> {
+    try {
+      await this.db.execute({
+        sql: `
+          UPDATE subscription_plans 
+          SET current_registration_count = COALESCE(current_registration_count, 0) + 1,
+              updated_at = ?
+          WHERE organization_id = ? AND status = 'active'
+        `,
+        args: [new Date().toISOString(), organizationId]
+      });
+    } catch (error) {
+      // Log but don't fail the registration if counter update fails
+      console.error('Failed to increment registration count:', error);
     }
   }
 }
