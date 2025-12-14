@@ -1,11 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { UsageDisplayData, UsageStatus } from '@/lib/interfaces/IUsageDisplay';
+import type { PlanType } from '@/lib/subscriptions';
+import { UpgradeModal } from '@/components/subscription/UpgradeModal';
 
 export interface UsageBarProps {
   usage: UsageDisplayData;
   showUpgradeLink?: boolean;
+  onUpgradeSuccess?: () => void;
   className?: string;
   'data-testid'?: string;
 }
@@ -37,14 +40,37 @@ const planLabels: Record<string, string> = {
 export function UsageBar({
   usage,
   showUpgradeLink = true,
+  onUpgradeSuccess,
   className = '',
   'data-testid': testId = 'usage-bar',
 }: UsageBarProps) {
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [targetPlan, setTargetPlan] = useState<PlanType>('standard');
+
   const colors = statusColors[usage.status];
   const planLabel = planLabels[usage.planType] || 'Free Plan';
   const barWidth = Math.min(usage.percentage, 100);
 
+  const handleUpgradeClick = () => {
+    // Determine target plan based on current plan
+    const nextPlan: PlanType = usage.planType === 'free' ? 'standard' : 'enterprise';
+    setTargetPlan(nextPlan);
+    setShowUpgradeModal(true);
+  };
+
+  const handleUpgradeSuccess = () => {
+    setShowUpgradeModal(false);
+    onUpgradeSuccess?.();
+  };
+
   return (
+    <>
+      <UpgradeModal
+        targetPlan={targetPlan}
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={handleUpgradeSuccess}
+      />
     <div
       className={`bg-white rounded-lg shadow-sm p-6 ${className}`.trim()}
       data-testid={testId}
@@ -87,40 +113,53 @@ export function UsageBar({
       </div>
 
       {/* Status Messages */}
-      {usage.status === 'warning' && showUpgradeLink && (
+      {usage.status === 'warning' && showUpgradeLink && usage.planType !== 'enterprise' && (
         <div className={`mt-4 p-3 rounded-lg ${colors.bg}`}>
           <p className={`text-sm ${colors.text}`}>
             <span className="font-medium">⚠️ Approaching limit</span>
             {' — '}
-            <a 
-              href="/pricing" 
+            <button 
+              onClick={handleUpgradeClick}
               className="underline hover:no-underline font-medium"
             >
               Upgrade your plan
-            </a>
+            </button>
             {' to continue adding registrations.'}
           </p>
         </div>
       )}
 
-      {usage.status === 'critical' && showUpgradeLink && (
+      {usage.status === 'critical' && showUpgradeLink && usage.planType !== 'enterprise' && (
         <div className={`mt-4 p-3 rounded-lg ${colors.bg}`}>
           <p className={`text-sm ${colors.text}`}>
             <span className="font-medium">🚨 {usage.remaining === 0 ? 'Limit reached' : 'Nearly at limit'}</span>
             {' — '}
-            <a 
-              href="/pricing" 
+            <button 
+              onClick={handleUpgradeClick}
               className="underline hover:no-underline font-medium"
             >
               Upgrade now
-            </a>
+            </button>
             {usage.remaining === 0 
               ? ' to continue accepting registrations.' 
               : ' before you run out of registrations.'}
           </p>
         </div>
       )}
+
+      {/* Upgrade Button for ok status */}
+      {usage.status === 'ok' && showUpgradeLink && usage.planType !== 'enterprise' && (
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={handleUpgradeClick}
+            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+          >
+            Upgrade Plan →
+          </button>
+        </div>
+      )}
     </div>
+    </>
   );
 }
 
