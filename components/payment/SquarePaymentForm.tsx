@@ -25,6 +25,7 @@ interface SquarePaymentFormProps {
   onPaymentError: (error: string) => void;
   applicationId: string;
   locationId: string;
+  environment?: 'sandbox' | 'production';
 }
 
 export default function SquarePaymentForm({
@@ -36,18 +37,40 @@ export default function SquarePaymentForm({
   onPaymentError,
   applicationId,
   locationId,
+  environment = 'sandbox',
 }: SquarePaymentFormProps) {
   const [payments, setPayments] = useState<any>(null);
   const [card, setCard] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [containerReady, setContainerReady] = useState(false);
+
+  // Wait for container to be in DOM before initializing Square
+  useEffect(() => {
+    const checkContainer = () => {
+      const container = document.getElementById('card-container');
+      if (container) {
+        setContainerReady(true);
+      } else {
+        // Try again in 50ms
+        setTimeout(checkContainer, 50);
+      }
+    };
+    checkContainer();
+  }, []);
 
   useEffect(() => {
+    if (!containerReady || !applicationId || !locationId) return;
+
     const initializeSquare = async () => {
       try {
         // Load Square Web Payments SDK if not already loaded
         if (!window.Square) {
           const script = document.createElement('script');
-          script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
+          // Use production or sandbox SDK based on environment
+          script.src = environment === 'production'
+            ? 'https://web.squarecdn.com/v1/square.js'
+            : 'https://sandbox.web.squarecdn.com/v1/square.js';
           script.async = true;
           document.head.appendChild(script);
           
@@ -86,16 +109,16 @@ export default function SquarePaymentForm({
         // Attach card to container
         await card.attach('#card-container');
         setCard(card);
+        setIsInitializing(false);
       } catch (error) {
         console.error('Failed to initialize Square Payments:', error);
+        setIsInitializing(false);
         onPaymentError('Failed to initialize payment form');
       }
     };
 
-    if (applicationId && locationId) {
-      initializeSquare();
-    }
-  }, [applicationId, locationId, onPaymentError]);
+    initializeSquare();
+  }, [containerReady, applicationId, locationId, environment, onPaymentError]);
 
   const handlePayment = async () => {
     if (!card || !payments) {
@@ -142,15 +165,6 @@ export default function SquarePaymentForm({
     }
   };
 
-  if (!card) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Loading payment form...</span>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-lg shadow-md">
@@ -158,9 +172,14 @@ export default function SquarePaymentForm({
           Payment Information
         </h3>
         
-        {/* Square Card Input */}
-        <div id="card-container" className="mb-4">
-          {/* Square will inject the card input here */}
+        {/* Square Card Input - always rendered so Square can attach to it */}
+        <div id="card-container" className="mb-4 min-h-[50px]">
+          {isInitializing && (
+            <div className="flex items-center justify-center p-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
+            </div>
+          )}
         </div>
 
         <div className="bg-gray-50 p-4 rounded-lg mb-4">
@@ -174,7 +193,7 @@ export default function SquarePaymentForm({
 
         <button
           onClick={handlePayment}
-          disabled={isLoading}
+          disabled={isLoading || isInitializing || !card}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? (
