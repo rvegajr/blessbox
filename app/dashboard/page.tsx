@@ -7,6 +7,7 @@ import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed';
 import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
 import { UsageBar } from '@/components/dashboard/UsageBar';
+import { CancelModal } from '@/components/subscription/CancelModal';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 import type { UsageDisplayData } from '@/lib/interfaces/IUsageDisplay';
 
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [classes, setClasses] = useState<any[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -112,9 +114,11 @@ export default function DashboardPage() {
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           subscription.status === 'active' 
                             ? 'bg-green-100 text-green-800' 
+                            : subscription.status === 'canceling'
+                            ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {subscription.status}
+                          {subscription.status === 'canceling' ? 'Canceling' : subscription.status}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -125,6 +129,24 @@ export default function DashboardPage() {
                         <span className="text-gray-600">Limit:</span>
                         <span className="font-medium">{subscription.registration_limit} participants</span>
                       </div>
+                      
+                      {/* Subscription Actions */}
+                      {subscription.plan_type !== 'free' && subscription.status === 'active' && (
+                        <div className="pt-3 border-t mt-3">
+                          <button
+                            onClick={() => setShowCancelModal(true)}
+                            className="text-sm text-red-600 hover:text-red-800"
+                          >
+                            Cancel subscription
+                          </button>
+                        </div>
+                      )}
+                      
+                      {subscription.status === 'canceling' && subscription.current_period_end && (
+                        <div className="pt-3 border-t mt-3 text-sm text-yellow-700">
+                          Access until: {new Date(subscription.current_period_end).toLocaleDateString()}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="text-gray-600">
@@ -138,6 +160,16 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
+                
+                {/* Cancel Modal */}
+                <CancelModal
+                  isOpen={showCancelModal}
+                  onClose={() => setShowCancelModal(false)}
+                  onSuccess={() => {
+                    setShowCancelModal(false);
+                    window.location.reload();
+                  }}
+                />
 
                 {/* Quick Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
