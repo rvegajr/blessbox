@@ -6,7 +6,9 @@ import { useSession } from 'next-auth/react';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed';
 import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
+import { UsageBar } from '@/components/dashboard/UsageBar';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
+import type { UsageDisplayData } from '@/lib/interfaces/IUsageDisplay';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -15,6 +17,7 @@ export default function DashboardPage() {
   const { status } = useSession();
   const { ready } = useRequireActiveOrganization();
   const [subscription, setSubscription] = useState<any | null>(null);
+  const [usage, setUsage] = useState<UsageDisplayData | null>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,8 +27,9 @@ export default function DashboardPage() {
     async function load() {
       if (!ready || status === 'loading') return;
       try {
-        const [subscriptionRes, classesRes, participantsRes] = await Promise.all([
+        const [subscriptionRes, usageRes, classesRes, participantsRes] = await Promise.all([
           fetch('/api/subscriptions'),
+          fetch('/api/usage'),
           fetch('/api/classes'),
           fetch('/api/participants')
         ]);
@@ -33,6 +37,11 @@ export default function DashboardPage() {
         if (!ignore) {
           const subscriptionData = await subscriptionRes.json();
           setSubscription(subscriptionData.subscription || null);
+          
+          const usageData = await usageRes.json();
+          if (usageData.success && usageData.data) {
+            setUsage(usageData.data);
+          }
           
           const classesData = await classesRes.json();
           setClasses(classesData);
@@ -67,6 +76,13 @@ export default function DashboardPage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Overview</h2>
               <DashboardStats />
             </div>
+
+            {/* Usage Bar */}
+            {usage && (
+              <div id="usage-bar" data-tutorial-target="usage-bar">
+                <UsageBar usage={usage} showUpgradeLink={usage.planType !== 'enterprise'} />
+              </div>
+            )}
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
