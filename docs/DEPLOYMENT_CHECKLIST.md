@@ -13,10 +13,10 @@ Run these commands to quickly validate your environment:
 npm run validate:env
 
 # Check system health via API
-curl http://localhost:3000/api/system/health-check
+curl http://localhost:7777/api/system/health-check
 
 # Visit diagnostic dashboard
-open http://localhost:3000/system/diagnostics
+open http://localhost:7777/system/diagnostics
 ```
 
 ---
@@ -133,7 +133,7 @@ open http://localhost:3000/system/diagnostics
   PUBLIC_APP_URL=https://yourdomain.com
   ```
 - [ ] **Configure for each environment**:
-  - Development: `http://localhost:3000`
+  - Development: `http://localhost:7777`
   - Staging: `https://staging.yourdomain.com`
   - Production: `https://yourdomain.com`
 
@@ -175,7 +175,7 @@ open http://localhost:3000/system/diagnostics
   ```
 - [ ] **Run with environment file**:
   ```bash
-  docker run --env-file .env.production -p 3000:3000 blessbox:latest
+  docker run --env-file .env.production -p 7777:7777 blessbox:latest
   ```
 
 ---

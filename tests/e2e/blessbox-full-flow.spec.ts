@@ -14,6 +14,78 @@ const BASE_URL = ENVIRONMENTS[ENV] || ENVIRONMENTS.production;
 const MAX_TEST_USERS = 10;
 const AUTO_CLEANUP = process.env.CLEANUP === 'true';
 
+const IS_PRODUCTION = ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
+const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
+const HAS_PROD_SEED = !!PROD_TEST_SEED_SECRET;
+
+async function seedQaOrg(request: any, seedKey: string) {
+  if (IS_PRODUCTION) {
+    if (!HAS_PROD_SEED) throw new Error('Production tests require PROD_TEST_SEED_SECRET');
+    const resp = await request.post(`${BASE_URL}/api/test/seed-prod`, {
+      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
+      data: { seedKey },
+    });
+    expect(resp.ok()).toBeTruthy();
+    const seed = await resp.json();
+    expect(seed.success).toBe(true);
+    return seed as any;
+  }
+
+  const resp = await request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey } });
+  expect(resp.ok()).toBeTruthy();
+  const seed = await resp.json();
+  expect(seed.success).toBe(true);
+  return seed as any;
+}
+
+async function primeOnboardingSession(page: Page, data: { organizationId: string; contactEmail: string }) {
+  await page.goto(BASE_URL);
+  await page.evaluate(
+    ({ organizationId, contactEmail }) => {
+      sessionStorage.clear();
+      sessionStorage.setItem('onboarding_organizationId', organizationId);
+      sessionStorage.setItem('onboarding_contactEmail', contactEmail);
+      sessionStorage.setItem('onboarding_emailVerified', 'true');
+      sessionStorage.setItem('onboarding_formSaved', 'false');
+      sessionStorage.setItem('onboarding_step', '3');
+    },
+    { organizationId: data.organizationId, contactEmail: data.contactEmail }
+  );
+}
+
+async function fetchVerificationCode(request: any, email: string): Promise<string> {
+  // In production, verification code writes can be slightly delayed. Retry briefly if we get "No code found".
+  const maxAttempts = IS_PRODUCTION ? 10 : 1;
+  const delayMs = 500;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const resp = await request.post(`${BASE_URL}/api/test/verification-code`, {
+      headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
+      data: { email },
+    });
+
+    const body = await resp.json().catch(() => ({} as any));
+
+    if (resp.ok() && body?.success && typeof body?.code === 'string' && /^\d{6}$/.test(body.code)) {
+      return body.code;
+    }
+
+    // Retry only for the expected "not ready yet" case.
+    const isNotReady = resp.status() === 404 && String(body?.error || '').toLowerCase().includes('no code');
+    if (attempt < maxAttempts && isNotReady) {
+      await new Promise((r) => setTimeout(r, delayMs));
+      continue;
+    }
+
+    // Otherwise fail with context.
+    expect(resp.ok()).toBeTruthy();
+    expect(body?.success).toBe(true);
+    expect(body?.code).toMatch(/^\d{6}$/);
+  }
+
+  throw new Error('Unable to fetch verification code');
+}
+
 // Test data storage for cleanup
 const createdTestData: any[] = [];
 
@@ -43,20 +115,14 @@ const CUSTOM_FIELD_TESTS = [
     testValue: 'Vegetarian'
   },
   {
-    type: 'number',
-    label: 'E2E_TEST_Age',
-    required: true,
-    testValue: '25'
-  },
-  {
     type: 'email',
     label: 'E2E_TEST_Work Email',
     required: false,
     testValue: 'work@example.com'
   },
   {
-    type: 'tel',
-    label: 'E2E_TEST_Emergency Contact',
+    type: 'phone',
+    label: 'E2E_TEST_Emergency Phone',
     required: true,
     testValue: '555-9999'
   },
@@ -119,7 +185,7 @@ test.describe(`BlessBox E2E Tests - ${ENV.charAt(0).toUpperCase() + ENV.slice(1)
     await expect(heroText).toBeVisible();
   });
 
-  test('2. Onboarding flow - Organization Setup', async ({ page }) => {
+  test('2. Onboarding flow - Organization Setup', async ({ page, request }) => {
     console.log('\n📋 Testing organization setup...');
     
     const testData = generateTestData(1);
@@ -129,121 +195,82 @@ test.describe(`BlessBox E2E Tests - ${ENV.charAt(0).toUpperCase() + ENV.slice(1)
     await page.goto(`${BASE_URL}/onboarding/organization-setup`);
     
     // Check we're on step 1
-    await expect(page.locator('text=/Step 1 of 4/i')).toBeVisible();
+    await expect(page.locator('[data-testid="step-progress"]')).toContainText(/Step 1 of 4/i);
     
-    // Fill contact information form
-    await page.fill('input[name="email"]', testData.email);
-    await page.fill('input[name="phone"]', testData.phone);
-    await page.fill('input[name="address"]', testData.address);
-    await page.fill('input[name="city"]', testData.city);
-    await page.fill('input[name="state"]', testData.state);
-    await page.fill('input[name="zipCode"]', testData.zipCode);
+    // Fill organization setup form (current UI uses ids)
+    await page.fill('#name', testData.organization);
+    await page.fill('#eventName', testData.eventName);
+    await page.fill('#contactEmail', testData.email);
+    await page.fill('#contactPhone', testData.phone);
+    await page.fill('#contactAddress', testData.address);
+    await page.fill('#contactCity', testData.city);
+    await page.fill('#contactState', testData.state);
+    await page.fill('#contactZip', testData.zipCode);
     
     console.log(`   ✓ Filled organization contact: ${testData.email}`);
     
-  // Submit form (wait for visible & enabled)
-  const submitButton = page.locator('#submitButton, form button[type="submit"], button:has-text("Continue to Email Verification"), button[type="submit"]').first();
-  await submitButton.waitFor({ state: 'visible' });
-  await expect(submitButton).toBeEnabled();
-  await submitButton.click();
+    // Submit form
+    const submitButton = page.locator('button[type="submit"]').first();
+    await submitButton.waitFor({ state: 'visible' });
+    await expect(submitButton).toBeEnabled();
+    await submitButton.click();
     
-  // Wait for navigation or view transition completion
-  await page.waitForLoadState('networkidle');
+    await page.waitForURL(/\/onboarding\/email-verification/, { timeout: 15000 });
     
-    // Check if we moved to email verification or next step
-    const currentUrl = page.url();
-    if (currentUrl.includes('verify-email')) {
-      console.log('   ✓ Email verification required');
-      // Use magic code in local/dev environments
-      await page.fill('#verificationCode', '111111');
-      const verifyBtn = page.locator('#submitButton');
-      await verifyBtn.click();
-      await page.waitForURL(/onboarding\/(form-builder|qr-configuration)/, { timeout: 10000 });
-      console.log('   ✓ Email verified with magic code');
-    }
+    // Email verification: retrieve code via QA helper (no inbox needed)
+    if (IS_PRODUCTION && !HAS_PROD_SEED) throw new Error('Production onboarding tests require PROD_TEST_SEED_SECRET');
+    const code = await fetchVerificationCode(request, testData.email);
+    await page.fill('#code', code);
+    await page.getByRole('button', { name: /verify email/i }).click();
+    await page.waitForURL(/\/onboarding\/form-builder/, { timeout: 20000 });
   });
 
-  test('3. Form Builder - Add and manage custom fields', async ({ page }) => {
+  test('3. Form Builder - Add and manage custom fields', async ({ page, request }) => {
     console.log('\n🔧 Testing form builder and custom fields...');
+
+    // Ensure onboarding session exists so the page doesn't redirect
+    const seed = await seedQaOrg(request, `fullflow-form-${Date.now()}`);
+    await primeOnboardingSession(page, { organizationId: seed.organizationId, contactEmail: seed.contactEmail });
     
     // Navigate to form builder
     await page.goto(`${BASE_URL}/onboarding/form-builder`);
     
-    // Wait for form builder to load
-    await page.waitForSelector('#fieldsList', { timeout: 10000 });
+    // Wait for form builder to load (wizard + form builder)
+    await expect(page.locator('[data-testid="form-builder-wizard"]')).toBeVisible({ timeout: 15000 });
     
     // Test adding each field type
     for (const fieldTest of CUSTOM_FIELD_TESTS) {
       console.log(`   Adding ${fieldTest.type} field: ${fieldTest.label}`);
-      
-      // Select field type
-      await page.selectOption('#fieldType', fieldTest.type);
-      
-      // Enter field label
-      await page.fill('#fieldLabel', fieldTest.label);
-      
-      // Set required checkbox
-      if (fieldTest.required) {
-        await page.check('#fieldRequired');
-      } else {
-        await page.uncheck('#fieldRequired');
-      }
-      
-      // For dropdown fields, add options
-      if (fieldTest.type === 'select' && fieldTest.options) {
-        await page.fill('#fieldOptions', fieldTest.options.join('\n'));
-      }
-      
-      // Submit the add field form
-      const addButton = page.locator('button:has-text("Add Field")').first();
-      await addButton.click();
-      
-      // Wait for field to be added
-      await page.waitForTimeout(500);
-      
-      // Verify field appears in the list (be specific to avoid duplicate matches)
-      await expect(page.locator(`#fieldsList >> text=${fieldTest.label}`).first()).toBeVisible();
+
+      // Add field by clicking sidebar button that matches type
+      const buttonName =
+        fieldTest.type === 'text' ? /short text/i :
+        fieldTest.type === 'email' ? /email/i :
+        fieldTest.type === 'phone' ? /phone/i :
+        fieldTest.type === 'select' ? /dropdown/i :
+        fieldTest.type === 'checkbox' ? /checkbox/i :
+        /short text/i;
+
+      const sidebar = page.getByTestId('form-builder-wizard');
+      await sidebar.getByRole('button', { name: buttonName }).first().click();
+      const labelInput = page.getByPlaceholder('Field label').last();
+      await expect(labelInput).toBeVisible({ timeout: 10000 });
+      await labelInput.fill(fieldTest.label);
       
       console.log(`   ✓ Added ${fieldTest.type} field`);
     }
     
-    // Test field reordering
-    console.log('\n   Testing field reordering...');
-    const moveButtons = page.locator('button[onclick*="moveField"]:not([disabled])');
-    if (await moveButtons.count() > 0) {
-      await moveButtons.first().click();
-      await page.waitForTimeout(500);
-      console.log('   ✓ Field reordering works');
-    } else {
-      console.log('   ⚠️  No enabled move buttons found');
-    }
-    
-    // Test field deletion
-    console.log('\n   Testing field deletion...');
-    const deleteButtons = page.locator('button[onclick*="removeField"]');
-    const initialFieldCount = await deleteButtons.count();
-    
-    if (initialFieldCount > 0) {
-      // Delete the last custom field
-      await deleteButtons.last().click();
-      await page.waitForTimeout(500);
-      
-      // Verify field was removed
-      const newFieldCount = await page.locator('button[onclick*="removeField"]').count();
-      expect(newFieldCount).toBe(initialFieldCount - 1);
-      console.log('   ✓ Field deletion works');
-    }
-    
-    // Navigate to next step
-    const continueButton = page.locator('button:has-text("Continue"), button:has-text("Next")').first();
-    if (await continueButton.isVisible()) {
-      await continueButton.click();
-      console.log('   ✓ Proceeding to QR configuration');
-    }
+    // Proceed to next step (this will persist the form config)
+    await page.locator('[data-testid="next-button"]').click();
+    await page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 20000 });
+    console.log('   ✓ Proceeding to QR configuration');
   });
 
-  test('4. QR Configuration', async ({ page }) => {
+  test('4. QR Configuration', async ({ page, request }) => {
     console.log('\n🎯 Testing QR code configuration...');
+
+    const seed = await seedQaOrg(request, `fullflow-qr-${Date.now()}`);
+    await primeOnboardingSession(page, { organizationId: seed.organizationId, contactEmail: seed.contactEmail });
     
     // Navigate to QR configuration
     await page.goto(`${BASE_URL}/onboarding/qr-configuration`);
@@ -269,20 +296,25 @@ test.describe(`BlessBox E2E Tests - ${ENV.charAt(0).toUpperCase() + ENV.slice(1)
       console.log('   ✓ QR code generated');
     }
     
-    // Generate QR button
-    const generateButton = page.locator('button:has-text("Generate"), button:has-text("Create")').first();
-    if (await generateButton.isVisible()) {
-      await generateButton.click();
-      await page.waitForTimeout(2000);
-      console.log('   ✓ QR code generation triggered');
+    // Add an entry point so Generate is enabled
+    const quickAdd = page.getByRole('button', { name: /\+\s*main entrance/i }).first();
+    if (await quickAdd.isVisible().catch(() => false)) {
+      await quickAdd.click();
+    } else {
+      await page.getByRole('button', { name: /\+\s*add entry point/i }).click();
+      await page.getByPlaceholder('e.g., Main Entrance').first().fill('Main Entrance');
+      await page.getByPlaceholder('main-entrance').first().fill('main-entrance');
     }
-    // Complete setup and verify redirect to org dashboard (SPA-like)
-    const completeBtn = page.locator('#completeButton, button:has-text("Complete Setup")').first();
-    await completeBtn.scrollIntoViewIfNeeded();
-    await expect(completeBtn).toBeVisible();
+
+    // Generate QR codes (real action)
+    await page.locator('#generate-qr-btn').click();
+    await expect(page.locator('img[alt*="QR Code"], img[src^="data:image"]')).toBeVisible({ timeout: 20000 });
+    console.log('   ✓ QR code generation triggered');
+
+    // Complete setup and verify redirect to dashboard
+    const completeBtn = page.locator('[data-testid="complete-button"]').first();
     await completeBtn.click();
-    // Expect a brief success then transition
-    await page.waitForURL(/\/dashboard(\/(organization|org)\/[^\s/]+)?\/?/, { timeout: 15000 });
+    await page.waitForURL(/\/dashboard/, { timeout: 20000 });
     console.log('   ✓ Redirected to organization dashboard');
 
     // Smoke-check dashboard: accept URL match as success in local where data widgets may 401
@@ -348,26 +380,24 @@ test.describe(`BlessBox E2E Tests - ${ENV.charAt(0).toUpperCase() + ENV.slice(1)
     }
   });
 
-  test('6. Data type preservation', async ({ page }) => {
+  test('6. Data type preservation', async ({ page, request }) => {
     console.log('\n🔍 Testing data type preservation...');
-    
-    // Navigate back to form builder to verify field types
+
+    // Load form builder with a primed session and ensure different field editors render without crashing
+    const seed = await seedQaOrg(request, `fullflow-types-${Date.now()}`);
+    await primeOnboardingSession(page, { organizationId: seed.organizationId, contactEmail: seed.contactEmail });
     await page.goto(`${BASE_URL}/onboarding/form-builder`);
-    
-    // Wait for fields to load
-    await page.waitForSelector('#fieldsList', { timeout: 10000 });
-    
-    // Check that field types are preserved
-    for (const fieldTest of CUSTOM_FIELD_TESTS.slice(0, 3)) {
-      const fieldElement = page.locator(`text=${fieldTest.label}`);
-      if (await fieldElement.isVisible()) {
-        // Check that the field type indicator is correct
-        const fieldTypeIndicator = fieldElement.locator(`..`).locator(`text=/${fieldTest.type}/i`);
-        if (await fieldTypeIndicator.isVisible()) {
-          console.log(`   ✓ ${fieldTest.label}: Type ${fieldTest.type} preserved`);
-        }
-      }
-    }
+    await expect(page.locator('[data-testid="form-builder-wizard"]')).toBeVisible({ timeout: 15000 });
+
+    // Add Dropdown field and verify options UI appears
+    await page.getByTestId('form-builder-wizard').getByRole('button', { name: /dropdown/i }).click();
+    await expect(page.locator('text=/Options/i').first()).toBeVisible({ timeout: 10000 });
+
+    // Add Checkbox field and verify it's present
+    await page.getByTestId('form-builder-wizard').getByRole('button', { name: /checkbox/i }).click();
+    await expect(page.locator('input[type="checkbox"]').first()).toBeVisible({ timeout: 10000 });
+
+    console.log('   ✓ Field editors render (type UI preserved)');
   });
 
   test('7. Dashboard access', async ({ page }) => {

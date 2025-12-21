@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlessBox Tutorial System Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        .btn.secondary {
+            background: #6b7280;
+        }
+        .btn.secondary:hover {
+            background: #4b5563;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .activity-list {
+            list-style: none;
+            padding: 0;
+        }
+        .activity-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .help-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: help;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="header" id="welcome-section">
+            <h1>BlessBox Tutorial System Demo</h1>
+            <p>Experience our context-aware tutorial system in action</p>
+            <button class="btn" id="create-org-btn">Create Organization</button>
+            <a href="#dashboard" class="btn secondary" id="dashboard-link">Go to Dashboard</a>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="section" id="dashboard">
+            <h2>Dashboard <span class="help-icon" title="Click for help">?</span></h2>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-number">42</div>
+                    <div>Total Check-ins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div>Active QR Codes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">15</div>
+                    <div>Events This Month</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section" id="recent-activity">
+                <h3>Recent Activity</h3>
+                <ul class="activity-list">
+                    <li class="activity-item">John Doe checked in to "Tech Conference 2024"</li>
+                    <li class="activity-item">New QR code created for "Workshop Series"</li>
+                    <li class="activity-item">Sarah Wilson checked in to "Networking Event"</li>
+                </ul>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section" id="quick-actions">
+                <h3>Quick Actions</h3>
+                <button class="btn" id="create-qr-btn">Create QR Code</button>
+                <button class="btn secondary">Manage Events</button>
+                <button class="btn secondary">Invite Team Member</button>
+            </div>
+        </div>
+
+        <!-- QR Creation Section -->
+        <div class="section" id="qr-form" style="display: none;">
+            <h2>Create QR Code</h2>
+            <form>
+                <div style="margin: 10px 0;">
+                    <label>Event Name:</label>
+                    <input type="text" style="width: 100%; padding: 8px; margin-top: 5px;">
+                </div>
+                <div style="margin: 10px 0;">
+                    <label>Description:</label>
+                    <textarea style="width: 100%; padding: 8px; margin-top: 5px; height: 80px;"></textarea>
+                </div>
+                <button type="submit" class="btn">Create QR Code</button>
+            </form>
+            
+            <div id="preview-section" style="margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+                <h3>Preview</h3>
+                <div style="text-align: center;">
+                    <div style="width: 200px; height: 200px; background: #e0e0e0; margin: 0 auto; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        QR Code Preview
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Section -->
+        <div class="section" id="events-list" style="display: none;">
+            <h2>Your Events</h2>
+            <div id="event-analytics" style="margin: 20px 0; padding: 20px; background: #f8fafc; border-radius: 8px;">
+                <h3>Event Analytics</h3>
+                <p>View detailed insights about your events and check-in performance.</p>
+            </div>
+            <button class="btn" id="export-data">Export Data</button>
+        </div>
+
+        <!-- Team Section -->
+        <div class="section" id="team-section" style="display: none;">
+            <h2>Team Management</h2>
+            <button class="btn" id="invite-member-btn">Invite Member</button>
+            <div id="permissions-settings" style="margin-top: 20px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+                <h3>Role Permissions</h3>
+                <p>Configure what each team member can access and modify.</p>
+            </div>
+        </div>
+
+        <!-- Tutorial Controls -->
+        <div class="section">
+            <h2>Tutorial Controls</h2>
+            <button class="btn" onclick="BlessBoxTutorialSystem.startTutorial('welcome-tour')">Start Welcome Tour</button>
+            <button class="btn" onclick="BlessBoxTutorialSystem.startTutorial('dashboard-tour')">Start Dashboard Tour</button>
+            <button class="btn" onclick="BlessBoxTutorialSystem.startTutorial('qr-creation-tour')">Start QR Creation Tour</button>
+            <button class="btn secondary" onclick="BlessBoxTutorialSystem.checkContextTriggers()">Check Context Triggers</button>
+            <button class="btn secondary" onclick="BlessBoxTutorialSystem.resetTutorial('welcome-tour')">Reset Welcome Tour</button>
+        </div>
+
+        <!-- Demo Actions -->
+        <div class="section">
+            <h2>Demo Actions</h2>
+            <button class="btn" onclick="simulateQRCreateClick()">Simulate QR Create Click</button>
+            <button class="btn" onclick="simulateInviteAttempt()">Simulate Invite Attempt</button>
+            <button class="btn" onclick="simulateFeatureUse()">Simulate Feature Use</button>
+            <button class="btn secondary" onclick="clearAllData()">Clear All Data</button>
+        </div>
+    </div>
+
+    <!-- Load Tutorial System -->
+    <script type="module">
+        // Import the tutorial system
+        import './tutorials/index.js';
+        
+        // Demo functions
+        window.simulateQRCreateClick = function() {
+            BlessBoxTutorialSystem.trackAction('qr-create-click');
+            alert('QR create click tracked! Check console for context trigger evaluation.');
+        };
+        
+        window.simulateInviteAttempt = function() {
+            BlessBoxTutorialSystem.trackAction('invite-attempt');
+            alert('Invite attempt tracked! Check console for context trigger evaluation.');
+        };
+        
+        window.simulateFeatureUse = function() {
+            BlessBoxTutorialSystem.trackAction('feature-used', { feature: 'analytics' });
+            alert('Feature use tracked! Check console for context trigger evaluation.');
+        };
+        
+        window.clearAllData = function() {
+            localStorage.clear();
+            alert('All tutorial data cleared! Refresh the page to see first-visit behavior.');
+        };
+        
+        // Show/hide sections based on button clicks
+        document.getElementById('create-qr-btn').addEventListener('click', function() {
+            document.getElementById('qr-form').style.display = 'block';
+            BlessBoxTutorialSystem.trackAction('qr-create-click');
+        });
+        
+        document.getElementById('dashboard-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('dashboard').scrollIntoView();
+            BlessBoxTutorialSystem.trackAction('dashboard-view');
+        });
+        
+        document.getElementById('create-org-btn').addEventListener('click', function() {
+            BlessBoxTutorialSystem.trackAction('org-create-click');
+        });
+        
+        document.getElementById('invite-member-btn').addEventListener('click', function() {
+            BlessBoxTutorialSystem.trackAction('invite-attempt');
+        });
+        
+        document.getElementById('export-data').addEventListener('click', function() {
+            BlessBoxTutorialSystem.trackAction('export-data');
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,23 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "development": true
+    }
+  },
+  "github": {
+    "deploymentEnabled": true,
+    "autoAlias": true
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PUBLIC_APP_URL": "https://blessbox.vercel.app"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "development", 
+      "PUBLIC_APP_URL": "https://blessbox-git-development.vercel.app"
+    }
+  },
+  "_comment": "Local development runs on port 7777 to avoid conflicts with other projects"
+}
