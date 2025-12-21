@@ -170,9 +170,9 @@
 
 #### Required Interfaces
 
-- [ ] **IPaymentService** ✅ SEGREGATED PROPERLY
+- [ ] **IPaymentProcessor** ✅ SEGREGATED PROPERLY
   ```typescript
-  interface IPaymentService {
+  interface IPaymentProcessor {
     createPaymentIntent(amount: number, currency: string): Promise<PaymentIntent>
     processPayment(token: string, amount: number): Promise<PaymentResult>
     refundPayment(paymentId: string, amount?: number): Promise<RefundResult>
@@ -210,19 +210,16 @@
   - [ ] Separate from subscription management ✅
   - [ ] Single responsibility: Coupon validation and tracking ✅
 
-- [ ] **IAdminService** ⚠️ NEEDS IMPLEMENTATION
+- [ ] **IAdminExportService** ✅ IMPLEMENTED
   ```typescript
-  interface IAdminService {
-    listAllSubscriptions(filters?: SubscriptionFilters): Promise<Subscription[]>
-    updateOrganizationPlan(orgId: string, planId: string): Promise<void>
-    issueRefund(subscriptionId: string, amount: number, reason: string): Promise<Refund>
-    getRevenuReports(dateRange: DateRange): Promise<RevenueReport>
-    getAuditLog(entityId: string): Promise<AuditEntry[]>
+  interface IAdminExportService {
+    exportOrganizationData(organizationId: string, exportedBy: string): Promise<ExportDataSnapshot>
+    exportAllData(exportedBy: string): Promise<ExportDataSnapshot>
   }
   ```
-  - [ ] Does NOT duplicate subscription service methods ✅
-  - [ ] Admin-specific operations only ✅
-  - [ ] Single responsibility: Admin management ✅
+  - [ ] Single responsibility: export snapshots ✅
+  - [ ] Implemented in `lib/services/AdminExportService.ts` ✅
+  - [ ] Unit tests: `lib/services/AdminExportService.test.ts` ✅
 
 #### ISP Violations to Fix
 

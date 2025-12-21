@@ -14,7 +14,7 @@ BlessBox has a **production-ready Square payment integration** with full coupon 
 ### Square Integration
 
 **Service:** `lib/services/SquarePaymentService.ts`  
-**Interface:** `lib/interfaces/IPaymentService.ts`
+**Interface:** `lib/interfaces/IPaymentProcessor.ts` (shared types in `lib/interfaces/IPaymentService.ts`)
 
 **Features Implemented:**
 - ✅ Payment processing
@@ -26,9 +26,8 @@ BlessBox has a **production-ready Square payment integration** with full coupon 
 
 **Square SDK Methods Used:**
 ```typescript
-- client.paymentsApi.createPayment()
-- client.refundsApi.refundPayment()
-- client.paymentsApi.getPayment()
+- client.payments.create()
+- client.refunds.refundPayment()
 ```
 
 ---
