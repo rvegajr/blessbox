@@ -24,7 +24,8 @@ This document provides a comprehensive gap analysis and architectural recommenda
 ### ✅ What's Implemented (80% Backend, 50% Frontend, 30% Admin)
 
 #### Backend Services (ISP Compliant)
-- ✅ `IPaymentService` interface (46 lines, clean separation)
+- ✅ `IPaymentProcessor` interface (payment-only contract)
+- ✅ Shared payment types in `IPaymentService.ts` (types only; avoids a fat interface)
 - ✅ `SquarePaymentService` implementation (real Square integration)
 - ✅ `ICouponService` interface (78 lines, comprehensive)
 - ✅ `CouponService` implementation (352 lines, full CRUD)

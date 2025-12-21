@@ -7,7 +7,7 @@
 ### ✅ Square Payment Service
 - **File**: `lib/services/SquarePaymentService.ts`
 - **Features**: Real Square API integration, payment processing, refunds
-- **ISP Compliant**: Implements `IPaymentService` interface
+- **ISP Compliant**: Implements `IPaymentProcessor` (payment-only) and uses shared payment types from `IPaymentService.ts`
 
 ### ✅ Square Payment UI Component
 - **File**: `components/payment/SquarePaymentForm.tsx`
