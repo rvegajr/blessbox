@@ -69,7 +69,9 @@ export class VerificationService implements IVerificationService {
     // So we send directly without using the template system
     try {
       await this.sendVerificationEmailDirect(email, code);
-      console.log(`✅ Verification email sent successfully to ${email}`);
+      if (process.env.NODE_ENV !== 'test') {
+        console.log(`✅ Verification email sent successfully to ${email}`);
+      }
     } catch (error) {
       console.error('❌ Failed to send verification email:', error);
       console.error('Email configuration check:');
@@ -270,7 +272,9 @@ export class VerificationService implements IVerificationService {
           text,
         });
         
-        console.log(`✅ SendGrid email sent to ${email}, status: ${result[0]?.statusCode}`);
+        if (process.env.NODE_ENV !== 'test') {
+          console.log(`✅ SendGrid email sent to ${email}, status: ${result[0]?.statusCode}`);
+        }
         return;
       } catch (sendGridError: any) {
         console.error('❌ SendGrid error:', sendGridError);
@@ -310,7 +314,9 @@ export class VerificationService implements IVerificationService {
           text,
         });
         
-        console.log(`✅ SMTP email sent to ${email}, messageId: ${info.messageId}`);
+        if (process.env.NODE_ENV !== 'test') {
+          console.log(`✅ SMTP email sent to ${email}, messageId: ${info.messageId}`);
+        }
         return;
       } catch (smtpError: any) {
         console.error('❌ SMTP error:', smtpError);

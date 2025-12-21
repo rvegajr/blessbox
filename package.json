@@ -38,7 +38,7 @@
     "db:setup": "tsx scripts/database/setup-database.ts",
     "db:studio": "drizzle-kit studio",
     "validate:env": "tsx scripts/validate-environment.ts",
-    "test:email": "node scripts/tests/test-email-system.js",
+    "test:email": "tsx scripts/tests/test-email-system.ts",
     "test:db": "tsx scripts/database/setup-database.ts --test",
     "health:check": "curl -s http://localhost:7777/api/system/health-check | jq .",
     "diagnostics": "open http://localhost:7777/system/diagnostics",

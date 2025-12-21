@@ -52,7 +52,7 @@ SQUARE_ENVIRONMENT=sandbox
 
 # NextAuth (if not already set)
 NEXTAUTH_SECRET=your-nextauth-secret-here
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:7777
 
 # Super Admin
 SUPERADMIN_EMAIL=admin@blessbox.app

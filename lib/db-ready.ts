@@ -1,5 +1,5 @@
 import { ensureSubscriptionSchema } from './db';
-import { ensureLibsqlSchema } from '@/src/database/bootstrap';
+import { ensureLibsqlSchema } from '@/lib/database/bootstrap';
 
 let initPromise: Promise<void> | null = null;
 

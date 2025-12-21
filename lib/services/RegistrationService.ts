@@ -34,6 +34,32 @@ export class RegistrationService implements IRegistrationService {
   private emailService = new EmailService();
   private notificationService = new NotificationService();
 
+  private slugify(input: string): string {
+    return String(input || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  private findMatchingQrCode(qrCodes: any[], qrLabelOrSlug: string): any | null {
+    const needle = (qrLabelOrSlug || '').trim();
+    if (!needle) return null;
+
+    // Prefer matching the stable URL segment (slug) if present.
+    const bySlug = qrCodes.find((qr: any) => typeof qr?.slug === 'string' && qr.slug === needle);
+    if (bySlug) return bySlug;
+
+    // Backward compatibility: many rows store the URL segment in `label`.
+    const byLabelExact = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label === needle);
+    if (byLabelExact) return byLabelExact;
+
+    // Last resort: case-insensitive label compare.
+    const lower = needle.toLowerCase();
+    const byLabelCi = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label.toLowerCase() === lower);
+    return byLabelCi || null;
+  }
+
   async getFormConfig(orgSlug: string, qrLabel: string): Promise<RegistrationFormConfig | null> {
     try {
       // First, find the organization by slug (custom_domain or name-based slug)
@@ -46,11 +72,33 @@ export class RegistrationService implements IRegistrationService {
         args: [orgSlug, orgSlug]
       });
 
-      if (orgResult.rows.length === 0) {
-        return null;
+      let org: any | null = (orgResult.rows.length > 0 ? (orgResult.rows[0] as any) : null);
+
+      // Fallback: some parts of the app generate slugs using a stricter slugify
+      // (removing punctuation etc). If the SQL slug match misses, do a small in-app
+      // lookup to keep older QR codes working.
+      if (!org) {
+        let rows: any[] = [];
+        try {
+          const all = await this.db.execute({
+            sql: `SELECT id, name, custom_domain FROM organizations`,
+            args: [],
+          });
+          rows = Array.isArray((all as any)?.rows) ? ((all as any).rows as any[]) : [];
+        } catch {
+          rows = [];
+        }
+
+        const match = rows.find((row: any) => {
+          const cd = typeof row?.custom_domain === 'string' ? row.custom_domain : '';
+          if (cd && cd === orgSlug) return true;
+          const name = typeof row?.name === 'string' ? row.name : '';
+          return !!name && this.slugify(name) === orgSlug;
+        });
+        org = match || null;
       }
 
-      const org = orgResult.rows[0] as any;
+      if (!org) return null;
 
       // Find QR code set for this organization
       const qrSetResult = await this.db.execute({
@@ -67,10 +115,15 @@ export class RegistrationService implements IRegistrationService {
       }
 
       const qrSet = qrSetResult.rows[0] as any;
-      const qrCodes = JSON.parse(qrSet.qr_codes);
+      let qrCodes: any[] = [];
+      try {
+        qrCodes = JSON.parse((qrSet.qr_codes as string) || '[]') || [];
+      } catch {
+        qrCodes = [];
+      }
       
       // Find the specific QR code by label
-      const matchingQR = qrCodes.find((qr: any) => qr.label === qrLabel);
+      const matchingQR = this.findMatchingQrCode(qrCodes, qrLabel);
       
       if (!matchingQR) {
         return null;
@@ -120,7 +173,7 @@ export class RegistrationService implements IRegistrationService {
     this.validateFormData(formData, formConfig.formFields);
 
     // Find the matching QR code
-    const matchingQR = formConfig.qrCodes.find(qr => qr.label === qrLabel);
+    const matchingQR = this.findMatchingQrCode(formConfig.qrCodes as any[], qrLabel);
     if (!matchingQR) {
       throw new Error('QR code not found');
     }
@@ -187,11 +240,14 @@ export class RegistrationService implements IRegistrationService {
         args: [formConfig.organizationId]
       });
 
-      if (orgResult.rows.length === 0) {
+      // In some test mocks, execute() may return undefined or a shape without rows.
+      // Treat that as "org not found" and skip notifications quietly.
+      const rows = (orgResult as any)?.rows;
+      if (!Array.isArray(rows) || rows.length === 0) {
         return; // Organization not found, skip emails
       }
 
-      const org = orgResult.rows[0] as any;
+      const org = rows[0] as any;
       const orgName = org.name || 'BlessBox';
       const orgEmail = org.contact_email;
 

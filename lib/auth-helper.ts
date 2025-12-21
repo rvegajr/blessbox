@@ -50,7 +50,9 @@ export async function getServerSession(): Promise<Session | null> {
     }
     
     if (!process.env.NEXTAUTH_SECRET) {
-      console.warn('NEXTAUTH_SECRET not set');
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('NEXTAUTH_SECRET not set');
+      }
       return null;
     }
     
@@ -74,13 +76,17 @@ export async function getServerSession(): Promise<Session | null> {
       }
     } catch (jwtError) {
       // If JWT decode fails, the token might be invalid or expired
-      console.warn('JWT decode error (session may be expired):', jwtError);
+      if (process.env.NODE_ENV !== 'test') {
+        console.warn('JWT decode error (session may be expired):', jwtError);
+      }
       return null;
     }
     
     return null;
   } catch (error) {
-    console.warn('getServerSession error:', error);
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn('getServerSession error:', error);
+    }
     return null;
   }
 }
