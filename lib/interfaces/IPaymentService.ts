@@ -1,5 +1,6 @@
-// IPaymentService - Interface Segregation Principle Compliant
-// Single responsibility: Payment processing only (no coupons, no subscriptions)
+// Payment types shared by payment-related interfaces.
+// NOTE: The previous `IPaymentService` interface was too broad (it included customer + subscription concerns).
+// For ISP compliance, use `IPaymentProcessor` (and add separate interfaces if/when needed).
 
 export interface PaymentIntent {
   id: string;
@@ -28,17 +29,5 @@ export interface RefundResult {
   squareRefundId?: string;
 }
 
-export interface IPaymentService {
-  // Payment processing
-  createPaymentIntent(amount: number, currency: string, metadata?: Record<string, any>): Promise<PaymentIntent>;
-  processPayment(sourceId: string, amount: number, currency: string, customerId?: string): Promise<PaymentResult>;
-  refundPayment(paymentId: string, amount?: number, reason?: string): Promise<RefundResult>;
-  
-  // Customer management
-  createCustomer(email: string, name?: string): Promise<{ id: string; squareCustomerId: string }>;
-  getCustomer(customerId: string): Promise<any>;
-  
-  // Subscription processing (delegates to ISubscriptionService)
-  createSubscription(customerId: string, planId: string, cardId: string): Promise<{ id: string; squareSubscriptionId: string }>;
-}
+// Intentionally no exported interface here; see `IPaymentProcessor`.
 

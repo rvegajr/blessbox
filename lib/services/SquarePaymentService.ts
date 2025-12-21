@@ -1,7 +1,8 @@
 import { SquareClient, SquareEnvironment, SquareError } from 'square';
-import type { IPaymentService, PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
+import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
+import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
 
-export class SquarePaymentService implements IPaymentService {
+export class SquarePaymentService implements IPaymentProcessor {
   private client: SquareClient;
   private environment: SquareEnvironment;
 
@@ -153,29 +154,5 @@ export class SquarePaymentService implements IPaymentService {
     return process.env.SQUARE_LOCATION_ID || '';
   }
 
-  // Customer/subscription APIs are not used by current BlessBox checkout.
-  async createCustomer(email: string, name?: string): Promise<{ id: string; squareCustomerId: string }> {
-    const id = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)) as string;
-    try {
-      const res = await this.client.customers.create({
-        idempotencyKey: (globalThis.crypto?.randomUUID?.() || `${Date.now()}`) as string,
-        emailAddress: email,
-        ...(name ? { givenName: name } : {}),
-      });
-      const customerId = res.result.customer?.id;
-      if (!customerId) throw new Error('No customer returned from Square');
-      return { id, squareCustomerId: customerId };
-    } catch (e: any) {
-      throw new Error(e instanceof Error ? e.message : String(e));
-    }
-  }
-
-  async getCustomer(customerId: string): Promise<any> {
-    const res = await this.client.customers.get({ customerId } as any);
-    return res.result.customer;
-  }
-
-  async createSubscription(_customerId: string, _planId: string, _cardId: string): Promise<{ id: string; squareSubscriptionId: string }> {
-    throw new Error('Square subscriptions not implemented in BlessBox yet');
-  }
+  // Customer + subscription operations intentionally excluded (ISP).
 }
