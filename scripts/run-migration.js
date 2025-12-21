@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
+import dotenv from 'dotenv';
 
-// Load environment variables
-process.env.TURSO_DATABASE_URL = 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io';
-// Use environment variable for auth token (set in environment)
-process.env.TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || 'test-token-placeholder';
+// Load env vars (DO NOT hardcode secrets)
+dotenv.config({ path: '.env.local' });
 
 console.log('🚀 Running Turso migration...');
 console.log('Database URL:', process.env.TURSO_DATABASE_URL);

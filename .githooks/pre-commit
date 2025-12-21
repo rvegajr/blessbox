@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# BlessBox Pre-Commit Hook
+# Runs error detection before allowing commits
+
+echo "🔍 Running pre-commit checks..."
+
+# Run fast, deterministic checks that don't require a running server.
+# (E2E tests are intentionally NOT run here because port 7777 may be in use by other projects.)
+npm test
+
+if [ $? -ne 0 ]; then
+    echo "❌ Unit tests failed!"
+    echo "💡 Fix the errors above before committing."
+    exit 1
+fi
+
+# Ensure we can produce a production build.
+npm run build
+
+if [ $? -ne 0 ]; then
+    echo "❌ Pre-commit checks failed!"
+    echo "💡 Please fix the errors above before committing."
+    echo "🔧 To bypass (not recommended): git commit --no-verify"
+    exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
+exit 0
+
+
+
+
