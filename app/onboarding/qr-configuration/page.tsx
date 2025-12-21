@@ -97,9 +97,43 @@ export default function QRConfigurationPage() {
   };
 
   const handleDownload = () => {
-    // Implement download functionality
-    console.log('Download QR codes:', configData.qrCodes);
-    alert('Download feature coming soon!');
+    (async () => {
+      try {
+        const qrCodes = (configData.qrCodes || [])
+          .filter((q: any) => q?.label && q?.dataUrl)
+          .map((q: any) => ({ label: q.label, dataUrl: q.dataUrl }));
+
+        if (qrCodes.length === 0) {
+          alert('No generated QR codes found to download. Please generate QR codes first.');
+          return;
+        }
+
+        const format = (configData.settings?.format || 'png') as 'png' | 'pdf' | 'both';
+        const res = await fetch('/api/qr/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qrCodes, format }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data?.error || 'Failed to download QR codes');
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'qr-codes.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Download QR codes error:', error);
+        alert(error instanceof Error ? error.message : 'Failed to download QR codes');
+      }
+    })();
   };
 
   const handleComplete = async () => {
