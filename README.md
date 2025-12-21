@@ -275,7 +275,23 @@ npm run test:ui
 npm run test:coverage
 ```
 
-**Current Status:** 297/378 tests passing (78.6%)
+**Current Status:** ✅ `npm test` is expected to pass locally and in CI/pre-commit.
+
+### Tech smoke tests (Email + Payments)
+Use the repo smoke-test script to validate **SendGrid + Square** for **sandbox and production** by loading an env file directly:
+
+```bash
+# Credentials-only checks (no email send, no Square charges)
+./scripts/test-tech.sh --env-file .env.sandbox
+
+# Also verify a deployment (recommended for production)
+./scripts/test-tech.sh --env-file .env.production --base-url https://www.blessbox.org
+
+# Optionally send a real test email
+./scripts/test-tech.sh --env-file .env.production --base-url https://www.blessbox.org --email-to you@example.com --send-test-email
+```
+
+Docs: `docs/TECH_SMOKE_TESTS.md`
 
 ### E2E Tests (Playwright)
 ```bash

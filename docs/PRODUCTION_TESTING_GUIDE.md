@@ -46,6 +46,16 @@ npm run test:e2e:production:all
 | **Headed Mode** | `npm run test:e2e:headed` | Run with browser visible |
 | **Debug Mode** | `npm run test:e2e:debug` | Run in debug mode |
 
+### Tech smoke tests (Email + Payments)
+Use `scripts/test-tech.sh` to validate **SendGrid + Square** quickly (sandbox or production) by loading an env file directly:
+
+```bash
+# Credentials-only checks (no email send, no Square charges)
+./scripts/test-tech.sh --env-file .env.production --base-url https://www.blessbox.org
+```
+
+More: `docs/TECH_SMOKE_TESTS.md`
+
 ---
 
 ## 🎯 Test Suites
