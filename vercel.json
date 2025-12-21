@@ -1,22 +1,12 @@
 {
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "development": true
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "installCommand": "npm install --legacy-peer-deps",
+  "crons": [
+    {
+      "path": "/api/cron/finalize-cancellations",
+      "schedule": "0 2 * * *"
     }
-  },
-  "github": {
-    "deploymentEnabled": true,
-    "autoAlias": true
-  },
-  "env": {
-    "NODE_ENV": "production",
-    "PUBLIC_APP_URL": "https://blessbox.vercel.app"
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "development", 
-      "PUBLIC_APP_URL": "https://blessbox-git-development.vercel.app"
-    }
-  }
+  ]
 }
+

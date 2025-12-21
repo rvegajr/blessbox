@@ -100,12 +100,14 @@ TURSO_TOKEN=$(prompt_value "TURSO_AUTH_TOKEN" "Database auth token" "true")
 echo ""
 echo -e "${MAGENTA}${BOLD}Email Configuration${NC}"
 echo ""
+EMAIL_REPLY_TO=$(prompt_value "EMAIL_REPLY_TO" "Reply-To address for outgoing mail (optional)" "false")
 
 echo "Select email provider:"
 echo "1) Gmail (with App Password)"
 echo "2) SendGrid"
-echo "3) Skip email configuration"
-read -p "Enter choice (1-3): " EMAIL_CHOICE
+echo "3) SMTP (custom)"
+echo "4) Skip email configuration"
+read -p "Enter choice (1-4): " EMAIL_CHOICE
 
 case $EMAIL_CHOICE in
     1)
@@ -135,6 +137,22 @@ case $EMAIL_CHOICE in
         EMAIL_FROM_NAME=${SENDGRID_FROM_NAME:-"BlessBox"}
         ;;
     3)
+        EMAIL_PROVIDER="smtp"
+        echo ""
+        echo -e "${CYAN}SMTP Setup Instructions:${NC}"
+        echo "Provide credentials for your SMTP provider (or MailHog for local)."
+        echo ""
+        SMTP_HOST=$(prompt_value "SMTP_HOST" "SMTP host (e.g. smtp.sendgrid.net, smtp.gmail.com, 127.0.0.1)" "true")
+        SMTP_PORT=$(prompt_value "SMTP_PORT" "SMTP port (587 TLS, 465 SSL, 1025 MailHog)" "false" "587")
+        SMTP_SECURE=$(prompt_value "SMTP_SECURE" "true/false (usually false for 587, true for 465)" "false" "false")
+        SMTP_USER=$(prompt_value "SMTP_USER" "SMTP username" "true")
+        SMTP_PASS=$(prompt_value "SMTP_PASS" "SMTP password" "true")
+        SMTP_FROM=$(prompt_value "SMTP_FROM" "From email (optional; defaults to SMTP_USER)" "false")
+        SMTP_FROM_NAME=$(prompt_value "SMTP_FROM_NAME" "Sender name" "false" "BlessBox")
+        EMAIL_FROM=${SMTP_FROM:-$SMTP_USER}
+        EMAIL_FROM_NAME=${SMTP_FROM_NAME:-"BlessBox"}
+        ;;
+    4)
         echo -e "${YELLOW}Skipping email configuration${NC}"
         ;;
     *)
@@ -151,6 +169,10 @@ echo ""
 echo -e "${CYAN}Generating secure JWT secret...${NC}"
 JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 echo -e "${GREEN}Generated: ${JWT_SECRET:0:10}...${JWT_SECRET: -10}${NC}"
+
+echo ""
+echo -e "${MAGENTA}${BOLD}Diagnostics (Optional)${NC}"
+DIAGNOSTICS_SECRET=$(prompt_value "DIAGNOSTICS_SECRET" "Protect /api/system/email-health in production" "false")
 
 echo ""
 echo -e "${MAGENTA}${BOLD}Application Configuration${NC}"
@@ -203,13 +225,23 @@ for ENV in $ENVIRONMENTS; do
         set_vercel_env "SENDGRID_API_KEY" "$SENDGRID_API_KEY" "$ENV"
         set_vercel_env "SENDGRID_FROM_EMAIL" "$SENDGRID_FROM_EMAIL" "$ENV"
         set_vercel_env "SENDGRID_FROM_NAME" "$SENDGRID_FROM_NAME" "$ENV"
+    elif [ "$EMAIL_PROVIDER" = "smtp" ]; then
+        set_vercel_env "SMTP_HOST" "$SMTP_HOST" "$ENV"
+        set_vercel_env "SMTP_PORT" "$SMTP_PORT" "$ENV"
+        set_vercel_env "SMTP_SECURE" "$SMTP_SECURE" "$ENV"
+        set_vercel_env "SMTP_USER" "$SMTP_USER" "$ENV"
+        set_vercel_env "SMTP_PASS" "$SMTP_PASS" "$ENV"
+        set_vercel_env "SMTP_FROM" "$SMTP_FROM" "$ENV"
+        set_vercel_env "SMTP_FROM_NAME" "$SMTP_FROM_NAME" "$ENV"
     fi
     
     set_vercel_env "EMAIL_FROM" "$EMAIL_FROM" "$ENV"
     set_vercel_env "EMAIL_FROM_NAME" "$EMAIL_FROM_NAME" "$ENV"
+    set_vercel_env "EMAIL_REPLY_TO" "$EMAIL_REPLY_TO" "$ENV"
     
     # Security
     set_vercel_env "JWT_SECRET" "$JWT_SECRET" "$ENV"
+    set_vercel_env "DIAGNOSTICS_SECRET" "$DIAGNOSTICS_SECRET" "$ENV"
     
     # Application
     set_vercel_env "PUBLIC_APP_URL" "$PUBLIC_APP_URL" "$ENV"
