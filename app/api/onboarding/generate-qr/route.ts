@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Check if organization exists
     const orgResult = await db.execute({
-      sql: `SELECT id, name FROM organizations WHERE id = ?`,
+      sql: `SELECT id, name, custom_domain FROM organizations WHERE id = ?`,
       args: [organizationId],
     });
 
@@ -51,7 +51,10 @@ export async function POST(request: NextRequest) {
     }
 
     const organization = orgResult.rows[0] as any;
-    const orgSlug = organization.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const orgSlug =
+      (typeof organization.custom_domain === 'string' && organization.custom_domain.trim()
+        ? organization.custom_domain.trim()
+        : organization.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
 
     // Get or create QR code set
     const now = new Date().toISOString();

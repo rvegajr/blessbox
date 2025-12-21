@@ -19,6 +19,12 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ success: false, error: 'Not authenticated' }), { status: 401 });
   }
 
+  const org =
+    session ? await resolveOrganizationForSession(session as any) : await getOrCreateOrganizationForEmail(email);
+  if (!org) {
+    return new Response(JSON.stringify({ success: false, error: 'Organization selection required' }), { status: 409 });
+  }
+
   // If payment token is provided, process with Square
   if (paymentToken && amount) {
     const shouldMockPayment =
@@ -27,13 +33,28 @@ export async function POST(req: NextRequest) {
 
     try {
       if (!shouldMockPayment) {
+        const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
+        const applicationId = (process.env.SQUARE_APPLICATION_ID || '').trim();
+        const locationId = (process.env.SQUARE_LOCATION_ID || '').trim();
+        if (!accessToken || !applicationId || !locationId) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Payment provider not configured',
+              message: 'Square is not configured on the server.',
+            }),
+            { status: 500 }
+          );
+        }
+
         const squarePaymentService = new SquarePaymentService();
         
         // Process payment with Square
         const paymentResult = await squarePaymentService.processPayment(
-          paymentToken, // This is the card nonce from Square
-          paymentToken, // Square uses the same token for both parameters
-          email
+          String(paymentToken),
+          Number(amount),
+          String(currency || 'USD'),
+          org.id
         );
 
         if (!paymentResult.success) {
@@ -41,13 +62,13 @@ export async function POST(req: NextRequest) {
             JSON.stringify({
               success: false,
               error: paymentResult.error || 'Payment failed',
-              message: paymentResult.message,
+              payment: paymentResult,
             }),
             { status: 400 }
           );
         }
 
-        console.log(`Square payment successful: ${paymentResult.transactionId}`);
+        console.log(`Square payment successful: ${paymentResult.paymentId || paymentResult.squarePaymentId}`);
       } else {
         // Local/dev: allow checkout flows without Square credentials.
         console.log(`[mock-payment] accepted token for ${email}, amount=${amount} ${currency}`);
@@ -60,12 +81,6 @@ export async function POST(req: NextRequest) {
         message: error instanceof Error ? error.message : 'Unknown error'
       }), { status: 500 });
     }
-  }
-
-  const org =
-    session ? await resolveOrganizationForSession(session as any) : await getOrCreateOrganizationForEmail(email);
-  if (!org) {
-    return new Response(JSON.stringify({ success: false, error: 'Organization selection required' }), { status: 409 });
   }
 
   const sub = await createSubscription({ 

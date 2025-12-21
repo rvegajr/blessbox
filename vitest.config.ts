@@ -5,7 +5,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
-    setupFiles: ['./src/tests/setup.ts'],
     // Only run unit/integration tests for app code (exclude Playwright specs)
     include: [
       'lib/**/*.test.ts',
@@ -44,9 +43,6 @@ export default defineConfig({
     alias: {
       // Match tsconfig "paths" (@/* -> ./*)
       '@': fileURLToPath(new URL('./', import.meta.url)),
-      '@interfaces': fileURLToPath(new URL('./src/interfaces', import.meta.url)),
-      '@implementations': fileURLToPath(new URL('./src/implementations', import.meta.url)),
-      '@tests': fileURLToPath(new URL('./src/tests', import.meta.url))
     }
   },
   esbuild: {
