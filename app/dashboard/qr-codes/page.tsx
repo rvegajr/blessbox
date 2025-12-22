@@ -15,6 +15,7 @@ interface QRCode {
   slug: string;
   url: string;
   dataUrl: string;
+  description?: string;
   isActive: boolean;
   scanCount: number;
   registrationCount: number;
@@ -45,7 +46,7 @@ export default function QRCodesPage() {
     search: '',
     isActive: '',
   });
-  const [editingQR, setEditingQR] = useState<{ id: string; qrCodeSetId: string; label: string } | null>(null);
+  const [editingQR, setEditingQR] = useState<{ id: string; qrCodeSetId: string; label: string; description: string } | null>(null);
 
   useEffect(() => {
     if (!session?.user?.email) {
@@ -123,7 +124,9 @@ export default function QRCodesPage() {
     setEditingQR({
       id: qrCode.id,
       qrCodeSetId: qrCode.qrCodeSetId,
+      // label is the immutable URL segment; keep it for display only
       label: qrCode.label,
+      description: qrCode.description || '',
     });
   };
 
@@ -134,7 +137,8 @@ export default function QRCodesPage() {
       const response = await fetch(`/api/qr-codes/${editingQR.id}?qrCodeSetId=${editingQR.qrCodeSetId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: editingQR.label }),
+        // SAFETY: only edit the human-friendly display name
+        body: JSON.stringify({ description: editingQR.description }),
       });
 
       if (response.ok) {
@@ -142,7 +146,7 @@ export default function QRCodesPage() {
         if (result.success) {
           // Update local state
           setQRCodes(qrCodes.map(qr => 
-            qr.id === editingQR.id ? { ...qr, label: editingQR.label } : qr
+            qr.id === editingQR.id ? { ...qr, description: editingQR.description } : qr
           ));
           setEditingQR(null);
         }
@@ -156,7 +160,8 @@ export default function QRCodesPage() {
   };
 
   const handleDelete = async (qrCode: QRCode) => {
-    if (!confirm(`Are you sure you want to deactivate "${qrCode.label}"?`)) {
+    const name = qrCode.description || qrCode.label;
+    if (!confirm(`Are you sure you want to deactivate "${name}"?`)) {
       return;
     }
 
@@ -371,10 +376,19 @@ export default function QRCodesPage() {
                 <div className="mb-4">
                   {editingQR && editingQR.id === qrCode.id ? (
                     <div className="mb-2">
+                      <div className="mb-2 text-xs text-gray-500">
+                        <div>
+                          <span className="font-medium text-gray-700">URL slug (immutable):</span>{' '}
+                          <span className="font-mono">{qrCode.slug || qrCode.label}</span>
+                        </div>
+                        <div className="break-all">
+                          <span className="font-medium text-gray-700">URL:</span> {qrCode.url}
+                        </div>
+                      </div>
                       <input
                         type="text"
-                        value={editingQR.label}
-                        onChange={e => setEditingQR({...editingQR, label: e.target.value})}
+                        value={editingQR.description}
+                        onChange={e => setEditingQR({...editingQR, description: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                         onKeyDown={e => {
                           if (e.key === 'Enter') handleSaveEdit();
@@ -382,6 +396,9 @@ export default function QRCodesPage() {
                         }}
                         autoFocus
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Edit the <span className="font-medium">display name</span> only. The URL slug is kept stable to avoid breaking scanned QR codes.
+                      </p>
                       <div className="flex gap-2 mt-2">
                         <button
                           onClick={handleSaveEdit}
@@ -399,7 +416,12 @@ export default function QRCodesPage() {
                     </div>
                   ) : (
                     <>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{qrCode.label}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{qrCode.description || qrCode.label}</h3>
+                      {qrCode.description && (
+                        <p className="text-xs text-gray-500 mb-1">
+                          URL slug: <span className="font-mono">{qrCode.slug || qrCode.label}</span>
+                        </p>
+                      )}
                       <p className="text-xs text-gray-500 mb-2 break-all">{qrCode.url}</p>
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${

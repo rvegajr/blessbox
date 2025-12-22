@@ -9,7 +9,7 @@
  */
 
 const CRON_SECRET = process.env.CRON_SECRET || 'test-secret-local';
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
 
 async function testCron() {
   const endpoint = `${BASE_URL}/api/cron/finalize-cancellations`;

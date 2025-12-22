@@ -81,10 +81,7 @@ curl_json() {
 sendgrid_get() {
   local path="$1"
   local url="https://api.sendgrid.com/v3${path}"
-  local code body
-  read -r code
-  read -r body < <(curl_json "$url" -H "Authorization: Bearer ${SENDGRID_API_KEY}" -H "Content-Type: application/json")
-  printf "%s\n%s" "$code" "$body"
+  curl_json "$url" -H "Authorization: Bearer ${SENDGRID_API_KEY}" -H "Content-Type: application/json"
 }
 
 square_base_url() {
@@ -101,10 +98,7 @@ square_get() {
   local path="$1"
   local base; base="$(square_base_url)"
   local url="${base}${path}"
-  local code body
-  read -r code
-  read -r body < <(curl_json "$url" -H "Authorization: Bearer ${SQUARE_ACCESS_TOKEN}" -H "Square-Version: 2024-01-18" -H "Content-Type: application/json")
-  printf "%s\n%s" "$code" "$body"
+  curl_json "$url" -H "Authorization: Bearer ${SQUARE_ACCESS_TOKEN}" -H "Square-Version: 2024-01-18" -H "Content-Type: application/json"
 }
 
 require_env_var() {
@@ -159,11 +153,12 @@ main() {
     log "- From email: ${SENDGRID_FROM_EMAIL:-"(not set)"}"
     log ""
 
-    local code body
+    local out code body
 
     # profile
-    read -r code
-    read -r body < <(sendgrid_get "/user/profile")
+    out="$(sendgrid_get "/user/profile")"
+    code="${out%%$'\n'*}"
+    body="${out#*$'\n'}"
     if [[ "$code" == "200" ]]; then
       log "✅ SendGrid API key valid (user/profile 200)"
     else
@@ -172,8 +167,9 @@ main() {
     fi
 
     # senders (single sender identities)
-    read -r code
-    read -r body < <(sendgrid_get "/senders")
+    out="$(sendgrid_get "/senders")"
+    code="${out%%$'\n'*}"
+    body="${out#*$'\n'}"
     if [[ "$code" == "200" ]]; then
       log "✅ SendGrid sender identities endpoint accessible (senders 200)"
     else
@@ -181,8 +177,9 @@ main() {
     fi
 
     # authenticated domains
-    read -r code
-    read -r body < <(sendgrid_get "/whitelabel/domains")
+    out="$(sendgrid_get "/whitelabel/domains")"
+    code="${out%%$'\n'*}"
+    body="${out#*$'\n'}"
     if [[ "$code" == "200" ]]; then
       log "✅ SendGrid domain authentication endpoint accessible (whitelabel/domains 200)"
     else
@@ -250,9 +247,10 @@ EOF
     log "- Location ID: ${SQUARE_LOCATION_ID:-"(not set)"}"
     log ""
 
-    local code body
-    read -r code
-    read -r body < <(square_get "/v2/merchants/me")
+    local out code body
+    out="$(square_get "/v2/merchants/me")"
+    code="${out%%$'\n'*}"
+    body="${out#*$'\n'}"
     if [[ "$code" == "200" ]]; then
       log "✅ Square token valid (merchants/me 200)"
     else
@@ -262,8 +260,9 @@ EOF
     fi
 
     if [[ -n "${SQUARE_LOCATION_ID:-}" ]]; then
-      read -r code
-      read -r body < <(square_get "/v2/locations/${SQUARE_LOCATION_ID}")
+      out="$(square_get "/v2/locations/${SQUARE_LOCATION_ID}")"
+      code="${out%%$'\n'*}"
+      body="${out#*$'\n'}"
       if [[ "$code" == "200" ]]; then
         log "✅ Square location ID valid (locations/{id} 200)"
       else

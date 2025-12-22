@@ -383,7 +383,7 @@ async function runValidation() {
   }
   
   console.log();
-  log('🔍 For detailed diagnostics, visit: http://localhost:3000/system/diagnostics', colors.cyan);
+  log('🔍 For detailed diagnostics, visit: http://localhost:7777/system/diagnostics', colors.cyan);
   console.log();
 }
 

@@ -54,6 +54,16 @@ export class RegistrationService implements IRegistrationService {
     const byLabelExact = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label === needle);
     if (byLabelExact) return byLabelExact;
 
+    // Backward compatibility: some older QR code rows stored a *human label* (e.g. "Main Entrance")
+    // while the URL segment was a slugified version (e.g. "main-entrance"). If slug is missing,
+    // match against slugified(label).
+    const byLabelSlugified = qrCodes.find((qr: any) => {
+      if (typeof qr?.slug === 'string' && qr.slug.trim()) return false; // already checked slug path
+      if (typeof qr?.label !== 'string') return false;
+      return this.slugify(qr.label) === this.slugify(needle);
+    });
+    if (byLabelSlugified) return byLabelSlugified;
+
     // Last resort: case-insensitive label compare.
     const lower = needle.toLowerCase();
     const byLabelCi = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label.toLowerCase() === lower);

@@ -108,6 +108,13 @@ export async function PUT(
     }
 
     const updates = await request.json();
+    // Only allow safe updates from the dashboard/API.
+    // URL-critical fields (label/slug/url/dataUrl) are intentionally immutable here.
+    const safeUpdates = {
+      ...(typeof updates?.description === 'string' ? { description: updates.description } : {}),
+      ...(typeof updates?.label === 'string' ? { label: updates.label } : {}), // backward compat: treated as description in service
+      ...(typeof updates?.isActive === 'boolean' ? { isActive: updates.isActive } : {}),
+    };
 
     // Verify user has access to this QR code set
     const qrCodeSet = await qrCodeService.getQRCodeSet(qrCodeSetId);
@@ -125,7 +132,7 @@ export async function PUT(
       );
     }
 
-    const updatedQRCode = await qrCodeService.updateQRCode(id, qrCodeSetId, updates);
+    const updatedQRCode = await qrCodeService.updateQRCode(id, qrCodeSetId, safeUpdates);
 
     return NextResponse.json({ success: true, data: updatedQRCode });
   } catch (error) {
