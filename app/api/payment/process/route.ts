@@ -14,7 +14,11 @@ export async function POST(req: NextRequest) {
     amount
   } = body || {};
 
-  const email = session?.user?.email || body?.email;
+  // Extract and validate email - prefer session email, fallback to body email
+  const sessionEmail = session?.user?.email?.trim();
+  const bodyEmail = typeof body?.email === 'string' ? body.email.trim() : '';
+  const email = sessionEmail || bodyEmail;
+  
   if (!email) {
     return new Response(JSON.stringify({ success: false, error: 'Not authenticated' }), { status: 401 });
   }

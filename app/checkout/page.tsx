@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import SquarePaymentForm from '@/components/payment/SquarePaymentForm';
+import { validateEmail } from '@/lib/services/CheckoutValidationService';
 
 interface SquareConfig {
   applicationId: string;
@@ -13,9 +15,24 @@ interface SquareConfig {
 function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [status, setStatus] = useState<string>('');
   const [squareConfig, setSquareConfig] = useState<SquareConfig | null>(null);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
   const rawPlan = (params.get('plan') || 'standard').toLowerCase();
+
+  // Initialize email from session or URL params
+  useEffect(() => {
+    if (session?.user?.email) {
+      setEmail(session.user.email);
+    } else {
+      const urlEmail = params.get('email');
+      if (urlEmail) {
+        setEmail(urlEmail);
+      }
+    }
+  }, [session, params]);
   const plan = (['free', 'standard', 'enterprise'] as const).includes(rawPlan as any)
     ? (rawPlan as 'free' | 'standard' | 'enterprise')
     : 'standard';
@@ -110,7 +127,22 @@ function CheckoutContent() {
     setCouponCode('');
   };
 
+  const validateEmailInput = (emailValue: string): boolean => {
+    const result = validateEmail(emailValue);
+    if (!result.isValid) {
+      setEmailError(result.error || 'Invalid email');
+      return false;
+    }
+    setEmailError(null);
+    return true;
+  };
+
   const completeTestCheckout = async () => {
+    // Validate email before proceeding
+    if (!validateEmailInput(email)) {
+      return;
+    }
+
     try {
       setStatus('Processing payment...');
       const res = await fetch('/api/payment/process', {
@@ -121,6 +153,7 @@ function CheckoutContent() {
           billingCycle: 'monthly',
           currency: 'USD',
           amount: amountCents,
+          email: email.trim(),
           ...(amountCents > 0 ? { paymentToken: 'test-token' } : {}),
         }),
       });
@@ -143,6 +176,31 @@ function CheckoutContent() {
           <p className="text-gray-600 mb-8">
             Complete your subscription to the <strong className="uppercase text-blue-600">{plan}</strong> plan
           </p>
+
+          {/* Email */}
+          <div className="mb-6">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailError(null);
+              }}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                emailError ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="your@email.com"
+              disabled={!!session?.user?.email}
+            />
+            {emailError && <p className="mt-2 text-sm text-red-600">{emailError}</p>}
+            {session?.user?.email && (
+              <p className="mt-2 text-sm text-green-600">✓ Using your authenticated email</p>
+            )}
+          </div>
 
           {/* Coupon */}
           <div className="mb-6">
@@ -222,6 +280,7 @@ function CheckoutContent() {
               applicationId={squareConfig.applicationId}
               locationId={squareConfig.locationId}
               environment={squareConfig.environment as 'sandbox' | 'production'}
+              email={email}
             />
           ) : (
             <div className="space-y-4">

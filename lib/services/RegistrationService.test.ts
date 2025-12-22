@@ -102,6 +102,44 @@ describe('RegistrationService', () => {
       expect(config?.qrCodes[0].label).toBe('test-qr');
     });
 
+    it('should resolve QR codes when stored label is human-friendly but URL uses slugified label (backward compatible)', async () => {
+      // This reproduces the real-world issue: QR data stored with label like "Main Entrance"
+      // but the URL segment is "main-entrance" (and slug may be missing).
+      mockDb.execute
+        .mockResolvedValueOnce({
+          rows: [{
+            id: 'org-123',
+            name: 'Test Organization',
+            custom_domain: 'test-org',
+          }],
+        })
+        .mockResolvedValueOnce({
+          rows: [{
+            id: 'qr-set-123',
+            organization_id: 'org-123',
+            name: 'Test Registration Form',
+            language: 'en',
+            form_fields: JSON.stringify([
+              { id: 'name', type: 'text', label: 'Full Name', required: true },
+            ]),
+            qr_codes: JSON.stringify([
+              {
+                id: 'qr-123',
+                label: 'Main Entrance', // human label
+                // slug intentionally missing to emulate older data
+                url: 'https://blessbox.app/register/test-org/main-entrance',
+              },
+            ]),
+          }],
+        });
+
+      const config = await service.getFormConfig('test-org', 'main-entrance');
+
+      expect(config).toBeDefined();
+      expect(config?.qrCodes).toHaveLength(1);
+      expect(config?.qrCodes[0].id).toBe('qr-123');
+    });
+
     it('should return null for invalid organization', async () => {
       mockDb.execute.mockResolvedValueOnce({ rows: [] });
 
