@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { clearOnboardingSession } from '@/lib/services/OnboardingSessionService';
 
 interface OrganizationFormData {
   name: string;
@@ -27,6 +28,11 @@ export default function OrganizationSetupPage() {
     contactState: '',
     contactZip: '',
   });
+
+  // Clear previous onboarding session when starting fresh
+  useEffect(() => {
+    clearOnboardingSession();
+  }, []);
   const [errors, setErrors] = useState<Partial<Record<keyof OrganizationFormData, string>>>({});
   const [loading, setLoading] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);

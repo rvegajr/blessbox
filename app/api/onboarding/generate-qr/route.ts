@@ -6,9 +6,35 @@ import QRCode from 'qrcode';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { organizationId, qrCodeSetId } = body;
-    // Backward compatible: UI uses `entryPoints`, some tests/clients send `qrCodes`
-    const entryPoints = Array.isArray(body.entryPoints) ? body.entryPoints : body.qrCodes;
+    const { organizationId } = body;
+
+    // Backward compatibility:
+    // - Older clients used `formConfigId` (same thing as qrCodeSetId / qr_code_sets.id)
+    // - Some clients used `qrCodes` instead of `entryPoints`
+    // - Some clients used a single `qrLabel` (we convert it into a single entry point)
+    const qrCodeSetId =
+      (typeof body.qrCodeSetId === 'string' && body.qrCodeSetId.trim())
+        ? body.qrCodeSetId.trim()
+        : (typeof body.formConfigId === 'string' && body.formConfigId.trim())
+          ? body.formConfigId.trim()
+          : undefined;
+
+    const slugify = (input: string) =>
+      String(input || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    let entryPoints =
+      Array.isArray(body.entryPoints) ? body.entryPoints
+        : Array.isArray(body.qrCodes) ? body.qrCodes
+          : undefined;
+
+    if ((!Array.isArray(entryPoints) || entryPoints.length === 0) && typeof body.qrLabel === 'string' && body.qrLabel.trim()) {
+      const raw = body.qrLabel.trim();
+      entryPoints = [{ label: raw, slug: slugify(raw) || raw }];
+    }
 
     // Validate inputs
     if (!organizationId || typeof organizationId !== 'string') {

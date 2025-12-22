@@ -27,6 +27,7 @@ interface SquarePaymentFormProps {
   applicationId: string;
   locationId: string;
   environment?: 'sandbox' | 'production';
+  email?: string;
 }
 
 export default function SquarePaymentForm({
@@ -39,6 +40,7 @@ export default function SquarePaymentForm({
   applicationId,
   locationId,
   environment = 'sandbox',
+  email,
 }: SquarePaymentFormProps) {
   const [payments, setPayments] = useState<any>(null);
   const [card, setCard] = useState<any>(null);
@@ -149,6 +151,12 @@ export default function SquarePaymentForm({
       return;
     }
 
+    // Validate email
+    if (!email || email.trim().length === 0) {
+      onPaymentError('Email is required to complete payment');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -167,6 +175,7 @@ export default function SquarePaymentForm({
             currency: currency,
             planType,
             billingCycle,
+            email,
           }),
         });
 

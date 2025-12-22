@@ -54,6 +54,7 @@ export class QRCodeService implements IQRCodeService {
           slug: qrCodeData.slug || qrCodeData.label.toLowerCase().replace(/\s+/g, '-'),
           url: qrCodeData.url,
           dataUrl: qrCodeData.dataUrl || '',
+          description: qrCodeData.description || undefined,
           isActive: true, // QR codes inherit active status from set
           scanCount: qrSetRow.scan_count || 0,
           registrationCount,
@@ -104,6 +105,7 @@ export class QRCodeService implements IQRCodeService {
         slug: qrCodeData.slug || qrCodeData.label.toLowerCase().replace(/\s+/g, '-'),
         url: qrCodeData.url,
         dataUrl: qrCodeData.dataUrl || '',
+        description: qrCodeData.description || undefined,
         isActive: qrCodeData.isActive !== undefined ? qrCodeData.isActive : (qrSet.is_active === 1),
         scanCount: qrSet.scan_count || 0,
         registrationCount,
@@ -145,9 +147,14 @@ export class QRCodeService implements IQRCodeService {
     }
 
     // Apply updates
-    if (updates.label !== undefined) {
-      qrCodesData[qrCodeIndex].label = updates.label;
+    // SAFETY: do not allow changing the URL segment (label/slug/url) from this update path.
+    // If a client sends `label`, treat it as a request to set the human-friendly display name.
+    if (updates.description !== undefined) {
+      qrCodesData[qrCodeIndex].description = updates.description;
+    } else if (updates.label !== undefined) {
+      qrCodesData[qrCodeIndex].description = updates.label;
     }
+
     if (updates.isActive !== undefined) {
       // Note: Individual QR codes don't have isActive in the stored data
       // We could add this field if needed, or handle it differently
