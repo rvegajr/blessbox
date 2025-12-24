@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ensureDbReady } from '@/lib/db-ready';
+import { EmailService } from '@/lib/services/EmailService';
+import { getDbClient } from '@/lib/db';
 
 /**
  * Comprehensive production email test endpoint
@@ -7,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const { email, fromEmail, replyTo } = body as { email?: string; fromEmail?: string; replyTo?: string };
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json(
@@ -25,181 +28,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const diagnostics: any = {
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
-      email: email,
-      configuration: {
-        sendGridApiKey: process.env.SENDGRID_API_KEY ? 'SET' : 'NOT SET',
-        sendGridApiKeyLength: process.env.SENDGRID_API_KEY?.length || 0,
-        sendGridApiKeyPrefix: process.env.SENDGRID_API_KEY?.substring(0, 10) || 'N/A',
-        sendGridFromEmail: process.env.SENDGRID_FROM_EMAIL || 'NOT SET',
-        smtpHost: process.env.SMTP_HOST || 'NOT SET',
-        smtpUser: process.env.SMTP_USER ? 'SET' : 'NOT SET',
-        emailProvider: process.env.EMAIL_PROVIDER || 'NOT SET',
-      },
-      tests: [] as any[],
-    };
-
-    // Generate test code
-    const testCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Test 1: Try SendGrid
-    if (process.env.SENDGRID_API_KEY) {
-      try {
-        const sgMail = require('@sendgrid/mail');
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-        const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@blessbox.app';
-        
-        const html = `
-          <h2>🧪 Production Email Test - BlessBox</h2>
-          <p>This is a test email to verify production email configuration.</p>
-          <p>Your test verification code is: <strong>${testCode}</strong></p>
-          <p>If you received this email, production email is working! ✅</p>
-          <hr>
-          <p><small>Timestamp: ${new Date().toISOString()}</small></p>
-        `;
-        const text = `Production Email Test - BlessBox\n\nTest code: ${testCode}\n\nIf you received this, production email is working!`;
-
-        const result = await sgMail.send({
-          to: email,
-          from: fromEmail,
-          subject: '🧪 BlessBox Production Email Test',
-          html,
-          text,
-        });
-        
-        diagnostics.tests.push({
-          service: 'SendGrid',
-          success: true,
-          statusCode: result[0]?.statusCode,
-          message: 'Email sent successfully',
-        });
-        
-        return NextResponse.json({
-          success: true,
-          message: 'Test email sent successfully via SendGrid!',
-          email: email,
-          code: testCode,
-          diagnostics: diagnostics,
-          note: 'Check your email inbox and spam folder. The code is also returned here for verification.',
-        });
-      } catch (sendGridError: any) {
-        diagnostics.tests.push({
-          service: 'SendGrid',
-          success: false,
-          error: sendGridError.message,
-          statusCode: sendGridError.code,
-          response: sendGridError.response?.body,
-        });
-
-        // Try SMTP fallback
-        if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-          try {
-            const nodemailer = require('nodemailer');
-            
-            const transporter = nodemailer.createTransport({
-              host: process.env.SMTP_HOST,
-              port: Number(process.env.SMTP_PORT) || 587,
-              secure: process.env.SMTP_PORT === '465',
-              auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-              },
-            });
-
-            const info = await transporter.sendMail({
-              from: process.env.SMTP_FROM || process.env.SMTP_USER,
-              to: email,
-              subject: '🧪 BlessBox Production Email Test',
-              html: `<h2>Production Email Test</h2><p>Test code: <strong>${testCode}</strong></p>`,
-              text: `Test code: ${testCode}`,
-            });
-            
-            diagnostics.tests.push({
-              service: 'SMTP',
-              success: true,
-              messageId: info.messageId,
-              message: 'Email sent successfully via SMTP',
-            });
-            
-            return NextResponse.json({
-              success: true,
-              message: 'Test email sent successfully via SMTP!',
-              email: email,
-              code: testCode,
-              diagnostics: diagnostics,
-              note: 'SendGrid failed but SMTP worked. Check your email inbox.',
-            });
-          } catch (smtpError: any) {
-            diagnostics.tests.push({
-              service: 'SMTP',
-              success: false,
-              error: smtpError.message,
-            });
-          }
-        }
-      }
-    } else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      // Try SMTP if SendGrid not available
-      try {
-        const nodemailer = require('nodemailer');
-        
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT) || 587,
-          secure: process.env.SMTP_PORT === '465',
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
-
-        const info = await transporter.sendMail({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to: email,
-          subject: '🧪 BlessBox Production Email Test',
-          html: `<h2>Production Email Test</h2><p>Test code: <strong>${testCode}</strong></p>`,
-          text: `Test code: ${testCode}`,
-        });
-        
-        diagnostics.tests.push({
-          service: 'SMTP',
-          success: true,
-          messageId: info.messageId,
-          message: 'Email sent successfully',
-        });
-        
-        return NextResponse.json({
-          success: true,
-          message: 'Test email sent successfully via SMTP!',
-          email: email,
-          code: testCode,
-          diagnostics: diagnostics,
-        });
-      } catch (smtpError: any) {
-        diagnostics.tests.push({
-          service: 'SMTP',
-          success: false,
-          error: smtpError.message,
-        });
-      }
+    // This endpoint is restricted in production (use diagnostics secret).
+    const auth = request.headers.get('authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
+    const secret = process.env.DIAGNOSTICS_SECRET || process.env.CRON_SECRET;
+    if (process.env.NODE_ENV === 'production' && (!secret || token !== secret)) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // No email service configured
+    await ensureDbReady();
+    const service = new EmailService();
+    const orgId = (process.env.TEST_ORG_ID || 'org-email-test') as string;
+
+    // Ensure org exists (email_templates has FK to organizations).
+    const db = getDbClient();
+    await db.execute({
+      sql: `INSERT OR IGNORE INTO organizations (id, name, contact_email, email_verified, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [orgId, 'BlessBox Email Test Org', 'email-test@example.com', 1, new Date().toISOString(), new Date().toISOString()],
+    });
+
+    await service.ensureDefaultTemplates(orgId);
+
+    const result = await service.sendEmail(orgId, email, 'admin_notification', {
+      organization_name: 'BlessBox',
+      recipient_name: 'Tester',
+      event_type: 'production_email_test',
+      registration_id: 'test',
+      qr_code_label: 'test',
+    }, {
+      ...(typeof fromEmail === 'string' && fromEmail.trim() ? { fromEmailOverride: fromEmail.trim() } : {}),
+      ...(typeof replyTo === 'string' && replyTo.trim() ? { replyTo: replyTo.trim() } : {}),
+    });
+
+    if (!result.success) {
+      return NextResponse.json({ success: false, error: result.error || 'Failed to send' }, { status: 500 });
+    }
+
     return NextResponse.json({
-      success: false,
-      error: 'No email service configured or all services failed',
-      diagnostics: diagnostics,
-      recommendations: [
-        'Check SendGrid API key is valid and has Mail Send permission',
-        'Verify SendGrid sender email is verified',
-        'Check Vercel environment variables are set correctly',
-        'Verify application was redeployed after env var updates',
-        'Check SendGrid Activity dashboard for delivery status',
-      ],
-    }, { status: 500 });
+      success: true,
+      message: 'Test email sent successfully!',
+      email,
+      note: 'Prefer /api/system/email-health for full diagnostics.',
+    });
   } catch (error) {
     console.error('❌ Production email test error:', error);
     return NextResponse.json(

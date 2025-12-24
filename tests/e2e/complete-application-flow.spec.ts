@@ -7,6 +7,10 @@ import { test, expect } from '@playwright/test';
  */
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
+const TEST_ENV = process.env.TEST_ENV || 'local';
+const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
+const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
+const HAS_PROD_SEED = !!PROD_TEST_SEED_SECRET;
 const TEST_EMAIL = `e2e-test-${Date.now()}@example.com`;
 const TEST_ORG_NAME = `E2E Test Organization ${Date.now()}`;
 
@@ -38,9 +42,17 @@ test.describe('Complete Application Flow - Full E2E Test', () => {
       verificationCode = sendVerificationData.code;
       console.log(`   ✅ Verification code received: ${verificationCode}`);
     } else {
-      // In production, we'd need to check email
-      console.log('   ⚠️  Verification code not returned (check email in production)');
-      verificationCode = '123456'; // Fallback for testing
+      // In production, fetch code using secret-gated QA helper (no inbox needed)
+      console.log('   ℹ️  Verification code not returned; fetching via QA helper');
+      if (IS_PRODUCTION && !HAS_PROD_SEED) throw new Error('Production flow test requires PROD_TEST_SEED_SECRET');
+      const codeResp = await request.post(`${BASE_URL}/api/test/verification-code`, {
+        headers: IS_PRODUCTION ? { 'x-qa-seed-token': PROD_TEST_SEED_SECRET } : undefined,
+        data: { email: TEST_EMAIL },
+      });
+      expect(codeResp.ok()).toBeTruthy();
+      const codeBody = await codeResp.json();
+      expect(codeBody.success).toBe(true);
+      verificationCode = codeBody.code;
     }
 
     // ============================================
@@ -52,21 +64,10 @@ test.describe('Complete Application Flow - Full E2E Test', () => {
       data: { email: TEST_EMAIL, code: verificationCode },
     });
 
-    // If code is wrong, try with fallback
-    if (!verifyCodeResponse.ok()) {
-      console.log('   ⚠️  First verification attempt failed, trying fallback');
-      const verifyCodeResponse2 = await request.post(`${BASE_URL}/api/onboarding/verify-code`, {
-        data: { email: TEST_EMAIL, code: '123456' },
-      });
-      expect(verifyCodeResponse2.ok()).toBeTruthy();
-      const verifyData2 = await verifyCodeResponse2.json();
-      expect(verifyData2.verified).toBe(true);
-      console.log('   ✅ Email verified (with fallback)');
-    } else {
-      const verifyData = await verifyCodeResponse.json();
-      expect(verifyData.verified).toBe(true);
-      console.log('   ✅ Email verified');
-    }
+    expect(verifyCodeResponse.ok()).toBeTruthy();
+    const verifyData = await verifyCodeResponse.json();
+    expect(verifyData.verified).toBe(true);
+    console.log('   ✅ Email verified');
 
     // ============================================
     // Step 3: Create Organization
@@ -344,15 +345,15 @@ test.describe('Complete Application Flow - Full E2E Test', () => {
     expect(missingFieldsResponse.status()).toBe(400);
     console.log('   ✅ Missing required fields rejected');
 
-    // Test duplicate email
+    // Multi-org per email: duplicate contactEmail is allowed
     const duplicateEmailResponse = await request.post(`${BASE_URL}/api/onboarding/save-organization`, {
       data: {
         name: 'Another Org',
         contactEmail: TEST_EMAIL, // Same as created org
       },
     });
-    expect(duplicateEmailResponse.status()).toBe(409);
-    console.log('   ✅ Duplicate email rejected');
+    expect([201, 200]).toContain(duplicateEmailResponse.status());
+    console.log('   ✅ Duplicate email allowed (multi-org)');
 
     console.log('\n✅ Complete Application Flow Test Finished!\n');
     console.log('📊 Summary:');

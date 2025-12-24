@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { clearOnboardingSession } from '@/lib/services/OnboardingSessionService';
 
 interface OrganizationFormData {
   name: string;
@@ -27,6 +28,11 @@ export default function OrganizationSetupPage() {
     contactState: '',
     contactZip: '',
   });
+
+  // Clear previous onboarding session when starting fresh
+  useEffect(() => {
+    clearOnboardingSession();
+  }, []);
   const [errors, setErrors] = useState<Partial<Record<keyof OrganizationFormData, string>>>({});
   const [loading, setLoading] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
@@ -94,7 +100,7 @@ export default function OrganizationSetupPage() {
   };
 
   const organizationForm = (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" data-testid="form-org-setup" data-loading={loading}>
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
           Organization Name <span className="text-red-500">*</span>
@@ -102,6 +108,7 @@ export default function OrganizationSetupPage() {
         <input
           id="name"
           type="text"
+          data-testid="input-org-name"
           value={formData.name}
           onChange={(e) => handleInputChange('name', e.target.value)}
           className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -109,8 +116,14 @@ export default function OrganizationSetupPage() {
           }`}
           placeholder="e.g., Hope Community Food Bank"
           required
+          aria-describedby={errors.name ? "org-name-error" : undefined}
+          aria-label="Organization name"
         />
-        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+        {errors.name && (
+          <p id="org-name-error" className="mt-1 text-sm text-red-600" data-testid="error-org-name" role="alert">
+            {errors.name}
+          </p>
+        )}
       </div>
 
       <div>
@@ -120,10 +133,12 @@ export default function OrganizationSetupPage() {
         <input
           id="eventName"
           type="text"
+          data-testid="input-event-name"
           value={formData.eventName}
           onChange={(e) => handleInputChange('eventName', e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., Weekly Food Distribution"
+          aria-label="Event name"
         />
       </div>
 
@@ -134,6 +149,7 @@ export default function OrganizationSetupPage() {
         <input
           id="contactEmail"
           type="email"
+          data-testid="input-contact-email"
           value={formData.contactEmail}
           onChange={(e) => handleInputChange('contactEmail', e.target.value)}
           className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -141,8 +157,14 @@ export default function OrganizationSetupPage() {
           }`}
           placeholder="contact@example.com"
           required
+          aria-describedby={errors.contactEmail ? "contact-email-error" : undefined}
+          aria-label="Contact email"
         />
-        {errors.contactEmail && <p className="mt-1 text-sm text-red-600">{errors.contactEmail}</p>}
+        {errors.contactEmail && (
+          <p id="contact-email-error" className="mt-1 text-sm text-red-600" data-testid="error-contact-email" role="alert">
+            {errors.contactEmail}
+          </p>
+        )}
         <p className="mt-1 text-xs text-gray-500">We'll send a verification code to this email</p>
       </div>
 
@@ -153,10 +175,12 @@ export default function OrganizationSetupPage() {
         <input
           id="contactPhone"
           type="tel"
+          data-testid="input-contact-phone"
           value={formData.contactPhone}
           onChange={(e) => handleInputChange('contactPhone', e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="(555) 123-4567"
+          aria-label="Contact phone"
         />
       </div>
 
@@ -170,10 +194,12 @@ export default function OrganizationSetupPage() {
           <input
             id="contactAddress"
             type="text"
+            data-testid="input-contact-address"
             value={formData.contactAddress}
             onChange={(e) => handleInputChange('contactAddress', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="123 Main Street"
+            aria-label="Street address"
           />
         </div>
 
@@ -185,10 +211,12 @@ export default function OrganizationSetupPage() {
             <input
               id="contactCity"
               type="text"
+              data-testid="input-contact-city"
               value={formData.contactCity}
               onChange={(e) => handleInputChange('contactCity', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="City"
+              aria-label="City"
             />
           </div>
 
@@ -199,10 +227,12 @@ export default function OrganizationSetupPage() {
             <input
               id="contactState"
               type="text"
+              data-testid="input-contact-state"
               value={formData.contactState}
               onChange={(e) => handleInputChange('contactState', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="ST"
+              aria-label="State"
             />
           </div>
         </div>
@@ -214,18 +244,23 @@ export default function OrganizationSetupPage() {
           <input
             id="contactZip"
             type="text"
+            data-testid="input-contact-zip"
             value={formData.contactZip}
             onChange={(e) => handleInputChange('contactZip', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="12345"
+            aria-label="ZIP code"
           />
         </div>
       </div>
 
       <button
         type="submit"
+        data-testid="btn-submit-org-setup"
         disabled={loading}
+        data-loading={loading}
         className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        aria-label="Submit organization setup"
       >
         {loading ? 'Saving...' : 'Continue'}
       </button>
@@ -268,7 +303,7 @@ export default function OrganizationSetupPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-12 px-4" data-testid="page-onboarding-org-setup">
       <div className="max-w-3xl mx-auto">
         <OnboardingWizard
           steps={steps}

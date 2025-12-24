@@ -11,11 +11,64 @@ import type {
 } from '../interfaces/IRegistrationService';
 import { EmailService } from './EmailService';
 import { NotificationService } from './NotificationService';
+import { getUsageLimitChecker } from './UsageLimitChecker';
+
+// Custom error for limit exceeded
+export class RegistrationLimitError extends Error {
+  public readonly code = 'LIMIT_EXCEEDED';
+  public readonly upgradeUrl: string;
+  public readonly currentCount: number;
+  public readonly limit: number;
+
+  constructor(message: string, currentCount: number, limit: number, upgradeUrl: string) {
+    super(message);
+    this.name = 'RegistrationLimitError';
+    this.currentCount = currentCount;
+    this.limit = limit;
+    this.upgradeUrl = upgradeUrl;
+  }
+}
 
 export class RegistrationService implements IRegistrationService {
   private db = getDbClient();
   private emailService = new EmailService();
   private notificationService = new NotificationService();
+
+  private slugify(input: string): string {
+    return String(input || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  private findMatchingQrCode(qrCodes: any[], qrLabelOrSlug: string): any | null {
+    const needle = (qrLabelOrSlug || '').trim();
+    if (!needle) return null;
+
+    // Prefer matching the stable URL segment (slug) if present.
+    const bySlug = qrCodes.find((qr: any) => typeof qr?.slug === 'string' && qr.slug === needle);
+    if (bySlug) return bySlug;
+
+    // Backward compatibility: many rows store the URL segment in `label`.
+    const byLabelExact = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label === needle);
+    if (byLabelExact) return byLabelExact;
+
+    // Backward compatibility: some older QR code rows stored a *human label* (e.g. "Main Entrance")
+    // while the URL segment was a slugified version (e.g. "main-entrance"). If slug is missing,
+    // match against slugified(label).
+    const byLabelSlugified = qrCodes.find((qr: any) => {
+      if (typeof qr?.slug === 'string' && qr.slug.trim()) return false; // already checked slug path
+      if (typeof qr?.label !== 'string') return false;
+      return this.slugify(qr.label) === this.slugify(needle);
+    });
+    if (byLabelSlugified) return byLabelSlugified;
+
+    // Last resort: case-insensitive label compare.
+    const lower = needle.toLowerCase();
+    const byLabelCi = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label.toLowerCase() === lower);
+    return byLabelCi || null;
+  }
 
   async getFormConfig(orgSlug: string, qrLabel: string): Promise<RegistrationFormConfig | null> {
     try {
@@ -29,11 +82,33 @@ export class RegistrationService implements IRegistrationService {
         args: [orgSlug, orgSlug]
       });
 
-      if (orgResult.rows.length === 0) {
-        return null;
+      let org: any | null = (orgResult.rows.length > 0 ? (orgResult.rows[0] as any) : null);
+
+      // Fallback: some parts of the app generate slugs using a stricter slugify
+      // (removing punctuation etc). If the SQL slug match misses, do a small in-app
+      // lookup to keep older QR codes working.
+      if (!org) {
+        let rows: any[] = [];
+        try {
+          const all = await this.db.execute({
+            sql: `SELECT id, name, custom_domain FROM organizations`,
+            args: [],
+          });
+          rows = Array.isArray((all as any)?.rows) ? ((all as any).rows as any[]) : [];
+        } catch {
+          rows = [];
+        }
+
+        const match = rows.find((row: any) => {
+          const cd = typeof row?.custom_domain === 'string' ? row.custom_domain : '';
+          if (cd && cd === orgSlug) return true;
+          const name = typeof row?.name === 'string' ? row.name : '';
+          return !!name && this.slugify(name) === orgSlug;
+        });
+        org = match || null;
       }
 
-      const org = orgResult.rows[0] as any;
+      if (!org) return null;
 
       // Find QR code set for this organization
       const qrSetResult = await this.db.execute({
@@ -50,10 +125,15 @@ export class RegistrationService implements IRegistrationService {
       }
 
       const qrSet = qrSetResult.rows[0] as any;
-      const qrCodes = JSON.parse(qrSet.qr_codes);
+      let qrCodes: any[] = [];
+      try {
+        qrCodes = JSON.parse((qrSet.qr_codes as string) || '[]') || [];
+      } catch {
+        qrCodes = [];
+      }
       
       // Find the specific QR code by label
-      const matchingQR = qrCodes.find((qr: any) => qr.label === qrLabel);
+      const matchingQR = this.findMatchingQrCode(qrCodes, qrLabel);
       
       if (!matchingQR) {
         return null;
@@ -86,11 +166,24 @@ export class RegistrationService implements IRegistrationService {
       throw new Error('Form configuration not found');
     }
 
+    // Check registration limits BEFORE proceeding
+    const usageLimitChecker = getUsageLimitChecker();
+    const limitCheck = await usageLimitChecker.canRegister(formConfig.organizationId);
+    
+    if (!limitCheck.allowed) {
+      throw new RegistrationLimitError(
+        limitCheck.message || 'Registration limit reached',
+        limitCheck.currentCount,
+        limitCheck.limit,
+        limitCheck.upgradeUrl || '/pricing'
+      );
+    }
+
     // Validate required fields
     this.validateFormData(formData, formConfig.formFields);
 
     // Find the matching QR code
-    const matchingQR = formConfig.qrCodes.find(qr => qr.label === qrLabel);
+    const matchingQR = this.findMatchingQrCode(formConfig.qrCodes as any[], qrLabel);
     if (!matchingQR) {
       throw new Error('QR code not found');
     }
@@ -119,6 +212,9 @@ export class RegistrationService implements IRegistrationService {
         now
       ]
     });
+
+    // Increment registration counter in subscription
+    await this.incrementRegistrationCount(formConfig.organizationId);
 
     const registration: Registration = {
       id: registrationId,
@@ -154,11 +250,14 @@ export class RegistrationService implements IRegistrationService {
         args: [formConfig.organizationId]
       });
 
-      if (orgResult.rows.length === 0) {
+      // In some test mocks, execute() may return undefined or a shape without rows.
+      // Treat that as "org not found" and skip notifications quietly.
+      const rows = (orgResult as any)?.rows;
+      if (!Array.isArray(rows) || rows.length === 0) {
         return; // Organization not found, skip emails
       }
 
-      const org = orgResult.rows[0] as any;
+      const org = rows[0] as any;
       const orgName = org.name || 'BlessBox';
       const orgEmail = org.contact_email;
 
@@ -387,6 +486,35 @@ export class RegistrationService implements IRegistrationService {
     return this.getRegistration(id) as Promise<Registration>;
   }
 
+  async undoCheckInRegistration(id: string): Promise<Registration> {
+    const registration = await this.getRegistration(id);
+    if (!registration) {
+      throw new Error('Registration not found');
+    }
+
+    const currentReg = await this.db.execute({
+      sql: 'SELECT checked_in_at FROM registrations WHERE id = ?',
+      args: [id],
+    });
+    const row = currentReg.rows[0] as any;
+    if (!row?.checked_in_at) {
+      throw new Error('Registration is not checked in');
+    }
+
+    await this.db.execute({
+      sql: `
+        UPDATE registrations
+        SET checked_in_at = NULL,
+            checked_in_by = NULL,
+            token_status = 'active'
+        WHERE id = ?
+      `,
+      args: [id],
+    });
+
+    return this.getRegistration(id) as Promise<Registration>;
+  }
+
   async getRegistrationStats(organizationId: string): Promise<{
     total: number;
     pending: number;
@@ -490,6 +618,27 @@ export class RegistrationService implements IRegistrationService {
       if (field.required && (formData[field.id] === undefined || formData[field.id] === '')) {
         throw new Error(`Missing required field: ${field.id}`);
       }
+    }
+  }
+
+  /**
+   * Increment the registration count for an organization's active subscription.
+   * This keeps the subscription_plans.current_registration_count in sync.
+   */
+  private async incrementRegistrationCount(organizationId: string): Promise<void> {
+    try {
+      await this.db.execute({
+        sql: `
+          UPDATE subscription_plans 
+          SET current_registration_count = COALESCE(current_registration_count, 0) + 1,
+              updated_at = ?
+          WHERE organization_id = ? AND status = 'active'
+        `,
+        args: [new Date().toISOString(), organizationId]
+      });
+    } catch (error) {
+      // Log but don't fail the registration if counter update fails
+      console.error('Failed to increment registration count:', error);
     }
   }
 }

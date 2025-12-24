@@ -63,7 +63,9 @@ export class NotificationService implements INotificationService {
         }
       } else {
         // Fallback: send without organization template
-        console.warn('Sending registration confirmation without organization ID');
+        if (process.env.NODE_ENV !== 'test') {
+          console.warn('Sending registration confirmation without organization ID');
+        }
       }
 
       return {
@@ -207,7 +209,9 @@ export class NotificationService implements INotificationService {
           if (!existing) {
             // Templates will be created by EmailService.ensureDefaultTemplates
             // If that method doesn't exist, we'll just log a warning
-            console.warn(`Template ${templateType} not found for organization ${organizationId}`);
+            if (process.env.NODE_ENV !== 'test') {
+              console.warn(`Template ${templateType} not found for organization ${organizationId}`);
+            }
           }
         }
       }

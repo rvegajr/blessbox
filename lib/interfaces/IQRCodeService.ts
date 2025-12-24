@@ -4,10 +4,19 @@
 export interface QRCode {
   id: string;
   qrCodeSetId: string;
+  /**
+   * Immutable URL segment used by `/register/[orgSlug]/[qrLabel]`.
+   * Historically named `label` in storage; for safety this should be treated as stable.
+   */
   label: string;
   slug: string;
   url: string;
   dataUrl: string; // base64 image
+  /**
+   * Human-friendly display name (safe to edit in dashboard).
+   * In onboarding-generated QR codes, this is typically the entry point label (e.g. "Main Entrance").
+   */
+  description?: string;
   isActive: boolean;
   scanCount: number;
   registrationCount: number;
@@ -27,7 +36,14 @@ export interface QRCodeSet {
 }
 
 export interface QRCodeUpdate {
+  /**
+   * @deprecated Do NOT change the URL segment from the dashboard.
+   * For backward compatibility, if provided, implementations should treat this as a request
+   * to update the human-friendly display name (description) and keep the URL segment stable.
+   */
   label?: string;
+  /** Human-friendly display name (safe to edit). */
+  description?: string;
   isActive?: boolean;
 }
 
@@ -50,7 +66,7 @@ export interface IQRCodeService {
   // Get single QR code by ID
   getQRCode(id: string, qrCodeSetId: string): Promise<QRCode | null>;
   
-  // Update QR code (label, active status)
+  // Update QR code (display name/description, active status). URL segment is intentionally stable.
   updateQRCode(id: string, qrCodeSetId: string, updates: QRCodeUpdate): Promise<QRCode>;
   
   // Delete QR code (soft delete - set inactive)

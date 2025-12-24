@@ -166,19 +166,22 @@ curl http://localhost:7777/api/system/health-check
 Key files for Square integration:
 
 ```
-src/
-├── implementations/
-│   └── payment/
-│       └── SquarePaymentService.ts    # Main payment service
-├── interfaces/
-│   └── payment/
-│       └── IPaymentService.ts         # Payment interface
-└── pages/
-    └── api/
-        └── payment/
-            ├── create-intent.ts        # Create payment intent
-            ├── process.ts              # Process payment
-            └── validate-coupon.ts      # Coupon validation
+lib/
+├── services/
+│   └── SquarePaymentService.ts           # Main payment processor (Square)
+└── interfaces/
+    ├── IPaymentProcessor.ts              # ISP: payment-only contract (processor)
+    └── IPaymentService.ts                # Shared payment types (no broad interface)
+
+app/
+└── api/
+    ├── payment/
+    │   ├── create-intent/route.ts        # Create "intent" payload (Square SDK compatible)
+    │   ├── process/route.ts              # Process payment with Square
+    │   └── validate-coupon/route.ts      # Payment flow coupon validation
+    └── coupons/
+        ├── validate/route.ts             # Coupon validation (preferred separation)
+        └── apply/route.ts                # Apply coupon (compute discounted amount)
 ```
 
 ---

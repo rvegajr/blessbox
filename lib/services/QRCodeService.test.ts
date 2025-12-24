@@ -211,17 +211,18 @@ describe('QRCodeService', () => {
   });
 
   describe('updateQRCode', () => {
-    it('should update QR code label', async () => {
+    it('should update QR code display name (description) and keep URL segment stable', async () => {
       const mockQRCodeSet = {
         id: 'set-123',
         organization_id: 'org-123',
         qr_codes: JSON.stringify([
           {
             id: 'qr-1',
-            label: 'Main Entrance',
+            label: 'main-entrance',
             slug: 'main-entrance',
             url: 'https://example.com/register/org/main-entrance',
             dataUrl: 'data:image/png;base64,test1',
+            description: 'Main Entrance',
           },
         ]),
         is_active: 1,
@@ -241,10 +242,11 @@ describe('QRCodeService', () => {
         qr_codes: JSON.stringify([
           {
             id: 'qr-1',
-            label: 'Updated Label',
+            label: 'main-entrance',
             slug: 'main-entrance',
             url: 'https://example.com/register/org/main-entrance',
             dataUrl: 'data:image/png;base64,test1',
+            description: 'Updated Display Name',
           },
         ]),
       };
@@ -253,15 +255,62 @@ describe('QRCodeService', () => {
       // Count registrations
       mockDb.execute.mockResolvedValueOnce({ rows: [{ count: 0 }] });
 
-      const updates: QRCodeUpdate = { label: 'Updated Label' };
+      const updates: QRCodeUpdate = { description: 'Updated Display Name' };
       const result = await service.updateQRCode('qr-1', 'set-123', updates);
 
-      expect(result.label).toBe('Updated Label');
+      expect(result.label).toBe('main-entrance');
+      expect(result.description).toBe('Updated Display Name');
       expect(mockDb.execute).toHaveBeenCalledWith(
         expect.objectContaining({
           sql: expect.stringContaining('UPDATE'),
         })
       );
+    });
+
+    it('should treat label updates as description updates (backward compatible) and keep URL segment stable', async () => {
+      const mockQRCodeSet = {
+        id: 'set-123',
+        organization_id: 'org-123',
+        qr_codes: JSON.stringify([
+          {
+            id: 'qr-1',
+            label: 'main-entrance',
+            slug: 'main-entrance',
+            url: 'https://example.com/register/org/main-entrance',
+            dataUrl: 'data:image/png;base64,test1',
+          },
+        ]),
+        is_active: 1,
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-01T00:00:00Z',
+      };
+
+      mockDb.execute.mockResolvedValueOnce({ rows: [mockQRCodeSet] });
+      mockDb.execute.mockResolvedValueOnce({ rows: [] });
+
+      const updatedQRCodeSet = {
+        ...mockQRCodeSet,
+        qr_codes: JSON.stringify([
+          {
+            id: 'qr-1',
+            label: 'main-entrance',
+            slug: 'main-entrance',
+            url: 'https://example.com/register/org/main-entrance',
+            dataUrl: 'data:image/png;base64,test1',
+            description: 'Human Friendly Name',
+          },
+        ]),
+      };
+      mockDb.execute.mockResolvedValueOnce({ rows: [updatedQRCodeSet] });
+
+      // Count registrations
+      mockDb.execute.mockResolvedValueOnce({ rows: [{ count: 0 }] });
+
+      const updates: QRCodeUpdate = { label: 'Human Friendly Name' };
+      const result = await service.updateQRCode('qr-1', 'set-123', updates);
+
+      expect(result.label).toBe('main-entrance');
+      expect(result.description).toBe('Human Friendly Name');
     });
 
     it('should update QR code active status', async () => {
@@ -333,7 +382,7 @@ describe('QRCodeService', () => {
 
       mockDb.execute.mockResolvedValueOnce({ rows: [mockQRCodeSet] });
 
-      const updates: QRCodeUpdate = { label: 'Updated Label' };
+      const updates: QRCodeUpdate = { description: 'Updated Display Name' };
 
       await expect(
         service.updateQRCode('qr-999', 'set-123', updates)

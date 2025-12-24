@@ -5,8 +5,18 @@
 
 echo "🔍 Running pre-commit checks..."
 
-# Run linting and type checking
-npm run lint
+# Run fast, deterministic checks that don't require a running server.
+# (E2E tests are intentionally NOT run here because port 7777 may be in use by other projects.)
+npm test
+
+if [ $? -ne 0 ]; then
+    echo "❌ Unit tests failed!"
+    echo "💡 Fix the errors above before committing."
+    exit 1
+fi
+
+# Ensure we can produce a production build.
+npm run build
 
 if [ $? -ne 0 ]; then
     echo "❌ Pre-commit checks failed!"

@@ -94,6 +94,19 @@ Run all production E2E tests
 
 *Language: bash • ✓ Executable*
 
+### [`test-tech.sh`](test-tech.sh)
+Tech smoke tests for **Email (SendGrid)** + **Payments (Square)**.
+Loads a `.env` file directly, validates provider credentials (non-charging), and can optionally verify a deployed base URL.
+
+**Usage:**
+```bash
+./test-tech.sh --env-file .env.sandbox
+./test-tech.sh --env-file .env.production --base-url https://www.blessbox.org
+./test-tech.sh --env-file .env.production --base-url https://www.blessbox.org --email-to you@example.com --send-test-email
+```
+
+*Language: bash • ✓ Executable*
+
 ### [`run-tutorial-tests-repeatedly.sh`](run-tutorial-tests-repeatedly.sh)
 Tutorial E2E Test Reliability Checker
 

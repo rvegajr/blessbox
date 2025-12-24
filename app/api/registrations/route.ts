@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { RegistrationService } from '@/lib/services/RegistrationService';
+import { RegistrationService, RegistrationLimitError } from '@/lib/services/RegistrationService';
 import { parseODataQuery } from '@/lib/utils/odataParser';
 
 const registrationService = new RegistrationService();
@@ -40,6 +40,21 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Registration submission error:', error);
+    
+    // Handle registration limit exceeded
+    if (error instanceof RegistrationLimitError) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'limit_exceeded',
+          message: error.message,
+          currentCount: error.currentCount,
+          limit: error.limit,
+          upgradeUrl: error.upgradeUrl
+        },
+        { status: 403 }
+      );
+    }
     
     // Handle specific error types
     if (error instanceof Error) {

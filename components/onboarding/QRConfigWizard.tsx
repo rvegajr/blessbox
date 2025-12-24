@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { QRConfigProps } from '@/components/OnboardingWizard.interface';
 
 export function QRConfigWizard({
@@ -20,8 +20,13 @@ export function QRConfigWizard({
     }))
   );
 
+  // Use ref to store onChange to avoid infinite loops
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  // Notify parent of changes without including onChange in dependencies
   useEffect(() => {
-    onChange({
+    onChangeRef.current({
       qrCodes: entryPoints.map(ep => ({
         id: `qr_${ep.slug}`,
         label: ep.label,
@@ -30,7 +35,7 @@ export function QRConfigWizard({
       })),
       settings: data.settings,
     });
-  }, [entryPoints, data.settings, onChange]);
+  }, [entryPoints, data.settings]);
 
   const addEntryPoint = () => {
     const newEntryPoint = {
@@ -83,8 +88,10 @@ export function QRConfigWizard({
             </div>
             <button
               type="button"
+              data-testid="btn-add-entry-point"
               onClick={addEntryPoint}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              aria-label="Add entry point"
             >
               + Add Entry Point
             </button>
@@ -114,6 +121,7 @@ export function QRConfigWizard({
             {entryPoints.map((entryPoint, index) => (
               <div
                 key={index}
+                data-testid={`row-entry-point-${index}`}
                 className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -123,10 +131,12 @@ export function QRConfigWizard({
                     </label>
                     <input
                       type="text"
+                      data-testid={`input-entry-label-${index}`}
                       value={entryPoint.label}
                       onChange={(e) => updateEntryPoint(index, { label: e.target.value })}
                       placeholder="e.g., Main Entrance"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label={`Entry point label ${index + 1}`}
                     />
                   </div>
 
@@ -136,12 +146,14 @@ export function QRConfigWizard({
                     </label>
                     <input
                       type="text"
+                      data-testid={`input-entry-slug-${index}`}
                       value={entryPoint.slug}
                       onChange={(e) => updateEntryPoint(index, {
                         slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
                       })}
                       placeholder="main-entrance"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                      aria-label={`Entry point slug ${index + 1}`}
                     />
                     </div>
 
@@ -151,10 +163,12 @@ export function QRConfigWizard({
                     </label>
                     <input
                       type="text"
+                      data-testid={`input-entry-description-${index}`}
                       value={entryPoint.description || ''}
                       onChange={(e) => updateEntryPoint(index, { description: e.target.value })}
                       placeholder="Brief description"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label={`Entry point description ${index + 1}`}
                     />
                   </div>
                 </div>
@@ -162,8 +176,10 @@ export function QRConfigWizard({
                 <div className="mt-3 flex justify-end">
                   <button
                     type="button"
+                    data-testid={`btn-remove-entry-${index}`}
                     onClick={() => removeEntryPoint(index)}
                     className="text-sm text-red-600 hover:text-red-700"
+                    aria-label={`Remove entry point ${index + 1}`}
                   >
                     Remove
                   </button>
@@ -182,15 +198,16 @@ export function QRConfigWizard({
 
         {/* QR Code Preview */}
         {data.qrCodes.length > 0 && (
-          <div id="preview-section" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" data-tutorial-target="preview-section">
+          <div id="preview-section" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" data-tutorial-target="preview-section" data-testid="section-qr-preview">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Generated QR Codes</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {data.qrCodes.map((qr) => {
                 // Check if this QR code has a dataUrl (generated QR image)
                 const hasImage = 'dataUrl' in qr && qr.dataUrl;
+                const slug = qr.url?.split('/').pop() || qr.id;
                 
                 return (
-                  <div key={qr.id} className="border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                  <div key={qr.id} className="border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow" data-testid={`card-qr-${slug}`}>
                     <div className="bg-gray-50 rounded-lg p-4 mb-2 aspect-square flex items-center justify-center">
                       {hasImage ? (
                         <img 
@@ -221,18 +238,28 @@ export function QRConfigWizard({
           <button
             id="generate-qr-btn"
             type="button"
+            data-testid="btn-generate-qr"
             onClick={onGenerate}
             disabled={isLoading || entryPoints.length === 0 || entryPoints.some(ep => !ep.label || !ep.slug)}
+            data-loading={isLoading}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             data-tutorial-target="generate-qr-btn"
+            aria-label="Generate QR codes"
           >
             {isLoading ? 'Generating...' : 'Generate QR Codes'}
           </button>
+          {isLoading && (
+            <div data-testid="loading-qr-generate" className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            </div>
+          )}
           {data.qrCodes.length > 0 && (
             <button
               type="button"
+              data-testid="btn-download-qr"
               onClick={onDownload}
               className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              aria-label="Download QR codes"
             >
               Download All
             </button>

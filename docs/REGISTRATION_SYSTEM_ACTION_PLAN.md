@@ -163,7 +163,7 @@ lsof -ti:7777
 kill -9 $(lsof -ti:7777)
 
 # Try different port
-npm run dev -- --port 3000
+npm run dev -- --port 7777
 ```
 
 ### **Database Issues**

@@ -78,7 +78,7 @@ export default defineConfig({
       // Match project dev port (package.json uses 7777)
       command: 'npm run dev',
       port: 7777,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true, // Always reuse if server is already running
       timeout: 120 * 1000,
     },
   } : {}),

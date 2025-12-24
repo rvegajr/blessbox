@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FormBuilderProps, FormField } from '@/components/OnboardingWizard.interface';
 
 export function FormBuilderWizard({
@@ -14,14 +14,19 @@ export function FormBuilderWizard({
   const [fields, setFields] = useState<FormField[]>(data.fields || []);
   const [title, setTitle] = useState(data.title || 'Registration Form');
   const [description, setDescription] = useState(data.description || '');
+  
+  // Use ref to store onChange to avoid infinite loops
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
+  // Notify parent of changes without including onChange in dependencies
   useEffect(() => {
-    onChange({
+    onChangeRef.current({
       fields,
       title,
       description,
     });
-  }, [fields, title, description, onChange]);
+  }, [fields, title, description]);
 
   const addField = (type: FormField['type']) => {
     const newField: FormField = {
@@ -70,13 +75,13 @@ export function FormBuilderWizard({
     }
   };
 
-  const fieldTypes: Array<{ type: FormField['type']; label: string; icon: string }> = [
-    { type: 'text', label: 'Text', icon: '📝' },
-    { type: 'email', label: 'Email', icon: '✉️' },
-    { type: 'phone', label: 'Phone', icon: '📞' },
-    { type: 'select', label: 'Dropdown', icon: '📋' },
-    { type: 'textarea', label: 'Text Area', icon: '📄' },
-    { type: 'checkbox', label: 'Checkbox', icon: '☑️' },
+  const fieldTypes: Array<{ type: FormField['type']; label: string; icon: string; description: string }> = [
+    { type: 'text', label: 'Short Text', icon: '📝', description: 'Single line input (name, address, etc.)' },
+    { type: 'email', label: 'Email', icon: '✉️', description: 'Email address field with validation' },
+    { type: 'phone', label: 'Phone', icon: '📞', description: 'Phone number field' },
+    { type: 'select', label: 'Dropdown', icon: '📋', description: 'Select from a list of options' },
+    { type: 'textarea', label: 'Long Text', icon: '📄', description: 'Multi-line text (comments, notes, etc.)' },
+    { type: 'checkbox', label: 'Checkbox', icon: '☑️', description: 'Yes/No toggle or agreement' },
   ];
 
   return (
@@ -115,16 +120,22 @@ export function FormBuilderWizard({
 
             <div className="border-t pt-4">
               <h4 className="text-sm font-medium text-gray-700 mb-3">Add Field</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {fieldTypes.map(({ type, label, icon }) => (
+              <div className="grid grid-cols-1 gap-2">
+                {fieldTypes.map(({ type, label, icon, description }) => (
                   <button
                     key={type}
                     type="button"
+                    data-testid={`btn-add-field-${type}`}
                     onClick={() => addField(type)}
-                    className="flex flex-col items-center gap-1 p-3 border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
+                    title={description}
+                    aria-label={`Add ${label} field`}
                   >
-                    <span className="text-2xl">{icon}</span>
-                    <span className="text-xs text-gray-700">{label}</span>
+                    <span className="text-2xl flex-shrink-0">{icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-700 block">{label}</span>
+                      <span className="text-xs text-gray-500 block truncate">{description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -204,6 +215,7 @@ export function FormBuilderWizard({
                         <div>
                           <label className="block text-xs text-gray-600 mb-1">Options (one per line)</label>
                           <textarea
+                            data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
                             onChange={(e) => updateField(field.id, {
                               options: e.target.value.split('\n').filter(o => o.trim())
@@ -211,6 +223,7 @@ export function FormBuilderWizard({
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                             placeholder="Option 1\nOption 2\nOption 3"
+                            aria-label={`Options for ${field.label || 'select field'}`}
                           />
                         </div>
                       )}

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OrganizationService } from '@/lib/services/OrganizationService';
+import { ensureDbReady } from '@/lib/db-ready';
 
 const organizationService = new OrganizationService();
 
 export async function POST(request: NextRequest) {
   try {
+    await ensureDbReady();
     const body = await request.json();
     const { 
       name, 

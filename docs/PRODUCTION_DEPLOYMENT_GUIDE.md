@@ -173,7 +173,7 @@ npm run build
 npm run preview
 ```
 
-Visit http://localhost:3000 and verify everything works.
+Visit http://localhost:7777 and verify everything works.
 
 ### Step 8: Deploy to Production
 

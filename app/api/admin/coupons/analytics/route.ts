@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { CouponService } from '@/lib/coupons';
+import { isSuperAdminEmail } from '@/lib/auth';
 
 /**
  * GET /api/admin/coupons/analytics
@@ -12,6 +13,9 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!isSuperAdminEmail(session.user.email)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const couponService = new CouponService();

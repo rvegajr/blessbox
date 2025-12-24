@@ -4,12 +4,14 @@
 
 ### Test 1: Check Email Configuration
 ```bash
-curl https://www.blessbox.org/api/debug-email-config
+curl https://www.blessbox.org/api/system/email-health \
+  -H "Authorization: Bearer $DIAGNOSTICS_SECRET"
 ```
 
 ### Test 2: Comprehensive Email Test
 ```bash
 curl -X POST https://www.blessbox.org/api/test-production-email \
+  -H "Authorization: Bearer $DIAGNOSTICS_SECRET" \
   -H "Content-Type: application/json" \
   -d '{"email":"your-email@example.com"}'
 ```
@@ -30,23 +32,18 @@ curl -X POST https://www.blessbox.org/api/onboarding/send-verification \
 1. **Check Vercel Dashboard:**
    - Go to: Settings → Environment Variables
    - Verify these are set for **Production**:
-     - `SENDGRID_API_KEY` = `SG.fxn0ncPJQRe41ksLlecFhw...`
-     - `SENDGRID_FROM_EMAIL` = `contact@yolovibecodebootcamp.com`
-     - `EMAIL_PROVIDER` = `sendgrid`
+     - `SENDGRID_API_KEY` = `SG.***`
+     - `SENDGRID_FROM_EMAIL` = *(a verified sender identity)*
+     - `DIAGNOSTICS_SECRET` = *(required to call protected diagnostics endpoints)*
 
 2. **Verify via Debug Endpoint:**
    ```
-   https://www.blessbox.org/api/debug-email-config
+   https://www.blessbox.org/api/system/email-health
    ```
    Should show:
    ```json
    {
-     "status": "ready",
-     "activeService": "SendGrid",
-     "config": {
-       "hasSendGrid": true,
-       "sendGridFromEmail": "contact@yolovibecodebootcamp.com"
-     }
+     "success": true
    }
    ```
 

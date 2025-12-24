@@ -53,7 +53,7 @@ export class CouponService implements ICouponService {
     await this.ensureSchema();
     
     const result = await this.db.execute({
-      sql: `SELECT * FROM coupons WHERE code = ? AND active = 1`,
+      sql: `SELECT * FROM coupons WHERE code = ?`,
       args: [code.toUpperCase().trim()]
     });
 
@@ -112,8 +112,10 @@ export class CouponService implements ICouponService {
       discountedAmount = amount - coupon.discountValue;
     }
 
-    // Ensure minimum $1 (or $0 for 100% coupons)
-    const minimumAmount = coupon.discountValue >= 100 ? 0 : 100;
+    // Ensure minimum $1 (100 cents) for paid plans, except true 100% coupons which can be $0.
+    // NOTE: `amount` is treated as cents throughout the app.
+    const isFreeCoupon = coupon.discountType === 'percentage' && coupon.discountValue >= 100;
+    const minimumAmount = isFreeCoupon ? 0 : 100;
     return Math.max(discountedAmount, minimumAmount);
   }
 
