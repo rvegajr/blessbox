@@ -1,52 +1,46 @@
-import { Client, Environment, ApiError } from 'square';
-import { IPaymentService, PaymentIntent, PaymentResult } from '../interfaces/IPaymentService';
+import { SquareClient, SquareEnvironment, SquareError } from 'square';
+import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
+import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
 
-export class SquarePaymentService implements IPaymentService {
-  private client: Client;
-  private environment: Environment;
+export class SquarePaymentService implements IPaymentProcessor {
+  private client: SquareClient;
+  private environment: SquareEnvironment;
 
   constructor() {
     // Initialize Square client
-    this.environment = process.env.NODE_ENV === 'production' 
-      ? Environment.Production 
-      : Environment.Sandbox;
+    const env = (process.env.SQUARE_ENVIRONMENT || '').trim().toLowerCase();
+    this.environment = env === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox;
+
+    // Vercel env vars can accidentally include trailing newlines/spaces.
+    const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
+    if (!accessToken) {
+      throw new Error('Square is not configured: SQUARE_ACCESS_TOKEN is missing');
+    }
     
-    this.client = new Client({
-      accessToken: process.env.SQUARE_ACCESS_TOKEN!,
+    this.client = new SquareClient({
+      accessToken,
       environment: this.environment,
     });
   }
 
   async createPaymentIntent(
-    amountCents: number, 
-    currency: string, 
-    organizationId: string, 
-    description?: string
+    amount: number,
+    currency: string,
+    metadata?: Record<string, any>
   ): Promise<PaymentIntent> {
     try {
-      const request = {
-        sourceId: 'cnon_placeholder', // Will be replaced with actual card nonce
-        amountMoney: {
-          amount: amountCents,
-          currency: currency,
-        },
-        idempotencyKey: `${organizationId}-${Date.now()}`,
-        note: description || `Payment for organization ${organizationId}`,
-      };
-
-      const response = await this.client.paymentsApi.createPayment(request);
-      
-      if (response.result.payment) {
-        return {
-          id: response.result.payment.id!,
-          clientSecret: response.result.payment.id!, // Square uses payment ID as client secret
-          status: response.result.payment.status!,
-          amount: amountCents,
-          currency: currency,
-        };
-      }
-
-      throw new Error('Failed to create payment intent');
+      // Square does not have a Stripe-like "intent" flow for the Web Payments SDK.
+      // We return a synthetic intent payload so the app has a consistent interface.
+      const id = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)) as string;
+      return {
+        id,
+        amount,
+        currency,
+        status: 'pending',
+        clientSecret: id,
+        createdAt: new Date().toISOString(),
+        ...(metadata ? { metadata } : {}),
+      } as any;
     } catch (error) {
       console.error('Square payment intent creation failed:', error);
       throw new Error(`Payment intent creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -54,86 +48,98 @@ export class SquarePaymentService implements IPaymentService {
   }
 
   async processPayment(
-    paymentIntentId: string, 
-    paymentMethodToken: string, 
-    organizationId: string
+    sourceId: string,
+    amount: number,
+    currency: string,
+    customerId?: string
   ): Promise<PaymentResult> {
     try {
-      // In Square, we create the payment directly with the card nonce
-      const request = {
-        sourceId: paymentMethodToken,
-        amountMoney: {
-          amount: 0, // Will be set from payment intent
-          currency: 'USD',
-        },
-        idempotencyKey: `${organizationId}-${Date.now()}`,
-        note: `Payment for organization ${organizationId}`,
-      };
+      const idempotencyKey = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`) as string;
+      const response = await this.client.payments.create({
+        sourceId,
+        amountMoney: { amount: BigInt(amount), currency },
+        idempotencyKey,
+        ...(customerId ? { customerId } : {}),
+        note: customerId ? `BlessBox subscription payment (${customerId})` : 'BlessBox subscription payment',
+      });
 
-      const response = await this.client.paymentsApi.createPayment(request);
-      
-      if (response.result.payment) {
-        const payment = response.result.payment;
-        return {
-          success: payment.status === 'COMPLETED',
-          message: payment.status === 'COMPLETED' ? 'Payment successful' : `Payment ${payment.status}`,
-          transactionId: payment.id!,
-        };
+      const payment = response.result.payment;
+      if (!payment?.id) {
+        return { success: false, error: 'No payment returned from Square' };
       }
 
       return {
-        success: false,
-        message: 'Payment processing failed',
-        error: 'No payment returned from Square',
+        success: payment.status === 'COMPLETED',
+        paymentId: payment.id,
+        squarePaymentId: payment.id,
+        amount,
+        currency,
+        ...(payment.status === 'COMPLETED' ? {} : { error: `Payment ${payment.status || 'UNKNOWN'}` }),
       };
     } catch (error) {
-      console.error('Square payment processing failed:', error);
+      const details = (() => {
+        if (error instanceof SquareError) {
+          const errs = (error as any)?.errors;
+          const msg =
+            Array.isArray(errs) && errs.length > 0
+              ? errs.map((e: any) => e?.detail || e?.code).filter(Boolean).join('; ')
+              : '';
+          return `Square error${error.statusCode ? ` (${error.statusCode})` : ''}${msg ? `: ${msg}` : ''}`;
+        }
+        return error instanceof Error ? error.message : String(error);
+      })();
+      console.error('Square payment processing failed:', details);
       return {
         success: false,
-        message: 'Payment processing failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: details || 'Payment processing failed',
       };
     }
   }
 
   async refundPayment(
-    transactionId: string, 
-    amountCents: number, 
-    organizationId: string, 
+    paymentId: string,
+    amount?: number,
     reason?: string
-  ): Promise<PaymentResult> {
+  ): Promise<RefundResult> {
     try {
       const request = {
-        paymentId: transactionId,
-        amountMoney: {
-          amount: amountCents,
-          currency: 'USD',
-        },
+        paymentId,
+        ...(typeof amount === 'number'
+          ? {
+              amountMoney: {
+                amount: BigInt(amount),
+                currency: 'USD',
+              },
+            }
+          : {}),
         reason: reason || 'Refund requested',
-        idempotencyKey: `${organizationId}-refund-${Date.now()}`,
+        idempotencyKey:
+          (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`) as string,
       };
 
-      const response = await this.client.refundsApi.refundPayment(request);
+      const response = await this.client.refunds.refundPayment(request as any);
       
       if (response.result.refund) {
         return {
           success: true,
-          message: 'Refund successful',
-          transactionId: response.result.refund.id!,
+          refundId: response.result.refund.id!,
+          squareRefundId: response.result.refund.id!,
+          ...(typeof amount === 'number' ? { amount } : {}),
         };
       }
 
       return {
         success: false,
-        message: 'Refund failed',
         error: 'No refund returned from Square',
       };
     } catch (error) {
-      console.error('Square refund failed:', error);
+      const details = error instanceof SquareError
+        ? `Square error${error.statusCode ? ` (${error.statusCode})` : ''}`
+        : (error instanceof Error ? error.message : String(error));
+      console.error('Square refund failed:', details);
       return {
         success: false,
-        message: 'Refund failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: details || 'Refund failed',
       };
     }
   }
@@ -147,4 +153,6 @@ export class SquarePaymentService implements IPaymentService {
   getLocationId(): string {
     return process.env.SQUARE_LOCATION_ID || '';
   }
+
+  // Customer + subscription operations intentionally excluded (ISP).
 }

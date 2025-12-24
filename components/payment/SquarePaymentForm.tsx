@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Square Web Payments SDK types
 declare global {
@@ -10,6 +10,7 @@ declare global {
         card: () => Promise<{
           tokenize: () => Promise<{ status: string; token?: string }>;
           attach: (selector: string) => Promise<void>;
+          destroy: () => Promise<void>;
         }>;
       };
     };
@@ -19,31 +20,67 @@ declare global {
 interface SquarePaymentFormProps {
   amount: number;
   currency: string;
+  planType: 'free' | 'standard' | 'enterprise';
+  billingCycle?: 'monthly' | 'yearly';
   onPaymentSuccess: (paymentResult: any) => void;
   onPaymentError: (error: string) => void;
   applicationId: string;
   locationId: string;
+  environment?: 'sandbox' | 'production';
+  email?: string;
 }
 
 export default function SquarePaymentForm({
   amount,
   currency,
+  planType,
+  billingCycle = 'monthly',
   onPaymentSuccess,
   onPaymentError,
   applicationId,
   locationId,
+  environment = 'sandbox',
+  email,
 }: SquarePaymentFormProps) {
   const [payments, setPayments] = useState<any>(null);
   const [card, setCard] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const initializingRef = useRef(false);
+  const cardRef = useRef<any>(null);
 
   useEffect(() => {
+    // Prevent double initialization (React Strict Mode)
+    if (initializingRef.current) return;
+    if (!applicationId || !locationId) return;
+
+    initializingRef.current = true;
+
     const initializeSquare = async () => {
       try {
+        // Wait for container to be in DOM
+        let container = document.getElementById('card-container');
+        let attempts = 0;
+        while (!container && attempts < 20) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          container = document.getElementById('card-container');
+          attempts++;
+        }
+        
+        if (!container) {
+          throw new Error('Card container not found');
+        }
+
+        // Clear any existing content (in case of re-initialization)
+        container.innerHTML = '';
+
         // Load Square Web Payments SDK if not already loaded
         if (!window.Square) {
           const script = document.createElement('script');
-          script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
+          // Use production or sandbox SDK based on environment
+          script.src = environment === 'production'
+            ? 'https://web.squarecdn.com/v1/square.js'
+            : 'https://sandbox.web.squarecdn.com/v1/square.js';
           script.async = true;
           document.head.appendChild(script);
           
@@ -81,21 +118,42 @@ export default function SquarePaymentForm({
 
         // Attach card to container
         await card.attach('#card-container');
+        cardRef.current = card;
         setCard(card);
+        setIsInitializing(false);
       } catch (error) {
         console.error('Failed to initialize Square Payments:', error);
+        setIsInitializing(false);
+        initializingRef.current = false;
         onPaymentError('Failed to initialize payment form');
       }
     };
 
-    if (applicationId && locationId) {
-      initializeSquare();
-    }
-  }, [applicationId, locationId, onPaymentError]);
+    initializeSquare();
+
+    // Cleanup on unmount
+    return () => {
+      if (cardRef.current) {
+        try {
+          cardRef.current.destroy();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        cardRef.current = null;
+      }
+      initializingRef.current = false;
+    };
+  }, [applicationId, locationId, environment, onPaymentError]);
 
   const handlePayment = async () => {
     if (!card || !payments) {
       onPaymentError('Payment form not initialized');
+      return;
+    }
+
+    // Validate email
+    if (!email || email.trim().length === 0) {
+      onPaymentError('Email is required to complete payment');
       return;
     }
 
@@ -115,6 +173,9 @@ export default function SquarePaymentForm({
             paymentToken: result.token,
             amount: amount,
             currency: currency,
+            planType,
+            billingCycle,
+            email,
           }),
         });
 
@@ -136,26 +197,23 @@ export default function SquarePaymentForm({
     }
   };
 
-  if (!card) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Loading payment form...</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="payment-square-form">
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Payment Information
         </h3>
         
-        {/* Square Card Input */}
-        <div id="card-container" className="mb-4">
-          {/* Square will inject the card input here */}
+        {/* Square Card Input - always rendered so Square can attach to it */}
+        <div id="card-container" className="mb-4 min-h-[50px]">
+          {/* Square will inject the card form here */}
         </div>
+        {isInitializing && (
+          <div className="flex items-center justify-center p-2 mb-4" data-testid="loading-payment-form">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
+          </div>
+        )}
 
         <div className="bg-gray-50 p-4 rounded-lg mb-4">
           <div className="flex justify-between items-center">
@@ -167,9 +225,12 @@ export default function SquarePaymentForm({
         </div>
 
         <button
+          data-testid="btn-pay"
           onClick={handlePayment}
-          disabled={isLoading}
+          disabled={isLoading || isInitializing || !card}
+          data-loading={isLoading || isInitializing}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          aria-label={`Pay $${(amount / 100).toFixed(2)}`}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">

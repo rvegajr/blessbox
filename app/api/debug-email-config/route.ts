@@ -8,6 +8,18 @@ export async function GET(request: NextRequest) {
   // Allow access in all environments for debugging (can be restricted later)
   // In production, this helps diagnose email issues
 
+  // In production, require diagnostics secret (or cron secret) to avoid leaking config.
+  if (process.env.NODE_ENV === 'production') {
+    const auth = request.headers.get('authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
+    const secret = process.env.DIAGNOSTICS_SECRET || process.env.CRON_SECRET;
+    if (!secret || token !== secret) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
+  const isDev = process.env.NODE_ENV !== 'production';
+
   const config = {
     nodeEnv: process.env.NODE_ENV,
     emailProvider: process.env.EMAIL_PROVIDER || 'not set',
@@ -49,6 +61,7 @@ export async function GET(request: NextRequest) {
     message,
     config,
     recommendations: getRecommendations(config),
+    note: 'Prefer /api/system/email-health for production-safe diagnostics (supports auth + org templates).',
   });
 }
 

@@ -21,14 +21,15 @@ export default function EmailVerificationPage() {
       const storedEmail = sessionStorage.getItem('onboarding_contactEmail');
       if (storedEmail) {
         setEmail(storedEmail);
-        // Auto-send verification code
-        handleSendCode();
+        // Auto-send verification code (use storedEmail directly to avoid state timing issues)
+        void handleSendCode(storedEmail);
       }
     }
   }, []);
 
-  const handleSendCode = async () => {
-    if (!email) {
+  const handleSendCode = async (emailOverride?: string) => {
+    const targetEmail = (emailOverride ?? email).trim();
+    if (!targetEmail) {
       setError('Please enter your email address');
       return;
     }
@@ -41,7 +42,7 @@ export default function EmailVerificationPage() {
       const response = await fetch('/api/onboarding/send-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: targetEmail }),
       });
 
       const data = await response.json();
@@ -71,10 +72,13 @@ export default function EmailVerificationPage() {
     setError(null);
 
     try {
+      const orgId =
+        typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_organizationId') : null;
+
       const response = await fetch('/api/onboarding/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, organizationId: orgId }),
       });
 
       const data = await response.json();
@@ -89,6 +93,7 @@ export default function EmailVerificationPage() {
       // Mark email verification as complete
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('onboarding_emailVerified', 'true');
+        if (data.userId) sessionStorage.setItem('onboarding_userId', String(data.userId));
         sessionStorage.setItem('onboarding_step', '3'); // Move to step 3
       }
       
@@ -104,7 +109,7 @@ export default function EmailVerificationPage() {
   };
 
   const verificationForm = (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="form-email-verification" data-loading={loading || sending}>
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
           Email Address
@@ -113,18 +118,23 @@ export default function EmailVerificationPage() {
           <input
             id="email"
             type="email"
+            data-testid="input-email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="your@email.com"
             disabled={codeSent}
+            aria-label="Email address"
           />
           {!codeSent && (
             <button
               type="button"
+              data-testid="btn-send-code"
               onClick={handleSendCode}
               disabled={sending}
+              data-loading={sending}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              aria-label="Send verification code"
             >
               {sending ? 'Sending...' : 'Send Code'}
             </button>
@@ -141,6 +151,7 @@ export default function EmailVerificationPage() {
             <input
               id="code"
               type="text"
+              data-testid="input-verification-code"
               value={code}
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, '').slice(0, 6);
@@ -151,13 +162,16 @@ export default function EmailVerificationPage() {
               placeholder="000000"
               maxLength={6}
               autoFocus
+              aria-label="Verification code"
             />
             <div className="flex items-center justify-between text-sm">
               <button
                 type="button"
+                data-testid="btn-resend-code"
                 onClick={handleSendCode}
                 disabled={sending}
                 className="text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                aria-label="Resend verification code"
               >
                 Resend Code
               </button>
@@ -168,13 +182,13 @@ export default function EmailVerificationPage() {
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4" data-testid="error-email-verification" role="alert">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4" data-testid="success-email-verification" role="status">
           <p className="text-sm text-green-600">{success}</p>
         </div>
       )}
@@ -182,9 +196,12 @@ export default function EmailVerificationPage() {
       {codeSent && (
         <button
           type="button"
+          data-testid="btn-verify-code"
           onClick={handleVerify}
           disabled={loading || code.length !== 6}
+          data-loading={loading}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          aria-label="Verify email with code"
         >
           {loading ? 'Verifying...' : verified ? '✓ Verified' : 'Verify Email'}
         </button>
@@ -228,7 +245,7 @@ export default function EmailVerificationPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-12 px-4" data-testid="page-onboarding-email">
       <div className="max-w-2xl mx-auto">
         <OnboardingWizard
           steps={steps}

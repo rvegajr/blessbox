@@ -1,14 +1,16 @@
 // 🎉 JOYFUL TURSO SCHEMA UPDATE - Adding passwordless magic! ✨
 import { createClient } from '@libsql/client';
+import dotenv from 'dotenv';
 
-// 🚀 Set up our AMAZING Turso connection!
-process.env.TURSO_DATABASE_URL = 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io';
-<<<<<<< HEAD
-process.env.TURSO_AUTH_TOKEN = '***JWT_REDACTED***';
-=======
-// Use environment variable for auth token (set in environment)
-process.env.TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || 'test-token-placeholder';
->>>>>>> origin/main
+// Load local env vars (DO NOT hardcode secrets)
+dotenv.config({ path: '.env.local' });
+
+if (!process.env.TURSO_DATABASE_URL) {
+  throw new Error('TURSO_DATABASE_URL is not set. Add it to your environment or .env.local');
+}
+if (!process.env.TURSO_AUTH_TOKEN) {
+  throw new Error('TURSO_AUTH_TOKEN is not set. Add it to your environment or .env.local');
+}
 
 console.log('🎊 Updating Turso schema with PASSWORDLESS MAGIC! ✨');
 

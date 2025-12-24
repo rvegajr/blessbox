@@ -7,13 +7,32 @@ export const organizations = sqliteTable('organizations', {
   name: text('name').notNull(),
   eventName: text('event_name'),
   customDomain: text('custom_domain').unique(),
-  contactEmail: text('contact_email').notNull().unique(),
+  // Multi-org per email: organizations can share contact_email; account identity is in users.email
+  contactEmail: text('contact_email').notNull(),
   contactPhone: text('contact_phone'),
   contactAddress: text('contact_address'),
   contactCity: text('contact_city'),
   contactState: text('contact_state'),
   contactZip: text('contact_zip'),
   emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Users table
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Memberships table
+export const memberships = sqliteTable('memberships', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  organizationId: text('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
+  role: text('role').notNull().default('admin'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });

@@ -1,0 +1,331 @@
+# BlessBox Code Rules v1.0
+
+## Role System
+Default: `ROLE: engineer STRICT=true`
+
+| Phrase | Maps to |
+|--------|---------|
+| "You are a software developer" | engineer STRICT=false |
+| "You are an architect" | architect |
+| "You are devops" | devops |
+| "You are QA" | qa |
+
+**Banner**: Start/end every response with `ROLE: <role> STRICT=<bool>`
+**No auto-switching**: ASK permission first; revert to default when done.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16 (App Router) |
+| Runtime | Node.js (ESM modules) |
+| Language | TypeScript (strict mode) |
+| Database | Turso/libSQL via Drizzle ORM |
+| Auth | NextAuth v5 (beta) |
+| Styling | Tailwind CSS v4 |
+| Payments | Square SDK |
+| Email | SendGrid / Nodemailer |
+| QR Codes | qrcode library |
+| PDF | pdf-lib |
+| Testing | Vitest (unit), Playwright (E2E) |
+
+---
+
+## Port Configuration
+
+| Environment | Port | Usage |
+|-------------|------|-------|
+| Development | 7777 | `npm run dev` |
+| Production | 7777 | `npm run start` |
+| E2E Local | 7777 | `BASE_URL=http://localhost:7777` |
+| E2E Prod | 443 | `BASE_URL=https://www.blessbox.org` |
+
+---
+
+## Response Format
+- Code + 3-line max docstring
+- No explanation unless asked
+- If >50 lines: modularize into helpers
+- If ambiguous: 2 implementations + 1-line tradeoff each
+- Assume experienced user—skip basics
+
+---
+
+## Before Writing
+1. Search codebase—reuse existing patterns
+2. Check for `architecture-checklist.md` / `AI_REFACTOR_PLAN.md`
+3. If API endpoint: confirm route exists in `app/api/` + Zod schema
+4. List edge cases you'll handle
+
+---
+
+## Code Standards
+- TypeScript strict, no `any`
+- Errors: throw (not return null)
+- No hardcoded values—use env/config
+- No static mocks—API-driven data only
+- No console.log—use structured logging
+- KISS + YAGNI + DRY × SOLID
+
+---
+
+## Project Patterns (MUST follow)
+
+### Services (lib/services/)
+- Implement segregated interfaces from `lib/interfaces/`
+- Interface Segregation Principle: `IXReader`, `IXWriter`, `IXService`
+- DI via constructor injection
+- Co-locate tests: `ServiceName.test.ts` next to `ServiceName.ts`
+
+**Existing services:**
+- `RegistrationService` → `IRegistrationService`
+- `QRCodeService` → `IQRCodeService`
+- `OrganizationService` → `IOrganizationService`
+- `EmailService` / `NotificationService` → `INotificationService`
+- `FormConfigService` → `IFormConfigService`
+- `UsageLimitChecker` → `IUsageLimitChecker`
+- `SubscriptionCancel` / `SubscriptionFinalizer`
+- `PlanUpgrade` → `IPlanUpgrade`
+- `AdminExportService` → `IAdminExportService`
+- `SquarePaymentService` → `IPaymentProcessor` (shared types in `IPaymentService.ts`)
+
+### Database (lib/)
+- Schema: `lib/schema.ts` (Drizzle ORM)
+- Connection: `lib/db.ts` → `getDbClient()`
+- Bootstrap: `lib/database/bootstrap.ts`
+- Always use parameterized queries via `db.execute({ sql, args })`
+
+### API Routes (app/api/)
+- Next.js App Router conventions
+- Middleware chain: Auth → Validation → Rate-limit → Handler → Error
+- Use Zod schemas for request validation
+- Return typed JSON responses
+- Custom errors extend Error class with `code` property
+
+### Components (components/)
+- React functional components with TypeScript
+- Prefer server components; use `'use client'` only when needed
+- Co-locate component tests in `tests/components/`
+
+### Utilities (lib/utils/)
+- `email-templates.ts` - Email HTML templates
+- `verification.ts` - Token/code generation
+- `storage.ts` - Client-side storage helpers
+- `onboarding-flow.ts` - Wizard state machine
+
+---
+
+## Testing Methodology
+
+### Unit Tests (Vitest)
+```bash
+npm run test              # Run all unit tests
+npm run test:ui           # Interactive UI mode
+npm run test:coverage     # With coverage report
+npm run test:regress:ui   # Component regression tests
+```
+
+**Config:** `vitest.config.ts`
+- Environment: happy-dom
+- Include: `lib/**/*.test.ts`
+- Exclude: `tests/e2e/**`
+
+**Patterns:**
+- Test file naming: `*.test.ts` or `*.spec.ts`
+- Mock external deps (db, email) in tests
+- Test interfaces, not implementations
+
+### E2E Tests (Playwright)
+```bash
+# Local development
+npm run test:smoke:local   # Quick smoke tests
+npm run test:qa:local      # QA coverage tests
+npm run test:walk:local    # Full local test suite (critical-check)
+
+# Production
+npm run test:e2e:production      # Against blessbox.org
+npm run test:qa:production       # QA tests on prod
+npm run test:e2e:headed          # With browser visible
+npm run test:e2e:debug           # Debug mode
+```
+
+**Config:** `playwright.config.ts`
+- Sequential execution (workers: 1)
+- Retries: 2 in CI, 0 locally
+- Screenshots/video on failure
+- Auto-starts dev server for local tests
+
+**Test Categories:**
+- `app-inventory-smoke.spec.ts` - App route inventory
+- `api-inventory-smoke.spec.ts` - API route inventory
+- `auth-bypass-protected-routes.spec.ts` - Auth security
+- `form-builder-regression.spec.ts` - Form builder UI
+- `registration-public-flow.spec.ts` - Public registration
+- `qa-testing-guide-coverage.spec.ts` - Full QA coverage
+- `blessbox-business-flow.spec.ts` - Business flow E2E
+
+### Critical Check (Pre-commit)
+```bash
+npm run critical-check  # Alias for test:walk:local
+```
+Runs: UI regression → Smoke tests → QA tests
+
+**Note:** this repo's pre-commit hook runs `npm test` + `npm run build` (not E2E) to avoid port conflicts.
+
+---
+
+## Safety Rails
+- Never delete/refactor/optimize without OK
+- Preserve comments & existing style
+- Assume code has purpose
+- Present simpler alternative with confidence (1–10) before edits
+
+---
+
+## Output Structure
+```
+[code]
+Edge cases handled: [list]
+Potential refactors (not implemented): [list]
+```
+
+---
+
+## Self-Check
+- [ ] No placeholder code
+- [ ] Edge cases handled
+- [ ] Matches codebase patterns (services, interfaces, db)
+- [ ] Types complete, Zod schema if API
+- [ ] STRICT mode honored
+- [ ] Tests added/updated
+
+---
+
+## Shell
+```bash
+/bin/zsh -i -c 'source ~/.zshrc && <cmd>'
+```
+
+---
+
+## Scripts & Resources
+Store in `scripts/` or `_Resources/scripts/`; ASK if absent.
+
+**Key scripts:**
+- `scripts/database/setup-database.ts` - DB setup
+- `scripts/validate-environment.ts` - Env validation
+- `scripts/run-e2e-tests.js` - Interactive E2E runner
+- `scripts/test-tech.sh` - Email + payment tech smoke tests (loads env file directly)
+- `scripts/tests/` - Email/integration test scripts
+
+---
+
+## Environment Variables
+Required in `.env.local`:
+```
+TURSO_DATABASE_URL    # Turso connection string
+TURSO_AUTH_TOKEN      # Turso auth token
+NEXTAUTH_SECRET       # Auth encryption key
+NEXTAUTH_URL          # http://localhost:7777 (dev)
+SENDGRID_API_KEY      # Email service
+SENDGRID_FROM_EMAIL   # Verified sender
+EMAIL_REPLY_TO        # Optional reply-to address
+SQUARE_ACCESS_TOKEN   # Payment processing
+SQUARE_LOCATION_ID    # Square location for checkout
+SQUARE_ENVIRONMENT    # sandbox|production
+DIAGNOSTICS_SECRET    # Protects /api/system/* in production
+```
+
+ROLE: engineer STRICT=true
+
+
+---
+
+## UI AUTOMATION REQUIREMENTS (CRITICAL)
+
+All UI components MUST be automation-friendly for Playwright, browser automation, and MCP testing.
+
+### Data Test IDs (MANDATORY)
+
+Add `data-testid` attributes to ALL interactive elements and key containers:
+
+| Element Type | Pattern | Example |
+|-------------|---------|---------|
+| Buttons | `data-testid="btn-{action}"` | `data-testid="btn-submit"`, `data-testid="btn-cancel"` |
+| Forms | `data-testid="form-{name}"` | `data-testid="form-login"` |
+| Inputs | `data-testid="input-{field}"` | `data-testid="input-email"` |
+| Links | `data-testid="link-{destination}"` | `data-testid="link-dashboard"` |
+| Modals | `data-testid="modal-{name}"` | `data-testid="modal-confirm"` |
+| Tables | `data-testid="table-{name}"` | `data-testid="table-users"` |
+| Table Rows | `data-testid="row-{identifier}"` | `data-testid="row-user-123"` |
+| Cards | `data-testid="card-{name}"` | `data-testid="card-profile"` |
+| Dropdowns | `data-testid="dropdown-{name}"` | `data-testid="dropdown-status"` |
+| Checkboxes | `data-testid="checkbox-{name}"` | `data-testid="checkbox-agree"` |
+
+### Semantic HTML (MANDATORY)
+
+- Use proper semantic elements (`<button>`, `<a>`, `<form>`, `<input>`) instead of divs with click handlers
+- Use `<button type="button">` for actions, `<button type="submit">` for form submissions
+- Use `<a href>` for navigation, not buttons with onClick navigation
+
+### Accessible Labels (MANDATORY)
+
+- Include `aria-label` for elements without visible text
+- Use proper `<label htmlFor="id">` elements for form inputs
+- Add `aria-describedby` for error messages linked to inputs
+
+### Stable Selectors (MANDATORY)
+
+- NEVER rely on auto-generated class names (CSS-in-JS hashes) as primary selectors
+- ALWAYS use `data-testid` for test targeting
+- Avoid using indexes or nth-child selectors
+
+### Loading & Error States (MANDATORY)
+
+- Add `data-loading="true|false"` attribute for async states
+- Use `data-testid="loading-{component}"` for loading indicators
+- Use `data-testid="error-{field}"` for validation/error messages
+- Use `data-testid="empty-{component}"` for empty states
+
+### Example Component:
+
+```tsx
+<form data-testid="form-login" onSubmit={handleSubmit}>
+  <div>
+    <label htmlFor="email">Email</label>
+    <input
+      id="email"
+      data-testid="input-email"
+      type="email"
+      aria-describedby="email-error"
+    />
+    {errors.email && (
+      <span id="email-error" data-testid="error-email" role="alert">
+        {errors.email}
+      </span>
+    )}
+  </div>
+  
+  <button
+    type="submit"
+    data-testid="btn-submit-login"
+    data-loading={isLoading}
+    disabled={isLoading}
+    aria-label="Submit login form"
+  >
+    {isLoading ? 'Signing in...' : 'Sign In'}
+  </button>
+</form>
+```
+
+### Self-Check for UI Automation:
+
+- [ ] All interactive elements have `data-testid`
+- [ ] Forms use semantic HTML elements
+- [ ] Inputs have associated labels
+- [ ] Loading states are indicated with `data-loading`
+- [ ] Error messages have `data-testid="error-*"`
+- [ ] No reliance on generated CSS classes for testing
+

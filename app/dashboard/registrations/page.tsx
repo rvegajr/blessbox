@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 interface Registration {
   id: string;
@@ -22,6 +23,7 @@ interface Registration {
 
 export default function RegistrationsPage() {
   const { data: session } = useSession();
+  const { ready, activeOrganizationId } = useRequireActiveOrganization();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,8 @@ export default function RegistrationsPage() {
 
   useEffect(() => {
     if (!session?.user) return;
-    const organizationId = (session.user as any).organizationId;
+    if (!ready) return;
+    const organizationId = activeOrganizationId || ((session.user as any).organizationId as string | undefined);
     if (!organizationId) return;
     
     const fetchRegistrations = async () => {
@@ -53,7 +56,7 @@ export default function RegistrationsPage() {
     };
 
     fetchRegistrations();
-  }, [session]);
+  }, [activeOrganizationId, ready, session]);
 
   const filteredRegistrations = registrations.filter(reg => {
     const data = JSON.parse(reg.registrationData);
@@ -82,9 +85,9 @@ export default function RegistrationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-registrations">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center p-8">
+          <div className="flex items-center justify-center p-8" data-testid="loading-registrations" data-loading="true">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600">Loading registrations...</span>
           </div>
@@ -95,9 +98,9 @@ export default function RegistrationsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-registrations">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" data-testid="error-registrations" role="alert">
             {error}
           </div>
         </div>
@@ -106,51 +109,92 @@ export default function RegistrationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-registrations" data-loading={loading}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Registrations</h1>
             <p className="text-gray-600">Manage and view all registration submissions</p>
           </div>
-          <button
-            id="export-data"
-            data-tutorial-target="export-data"
-            onClick={async () => {
-              try {
-                const response = await fetch('/api/export/registrations', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                    format: 'csv',
-                    filters: {
-                      deliveryStatus: filters.deliveryStatus || undefined
-                    }
-                  })
-                });
-                
-                if (response.ok) {
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  window.URL.revokeObjectURL(url);
-                } else {
-                  alert('Failed to export registrations');
+          <div className="flex items-center gap-2">
+            <button
+              id="export-csv"
+              data-tutorial-target="export-data"
+              data-testid="btn-export-csv"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/export/registrations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      format: 'csv',
+                      filters: {
+                        deliveryStatus: filters.deliveryStatus || undefined,
+                      },
+                    }),
+                  });
+
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `registrations-${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } else {
+                    alert('Failed to export registrations');
+                  }
+                } catch (err) {
+                  alert('Error exporting registrations');
                 }
-              } catch (err) {
-                alert('Error exporting registrations');
-              }
-            }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
-          >
-            <span>📥</span>
-            <span>Export CSV</span>
-          </button>
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
+            >
+              <span>📥</span>
+              <span>Export CSV</span>
+            </button>
+            <button
+              id="export-pdf"
+              data-testid="btn-export-pdf"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/export/registrations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      format: 'pdf',
+                      filters: {
+                        deliveryStatus: filters.deliveryStatus || undefined,
+                      },
+                    }),
+                  });
+
+                  if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `registrations-${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                  } else {
+                    alert('Failed to export registrations');
+                  }
+                } catch (err) {
+                  alert('Error exporting registrations');
+                }
+              }}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center space-x-2"
+            >
+              <span>🧾</span>
+              <span>Export PDF</span>
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -162,10 +206,12 @@ export default function RegistrationsPage() {
               </label>
               <input
                 type="text"
+                data-testid="input-registration-search"
                 placeholder="Search by name or email..."
                 value={filters.search}
                 onChange={e => setFilters({...filters, search: e.target.value})}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Search registrations"
               />
             </div>
             <div>
@@ -173,9 +219,11 @@ export default function RegistrationsPage() {
                 Status
               </label>
               <select
+                data-testid="dropdown-registration-status"
                 value={filters.deliveryStatus}
                 onChange={e => setFilters({...filters, deliveryStatus: e.target.value})}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Filter by status"
               >
                 <option value="">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -185,8 +233,10 @@ export default function RegistrationsPage() {
             </div>
             <div className="flex items-end">
               <button
+                data-testid="btn-clear-registration-filters"
                 onClick={() => setFilters({ deliveryStatus: '', search: '' })}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                aria-label="Clear filters"
               >
                 Clear Filters
               </button>
@@ -243,7 +293,7 @@ export default function RegistrationsPage() {
         {/* Registrations Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {filteredRegistrations.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12" data-testid="empty-registrations">
               <div className="text-6xl mb-4">📋</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No registrations found</h3>
               <p className="text-gray-600 mb-4">
@@ -270,7 +320,7 @@ export default function RegistrationsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200" data-testid="table-registrations">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -297,7 +347,7 @@ export default function RegistrationsPage() {
                   {filteredRegistrations.map((reg) => {
                     const data = JSON.parse(reg.registrationData);
                     return (
-                      <tr key={reg.id} className="hover:bg-gray-50">
+                      <tr key={reg.id} className="hover:bg-gray-50" data-testid={`row-registration-${reg.id}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
                             {data.name || data.firstName + ' ' + data.lastName || '-'}
@@ -325,6 +375,7 @@ export default function RegistrationsPage() {
                           <div className="flex items-center justify-end space-x-2">
                             {!reg.checkedInAt && (
                               <button
+                                data-testid={`btn-check-in-${reg.id}`}
                                 onClick={async () => {
                                   try {
                                     const response = await fetch(`/api/registrations/${reg.id}/check-in`, {
@@ -344,6 +395,7 @@ export default function RegistrationsPage() {
                                 }}
                                 className="text-green-600 hover:text-green-900 font-medium"
                                 title="Check in this registration"
+                                aria-label={`Check in registration ${reg.id}`}
                               >
                                 ✓ Check In
                               </button>
@@ -355,7 +407,9 @@ export default function RegistrationsPage() {
                             )}
                             <Link
                               href={`/dashboard/registrations/${reg.id}`}
+                              data-testid={`link-view-registration-${reg.id}`}
                               className="text-blue-600 hover:text-blue-900"
+                              aria-label={`View registration ${reg.id}`}
                             >
                               View
                             </Link>

@@ -1,10 +1,20 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
+import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
+
+export type EmailTemplateType =
+  | 'class_invitation'
+  | 'enrollment_confirmation'
+  | 'class_reminder'
+  | 'payment_receipt'
+  | 'registration_confirmation'
+  | 'admin_notification';
 
 export interface EmailTemplate {
   id: string;
   organization_id: string;
-  template_type: 'class_invitation' | 'enrollment_confirmation' | 'class_reminder' | 'payment_receipt';
+  template_type: EmailTemplateType;
   subject: string;
   html_content: string;
   text_content?: string;
@@ -27,6 +37,163 @@ export interface EmailLog {
 
 export class EmailService {
   private db = getDbClient();
+
+  private renderTemplate(template: EmailTemplate, variables: Record<string, any>) {
+    let subject = template.subject;
+    let htmlContent = template.html_content;
+    let textContent = template.text_content;
+
+    for (const [key, value] of Object.entries(variables)) {
+      const placeholder = `{{${key}}}`;
+      const re = new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+      subject = subject.replace(re, String(value));
+      htmlContent = htmlContent.replace(re, String(value));
+      if (textContent) textContent = textContent.replace(re, String(value));
+    }
+
+    return { subject, htmlContent, textContent };
+  }
+
+  private async createEmailLog(data: Omit<EmailLog, 'id' | 'sent_at'>): Promise<{ id: string }> {
+    const id = uuidv4();
+    const now = new Date().toISOString();
+
+    await this.db.execute({
+      sql: `INSERT INTO email_logs (id, organization_id, recipient_email, template_type, subject, status, sent_at, error_message, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        id,
+        data.organization_id,
+        data.recipient_email,
+        data.template_type,
+        data.subject,
+        data.status,
+        now,
+        data.error_message || null,
+        data.metadata || null,
+      ],
+    });
+
+    return { id };
+  }
+
+  private async updateEmailLog(id: string, updates: { status: EmailLog['status']; error_message?: string | null; metadata?: string | null }) {
+    await this.db.execute({
+      sql: `UPDATE email_logs
+            SET status = ?, error_message = ?, metadata = ?
+            WHERE id = ?`,
+      args: [updates.status, updates.error_message || null, updates.metadata || null, id],
+    });
+  }
+
+  private async sendViaSendGrid(args: {
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+    fromEmailOverride?: string;
+    replyTo?: string;
+  }) {
+    const apiKey = process.env.SENDGRID_API_KEY;
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL;
+    const fromName = process.env.SENDGRID_FROM_NAME || 'BlessBox';
+
+    if (!apiKey || !fromEmail) {
+      throw new Error('SendGrid not configured (SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are required)');
+    }
+
+    sgMail.setApiKey(apiKey);
+    const from = { email: args.fromEmailOverride || fromEmail, name: fromName };
+    const replyTo = args.replyTo || process.env.EMAIL_REPLY_TO;
+
+    try {
+      const [res] = await sgMail.send({
+        to: args.to,
+        from,
+        ...(replyTo ? { replyTo } : {}),
+        subject: args.subject,
+        html: args.html,
+        text: args.text,
+      });
+
+      return { provider: 'sendgrid' as const, messageId: (res as any)?.headers?.['x-message-id'] || undefined };
+    } catch (e: any) {
+      // SendGrid errors often contain useful response data.
+      const statusCode = e?.code || e?.response?.statusCode || e?.response?.status;
+      const body = e?.response?.body;
+      const details =
+        body && typeof body === 'object'
+          ? JSON.stringify(body)
+          : body
+            ? String(body)
+            : '';
+      const msg = e instanceof Error ? e.message : String(e);
+      throw new Error(
+        `SendGrid error${statusCode ? ` (${statusCode})` : ''}: ${msg}${details ? ` | response: ${details}` : ''}`
+      );
+    }
+  }
+
+  private async sendViaSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
+    const host = process.env.SMTP_HOST;
+    const port = Number(process.env.SMTP_PORT || 587);
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    const secure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || port === 465;
+    const fromEmail = process.env.SMTP_FROM || user;
+    const fromName = process.env.SMTP_FROM_NAME || 'BlessBox';
+
+    if (!host || !user || !pass || !fromEmail) {
+      throw new Error('SMTP not configured (SMTP_HOST, SMTP_USER, SMTP_PASS are required)');
+    }
+
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass },
+    });
+
+    const info = await transporter.sendMail({
+      from: `${fromName} <${fromEmail}>`,
+      to: args.to,
+      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
+      subject: args.subject,
+      html: args.html,
+      text: args.text,
+    });
+
+    return { provider: 'smtp' as const, messageId: info.messageId };
+  }
+
+  private async sendViaGmailSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
+    const user = process.env.GMAIL_USER;
+    const pass = process.env.GMAIL_PASS;
+    const fromEmail = process.env.EMAIL_FROM || user;
+    const fromName = process.env.EMAIL_FROM_NAME || 'BlessBox';
+
+    if (!user || !pass || !fromEmail) {
+      throw new Error('Gmail SMTP not configured (GMAIL_USER and GMAIL_PASS are required)');
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user, pass },
+    });
+
+    const info = await transporter.sendMail({
+      from: `${fromName} <${fromEmail}>`,
+      to: args.to,
+      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
+      subject: args.subject,
+      html: args.html,
+      text: args.text,
+    });
+
+    return { provider: 'smtp' as const, messageId: info.messageId };
+  }
 
   // Email Template Management
   async createTemplate(data: Omit<EmailTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<EmailTemplate> {
@@ -68,20 +235,6 @@ export class EmailService {
     } : null;
   }
 
-  // Email Logging
-  async logEmail(data: Omit<EmailLog, 'id' | 'sent_at'>): Promise<EmailLog> {
-    const id = uuidv4();
-    const now = new Date().toISOString();
-
-    await this.db.execute({
-      sql: `INSERT INTO email_logs (id, organization_id, recipient_email, template_type, subject, status, sent_at, error_message, metadata) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [id, data.organization_id, data.recipient_email, data.template_type, data.subject, data.status, now, data.error_message || null, data.metadata || null]
-    });
-
-    return this.getEmailLog(id) as Promise<EmailLog>;
-  }
-
   async getEmailLog(id: string): Promise<EmailLog | null> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM email_logs WHERE id = ?',
@@ -96,64 +249,101 @@ export class EmailService {
     organizationId: string,
     recipientEmail: string,
     templateType: EmailTemplate['template_type'],
-    variables: Record<string, any> = {}
+    variables: Record<string, any> = {},
+    options?: { replyTo?: string; fromEmailOverride?: string }
   ): Promise<{ success: boolean; error?: string }> {
+    const logMeta: Record<string, any> = {};
+    let emailLogId: string | null = null;
     try {
+      // Ensure base templates exist (idempotent; safe)
+      await this.ensureDefaultTemplates(organizationId);
+
       // Get template
       const template = await this.getTemplateByType(organizationId, templateType);
       if (!template) {
         return { success: false, error: 'Template not found' };
       }
 
-      // Replace variables in template
-      let subject = template.subject;
-      let htmlContent = template.html_content;
-      let textContent = template.text_content;
+      const { subject, htmlContent, textContent } = this.renderTemplate(template, variables);
 
-      Object.entries(variables).forEach(([key, value]) => {
-        const placeholder = `{{${key}}}`;
-        subject = subject.replace(new RegExp(placeholder, 'g'), String(value));
-        htmlContent = htmlContent.replace(new RegExp(placeholder, 'g'), String(value));
-        if (textContent) {
-          textContent = textContent.replace(new RegExp(placeholder, 'g'), String(value));
+      // Create log (pending)
+      const created = await this.createEmailLog({
+        organization_id: organizationId,
+        recipient_email: recipientEmail,
+        template_type: templateType,
+        subject: subject,
+        status: 'pending',
+        metadata: JSON.stringify({ template_id: template.id }),
+      });
+      emailLogId = created.id;
+
+      // Send via configured provider
+      let sendResult: { provider: 'sendgrid' | 'smtp'; messageId?: string };
+      if (process.env.SENDGRID_API_KEY) {
+        const replyTo = options?.replyTo || process.env.EMAIL_REPLY_TO;
+        sendResult = await this.sendViaSendGrid({
+          to: recipientEmail,
+          subject,
+          html: htmlContent,
+          text: textContent,
+          replyTo,
+          fromEmailOverride: options?.fromEmailOverride,
+        });
+      } else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        const replyTo = options?.replyTo || process.env.EMAIL_REPLY_TO;
+        sendResult = await this.sendViaSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo });
+      } else if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+        const replyTo = options?.replyTo || process.env.EMAIL_REPLY_TO;
+        sendResult = await this.sendViaGmailSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo });
+      } else {
+        // In dev/test, allow "no-op" send so the app can still be exercised.
+        if (process.env.NODE_ENV !== 'production') {
+          sendResult = { provider: 'smtp' };
+        } else {
+          throw new Error('No email provider configured (set SENDGRID_* or SMTP_*)');
         }
-      });
+      }
 
-      // Log email attempt
-      await this.logEmail({
-        organization_id: organizationId,
-        recipient_email: recipientEmail,
-        template_type: templateType,
-        subject: subject,
-        status: 'pending'
-      });
+      logMeta.provider = sendResult.provider;
+      logMeta.messageId = sendResult.messageId;
 
-      // TODO: Integrate with actual email provider (Gmail, SendGrid, etc.)
-      // For now, just log success
-      console.log(`📧 Email sent to ${recipientEmail}: ${subject}`);
-      
-      // Update log status
-      await this.logEmail({
-        organization_id: organizationId,
-        recipient_email: recipientEmail,
-        template_type: templateType,
-        subject: subject,
-        status: 'sent'
-      });
+      if (emailLogId) {
+        await this.updateEmailLog(emailLogId, {
+          status: 'sent',
+          metadata: JSON.stringify({ ...logMeta, template_id: template.id }),
+        });
+      }
 
       return { success: true };
     } catch (error) {
-      // Log error
-      await this.logEmail({
-        organization_id: organizationId,
-        recipient_email: recipientEmail,
-        template_type: templateType,
-        subject: 'Failed to send',
-        status: 'failed',
-        error_message: error instanceof Error ? error.message : 'Unknown error'
-      });
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      if (emailLogId) {
+        try {
+          await this.updateEmailLog(emailLogId, {
+            status: 'failed',
+            error_message: message,
+            metadata: Object.keys(logMeta).length ? JSON.stringify(logMeta) : null,
+          });
+        } catch {
+          // swallow secondary logging errors
+        }
+      } else {
+        // best-effort: if we failed before creating the pending log, create a failed log entry
+        try {
+          await this.createEmailLog({
+            organization_id: organizationId,
+            recipient_email: recipientEmail,
+            template_type: templateType,
+            subject: 'Failed to send',
+            status: 'failed',
+            error_message: message,
+          });
+        } catch {
+          // swallow
+        }
+      }
 
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      return { success: false, error: message };
     }
   }
 
@@ -309,6 +499,56 @@ export class EmailService {
         organization_id: organizationId,
         ...template,
         is_active: true
+      });
+    }
+  }
+
+  /**
+   * Ensure our default templates exist for this organization.
+   * Safe to call on every request.
+   */
+  async ensureDefaultTemplates(organizationId: string): Promise<void> {
+    const result = await this.db.execute({
+      sql: 'SELECT COUNT(*) as count FROM email_templates WHERE organization_id = ? AND is_active = 1',
+      args: [organizationId],
+    });
+    const count = Number((result.rows?.[0] as any)?.count || 0);
+    if (count > 0) return;
+
+    // Minimal set required by current app flows (registration + admin notifications)
+    const essentials: Array<Pick<EmailTemplate, 'template_type' | 'subject' | 'html_content' | 'text_content'>> = [
+      {
+        template_type: 'registration_confirmation',
+        subject: 'Registration Confirmed - {{organization_name}}',
+        html_content: `
+          <h2>Registration Confirmed</h2>
+          <p>Hello {{recipient_name}},</p>
+          <p>Thank you for registering with <strong>{{organization_name}}</strong>.</p>
+          <p>Registration ID: <strong>{{registration_id}}</strong></p>
+          <p>Entry point: {{qr_code_label}}</p>
+        `,
+        text_content: 'Thank you for registering with {{organization_name}}. Registration ID: {{registration_id}}',
+      },
+      {
+        template_type: 'admin_notification',
+        subject: 'New event activity - {{organization_name}}',
+        html_content: `
+          <h2>Admin Notification</h2>
+          <p>Organization: {{organization_name}}</p>
+          <p>Event: {{event_type}}</p>
+        `,
+        text_content: 'Admin notification for {{organization_name}}: {{event_type}}',
+      },
+    ];
+
+    for (const t of essentials) {
+      await this.createTemplate({
+        organization_id: organizationId,
+        template_type: t.template_type,
+        subject: t.subject,
+        html_content: t.html_content,
+        text_content: t.text_content,
+        is_active: true,
       });
     }
   }

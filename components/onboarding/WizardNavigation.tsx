@@ -45,7 +45,7 @@ export function WizardNavigation({
           onKeyDown={canGoPrevious ? (e) => handleKeyDown(e, onPrevious) : undefined}
           disabled={!canGoPrevious}
           aria-label="Go to previous step"
-          data-testid="previous-button"
+          data-testid="btn-prev"
         >
           Previous
         </button>
@@ -66,7 +66,7 @@ export function WizardNavigation({
           onClick={onSkip}
           onKeyDown={(e) => handleKeyDown(e, onSkip)}
           aria-label="Skip this step"
-          data-testid="skip-button"
+          data-testid="btn-skip"
         >
           Skip
         </button>
@@ -78,7 +78,7 @@ export function WizardNavigation({
             onClick={onComplete}
             onKeyDown={(e) => handleKeyDown(e, onComplete)}
             aria-label="Complete onboarding"
-            data-testid="complete-button"
+            data-testid="btn-complete"
           >
             Complete
           </button>
@@ -95,7 +95,7 @@ export function WizardNavigation({
             onKeyDown={canGoNext ? (e) => handleKeyDown(e, onNext) : undefined}
             disabled={!canGoNext}
             aria-label="Go to next step"
-            data-testid="next-button"
+            data-testid="btn-next"
           >
             Next
           </button>
