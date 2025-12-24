@@ -125,9 +125,11 @@ export function FormBuilderWizard({
                   <button
                     key={type}
                     type="button"
+                    data-testid={`btn-add-field-${type}`}
                     onClick={() => addField(type)}
                     className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
                     title={description}
+                    aria-label={`Add ${label} field`}
                   >
                     <span className="text-2xl flex-shrink-0">{icon}</span>
                     <div className="flex-1 min-w-0">
@@ -213,6 +215,7 @@ export function FormBuilderWizard({
                         <div>
                           <label className="block text-xs text-gray-600 mb-1">Options (one per line)</label>
                           <textarea
+                            data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
                             onChange={(e) => updateField(field.id, {
                               options: e.target.value.split('\n').filter(o => o.trim())
@@ -220,6 +223,7 @@ export function FormBuilderWizard({
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                             placeholder="Option 1\nOption 2\nOption 3"
+                            aria-label={`Options for ${field.label || 'select field'}`}
                           />
                         </div>
                       )}

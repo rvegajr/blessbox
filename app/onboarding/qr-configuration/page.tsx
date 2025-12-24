@@ -197,7 +197,7 @@ export default function QRConfigurationPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-12 px-4" data-testid="page-onboarding-qr-config">
       <div className="max-w-7xl mx-auto">
         <OnboardingWizard
           steps={steps}
