@@ -103,8 +103,8 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center" data-testid="page-public-registration">
+        <div className="text-center" data-testid="loading-public-registration" data-loading="true">
           <div className="text-6xl mb-4">⏳</div>
           <p className="text-lg text-gray-600">Loading registration form...</p>
         </div>
@@ -114,7 +114,7 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4" data-testid="page-public-registration">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="text-6xl mb-4">✅</div>
@@ -131,12 +131,14 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
 
   if (loadError || !config) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4" data-testid="page-public-registration">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="text-6xl mb-4">⚠️</div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Form unavailable</h1>
-            <p className="text-gray-600 mb-6">{loadError || 'This registration link is not configured yet.'}</p>
+            <p className="text-gray-600 mb-6" data-testid="error-public-registration" role="alert">
+              {loadError || 'This registration link is not configured yet.'}
+            </p>
             <a href="/" className="inline-block bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors font-semibold">
               Return Home
             </a>
@@ -147,7 +149,7 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4" data-testid="page-public-registration">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="text-6xl mb-4">📝</div>
@@ -155,20 +157,21 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
           <p className="text-sm text-gray-500 mb-6">Organization: {orgSlug} • Entry: {qrLabel}</p>
           <div className="space-y-4 text-left">
             {submitError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg">
+              <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg" role="alert">
                 {submitError}
               </div>
             )}
 
             <form
               className="space-y-4"
+              data-testid="form-public-registration"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();
               }}
             >
               {(config.formFields || []).map((field) => (
-                <div key={field.id}>
+                <div key={field.id} data-testid={`field-${field.id}`}>
                   <label
                     htmlFor={field.id}
                     className="block text-sm font-medium text-gray-700 mb-2"
@@ -180,18 +183,22 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
                   {field.type === 'textarea' ? (
                     <textarea
                       id={field.id}
+                      data-testid={`input-${field.id}`}
                       value={formState[field.id] ?? ''}
                       onChange={(e) => setValue(field.id, e.target.value)}
                       placeholder={field.placeholder}
                       rows={3}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      aria-label={field.label}
                     />
                   ) : field.type === 'select' ? (
                     <select
                       id={field.id}
+                      data-testid={`dropdown-${field.id}`}
                       value={formState[field.id] ?? ''}
                       onChange={(e) => setValue(field.id, e.target.value)}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      aria-label={field.label}
                     >
                       <option value="">Select...</option>
                       {(field.options || []).map((opt) => (
@@ -205,9 +212,11 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
                       <input
                         id={field.id}
                         type="checkbox"
+                        data-testid={`input-${field.id}`}
                         checked={!!formState[field.id]}
                         onChange={(e) => setValue(field.id, e.target.checked)}
                         className="w-4 h-4 border-gray-300 rounded"
+                        aria-label={field.label}
                       />
                       <span className="text-sm text-gray-600">{field.placeholder || 'Yes'}</span>
                     </label>
@@ -215,10 +224,12 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
                     <input
                       id={field.id}
                       type={field.type === 'phone' ? 'tel' : field.type}
+                      data-testid={`input-${field.id}`}
                       value={formState[field.id] ?? ''}
                       onChange={(e) => setValue(field.id, e.target.value)}
                       placeholder={field.placeholder}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      aria-label={field.label}
                     />
                   )}
                 </div>
@@ -226,8 +237,9 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
 
               <button
                 type="submit"
-                data-testid="registration-submit"
+                data-testid="btn-submit-registration"
                 className="w-full bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors font-semibold"
+                aria-label="Submit registration"
               >
                 Submit Registration
               </button>

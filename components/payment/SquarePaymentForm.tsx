@@ -198,7 +198,7 @@ export default function SquarePaymentForm({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="payment-square-form">
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Payment Information
@@ -209,7 +209,7 @@ export default function SquarePaymentForm({
           {/* Square will inject the card form here */}
         </div>
         {isInitializing && (
-          <div className="flex items-center justify-center p-2 mb-4">
+          <div className="flex items-center justify-center p-2 mb-4" data-testid="loading-payment-form">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
           </div>
@@ -225,9 +225,12 @@ export default function SquarePaymentForm({
         </div>
 
         <button
+          data-testid="btn-pay"
           onClick={handlePayment}
           disabled={isLoading || isInitializing || !card}
+          data-loading={isLoading || isInitializing}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          aria-label={`Pay $${(amount / 100).toFixed(2)}`}
         >
           {isLoading ? (
             <div className="flex items-center justify-center">

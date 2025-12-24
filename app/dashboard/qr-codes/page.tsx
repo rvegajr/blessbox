@@ -191,9 +191,9 @@ export default function QRCodesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-qr-codes">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center p-8">
+          <div className="flex items-center justify-center p-8" data-testid="loading-qr-codes" data-loading="true">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600">Loading QR codes...</span>
           </div>
@@ -204,9 +204,9 @@ export default function QRCodesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-qr-codes">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" data-testid="error-qr-codes" role="alert">
             {error}
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function QRCodesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-qr-codes" data-loading={loading}>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">QR Codes</h1>
@@ -271,10 +271,12 @@ export default function QRCodesPage() {
               </label>
               <input
                 type="text"
+                data-testid="input-qr-search"
                 placeholder="Search by label or URL..."
                 value={filters.search}
                 onChange={e => setFilters({...filters, search: e.target.value})}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Search QR codes"
               />
             </div>
             <div>
@@ -282,9 +284,11 @@ export default function QRCodesPage() {
                 Status
               </label>
               <select
+                data-testid="dropdown-qr-status"
                 value={filters.isActive}
                 onChange={e => setFilters({...filters, isActive: e.target.value})}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Filter by status"
               >
                 <option value="">All Statuses</option>
                 <option value="true">Active</option>
@@ -296,9 +300,11 @@ export default function QRCodesPage() {
                 QR Code Set
               </label>
               <select
+                data-testid="dropdown-qr-set"
                 value={selectedSet}
                 onChange={e => setSelectedSet(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Filter by QR code set"
               >
                 <option value="all">All Sets</option>
                 {qrCodeSets.map(set => (
@@ -308,11 +314,13 @@ export default function QRCodesPage() {
             </div>
             <div className="flex items-end">
               <button
+                data-testid="btn-clear-filters"
                 onClick={() => {
                   setFilters({ search: '', isActive: '' });
                   setSelectedSet('all');
                 }}
                 className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                aria-label="Clear filters"
               >
                 Clear Filters
               </button>
@@ -322,7 +330,7 @@ export default function QRCodesPage() {
 
         {/* QR Codes Grid */}
         {filteredQRCodes.length === 0 ? (
-          <div id="qr-codes-empty" className="bg-white rounded-lg shadow-sm border border-gray-200 text-center py-12" data-tutorial-target="qr-codes-empty">
+          <div id="qr-codes-empty" className="bg-white rounded-lg shadow-sm border border-gray-200 text-center py-12" data-tutorial-target="qr-codes-empty" data-testid="empty-qr-codes">
             <div className="text-6xl mb-4">📱</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No QR codes found</h3>
             <p className="text-gray-600 mb-4">
@@ -355,6 +363,7 @@ export default function QRCodesPage() {
             {filteredQRCodes.map((qrCode) => (
               <div
                 key={qrCode.id}
+                data-testid={`card-qr-${qrCode.id}`}
                 className={`bg-white rounded-lg shadow-sm border-2 ${
                   qrCode.isActive ? 'border-green-200' : 'border-gray-200'
                 } p-6 hover:shadow-md transition-shadow`}
@@ -379,7 +388,7 @@ export default function QRCodesPage() {
                       <div className="mb-2 text-xs text-gray-500">
                         <div>
                           <span className="font-medium text-gray-700">URL slug (immutable):</span>{' '}
-                          <span className="font-mono">{qrCode.slug || qrCode.label}</span>
+                          <span className="font-mono" data-testid={`text-qr-slug-${qrCode.id}`}>{qrCode.slug || qrCode.label}</span>
                         </div>
                         <div className="break-all">
                           <span className="font-medium text-gray-700">URL:</span> {qrCode.url}
@@ -387,6 +396,7 @@ export default function QRCodesPage() {
                       </div>
                       <input
                         type="text"
+                        data-testid={`input-qr-description-${qrCode.id}`}
                         value={editingQR.description}
                         onChange={e => setEditingQR({...editingQR, description: e.target.value})}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -395,20 +405,25 @@ export default function QRCodesPage() {
                           if (e.key === 'Escape') setEditingQR(null);
                         }}
                         autoFocus
+                        aria-label="Edit QR code description"
                       />
                       <p className="mt-1 text-xs text-gray-500">
                         Edit the <span className="font-medium">display name</span> only. The URL slug is kept stable to avoid breaking scanned QR codes.
                       </p>
                       <div className="flex gap-2 mt-2">
                         <button
+                          data-testid={`btn-save-qr-${qrCode.id}`}
                           onClick={handleSaveEdit}
                           className="flex-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                          aria-label="Save QR code changes"
                         >
                           Save
                         </button>
                         <button
+                          data-testid={`btn-cancel-qr-${qrCode.id}`}
                           onClick={() => setEditingQR(null)}
                           className="flex-1 px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                          aria-label="Cancel editing"
                         >
                           Cancel
                         </button>
@@ -451,28 +466,36 @@ export default function QRCodesPage() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
+                    data-testid={`btn-download-qr-${qrCode.id}`}
                     onClick={() => handleDownload(qrCode)}
                     className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    aria-label={`Download QR code ${qrCode.label}`}
                   >
                     Download
                   </button>
                   <Link
                     href={`/dashboard/qr-codes/${qrCode.id}?qrCodeSetId=${qrCode.qrCodeSetId}`}
+                    data-testid={`btn-view-analytics-${qrCode.id}`}
                     className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 text-center focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                    aria-label={`View analytics for ${qrCode.label}`}
                   >
                     Analytics
                   </Link>
                   <button
+                    data-testid={`btn-edit-qr-${qrCode.id}`}
                     onClick={() => handleEdit(qrCode)}
                     className="px-3 py-2 text-sm font-medium text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-500/20"
                     title="Edit"
+                    aria-label={`Edit QR code ${qrCode.label}`}
                   >
                     ✏️
                   </button>
                   <button
+                    data-testid={`btn-deactivate-qr-${qrCode.id}`}
                     onClick={() => handleDelete(qrCode)}
                     className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                     title="Delete"
+                    aria-label={`Deactivate QR code ${qrCode.label}`}
                   >
                     🗑️
                   </button>

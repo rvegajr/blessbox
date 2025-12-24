@@ -62,12 +62,12 @@ export default function DashboardPage() {
   }, [ready, status]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="page-dashboard">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
         
         {loading ? (
-          <div className="flex items-center justify-center p-8">
+          <div className="flex items-center justify-center p-8" data-testid="loading-dashboard" data-loading="true">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600">Loading...</span>
           </div>
@@ -134,8 +134,10 @@ export default function DashboardPage() {
                       {subscription.plan_type !== 'free' && subscription.status === 'active' && (
                         <div className="pt-3 border-t mt-3">
                           <button
+                            data-testid="btn-cancel-subscription"
                             onClick={() => setShowCancelModal(true)}
                             className="text-sm text-red-600 hover:text-red-800"
+                            aria-label="Cancel subscription"
                           >
                             Cancel subscription
                           </button>
@@ -153,7 +155,9 @@ export default function DashboardPage() {
                       <p className="mb-4">No active subscription</p>
                       <Link 
                         href="/pricing"
+                        data-testid="link-view-plans"
                         className="text-blue-600 hover:text-blue-800 font-medium"
+                        aria-label="View pricing plans"
                       >
                         View Plans →
                       </Link>
@@ -185,7 +189,9 @@ export default function DashboardPage() {
                     <div className="mt-4">
                       <Link 
                         href="/classes"
+                        data-testid="link-manage-classes"
                         className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                        aria-label="Manage classes"
                       >
                         Manage Classes →
                       </Link>
@@ -204,7 +210,9 @@ export default function DashboardPage() {
                     <div className="mt-4">
                       <Link 
                         href="/participants"
+                        data-testid="link-manage-participants"
                         className="text-green-600 hover:text-green-800 font-medium text-sm"
+                        aria-label="Manage participants"
                       >
                         Manage Participants →
                       </Link>
@@ -225,7 +233,9 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Link
                   href="/dashboard/registrations"
+                  data-testid="link-view-registrations"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+                  aria-label="View registrations"
                 >
                   <div className="text-2xl mr-3">📋</div>
                   <div>
@@ -237,8 +247,10 @@ export default function DashboardPage() {
                 <Link
                   id="create-qr-btn"
                   href="/dashboard/qr-codes"
+                  data-testid="link-manage-qr-codes"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-indigo-300 transition-colors"
                   data-tutorial-target="create-qr-btn"
+                  aria-label="Manage QR codes"
                 >
                   <div className="text-2xl mr-3">📱</div>
                   <div>
@@ -249,7 +261,9 @@ export default function DashboardPage() {
                 
                 <Link
                   href="/classes/new"
+                  data-testid="link-create-class"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
+                  aria-label="Create new class"
                 >
                   <div className="text-2xl mr-3">➕</div>
                   <div>
@@ -260,7 +274,9 @@ export default function DashboardPage() {
                 
                 <Link
                   href="/pricing"
+                  data-testid="link-upgrade-plan"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-green-300 transition-colors"
+                  aria-label="Upgrade plan"
                 >
                   <div className="text-2xl mr-3">💳</div>
                   <div>
