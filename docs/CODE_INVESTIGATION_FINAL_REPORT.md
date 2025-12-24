@@ -138,31 +138,24 @@ test('3.1 Export registration data', async ({ page }) => {
   // HOWEVER: This is just a test skeleton, not actual implementation
 });
 
-// lib/interfaces/IAdminService.ts - Lines 55-63
-export interface ExportData {
-  organizations: any[];
-  subscriptions: any[];
-  payments: any[];
-  coupons: any[];
-  redemptions: any[];
-  exportedAt: string;
-  exportedBy: string;
-}
-// HOWEVER: This interface is defined but never used anywhere
+// Current implementation (updated):
+// - lib/interfaces/IAdminExportService.ts
+// - lib/services/AdminExportService.ts
+// - lib/services/AdminExportService.test.ts
 ```
 
 **What's MISSING:**
-- ❌ No `POST /api/export/registrations` endpoint
+- ✅ `POST /api/export/registrations` exists (CSV + PDF)
 - ❌ No `POST /api/export/analytics` endpoint
-- ❌ No CSV generation library usage (e.g., `papaparse`, `json2csv`)
+- ✅ CSV export implemented (no extra dependency required)
 - ❌ No Excel generation library usage (e.g., `xlsx`, `exceljs`)
-- ❌ No PDF generation library usage (e.g., `pdfkit`, `jspdf`)
-- ❌ No export UI components
+- ✅ PDF export implemented via `pdf-lib`
+- ❌ Export UI components (admin/dashboard) not present
 - ❌ No export configuration
 - ❌ No scheduled exports
-- ❌ `IAdminService.exportData()` method is defined in interface but not implemented anywhere
+- ✅ Admin export interface + service implemented (ISP: export-only)
 
-**VERDICT:** 100% missing. Only interface stub and test skeleton exist.
+**VERDICT:** Backend export exists (API + service). UI + scheduled exports are still pending.
 
 ---
 

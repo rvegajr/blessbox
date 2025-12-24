@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import SquarePaymentForm from '@/components/payment/SquarePaymentForm';
+import { validateEmail } from '@/lib/services/CheckoutValidationService';
 
 interface SquareConfig {
   applicationId: string;
@@ -13,19 +15,48 @@ interface SquareConfig {
 function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [status, setStatus] = useState<string>('');
-  const [loading, setLoading] = useState(false);
   const [squareConfig, setSquareConfig] = useState<SquareConfig | null>(null);
-  const plan = (params.get('plan') || 'standard').toLowerCase();
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const rawPlan = (params.get('plan') || 'standard').toLowerCase();
+
+  // Initialize email from session or URL params
+  useEffect(() => {
+    if (session?.user?.email) {
+      setEmail(session.user.email);
+    } else {
+      const urlEmail = params.get('email');
+      if (urlEmail) {
+        setEmail(urlEmail);
+      }
+    }
+  }, [session, params]);
+  const plan = (['free', 'standard', 'enterprise'] as const).includes(rawPlan as any)
+    ? (rawPlan as 'free' | 'standard' | 'enterprise')
+    : 'standard';
 
   // Plan pricing (in cents)
   const planPricing = {
     free: 0,
-    standard: 2999, // $29.99
-    enterprise: 9999, // $99.99
+    standard: 1900, // $19.00
+    enterprise: 9900, // $99.00
   };
 
-  const amount = planPricing[plan as keyof typeof planPricing] || planPricing.standard;
+  const baseAmountCents = planPricing[plan] ?? planPricing.standard;
+
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponApplied, setCouponApplied] = useState<{
+    code: string;
+    discountedAmountCents: number;
+    discountAppliedCents: number;
+  } | null>(null);
+
+  const amountCents = useMemo(() => couponApplied?.discountedAmountCents ?? baseAmountCents, [couponApplied, baseAmountCents]);
+  const discountCents = useMemo(() => couponApplied?.discountAppliedCents ?? 0, [couponApplied]);
 
   useEffect(() => {
     async function loadSquareConfig() {
@@ -33,16 +64,16 @@ function CheckoutContent() {
         const res = await fetch('/api/square/config');
         const config = await res.json();
         
-        if (config.error) {
-          setStatus(`Square configuration error: ${config.message}`);
+        if (config.error || !config.enabled) {
+          // Local/dev may not have Square configured; checkout can still proceed via mock payment.
+          setStatus(`Payment provider not configured (using test checkout)`);
           return;
         }
         
         setSquareConfig(config);
         setStatus('Square payment form loaded');
       } catch (e) {
-        setStatus('Failed to load Square configuration');
-        console.error('Square config error:', e);
+        setStatus('Payment provider not configured (using test checkout)');
       }
     }
     
@@ -60,36 +91,266 @@ function CheckoutContent() {
     setStatus(`Payment failed: ${error}`);
   };
 
+  const applyCoupon = async () => {
+    const code = couponCode.trim();
+    setCouponApplying(true);
+    setCouponError(null);
+    try {
+      const res = await fetch('/api/coupons/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, planType: plan, amountCents: baseAmountCents }),
+      });
+      const data = await res.json();
+      if (!data?.success || !data?.valid) {
+        setCouponApplied(null);
+        setCouponError(data?.error || 'Invalid coupon code');
+        return;
+      }
+      setCouponApplied({
+        code: data.code,
+        discountedAmountCents: Number(data.discountedAmountCents),
+        discountAppliedCents: Number(data.discountAppliedCents),
+      });
+      setCouponError(null);
+    } catch (e) {
+      setCouponApplied(null);
+      setCouponError('Failed to apply coupon');
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+
+  const clearCoupon = () => {
+    setCouponApplied(null);
+    setCouponError(null);
+    setCouponCode('');
+  };
+
+  const validateEmailInput = (emailValue: string): boolean => {
+    const result = validateEmail(emailValue);
+    if (!result.isValid) {
+      setEmailError(result.error || 'Invalid email');
+      return false;
+    }
+    setEmailError(null);
+    return true;
+  };
+
+  const completeTestCheckout = async () => {
+    // Validate email before proceeding
+    if (!validateEmailInput(email)) {
+      return;
+    }
+
+    try {
+      setStatus('Processing payment...');
+      const res = await fetch('/api/payment/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planType: plan,
+          billingCycle: 'monthly',
+          currency: 'USD',
+          amount: amountCents,
+          email: email.trim(),
+          ...(amountCents > 0 ? { paymentToken: 'test-token' } : {}),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        setStatus(`Payment failed: ${data?.error || 'Payment failed'}`);
+        return;
+      }
+      handlePaymentSuccess(data);
+    } catch (e) {
+      handlePaymentError('Payment processing failed');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="page-checkout">
       <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-8" data-testid="card-checkout">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Checkout</h1>
           <p className="text-gray-600 mb-8">
             Complete your subscription to the <strong className="uppercase text-blue-600">{plan}</strong> plan
           </p>
 
-          {squareConfig ? (
-            <SquarePaymentForm
-              amount={amount}
-              currency="USD"
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentError={handlePaymentError}
-              applicationId={squareConfig.applicationId}
-              locationId={squareConfig.locationId}
-            />
-          ) : (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-gray-600">Loading payment form...</span>
-            </div>
-          )}
-
           {status && (
-            <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+            <div className="mb-6 p-4 bg-gray-100 rounded-lg" data-testid="status-checkout">
               <p className="text-sm text-gray-700">{status}</p>
             </div>
           )}
+
+          {/* Email */}
+          <div className="mb-6">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="email"
+              type="email"
+              data-testid="input-email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setEmailError(null);
+              }}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                emailError ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="your@email.com"
+              disabled={!!session?.user?.email}
+              aria-describedby={emailError ? "email-error" : undefined}
+              aria-label="Email address"
+            />
+            {emailError && (
+              <p id="email-error" className="mt-2 text-sm text-red-600" data-testid="error-email" role="alert">
+                {emailError}
+              </p>
+            )}
+            {session?.user?.email && (
+              <p className="mt-2 text-sm text-green-600">✓ Using your authenticated email</p>
+            )}
+          </div>
+
+          {/* Coupon */}
+          <div className="mb-6" data-testid="section-coupon" data-loading={couponApplying}>
+            <label htmlFor="coupon" className="block text-sm font-medium text-gray-700 mb-2">
+              Coupon Code
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="coupon"
+                type="text"
+                data-testid="input-coupon"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter coupon code (e.g., FREE100)"
+                aria-describedby={couponError ? "coupon-error" : undefined}
+                aria-label="Coupon code"
+              />
+              <button
+                type="button"
+                data-testid="btn-apply-coupon"
+                onClick={applyCoupon}
+                disabled={couponApplying}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                aria-label="Apply coupon code"
+              >
+                {couponApplying ? 'Applying...' : 'Apply'}
+              </button>
+              {couponApplied && (
+                <button
+                  type="button"
+                  data-testid="btn-clear-coupon"
+                  onClick={clearCoupon}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                  aria-label="Clear coupon"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {couponError && (
+              <p id="coupon-error" className="mt-2 text-sm text-red-600" data-testid="error-coupon" role="alert">
+                {couponError}
+              </p>
+            )}
+            {couponApplied && (
+              <p className="mt-2 text-sm text-green-700">
+                Applied <strong>{couponApplied.code}</strong> (saved ${(discountCents / 100).toFixed(2)})
+              </p>
+            )}
+          </div>
+
+          {/* Summary */}
+          <div className="bg-gray-50 p-4 rounded-lg mb-6" data-testid="summary-checkout">
+            <div className="flex justify-between text-sm text-gray-700">
+              <span>Plan price</span>
+              <span>${(baseAmountCents / 100).toFixed(2)} USD</span>
+            </div>
+            {discountCents > 0 && (
+              <div className="flex justify-between text-sm text-gray-700 mt-2">
+                <span>Discount</span>
+                <span>- ${(discountCents / 100).toFixed(2)} USD</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+              <span className="text-sm font-medium text-gray-700">Total</span>
+              <span className="text-lg font-semibold text-gray-900" data-testid="summary-total">
+                ${(amountCents / 100).toFixed(2)} USD
+              </span>
+            </div>
+          </div>
+
+          {/* Payment */}
+          <div data-testid="section-payment" data-loading={false}>
+            {amountCents === 0 ? (
+              <button
+                type="button"
+                data-testid="btn-complete-checkout"
+                onClick={completeTestCheckout}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                aria-label="Complete checkout"
+              >
+                Complete Checkout
+              </button>
+            ) : squareConfig ? (
+              <SquarePaymentForm
+                amount={amountCents}
+                currency="USD"
+                planType={(plan as any) || 'standard'}
+                billingCycle="monthly"
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                applicationId={squareConfig.applicationId}
+                locationId={squareConfig.locationId}
+                environment={squareConfig.environment as 'sandbox' | 'production'}
+                email={email}
+              />
+            ) : (
+            <div className="space-y-4">
+              <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information (Test Checkout)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
+                    <input
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder="4111 1111 1111 1111"
+                      defaultValue="4111 1111 1111 1111"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                    <input className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="123" defaultValue="123" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiry</label>
+                    <input className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="12/25" defaultValue="12/25" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">ZIP</label>
+                    <input className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="12345" defaultValue="12345" />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={completeTestCheckout}
+                  className="mt-6 w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Complete Payment
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 text-center">
+                Local/dev checkout uses a mock payment flow when Square isn’t configured.
+              </p>
+            </div>
+            )}
+          </div>
 
           <div className="mt-8 text-xs text-gray-500 text-center">
             <p>🔒 Your payment information is secure and encrypted</p>

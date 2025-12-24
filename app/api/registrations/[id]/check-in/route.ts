@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RegistrationService } from '@/lib/services/RegistrationService';
 import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 
 const registrationService = new RegistrationService();
 
@@ -20,11 +20,11 @@ export async function POST(
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 

@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
 import { RegistrationService } from '@/lib/services/RegistrationService';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
@@ -15,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     if (!orgId) {
       return NextResponse.json(
-        { success: false, error: 'orgId query parameter is required' },
+        { success: false, error: 'orgId is required' },
         { status: 400 }
       );
     }

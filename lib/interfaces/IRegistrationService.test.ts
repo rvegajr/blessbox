@@ -334,15 +334,14 @@ describe('IRegistrationService Interface', () => {
       expect(typeof service.getRegistrationStats).toBe('function');
     });
 
-    it('should have correct method signatures', () => {
-      // Test that methods accept correct parameters
-      expect(() => service.getFormConfig('org', 'qr')).not.toThrow();
-      expect(() => service.submitRegistration('org', 'qr', {})).not.toThrow();
-      expect(() => service.listRegistrations('org-id')).not.toThrow();
-      expect(() => service.getRegistration('id')).not.toThrow();
-      expect(() => service.updateRegistration('id', {})).not.toThrow();
-      expect(() => service.deleteRegistration('id')).not.toThrow();
-      expect(() => service.getRegistrationStats('org-id')).not.toThrow();
+    it('should have correct method signatures (returns promises)', async () => {
+      await expect(service.getFormConfig('org', 'qr')).resolves.toBeNull();
+      await expect(service.submitRegistration('org', 'qr', {})).resolves.toHaveProperty('id');
+      await expect(service.listRegistrations('org-id')).resolves.toBeInstanceOf(Array);
+      await expect(service.getRegistration('id')).resolves.toBeNull();
+      await expect(service.updateRegistration('non-existent-id', {} as any)).rejects.toThrow();
+      await expect(service.deleteRegistration('non-existent-id')).rejects.toThrow();
+      await expect(service.getRegistrationStats('org-id')).resolves.toHaveProperty('total');
     });
   });
 });

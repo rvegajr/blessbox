@@ -124,8 +124,7 @@ npm run dev -- --port 7778
 
 ### Development
 - **Port 7777**: Main application (Next.js)
-- **Port 3000**: Available for other projects
-- **Port 8080**: Available for other projects
+- **Recommendation**: Keep 7777 reserved for BlessBox to avoid dev conflicts
 
 ### Production
 - **Port 80/443**: Vercel handles this automatically
@@ -133,7 +132,7 @@ npm run dev -- --port 7778
 
 ## 🎉 Benefits of Port 7777
 
-1. **No Conflicts**: Avoids common ports (3000, 8080, 8000)
+1. **No Conflicts**: Avoids the default ports used by many dev tools
 2. **Easy to Remember**: 7777 is memorable
 3. **Development Friendly**: Works with most development tools
 4. **Future Proof**: Unlikely to conflict with new tools

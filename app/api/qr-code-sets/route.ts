@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { QRCodeService } from '@/lib/services/QRCodeService';
-import { getOrganizationByEmail } from '@/lib/subscriptions';
+import { resolveOrganizationForSession } from '@/lib/subscriptions';
 
 const qrCodeService = new QRCodeService();
 
@@ -16,11 +16,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const organization = await getOrganizationByEmail(session.user.email);
+    const organization = await resolveOrganizationForSession(session);
     if (!organization) {
       return NextResponse.json(
-        { success: false, error: 'Organization not found' },
-        { status: 404 }
+        { success: false, error: 'Organization selection required' },
+        { status: 409 }
       );
     }
 
