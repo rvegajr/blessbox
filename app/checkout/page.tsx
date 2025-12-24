@@ -169,13 +169,19 @@ function CheckoutContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="page-checkout">
       <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-8" data-testid="card-checkout">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Checkout</h1>
           <p className="text-gray-600 mb-8">
             Complete your subscription to the <strong className="uppercase text-blue-600">{plan}</strong> plan
           </p>
+
+          {status && (
+            <div className="mb-6 p-4 bg-gray-100 rounded-lg" data-testid="status-checkout">
+              <p className="text-sm text-gray-700">{status}</p>
+            </div>
+          )}
 
           {/* Email */}
           <div className="mb-6">
@@ -185,6 +191,7 @@ function CheckoutContent() {
             <input
               id="email"
               type="email"
+              data-testid="input-email"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -195,15 +202,21 @@ function CheckoutContent() {
               }`}
               placeholder="your@email.com"
               disabled={!!session?.user?.email}
+              aria-describedby={emailError ? "email-error" : undefined}
+              aria-label="Email address"
             />
-            {emailError && <p className="mt-2 text-sm text-red-600">{emailError}</p>}
+            {emailError && (
+              <p id="email-error" className="mt-2 text-sm text-red-600" data-testid="error-email" role="alert">
+                {emailError}
+              </p>
+            )}
             {session?.user?.email && (
               <p className="mt-2 text-sm text-green-600">✓ Using your authenticated email</p>
             )}
           </div>
 
           {/* Coupon */}
-          <div className="mb-6">
+          <div className="mb-6" data-testid="section-coupon" data-loading={couponApplying}>
             <label htmlFor="coupon" className="block text-sm font-medium text-gray-700 mb-2">
               Coupon Code
             </label>
@@ -211,30 +224,41 @@ function CheckoutContent() {
               <input
                 id="coupon"
                 type="text"
+                data-testid="input-coupon"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter coupon code (e.g., FREE100)"
+                aria-describedby={couponError ? "coupon-error" : undefined}
+                aria-label="Coupon code"
               />
               <button
                 type="button"
+                data-testid="btn-apply-coupon"
                 onClick={applyCoupon}
                 disabled={couponApplying}
                 className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+                aria-label="Apply coupon code"
               >
                 {couponApplying ? 'Applying...' : 'Apply'}
               </button>
               {couponApplied && (
                 <button
                   type="button"
+                  data-testid="btn-clear-coupon"
                   onClick={clearCoupon}
                   className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                  aria-label="Clear coupon"
                 >
                   Clear
                 </button>
               )}
             </div>
-            {couponError && <p className="mt-2 text-sm text-red-600">{couponError}</p>}
+            {couponError && (
+              <p id="coupon-error" className="mt-2 text-sm text-red-600" data-testid="error-coupon" role="alert">
+                {couponError}
+              </p>
+            )}
             {couponApplied && (
               <p className="mt-2 text-sm text-green-700">
                 Applied <strong>{couponApplied.code}</strong> (saved ${(discountCents / 100).toFixed(2)})
@@ -243,7 +267,7 @@ function CheckoutContent() {
           </div>
 
           {/* Summary */}
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          <div className="bg-gray-50 p-4 rounded-lg mb-6" data-testid="summary-checkout">
             <div className="flex justify-between text-sm text-gray-700">
               <span>Plan price</span>
               <span>${(baseAmountCents / 100).toFixed(2)} USD</span>
@@ -256,33 +280,38 @@ function CheckoutContent() {
             )}
             <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
               <span className="text-sm font-medium text-gray-700">Total</span>
-              <span className="text-lg font-semibold text-gray-900">${(amountCents / 100).toFixed(2)} USD</span>
+              <span className="text-lg font-semibold text-gray-900" data-testid="summary-total">
+                ${(amountCents / 100).toFixed(2)} USD
+              </span>
             </div>
           </div>
 
           {/* Payment */}
-          {amountCents === 0 ? (
-            <button
-              type="button"
-              onClick={completeTestCheckout}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
-              Complete Checkout
-            </button>
-          ) : squareConfig ? (
-            <SquarePaymentForm
-              amount={amountCents}
-              currency="USD"
-              planType={(plan as any) || 'standard'}
-              billingCycle="monthly"
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentError={handlePaymentError}
-              applicationId={squareConfig.applicationId}
-              locationId={squareConfig.locationId}
-              environment={squareConfig.environment as 'sandbox' | 'production'}
-              email={email}
-            />
-          ) : (
+          <div data-testid="section-payment" data-loading={false}>
+            {amountCents === 0 ? (
+              <button
+                type="button"
+                data-testid="btn-complete-checkout"
+                onClick={completeTestCheckout}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                aria-label="Complete checkout"
+              >
+                Complete Checkout
+              </button>
+            ) : squareConfig ? (
+              <SquarePaymentForm
+                amount={amountCents}
+                currency="USD"
+                planType={(plan as any) || 'standard'}
+                billingCycle="monthly"
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+                applicationId={squareConfig.applicationId}
+                locationId={squareConfig.locationId}
+                environment={squareConfig.environment as 'sandbox' | 'production'}
+                email={email}
+              />
+            ) : (
             <div className="space-y-4">
               <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information (Test Checkout)</h3>
@@ -320,13 +349,8 @@ function CheckoutContent() {
                 Local/dev checkout uses a mock payment flow when Square isn’t configured.
               </p>
             </div>
-          )}
-
-          {status && (
-            <div className="mt-6 p-4 bg-gray-100 rounded-lg">
-              <p className="text-sm text-gray-700">{status}</p>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="mt-8 text-xs text-gray-500 text-center">
             <p>🔒 Your payment information is secure and encrypted</p>
