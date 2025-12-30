@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { FormBuilderWizard } from '@/components/onboarding/FormBuilderWizard';
 import type { FormBuilderData, FormField } from '@/components/OnboardingWizard.interface';
+import { onboardingSession } from '@/lib/services/OnboardingSessionService';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -143,6 +145,7 @@ function FormPreviewModal({
 
 export default function FormBuilderPage() {
   const router = useRouter();
+  const { status } = useAuth();
   const [formData, setFormData] = useState<FormBuilderData>(() => {
     if (typeof window === 'undefined') {
       return {
@@ -152,7 +155,7 @@ export default function FormBuilderPage() {
       };
     }
 
-    const savedFormData = sessionStorage.getItem('onboarding_formData');
+    const savedFormData = window.localStorage.getItem('onboarding_formData');
     if (!savedFormData) {
       return {
         fields: [],
@@ -181,10 +184,17 @@ export default function FormBuilderPage() {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
+  // Require auth for onboarding steps
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login?next=/onboarding/form-builder');
+    }
+  }, [router, status]);
+
   // Ensure org onboarding session exists; redirect otherwise
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const orgId = sessionStorage.getItem('onboarding_organizationId');
+    const orgId = window.localStorage.getItem('onboarding_organizationId');
     if (!orgId) {
       router.push('/onboarding/organization-setup');
       return;
@@ -192,13 +202,13 @@ export default function FormBuilderPage() {
     setOrganizationId(orgId);
   }, [router]);
 
-  // Save form data to sessionStorage whenever it changes
+  // Save form data to localStorage whenever it changes
   const handleFormChange = useCallback((newData: FormBuilderData) => {
     setFormData(newData);
     setSaved(false);
-    // Persist to sessionStorage to prevent data loss on navigation
+    // Persist to localStorage to prevent data loss across sessions
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('onboarding_formData', JSON.stringify(newData));
+      window.localStorage.setItem('onboarding_formData', JSON.stringify(newData));
     }
   }, []);
 
@@ -231,8 +241,8 @@ export default function FormBuilderPage() {
       
       // Mark form builder as complete
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('onboarding_formSaved', 'true');
-        sessionStorage.setItem('onboarding_step', '4'); // Move to step 4
+        onboardingSession.setFormSaved(true);
+        onboardingSession.setCurrentStep(4); // Move to step 4
       }
 
       // Navigate immediately after saving
@@ -264,7 +274,7 @@ export default function FormBuilderPage() {
       title: 'Organization Setup',
       description: 'Tell us about your organization',
       component: <div />,
-      isCompleted: typeof window !== 'undefined' ? !!sessionStorage.getItem('onboarding_organizationId') : false,
+      isCompleted: typeof window !== 'undefined' ? !!window.localStorage.getItem('onboarding_organizationId') : false,
       isOptional: false,
     },
     {
@@ -272,7 +282,7 @@ export default function FormBuilderPage() {
       title: 'Email Verification',
       description: 'Verify your email address',
       component: <div />,
-      isCompleted: typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_emailVerified') === 'true' : false,
+      isCompleted: typeof window !== 'undefined' ? window.localStorage.getItem('onboarding_emailVerified') === 'true' : false,
       isOptional: false,
     },
     {

@@ -70,10 +70,10 @@ curl -X POST http://localhost:7777/api/test-email-send \
 ### Test in Production
 
 After redeploy, test:
-1. Go to: https://www.blessbox.org/onboarding/organization-setup
+1. Go to: https://www.blessbox.org/login
 2. Enter your email: `rvegajr@darkware.net`
-3. Click "Send Verification Code"
-4. Check your email inbox
+3. Request the 6-digit code
+4. Check your email inbox and click the sign-in link
 
 ---
 

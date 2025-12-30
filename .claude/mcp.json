@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "blessbox-bugfix": {
+      "command": "node",
+      "args": ["mcp-server/src/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_REPO": "rvegajr/BlessBox"
+      }
+    }
+  }
+}

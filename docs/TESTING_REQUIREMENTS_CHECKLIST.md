@@ -27,18 +27,18 @@
   - [ ] Make `save-organization.test.ts` pass
 
 - [ ] **API: `/api/onboarding/send-verification`**
-  - [ ] Implement email verification code generation
+  - [ ] (Legacy/back-compat) Email verification code generation (6-digit codes)
   - [ ] Store codes with 15-minute expiration
   - [ ] Send email via EmailService
   - [ ] Rate limit to 3 requests per hour
-  - [ ] Make `send-verification.test.ts` pass
+  - [ ] Make `send-verification.test.ts` pass (if still kept)
 
 - [ ] **API: `/api/onboarding/verify-code`**
-  - [ ] Validate 6-digit code
+  - [ ] (Legacy/back-compat) Validate 6-digit code
   - [ ] Check expiration
   - [ ] Mark email as verified
   - [ ] Update organization record
-  - [ ] Make `verify-code.test.ts` pass
+  - [ ] Make `verify-code.test.ts` pass (if still kept)
 
 - [ ] **API: `/api/onboarding/save-form-config`**
   - [ ] Store form field configuration
@@ -218,7 +218,7 @@
 - [ ] **New Organization Onboarding**
   - [ ] Landing page → Sign up
   - [ ] Organization setup
-  - [ ] Email verification
+  - [ ] 6-digit code sign-in (email-only)
   - [ ] Form builder
   - [ ] QR code generation
   - [ ] Dashboard access

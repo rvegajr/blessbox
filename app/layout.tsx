@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 // import 'aos/dist/aos.css'
-import AuthSessionProvider from '@/components/providers/session-provider'
+import { AuthProvider } from '@/components/providers/auth-provider'
 import { TutorialSystemLoader } from '@/components/TutorialSystemLoader'
 
 const geist = Geist({ 
@@ -45,10 +45,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} font-sans`}>
-        <AuthSessionProvider>
+        <AuthProvider>
           {children}
           <TutorialSystemLoader />
-        </AuthSessionProvider>
+        </AuthProvider>
       </body>
     </html>
   )

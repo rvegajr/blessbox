@@ -250,11 +250,7 @@ async function checkAppUrl(): Promise<ValidationResult> {
   const url = process.env.PUBLIC_APP_URL;
   
   if (!url) {
-    return {
-      valid: true,
-      message: 'PUBLIC_APP_URL not set (using default localhost)',
-      level: 'warning'
-    };
+    return { valid: false, message: 'PUBLIC_APP_URL is not set', level: 'error' };
   }
   
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -270,6 +266,48 @@ async function checkAppUrl(): Promise<ValidationResult> {
     message: `App URL: ${url}`,
     level: 'info'
   };
+}
+
+async function checkNextAuth(): Promise<ValidationResult> {
+  const url = (process.env.NEXTAUTH_URL || '').trim();
+  const secret = (process.env.NEXTAUTH_SECRET || '').trim();
+  const appUrl = (process.env.PUBLIC_APP_URL || '').trim();
+  const env = process.env.NODE_ENV || 'development';
+
+  if (!url) return { valid: false, message: 'NEXTAUTH_URL is not set', level: 'error' };
+  if (!secret) return { valid: false, message: 'NEXTAUTH_SECRET is not set', level: 'error' };
+
+  try {
+    // Validate it parses and is absolute
+    // eslint-disable-next-line no-new
+    new URL(url);
+  } catch {
+    return { valid: false, message: 'NEXTAUTH_URL must be a valid absolute URL (http/https)', level: 'error' };
+  }
+
+  if (env !== 'production') {
+    if (url.includes('blessbox.org')) {
+      return { valid: false, message: `NEXTAUTH_URL points to production (${url}) in ${env}`, level: 'error' };
+    }
+  }
+
+  if (appUrl) {
+    try {
+      const u1 = new URL(url);
+      const u2 = new URL(appUrl);
+      if (u1.origin !== u2.origin) {
+        return {
+          valid: false,
+          message: `NEXTAUTH_URL origin (${u1.origin}) must match PUBLIC_APP_URL origin (${u2.origin})`,
+          level: 'error',
+        };
+      }
+    } catch {
+      // ignore; checkAppUrl handles PUBLIC_APP_URL format
+    }
+  }
+
+  return { valid: true, message: `NextAuth configured: ${url}`, level: 'info' };
 }
 
 async function checkNodeVersion(): Promise<ValidationResult> {
@@ -339,8 +377,9 @@ async function runValidation() {
     { name: 'Database (Turso)', check: checkDatabase, required: true },
     { name: 'Email Service', check: checkEmailService, required: true },
     { name: 'JWT Configuration', check: checkJWT, required: true },
+    { name: 'NextAuth Configuration', check: checkNextAuth, required: true },
     { name: 'Payment (Square)', check: checkSquare, required: false },
-    { name: 'App URL', check: checkAppUrl, required: false },
+    { name: 'App URL', check: checkAppUrl, required: true },
   ];
   
   let hasErrors = false;

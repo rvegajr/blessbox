@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useSession } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
@@ -53,7 +53,8 @@ interface EnrollmentRecord {
 export default function ClassDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const { user, status } = useSession();
   const { ready } = useRequireActiveOrganization();
   const classId = params.id as string;
 
@@ -73,14 +74,14 @@ export default function ClassDetailsPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session) {
-      router.push('/');
+    if (status === 'unauthenticated' || !user) {
+      router.replace(`/login?next=${encodeURIComponent(pathname || `/classes/${classId}`)}`);
       return;
     }
     if (!ready) return;
     loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, session, status, classId]);
+  }, [ready, user, status, classId, router, pathname]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -151,7 +152,7 @@ export default function ClassDetailsPage() {
     );
   }
 
-  if (!session) return null;
+  if (!user) return null;
 
   if (error || !cls) {
     return (

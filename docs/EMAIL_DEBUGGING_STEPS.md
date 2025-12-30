@@ -37,17 +37,17 @@ This will show you:
 
 ### Step 2: Test Email Sending & Check Logs
 
-1. **Request a verification code:**
-   - Go to: https://www.blessbox.org/onboarding/organization-setup
+1. **Request a 6-digit code (login):**
+   - Go to: https://www.blessbox.org/login
    - Enter your email
-   - Click "Send Verification Code"
+   - Request the 6-digit code
 
 2. **Immediately check Vercel logs:**
    - Vercel Dashboard → Your Project → **Logs** tab
    - Look for these messages:
-     - ✅ `Verification email sent successfully to [email]` (success)
+     - ✅ `... email sent ...` (success)
      - ✅ `SendGrid email sent to [email], status: 202` (SendGrid success)
-     - ❌ `Failed to send verification email:` (failure)
+     - ❌ `Failed to send ... email:` (failure)
      - ❌ `SendGrid error:` (SendGrid specific error)
 
 3. **Check SendGrid Activity:**

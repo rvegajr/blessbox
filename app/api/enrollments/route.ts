@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
             location: sessionDetails?.location || 'TBD',
             instructor_name: sessionDetails?.instructor_name || 'TBD',
             organization_name: organization.name,
-            confirmation_link: `${process.env.NEXTAUTH_URL || ''}/enrollments/${enrollment.id}/confirm`
+            confirmation_link: `${process.env.PUBLIC_APP_URL || process.env.NEXTAUTH_URL || ''}/enrollments/${enrollment.id}/confirm`
           }
         );
       } catch (e) {

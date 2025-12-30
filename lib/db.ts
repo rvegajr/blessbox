@@ -38,8 +38,21 @@ export async function ensureSubscriptionSchema(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
+      name TEXT,
+      image TEXT,
+      email_verified_at TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
+    )`
+  );
+
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS verification_tokens (
+      identifier TEXT NOT NULL,
+      token TEXT NOT NULL,
+      expires TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      PRIMARY KEY (identifier, token)
     )`
   );
 

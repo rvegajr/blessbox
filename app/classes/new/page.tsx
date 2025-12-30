@@ -1,28 +1,32 @@
 'use client';
 
+// Force dynamic rendering - this page requires authentication
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
 import ClassForm from '@/components/classes/ClassForm';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 export default function NewClassPage() {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { ready } = useRequireActiveOrganization();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'loading') return;
     
-    if (!session) {
-      router.push('/');
+    if (status === 'unauthenticated' || !user) {
+      router.replace(`/login?next=${encodeURIComponent(pathname || '/classes/new')}`);
       return;
     }
     
     if (!ready) return;
     setLoading(false);
-  }, [ready, session, status, router]);
+  }, [ready, user, status, router, pathname]);
 
   if (loading || status === 'loading' || !ready) {
     return (
@@ -32,7 +36,7 @@ export default function NewClassPage() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     return null;
   }
 

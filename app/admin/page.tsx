@@ -1,7 +1,10 @@
 'use client';
 
+// Force dynamic rendering - this page requires authentication
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 
 interface SystemStats {
@@ -49,7 +52,7 @@ interface Organization {
 }
 
 export default function AdminPage() {
-  const { data: session } = useSession();
+  const { user } = useSession();
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [orgs, setOrgs] = useState<Organization[]>([]);
@@ -174,7 +177,7 @@ export default function AdminPage() {
               <p className="text-gray-600 mt-1">System administration and monitoring</p>
             </div>
             <div className="text-sm text-gray-500">
-              Logged in as: {session?.user?.email}
+              Logged in as: {user?.email}
             </div>
           </div>
         </div>

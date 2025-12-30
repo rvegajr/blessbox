@@ -97,16 +97,18 @@ vercel env add TURSO_DATABASE_URL production
 vercel env add TURSO_AUTH_TOKEN production
 # Paste: eyJ... (your token)
 
-# NextAuth
+# NextAuth (6-digit code email-only authentication)
 vercel env add NEXTAUTH_SECRET production
 # Paste: $(openssl rand -base64 32)
 
 vercel env add NEXTAUTH_URL production
-# Paste: https://blessbox.vercel.app
+# Paste: https://www.blessbox.org
 
 # Application
 vercel env add PUBLIC_APP_URL production
-# Paste: https://blessbox.vercel.app
+# Paste: https://www.blessbox.org
+
+# IMPORTANT: NEXTAUTH_URL and PUBLIC_APP_URL must share the same origin.
 
 vercel env add NODE_ENV production
 # Paste: production

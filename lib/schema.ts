@@ -23,8 +23,19 @@ export const organizations = sqliteTable('organizations', {
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   email: text('email').notNull().unique(),
+  name: text('name'),
+  image: text('image'),
+  emailVerifiedAt: text('email_verified_at'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Auth.js / NextAuth verification tokens for email magic links
+export const verificationTokens = sqliteTable('verification_tokens', {
+  identifier: text('identifier').notNull(),
+  token: text('token').notNull(),
+  expires: text('expires').notNull(),
+  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 // Memberships table

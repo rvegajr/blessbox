@@ -47,15 +47,15 @@ After updating the environment variable:
 
 ### Step 2: Test
 
-1. Go to: https://www.blessbox.org/onboarding/organization-setup
+1. Go to: https://www.blessbox.org/login
 2. Enter email: `rvegajr@darkware.net`
-3. Click "Send Verification Code"
-4. Check your email inbox!
+3. Request the 6-digit code
+4. Check your email inbox and click the sign-in link
 
 ### Step 3: Verify
 
 Check Vercel logs for:
-- ✅ `Verification email sent successfully to rvegajr@darkware.net`
+- ✅ `... email sent ...` to `rvegajr@darkware.net`
 - ✅ `SendGrid email sent to rvegajr@darkware.net, status: 202`
 
 ---
