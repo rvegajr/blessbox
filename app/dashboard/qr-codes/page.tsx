@@ -47,6 +47,9 @@ export default function QRCodesPage() {
     isActive: '',
   });
   const [editingQR, setEditingQR] = useState<{ id: string; qrCodeSetId: string; label: string; description: string } | null>(null);
+  const [addingNew, setAddingNew] = useState(false);
+  const [newQrLabel, setNewQrLabel] = useState('');
+  const [generatingNew, setGeneratingNew] = useState(false);
 
   useEffect(() => {
     if (!session?.user?.email) {
@@ -184,6 +187,64 @@ export default function QRCodesPage() {
     }
   };
 
+  const handleGenerateNew = async () => {
+    const label = newQrLabel.trim();
+    if (!label) {
+      alert('Please enter a label for the new QR code');
+      return;
+    }
+
+    setGeneratingNew(true);
+    try {
+      // Get organization ID from session
+      const sessionResponse = await fetch('/api/auth/session');
+      const sessionData = await sessionResponse.json();
+      const organizationId = sessionData?.activeOrganizationId || sessionData?.user?.organizationId;
+
+      if (!organizationId) {
+        alert('Organization ID not found');
+        return;
+      }
+
+      // Slugify the label
+      const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+      // Generate new QR code(s)
+      const response = await fetch('/api/onboarding/generate-qr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          organizationId,
+          entryPoints: [{ label, slug }],
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok || !result.success) {
+        alert(result.error || 'Failed to generate QR code');
+        return;
+      }
+
+      // Refresh QR codes list
+      const fetchResponse = await fetch('/api/qr-codes');
+      const fetchResult = await fetchResponse.json();
+      if (fetchResult.success) {
+        setQRCodes(fetchResult.data);
+      }
+
+      // Reset form
+      setNewQrLabel('');
+      setAddingNew(false);
+      alert(`Successfully generated QR code for "${label}"!`);
+    } catch (err) {
+      console.error('Generate new QR error:', err);
+      alert('Failed to generate new QR code');
+    } finally {
+      setGeneratingNew(false);
+    }
+  };
+
   const totalQRCodes = qrCodes.length;
   const activeQRCodes = qrCodes.filter(qr => qr.isActive).length;
   const totalScans = qrCodes.reduce((sum, qr) => sum + qr.scanCount, 0);
@@ -217,10 +278,64 @@ export default function QRCodesPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-qr-codes" data-loading={loading}>
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">QR Codes</h1>
-          <p className="text-gray-600">Manage and view all your QR codes</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">QR Codes</h1>
+            <p className="text-gray-600">Manage and view all your QR codes</p>
+          </div>
+          <button
+            data-testid="btn-add-qr-code"
+            onClick={() => setAddingNew(!addingNew)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
+            aria-label="Add new QR code"
+          >
+            <span>{addingNew ? '✕' : '+'}</span>
+            <span>{addingNew ? 'Cancel' : 'Add QR Code'}</span>
+          </button>
         </div>
+
+        {/* Add New QR Code Form */}
+        {addingNew && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6" data-testid="form-add-qr-code">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New QR Code</h2>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label htmlFor="new-qr-label" className="block text-sm font-medium text-gray-700 mb-2">
+                  Entry Point Label
+                </label>
+                <input
+                  id="new-qr-label"
+                  type="text"
+                  data-testid="input-new-qr-label"
+                  value={newQrLabel}
+                  onChange={(e) => setNewQrLabel(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !generatingNew) handleGenerateNew();
+                    if (e.key === 'Escape') setAddingNew(false);
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder="e.g., Main Entrance, Side Door, Event Hall"
+                  disabled={generatingNew}
+                  aria-label="New QR code label"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  This will create a new QR code entry point without affecting existing ones.
+                </p>
+              </div>
+              <div className="flex items-end">
+                <button
+                  data-testid="btn-generate-new-qr"
+                  onClick={handleGenerateNew}
+                  disabled={generatingNew || !newQrLabel.trim()}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                  aria-label="Generate new QR code"
+                >
+                  {generatingNew ? 'Generating...' : 'Generate'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         <div id="qr-stats" className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6" data-tutorial-target="qr-stats">

@@ -153,3 +153,4 @@ playwright-report/
 
 # Pre-commit
 .pre-commit-config.yaml
+.env.production

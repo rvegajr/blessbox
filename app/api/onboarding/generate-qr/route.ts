@@ -152,7 +152,35 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:7777');
 
+    // Get existing QR codes to preserve them
+    const existingSetResult = await db.execute({
+      sql: `SELECT qr_codes FROM qr_code_sets WHERE id = ?`,
+      args: [qrSetId],
+    });
+    
+    let existingQrCodes: any[] = [];
+    if (existingSetResult.rows.length > 0) {
+      const qrCodesJson = (existingSetResult.rows[0] as any).qr_codes;
+      try {
+        existingQrCodes = JSON.parse(qrCodesJson || '[]');
+        if (!Array.isArray(existingQrCodes)) {
+          existingQrCodes = [];
+        }
+      } catch {
+        existingQrCodes = [];
+      }
+    }
+
+    // Track existing slugs to avoid duplicates
+    const existingSlugs = new Set(existingQrCodes.map((qr: any) => qr.slug));
+
     for (const entryPoint of entryPoints) {
+      // Skip if slug already exists
+      if (existingSlugs.has(entryPoint.slug)) {
+        console.log(`Skipping duplicate QR code with slug: ${entryPoint.slug}`);
+        continue;
+      }
+
       const qrCodeId = uuidv4();
       const registrationUrl = `${baseUrl}/register/${orgSlug}/${entryPoint.slug}`;
 
@@ -179,18 +207,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Update QR code set with generated codes
+    // Merge new QR codes with existing ones
+    const allQrCodes = [...existingQrCodes, ...qrCodes];
+
+    // Update QR code set with all codes (existing + new)
     await db.execute({
       sql: `UPDATE qr_code_sets 
             SET qr_codes = ?, updated_at = ?
             WHERE id = ?`,
-      args: [JSON.stringify(qrCodes), now, qrSetId],
+      args: [JSON.stringify(allQrCodes), now, qrSetId],
     });
 
     return NextResponse.json({
       success: true,
-      message: 'QR codes generated successfully',
-      qrCodes,
+      message: `${qrCodes.length} QR code(s) generated successfully`,
+      qrCodes: allQrCodes, // Return all QR codes (including existing)
+      newQrCodes: qrCodes, // Return only newly generated codes
       qrSetId,
     });
   } catch (error) {
