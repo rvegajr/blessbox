@@ -25,7 +25,7 @@ function CheckoutContent() {
   // Initialize email from session or URL params
   useEffect(() => {
     if (user?.email) {
-      setEmail(session.user.email);
+      setEmail(user.email);
     } else {
       const urlEmail = params.get('email');
       if (urlEmail) {
