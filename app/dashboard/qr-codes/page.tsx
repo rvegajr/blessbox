@@ -60,6 +60,7 @@ export default function QRCodesPage() {
 
     const fetchData = async () => {
       try {
+        setError(null); // Clear previous errors
         // Fetch QR codes for the current user's organization
         const response = await fetch('/api/qr-codes');
         const result = await response.json();
@@ -67,7 +68,10 @@ export default function QRCodesPage() {
         if (result.success) {
           setQRCodes(result.data);
         } else {
-          setError(result.error || 'Failed to load QR codes');
+          // Only set error if it's not an auth issue (auth issues will redirect)
+          if (response.status !== 401 && response.status !== 403) {
+            setError(result.error || 'Failed to load QR codes');
+          }
         }
 
         // Also fetch QR code sets for filtering
@@ -79,15 +83,18 @@ export default function QRCodesPage() {
           }
         }
       } catch (err) {
-        setError('Failed to load QR codes');
         console.error('Error fetching QR codes:', err);
+        // Only set error if we don't already have QR codes (avoid clearing on refresh failures)
+        if (qrCodes.length === 0) {
+          setError('Failed to load QR codes');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [ready, session]);
+  }, [ready, session?.user?.email]); // Only re-fetch if email changes, not entire session object
 
   const filteredQRCodes = qrCodes.filter(qr => {
     const matchesSearch = !filters.search || 
