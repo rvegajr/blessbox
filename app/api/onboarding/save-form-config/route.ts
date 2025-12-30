@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FormConfigService } from '@/lib/services/FormConfigService';
 import { MembershipService } from '@/lib/services/MembershipService';
 import { getServerSession } from '@/lib/auth-helper';
+import { getDbClient } from '@/lib/db';
+import { v4 as uuidv4 } from 'uuid';
+import QRCode from 'qrcode';
 
 const formConfigService = new FormConfigService();
 const membershipService = new MembershipService();
+const db = getDbClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,6 +61,74 @@ export async function POST(request: NextRequest) {
         language,
         formFields,
       });
+    }
+
+    // Auto-generate a default QR code if none exist
+    // This ensures users don't have to manually generate QR codes
+    const qrSetResult = await db.execute({
+      sql: `SELECT qr_codes FROM qr_code_sets WHERE id = ?`,
+      args: [config.id],
+    });
+
+    let existingQrCodes = [];
+    if (qrSetResult.rows.length > 0) {
+      try {
+        existingQrCodes = JSON.parse((qrSetResult.rows[0] as any).qr_codes || '[]');
+      } catch {}
+    }
+
+    // Only auto-generate if no QR codes exist yet
+    if (existingQrCodes.length === 0) {
+      // Get organization details for slug
+      const orgResult = await db.execute({
+        sql: `SELECT id, name, custom_domain FROM organizations WHERE id = ?`,
+        args: [organizationId],
+      });
+
+      if (orgResult.rows.length > 0) {
+        const org = orgResult.rows[0] as any;
+        const orgSlug = org.custom_domain || org.name.toLowerCase().replace(/\s+/g, '-');
+
+        // Generate a default "main-entrance" QR code
+        const baseUrl =
+          process.env.PUBLIC_APP_URL ||
+          process.env.NEXTAUTH_URL ||
+          process.env.NEXT_PUBLIC_APP_URL ||
+          (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:7777');
+
+        const defaultSlug = 'main-entrance';
+        const qrCodeId = uuidv4();
+        const registrationUrl = `${baseUrl}/register/${orgSlug}/${defaultSlug}`;
+
+        // Generate QR code image
+        const qrDataUrl = await QRCode.toDataURL(registrationUrl, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: 256,
+          color: {
+            dark: '#667eea',
+            light: '#ffffff',
+          },
+        });
+
+        const defaultQrCode = {
+          id: qrCodeId,
+          label: defaultSlug,
+          slug: defaultSlug,
+          url: registrationUrl,
+          dataUrl: qrDataUrl,
+          description: 'Main Entrance',
+        };
+
+        // Update QR code set with the default QR code
+        const now = new Date().toISOString();
+        await db.execute({
+          sql: `UPDATE qr_code_sets SET qr_codes = ?, updated_at = ? WHERE id = ?`,
+          args: [JSON.stringify([defaultQrCode]), now, config.id],
+        });
+
+        console.log(`✅ Auto-generated default QR code for organization ${organizationId}`);
+      }
     }
 
     return NextResponse.json({
