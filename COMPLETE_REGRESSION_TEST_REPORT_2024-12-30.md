@@ -267,3 +267,4 @@ BASE_URL=http://localhost:7777 npx playwright test tests/e2e/bug-fixes-verificat
 
 **ROLE: engineer STRICT=true**
 
+
