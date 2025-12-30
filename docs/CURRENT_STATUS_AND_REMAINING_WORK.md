@@ -3,6 +3,8 @@
 
 ---
 
+> **Dec 2025 Status Update (Current Spec):** BlessBox uses **NextAuth v5 6-digit code (email-only)** authentication. References below to “verification code emails” are legacy/back-compat; login is via `/login` 6-digit code.
+
 ## ✅ **RECENTLY COMPLETED** (Today)
 
 ### 1. **QR Code Management System** ✅ (100% Complete)

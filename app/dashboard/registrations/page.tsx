@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
@@ -22,7 +23,8 @@ interface Registration {
 }
 
 export default function RegistrationsPage() {
-  const { data: session } = useSession();
+  const { user, status: sessionStatus } = useAuth();
+  const router = useRouter();
   const { ready, activeOrganizationId } = useRequireActiveOrganization();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,11 +34,33 @@ export default function RegistrationsPage() {
     search: ''
   });
 
+  // Handle unauthenticated state - redirect to login
   useEffect(() => {
-    if (!session?.user) return;
-    if (!ready) return;
-    const organizationId = activeOrganizationId || ((session.user as any).organizationId as string | undefined);
-    if (!organizationId) return;
+    if (sessionStatus === 'unauthenticated') {
+      router.replace('/login?next=/dashboard/registrations');
+      return;
+    }
+  }, [sessionStatus, router]);
+
+  useEffect(() => {
+    // Don't fetch if not authenticated or still loading auth
+    if (sessionStatus === 'loading' || sessionStatus === 'unauthenticated') {
+      return;
+    }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    if (!ready) {
+      // Still waiting for active org context
+      return;
+    }
+    const organizationId = activeOrganizationId || (user.organizationId as string | undefined);
+    if (!organizationId) {
+      setLoading(false);
+      setError('No active organization found');
+      return;
+    }
     
     const fetchRegistrations = async () => {
       try {
@@ -44,11 +68,16 @@ export default function RegistrationsPage() {
         const result = await response.json();
         
         if (result.success) {
-          setRegistrations(result.data);
+          setRegistrations(result.data || []);
+          if (result.data && result.data.length === 0) {
+            console.log(`No registrations found for organization ${organizationId}`);
+          }
         } else {
+          console.error('Failed to load registrations:', result.error);
           setError(result.error || 'Failed to load registrations');
         }
       } catch (err) {
+        console.error('Error fetching registrations:', err);
         setError('Failed to load registrations');
       } finally {
         setLoading(false);
@@ -56,7 +85,7 @@ export default function RegistrationsPage() {
     };
 
     fetchRegistrations();
-  }, [activeOrganizationId, ready, session]);
+  }, [activeOrganizationId, ready, user, sessionStatus]);
 
   const filteredRegistrations = registrations.filter(reg => {
     const data = JSON.parse(reg.registrationData);
@@ -83,7 +112,8 @@ export default function RegistrationsPage() {
     }
   };
 
-  if (loading) {
+  // Show loading only if authenticated and waiting for data
+  if (sessionStatus === 'loading' || (sessionStatus === 'authenticated' && loading && ready)) {
     return (
       <div className="min-h-screen bg-gray-50 p-8" data-testid="page-dashboard-registrations">
         <div className="max-w-7xl mx-auto">
@@ -94,6 +124,11 @@ export default function RegistrationsPage() {
         </div>
       </div>
     );
+  }
+
+  // If unauthenticated, redirect is happening (show nothing or brief loading)
+  if (sessionStatus === 'unauthenticated') {
+    return null;
   }
 
   if (error) {
@@ -381,7 +416,7 @@ export default function RegistrationsPage() {
                                     const response = await fetch(`/api/registrations/${reg.id}/check-in`, {
                                       method: 'POST',
                                       headers: { 'Content-Type': 'application/json' },
-                                      body: JSON.stringify({ checkedInBy: session?.user?.email })
+                                      body: JSON.stringify({ checkedInBy: user?.email })
                                     });
                                     if (response.ok) {
                                       // Refresh the page to show updated status

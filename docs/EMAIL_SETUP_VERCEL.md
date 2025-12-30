@@ -1,8 +1,8 @@
 # 📧 Email Setup for Vercel Production
 
-## Problem: Verification Emails Not Sending
+## Problem: Authentication Emails (6-digit codes) Not Sending
 
-If verification emails aren't being sent in production, it's likely because email environment variables aren't configured in Vercel.
+If 6-digit code emails (login) or notification emails aren't being sent in production, it's likely because email environment variables aren't configured in Vercel.
 
 ## Quick Diagnosis
 
@@ -86,16 +86,16 @@ After configuring:
    ```
    Should show status: "ready"
 
-2. **Test sending a verification email:**
-   - Go to onboarding page
+2. **Test sending an authentication email (6-digit code):**
+   - Go to login page: `https://www.blessbox.org/login`
    - Enter your email
-   - Click "Send Verification Code"
+   - Request the 6-digit code
    - Check your email inbox (and spam folder)
 
 3. **Check Vercel logs:**
    - Go to Vercel dashboard → Your project → Logs
    - Look for email-related logs
-   - Should see: `✅ Verification email sent successfully to [email]`
+   - Should see success or error logs for SendGrid/SMTP delivery
 
 ## Common Issues
 

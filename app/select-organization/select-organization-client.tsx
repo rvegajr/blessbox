@@ -1,8 +1,11 @@
 'use client';
 
+// Force dynamic rendering - this page requires authentication
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/lib/hooks/useAuth';
 
 type Org = { id: string; name: string; contactEmail: string; role: string };
 

@@ -89,7 +89,7 @@ Vercel auto-deploys! 🎉
 ## ✅ What's Included in This Build
 
 ### Core Features (100% Tested)
-- ✅ Email Verification (with rate limiting)
+- ✅ 6-digit code Authentication (email-only)
 - ✅ Organization Management
 - ✅ Form Configuration
 - ✅ QR Code Generation
@@ -132,7 +132,7 @@ Vercel auto-deploys! 🎉
 ### Services Implemented (TDD)
 ```
 ✅ OrganizationService     - Tested
-✅ VerificationService     - Tested
+✅ VerificationService     - (Legacy/back-compat codes)
 ✅ FormConfigService       - Tested
 ✅ NotificationService     - Tested
 ✅ QRCodeService           - Tested

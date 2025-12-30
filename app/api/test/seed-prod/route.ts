@@ -62,10 +62,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Forbidden',
-          debug: { hasSecret: !!secret, hasProvided: !!provided, matches: !!secret && !!provided && provided === secret },
+          error: 'Not found',
         },
-        { status: 403 }
+        { status: 404 }
       );
     }
   }
@@ -238,7 +237,12 @@ export async function POST(req: NextRequest) {
             { label: 'Side Door', slug: 'side-door' },
           ];
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 'https://blessbox.org';
+    const baseUrl =
+      process.env.PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.BASE_URL ||
+      'http://localhost:7777';
     const qrCodes = entryPoints.map((ep: any) => ({
       id: `qr_${ep.slug}`,
       label: ep.slug,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 

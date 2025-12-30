@@ -33,7 +33,7 @@
 ### Required Tools
 - Modern web browser (Chrome, Firefox, Safari, or Edge)
 - Mobile device or browser dev tools (for mobile testing)
-- Email access (for verification codes)
+- Email access (for 6-digit codes)
 - Note-taking tool (to document findings)
 
 ### Test Data Preparation
@@ -146,31 +146,30 @@ Create new accounts during onboarding flow testing.
 
 ## 1. Authentication & Login
 
-### Test Case 1.1: Email Verification Flow
+### Test Case 1.1: 6-digit code Sign‑In (Email‑Only Authentication)
 
-**Objective:** Verify email verification system works correctly
+**Objective:** Verify email-only authentication works correctly (6-digit code)
 
 **Steps:**
 1. Navigate to: `https://www.blessbox.org/onboarding/organization-setup`
-2. Enter a test email address (e.g., `testorg1@example.com`)
-3. Click "Send Verification Code"
-4. **Expected:** Success message appears
-5. Check email inbox for verification code
-6. Enter the 6-digit code
-7. Click "Verify Email"
-8. **Expected:** Email verified successfully, proceed to next step
+2. **Expected:** If not signed in, you are redirected to login: `https://www.blessbox.org/login?next=/onboarding/organization-setup`
+3. Enter a test email address (e.g., `testorg1@example.com`)
+4. Request a **6-digit code** (email-only sign-in)
+5. **Expected:** Success message appears (check your email)
+6. Open email inbox and click the sign-in link
+7. **Expected:** You are signed in and returned to onboarding (organization setup)
 
 **Pass Criteria:**
-- ✅ Verification code is sent
-- ✅ Code is received in email within 30 seconds
-- ✅ Code validation works correctly
-- ✅ Invalid codes are rejected
-- ✅ Expired codes (after 15 minutes) are rejected
+- ✅ 6-digit code email is sent
+- ✅ Email received within 30 seconds
+- ✅ Link points to `blessbox.org` (not another domain)
+- ✅ Clicking link signs user in successfully
+- ✅ Redirect returns to requested page (`next` parameter)
 
 **Negative Tests:**
-- Try invalid code (e.g., `000000`)
-- Try expired code (wait 16 minutes)
-- Try code from different email
+- Try signing in with a different email and confirm it creates a separate user session
+- Try opening an old/expired link (should fail safely and allow requesting a new link)
+- Try accessing a protected route while signed out (should redirect to `/login?next=...`)
 
 ---
 
@@ -182,7 +181,7 @@ Create new accounts during onboarding flow testing.
 1. Complete onboarding flow (see Section 2)
 2. Log out (if logout button exists)
 3. Navigate to login page (if exists) or dashboard
-4. Enter email and password (if password-based) or request magic link
+4. Enter email and password (if password-based) or request 6-digit code
 5. Complete authentication
 6. **Expected:** Redirected to dashboard
 
@@ -201,14 +200,15 @@ Create new accounts during onboarding flow testing.
 
 **Steps:**
 1. Navigate to: `https://www.blessbox.org/onboarding/organization-setup`
+   - If redirected to login, complete 6-digit code sign-in first (Test Case 1.1)
 2. Fill in organization details:
    - **Organization Name:** "Test Food Bank"
-   - **Email:** Use test email (e.g., `testorg1@example.com`)
+   - **Email:** Should match the signed-in email (may be pre-filled/locked)
    - **Phone:** `(555) 123-4567`
    - **Address:** `123 Test Street, Test City, TS 12345`
    - **Organization Type:** Select from dropdown
 3. Click "Continue" or "Next"
-4. **Expected:** Proceed to email verification step
+4. **Expected:** Proceed to form builder step
 
 **Pass Criteria:**
 - ✅ All required fields validated
@@ -223,24 +223,18 @@ Create new accounts during onboarding flow testing.
 
 ---
 
-### Test Case 2.2: Email Verification (Step 2)
+### Test Case 2.2: Email Verification (Deprecated)
 
-**Objective:** Verify email verification process
+**Objective:** (Legacy/backwards compatibility) This step is no longer required when using 6-digit code sign-in.
 
 **Steps:**
-1. After Step 1, you should be on email verification page
-2. Verify email is pre-filled from Step 1
-3. Click "Send Verification Code"
-4. Check email for code
-5. Enter code
-6. Click "Verify"
-7. **Expected:** Proceed to form builder step
+1. Attempt to navigate directly to: `https://www.blessbox.org/onboarding/email-verification`
+2. If signed out: **Expected:** redirect to `/login?next=/onboarding/organization-setup`
+3. If signed in: **Expected:** redirect to `/onboarding/form-builder`
 
 **Pass Criteria:**
-- ✅ Code sent successfully
-- ✅ Code received in email
-- ✅ Verification succeeds with correct code
-- ✅ Invalid codes rejected
+- ✅ Route does not block onboarding
+- ✅ Route redirects into the 6-digit code onboarding path
 
 ---
 

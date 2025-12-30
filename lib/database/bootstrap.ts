@@ -102,8 +102,20 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
     `CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
+      name TEXT,
+      image TEXT,
+      email_verified_at TEXT,
       created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+    );`,
+
+    // verification_tokens (Auth.js email magic link)
+    `CREATE TABLE IF NOT EXISTS verification_tokens (
+      identifier TEXT NOT NULL,
+      token TEXT NOT NULL,
+      expires TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+      PRIMARY KEY (identifier, token)
     );`,
 
     // memberships (user <-> organization)
@@ -428,6 +440,29 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
 
   // Ensure registrations has organization_id (older DBs created before we added it)
   await tryExec(`ALTER TABLE registrations ADD COLUMN organization_id TEXT;`);
+
+  // Ensure users has Auth.js-compatible fields (older DBs created before magic-link auth)
+  await tryExec(`ALTER TABLE users ADD COLUMN name TEXT;`);
+  await tryExec(`ALTER TABLE users ADD COLUMN image TEXT;`);
+  await tryExec(`ALTER TABLE users ADD COLUMN email_verified_at TEXT;`);
+
+  // Normalize identity emails (case-insensitive): users.email must be lowercase unique.
+  // If duplicates exist that only differ by case, fail fast with a clear error.
+  const dupUsers = await client.execute(
+    `SELECT lower(email) AS e, COUNT(*) AS c FROM users GROUP BY lower(email) HAVING COUNT(*) > 1`
+  );
+  if ((dupUsers.rows as any[]).length > 0) {
+    const examples = (dupUsers.rows as any[]).slice(0, 3).map((r) => String(r.e));
+    throw new Error(
+      `Duplicate user emails detected when normalizing to lowercase: ${examples.join(', ')}. Resolve duplicates before continuing.`
+    );
+  }
+  await client.execute(`UPDATE users SET email = lower(trim(email)) WHERE email != lower(trim(email));`);
+
+  // Organizations contact_email is not unique, but should still be normalized for consistent lookups.
+  await client.execute(
+    `UPDATE organizations SET contact_email = lower(trim(contact_email)) WHERE contact_email != lower(trim(contact_email));`
+  );
 
   // Ensure subscription_plans has the columns used by /lib/subscriptions (older DBs used different schema)
   await tryExec(`ALTER TABLE subscription_plans ADD COLUMN registration_limit INTEGER NOT NULL DEFAULT 100;`);

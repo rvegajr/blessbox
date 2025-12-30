@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useSession } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
@@ -24,7 +24,8 @@ interface SessionRecord {
 export default function ClassSessionsPage() {
   const params = useParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const { user, status } = useSession();
   const { ready } = useRequireActiveOrganization();
   const classId = params.id as string;
 
@@ -42,14 +43,14 @@ export default function ClassSessionsPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session) {
-      router.push('/');
+    if (status === 'unauthenticated' || !user) {
+      router.replace(`/login?next=${encodeURIComponent(pathname || `/classes/${classId}/sessions`)}`);
       return;
     }
     if (!ready) return;
     fetchSessions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, session, status, classId]);
+  }, [ready, user, status, classId, router, pathname]);
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -95,7 +96,7 @@ export default function ClassSessionsPage() {
     );
   }
 
-  if (!session) return null;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">

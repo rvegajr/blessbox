@@ -53,10 +53,16 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Cancel preview error:', error);
     
-    if (error instanceof Error && error.message.includes('Cannot cancel')) {
+    if (error instanceof Error) {
+      if (error.message.includes('Cannot cancel')) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 400 }
+        { success: false, error: `Failed to preview cancellation: ${error.message}` },
+        { status: 500 }
       );
     }
     
@@ -128,6 +134,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Cancel execution error:', error);
+    
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { success: false, error: `Failed to cancel subscription: ${error.message}` },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, error: 'Failed to cancel subscription' },
       { status: 500 }

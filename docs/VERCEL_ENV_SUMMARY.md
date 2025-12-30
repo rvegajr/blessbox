@@ -61,10 +61,10 @@ This will show:
 ### Step 2: Check Vercel Logs
 
 1. Go to Vercel Dashboard → Your Project → Logs
-2. Look for email-related logs when you request a verification code
+2. Look for email-related logs when you request a 6-digit code (login) or other email notifications
 3. Look for:
-   - `✅ Verification email sent successfully` (success)
-   - `❌ Failed to send verification email` (failure)
+   - `✅ ... email sent ...` (success)
+   - `❌ Failed to send ... email` (failure)
    - `❌ SendGrid error:` (SendGrid specific error)
 
 ### Step 3: Verify SendGrid Configuration
@@ -86,7 +86,7 @@ This will show:
 
 ### Step 4: Test Email Sending
 
-1. Request a verification code from the onboarding page
+1. Request a 6-digit code from the login page (`/login`) or trigger a notification email (e.g., registration confirmation)
 2. Check Vercel logs immediately
 3. Check SendGrid activity dashboard
 4. Check your email (including spam)

@@ -3,6 +3,8 @@
 ## Overview
 This checklist ensures all mock implementations are replaced with live services and proper API integrations.
 
+> **Dec 2025 Status Update (Current Spec):** Production authentication is **NextAuth v5 6-digit code (email-only)** via `/login`. Any “verification code” references below are legacy/back-compat and may still exist only to support older tests or historical implementation notes.
+
 ## 1. Email Verification System ❌
 
 ### Current State:

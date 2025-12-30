@@ -35,9 +35,8 @@ The `production-verification.spec.ts` test suite verifies all client issue fixes
 - Verifies email persists after coupon application
 
 ### ✅ Fix 2: Form Persistence
-- Verifies session storage is cleaned when starting new organization setup
-- Tests that new org setup doesn't remember previous form data
-- Confirms onboarding flow progresses correctly
+- Verifies onboarding state persistence behaves correctly
+- Confirms onboarding flow progresses correctly (6-digit code auth)
 
 ### ✅ Fix 3: QR Dashboard Safety
 - Verifies QR code URL slugs are immutable (read-only)
@@ -154,11 +153,13 @@ npm run test:e2e:production:verify:headed
 
 **Solution**: Check test logs for the exact orgSlug and qrLabel being used, then verify in production database.
 
-### Email Verification Code Not Returned
+### 6-digit code Tokens Are Not Accessible (Expected)
 
-**Cause**: Production mode may not return verification codes for security.
+**Cause**: 6-digit code authentication tokens are handled by NextAuth and are not exposed for security.
 
-**Solution**: Tests will skip steps requiring verification codes. This is expected behavior in production.
+**Solution**:
+- Production tests should **not** depend on reading 6-digit code tokens.
+- Use **headed mode** for manual login (session reuse), or use secret-gated QA helpers where applicable.
 
 ## Best Practices
 

@@ -119,10 +119,14 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="text-6xl mb-4">✅</div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Registration submitted!</h1>
-            <p className="text-gray-600 mb-6">Thank you. You may close this page.</p>
-            <a href="/" className="inline-block bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors font-semibold">
-              Return Home
-            </a>
+            <p className="text-gray-600 mb-6">Thank you for registering. You may close this page.</p>
+            <button
+              onClick={() => window.close()}
+              className="inline-block bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition-colors font-semibold"
+              data-testid="btn-close-registration"
+            >
+              Close Page
+            </button>
           </div>
         </div>
       </div>
