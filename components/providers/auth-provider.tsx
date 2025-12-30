@@ -69,6 +69,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refresh();
   }, [refresh]);
 
+  // Automatic session refresh every 5 minutes to prevent timeout
+  useEffect(() => {
+    // Only refresh if authenticated
+    if (state.status !== 'authenticated') return;
+
+    const intervalId = setInterval(() => {
+      refresh();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(intervalId);
+  }, [state.status, refresh]);
+
   // Send verification code
   const sendCode = useCallback(async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
