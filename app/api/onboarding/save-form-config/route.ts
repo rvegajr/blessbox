@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FormConfigService } from '@/lib/services/FormConfigService';
+import { MembershipService } from '@/lib/services/MembershipService';
+import { getServerSession } from '@/lib/auth-helper';
 
 const formConfigService = new FormConfigService();
+const membershipService = new MembershipService();
 
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication
+    const session = await getServerSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { organizationId, formFields, language = 'en', name = 'Registration Form' } = body;
 
@@ -21,6 +30,12 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Form fields must be an array' },
         { status: 400 }
       );
+    }
+
+    // Require membership for organization
+    const isMember = await membershipService.isMember(session.user.id, organizationId);
+    if (!isMember) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     // Check if form config already exists for this organization

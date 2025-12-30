@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession } from '@/lib/hooks/useAuth';
 import SquarePaymentForm from '@/components/payment/SquarePaymentForm';
 import { validateEmail } from '@/lib/services/CheckoutValidationService';
 
@@ -15,7 +15,7 @@ interface SquareConfig {
 function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user } = useSession();
   const [status, setStatus] = useState<string>('');
   const [squareConfig, setSquareConfig] = useState<SquareConfig | null>(null);
   const [email, setEmail] = useState('');
@@ -24,7 +24,7 @@ function CheckoutContent() {
 
   // Initialize email from session or URL params
   useEffect(() => {
-    if (session?.user?.email) {
+    if (user?.email) {
       setEmail(session.user.email);
     } else {
       const urlEmail = params.get('email');
@@ -32,7 +32,7 @@ function CheckoutContent() {
         setEmail(urlEmail);
       }
     }
-  }, [session, params]);
+  }, [user, params]);
   const plan = (['free', 'standard', 'enterprise'] as const).includes(rawPlan as any)
     ? (rawPlan as 'free' | 'standard' | 'enterprise')
     : 'standard';
@@ -201,7 +201,7 @@ function CheckoutContent() {
                 emailError ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="your@email.com"
-              disabled={!!session?.user?.email}
+              disabled={!!user?.email}
               aria-describedby={emailError ? "email-error" : undefined}
               aria-label="Email address"
             />
@@ -210,7 +210,7 @@ function CheckoutContent() {
                 {emailError}
               </p>
             )}
-            {session?.user?.email && (
+            {user?.email && (
               <p className="mt-2 text-sm text-green-600">✓ Using your authenticated email</p>
             )}
           </div>

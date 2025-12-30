@@ -1,5 +1,6 @@
 import { getDbClient, ensureSubscriptionSchema, nowIso } from './db';
 import type { Session } from 'next-auth';
+import { normalizeEmail } from '@/lib/utils/normalize-email';
 
 export type PlanType = 'free' | 'standard' | 'enterprise';
 export type BillingCycle = 'monthly' | 'yearly';
@@ -17,11 +18,13 @@ export const planRegistrationLimits: Record<PlanType, number> = {
 };
 
 export async function getOrganizationByEmail(email: string): Promise<{ id: string; contact_email: string } | null> {
+  const e = normalizeEmail(email);
+  if (!e) return null;
   const db = getDbClient();
   const result = await db.execute({
     // Multi-org per email: return most recently created org for legacy callers.
     sql: 'SELECT id, contact_email FROM organizations WHERE contact_email = ? ORDER BY created_at DESC LIMIT 1',
-    args: [email],
+    args: [e],
   });
   if (result.rows.length > 0) {
     return result.rows[0] as { id: string; contact_email: string };
@@ -80,13 +83,14 @@ export async function resolveOrganizationForSession(session: Session): Promise<{
 }
 
 export async function getOrCreateOrganizationForEmail(email: string): Promise<{ id: string; contact_email: string } | null> {
-  if (!email) return null;
+  const e = normalizeEmail(email);
+  if (!e) return null;
   const client = getDbClient();
   await ensureSubscriptionSchema();
 
   const existing = await client.execute({
     sql: `SELECT id, contact_email FROM organizations WHERE contact_email = ? ORDER BY created_at DESC LIMIT 1`,
-    args: [email],
+    args: [e],
   });
   if ((existing.rows as any[]).length > 0) {
     const row: any = existing.rows[0];
@@ -97,9 +101,9 @@ export async function getOrCreateOrganizationForEmail(email: string): Promise<{ 
   const id = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)) as string;
   await client.execute({
     sql: `INSERT INTO organizations (id, name, contact_email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`,
-    args: [id, email.split('@')[0], email, nowIso(), nowIso()],
+    args: [id, e.split('@')[0], e, nowIso(), nowIso()],
   });
-  return { id, contact_email: email };
+  return { id, contact_email: e };
 }
 
 export async function getActiveSubscription(organizationId: string): Promise<any | null> {

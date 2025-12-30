@@ -38,10 +38,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Forbidden',
-          debug: { hasSecret: !!secret, hasProvided: !!provided, matches: !!secret && !!provided && provided === secret },
+          error: 'Not found',
         },
-        { status: 403 }
+        { status: 404 }
       );
     }
   }

@@ -16,7 +16,52 @@ import { test, expect } from '@playwright/test';
  */
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
+const TEST_ENV = process.env.TEST_ENV || 'local';
+const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
 const ALLOW_KNOWN_FAILURES = process.env.KNOWN_BUGS === '1';
+
+const PROD_TEST_LOGIN_SECRET = process.env.PROD_TEST_LOGIN_SECRET || '';
+const HAS_PROD_LOGIN = !!PROD_TEST_LOGIN_SECRET;
+
+async function setTestAuthCookies(page: any, cookies: Array<{ name: string; value: string }>) {
+  const url = BASE_URL.startsWith('http') ? BASE_URL : `http://${BASE_URL}`;
+  await page.context().addCookies(
+    cookies.map((c) => ({
+      name: c.name,
+      value: c.value,
+      url,
+    }))
+  );
+}
+
+async function loginAsUser(page: any, email: string, opts?: { organizationId?: string; admin?: boolean }) {
+  if (IS_PRODUCTION) {
+    if (!HAS_PROD_LOGIN) {
+      console.log('   ⚠️  PROD_TEST_LOGIN_SECRET not set - skipping authentication');
+      return;
+    }
+    const resp = await page.request.post(`${BASE_URL}/api/test/login`, {
+      headers: { 'x-qa-login-token': PROD_TEST_LOGIN_SECRET },
+      data: { email, organizationId: opts?.organizationId, admin: !!opts?.admin, expiresIn: 3600 },
+    });
+    if (!resp.ok()) {
+      throw new Error(`Login failed: ${resp.status()}`);
+    }
+    const body = await resp.json();
+    if (!body.success) {
+      throw new Error(`Login failed: ${body.error || 'Unknown error'}`);
+    }
+    return body;
+  }
+
+  // Local/dev: cookie-based bypass
+  await setTestAuthCookies(page, [
+    { name: 'bb_test_auth', value: '1' },
+    { name: 'bb_test_email', value: email },
+    ...(opts?.organizationId ? [{ name: 'bb_test_org_id', value: opts.organizationId }] : []),
+    ...(opts?.admin ? [{ name: 'bb_test_admin', value: '1' }] : []),
+  ]);
+}
 
 async function takeDebugArtifacts(page: any, name: string) {
   try {
@@ -78,7 +123,24 @@ test.describe('User-reported regressions (repro)', () => {
     const orgName = `BackNav Org ${Date.now()}`;
     const email = `backnav-${Date.now()}@example.com`;
 
+    // Authenticate first (required for onboarding pages)
+    try {
+      await loginAsUser(page, email);
+    } catch (error) {
+      if (IS_PRODUCTION && !HAS_PROD_LOGIN) {
+        console.log('   ⚠️  Skipping test - PROD_TEST_LOGIN_SECRET not set');
+        test.skip();
+        return;
+      }
+    }
+
     await page.goto(`${BASE_URL}/onboarding/organization-setup`, { waitUntil: 'networkidle' });
+
+    // If redirected to login, authenticate and retry
+    if (page.url().includes('/login')) {
+      await loginAsUser(page, email);
+      await page.goto(`${BASE_URL}/onboarding/organization-setup`, { waitUntil: 'networkidle' });
+    }
 
     const nameInput = page.locator('input#name');
     const emailInput = page.locator('input#contactEmail');

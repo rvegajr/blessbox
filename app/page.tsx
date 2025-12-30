@@ -6,8 +6,6 @@ import { useState, useEffect } from 'react';
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
-  const [domain, setDomain] = useState('');
-  const [domainStatus, setDomainStatus] = useState<'available' | 'taken' | null>(null);
 
   useEffect(() => {
     // Initialize AOS
@@ -22,15 +20,7 @@ export default function HomePage() {
     }
   }, []);
 
-  const handleDomainChange = (value: string) => {
-    setDomain(value);
-    if (value.length > 0) {
-      // Always show as available for demo purposes
-      setDomainStatus('available');
-    } else {
-      setDomainStatus(null);
-    }
-  };
+  // Landing page is informational; real org setup starts in onboarding.
 
   return (
     <div className="min-h-screen bg-white">
@@ -75,64 +65,22 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Register Your Organization</h3>
-                  <p className="text-gray-600 mb-6">Create an account for your organization to manage registrations</p>
+                  <p className="text-gray-600 mb-6">Get started with email-only sign-in, then set up your organization.</p>
                   
                   <div className="space-y-4">
-                    {/* Organization Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Organization Name</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g., Food Bank Central" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
-                      />
-                    </div>
-
-                    {/* Event Name */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g., Weekly Food Distribution" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
-                      />
-                    </div>
-
-                    {/* Custom Domain Field */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Custom Domain</label>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-gray-500">{domain.length}/255</span>
-                        {domainStatus && (
-                          <div className="flex items-center">
-                            <svg className="w-4 h-4 text-green-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span className="text-sm font-medium text-green-600">Domain available!</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex">
-                        <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">blessbox.org/</span>
-                        <input 
-                          type="text" 
-                          placeholder="yourname" 
-                          value={domain}
-                          onChange={(e) => handleDomainChange(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm focus:shadow-md"
-                          maxLength={255}
-                        />
-                      </div>
-                    </div>
-                    
-                    <button id="create-org-btn" className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm hover:shadow-md transition-all duration-200" disabled>
-                      Sign Up
-                    </button>
+                    <a
+                      href="/onboarding/organization-setup"
+                      data-testid="link-home-get-started"
+                      className="block text-center w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow-md transition-all duration-200"
+                      aria-label="Get started with organization setup"
+                    >
+                      Get Started
+                    </a>
                     
                     <div className="text-center">
                       <p className="text-sm text-gray-600">
                         Already have an account?
-                        <a href="/dashboard" id="dashboard-link" className="text-blue-600 hover:text-blue-500 font-medium ml-1">Login</a>
+                        <a href="/login" data-testid="link-login" className="text-blue-600 hover:text-blue-500 font-medium ml-1">Sign in</a>
                       </p>
                     </div>
                   </div>
@@ -216,9 +164,14 @@ export default function HomePage() {
                         </div>
                       </div>
                       
-                      <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow-md transition-all duration-200">
-                        Generate QR Code(s)
-                      </button>
+                      <a
+                        href="/login?next=/dashboard/qr-codes"
+                        data-testid="link-home-manage-qr-codes"
+                        className="block text-center w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm hover:shadow-md transition-all duration-200"
+                        aria-label="Manage QR codes"
+                      >
+                        Manage QR Codes
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -318,7 +271,9 @@ export default function HomePage() {
                           <span className="text-gray-900">(555) 123-4567</span>
                         </div>
                       </div>
-                      <button className="w-full bg-green-600 text-white py-1 text-xs rounded mt-2 hover:bg-green-700">🎉 Submit Registration</button>
+                      <span className="block w-full bg-green-600 text-white py-1 text-xs rounded mt-2 text-center">
+                        Submit Registration
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -434,9 +389,14 @@ export default function HomePage() {
                   </div>
 
                   <div className="mt-4">
-                    <button className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
-                      🚀 Try the Demo Flow
-                    </button>
+                    <a
+                      href="/onboarding/organization-setup"
+                      data-testid="link-home-try-flow"
+                      className="block text-center w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                      aria-label="Start the onboarding flow"
+                    >
+                      Start Setup
+                    </a>
                   </div>
                 </div>
                 

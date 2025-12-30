@@ -184,8 +184,8 @@ components/
 
 **User Flow**:
 ```
-1. Sign up → Send email verification
-2. Enter 6-digit code → Mark verified
+1. Sign in → Request 6-digit code (email-only)
+2. Click 6-digit code → Return to onboarding
 3. Build form → Drag & drop fields, live preview
 4. Generate QR codes → Multiple entry points, download PDFs
 5. Dashboard → View registrations

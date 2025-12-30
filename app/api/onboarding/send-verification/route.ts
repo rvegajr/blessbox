@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VerificationService } from '@/lib/services/VerificationService';
+import { normalizeEmail } from '@/lib/utils/normalize-email';
 
 const verificationService = new VerificationService();
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use VerificationService to send code
-    const result = await verificationService.sendVerificationCode(email);
+    const result = await verificationService.sendVerificationCode(normalizeEmail(email));
 
     if (!result.success) {
       // Check if it's a rate limit error

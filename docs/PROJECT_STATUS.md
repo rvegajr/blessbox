@@ -29,7 +29,7 @@ BlessBox is a fully functional, production-ready QR-based registration and verif
 - **Methodology:** TDD (Test-Driven Development)
 - **Database:** Real database integration (no mocks)
 - **Security:** Input validation, SQL injection prevention, XSS protection
-- **Authentication:** JWT-based with email verification
+- **Authentication:** NextAuth v5 6-digit code (email-only), case-insensitive email identity
 
 ## Feature Status
 
@@ -48,9 +48,8 @@ BlessBox is a fully functional, production-ready QR-based registration and verif
    - Data export (PDF/CSV)
 
 3. **Authentication & Authorization**
-   - Email verification with codes
-   - JWT-based authentication
-   - Passwordless login option
+   - 6-digit code (email-only) sign-in
+   - JWT session strategy
    - Admin role management
 
 4. **Payment & Subscriptions**
@@ -74,7 +73,7 @@ BlessBox is a fully functional, production-ready QR-based registration and verif
 7. **Email System**
    - SendGrid integration
    - SMTP fallback support
-   - Verification codes
+   - 6-digit code emails (login)
    - Registration confirmations
 
 ## Test Coverage

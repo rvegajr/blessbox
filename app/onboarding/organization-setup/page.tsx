@@ -1,9 +1,16 @@
+/**
+ * Organization Setup Page
+ * 
+ * First step of onboarding. Users can fill out organization details
+ * WITHOUT being authenticated. Email verification happens in the next step.
+ */
+
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
-import { clearOnboardingSession } from '@/lib/services/OnboardingSessionService';
+import { onboardingSession } from '@/lib/services/OnboardingSessionService';
 
 interface OrganizationFormData {
   name: string;
@@ -18,6 +25,8 @@ interface OrganizationFormData {
 
 export default function OrganizationSetupPage() {
   const router = useRouter();
+  
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [formData, setFormData] = useState<OrganizationFormData>({
     name: '',
     eventName: '',
@@ -28,14 +37,30 @@ export default function OrganizationSetupPage() {
     contactState: '',
     contactZip: '',
   });
-
-  // Clear previous onboarding session when starting fresh
-  useEffect(() => {
-    clearOnboardingSession();
-  }, []);
   const [errors, setErrors] = useState<Partial<Record<keyof OrganizationFormData, string>>>({});
   const [loading, setLoading] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+
+  // Load any saved form data from localStorage (resume support)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const savedName = window.localStorage.getItem('onboarding_orgName');
+    const savedEmail = window.localStorage.getItem('onboarding_contactEmail');
+    const savedOrgId = window.localStorage.getItem('onboarding_organizationId');
+    
+    if (savedOrgId) {
+      setOrganizationId(savedOrgId);
+    }
+    
+    if (savedName || savedEmail) {
+      setFormData(prev => ({
+        ...prev,
+        name: savedName || prev.name,
+        contactEmail: savedEmail || prev.contactEmail,
+      }));
+    }
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof OrganizationFormData, string>> = {};
@@ -63,24 +88,18 @@ export default function OrganizationSetupPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/onboarding/save-organization', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to save organization');
+      // Save form data to localStorage for email verification step
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('onboarding_orgName', formData.name);
+        window.localStorage.setItem('onboarding_contactEmail', formData.contactEmail);
+        window.localStorage.setItem('onboarding_eventName', formData.eventName || '');
+        window.localStorage.setItem('onboarding_contactPhone', formData.contactPhone || '');
+        window.localStorage.setItem('onboarding_contactAddress', formData.contactAddress || '');
+        window.localStorage.setItem('onboarding_contactCity', formData.contactCity || '');
+        window.localStorage.setItem('onboarding_contactState', formData.contactState || '');
+        window.localStorage.setItem('onboarding_contactZip', formData.contactZip || '');
+        onboardingSession.setCurrentStep(2); // Move to email verification
       }
-
-      setOrganizationId(data.organization.id);
-      
-      // Store organization ID in sessionStorage for next steps
-      if (typeof window !== "undefined") sessionStorage.setItem('onboarding_organizationId', data.organization.id);
-      if (typeof window !== "undefined") sessionStorage.setItem('onboarding_contactEmail', formData.contactEmail);
-      if (typeof window !== "undefined") sessionStorage.setItem('onboarding_step', '2'); // Move to step 2
 
       // Navigate to email verification
       router.push('/onboarding/email-verification');
@@ -165,7 +184,7 @@ export default function OrganizationSetupPage() {
             {errors.contactEmail}
           </p>
         )}
-        <p className="mt-1 text-xs text-gray-500">We'll send a verification code to this email</p>
+        <p className="mt-1 text-xs text-gray-500">We'll send a verification code to this email.</p>
       </div>
 
       <div>
@@ -260,7 +279,7 @@ export default function OrganizationSetupPage() {
         disabled={loading}
         data-loading={loading}
         className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        aria-label="Submit organization setup"
+        aria-label="Continue to email verification"
       >
         {loading ? 'Saving...' : 'Continue'}
       </button>
@@ -309,7 +328,7 @@ export default function OrganizationSetupPage() {
           steps={steps}
           currentStep={0}
           onStepChange={(step) => {
-            if (step === 0) return; // Can't go to other steps from here yet
+            if (step === 0) return;
             router.push(['/onboarding/organization-setup', '/onboarding/email-verification', '/onboarding/form-builder', '/onboarding/qr-configuration'][step]);
           }}
           onComplete={() => handleSubmit({} as any)}

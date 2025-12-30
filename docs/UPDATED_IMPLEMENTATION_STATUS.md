@@ -4,6 +4,8 @@
 
 ---
 
+> **Dec 2025 Status Update (Current Spec):** Authentication is now **NextAuth v5 6-digit code (email-only)** via `/login`. Any references below to “verification codes” are legacy/back-compat (kept for some tests), not the canonical production sign-in flow.
+
 ## 📊 **OVERALL COMPLETION STATUS**
 
 **Updated Completion**: ~80% Complete (up from 70%)

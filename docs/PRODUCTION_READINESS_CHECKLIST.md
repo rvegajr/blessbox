@@ -1,8 +1,15 @@
 # BlessBox Production Readiness Checklist
 *Software Architecture Analysis - January 2025*
 
+> **Dec 2025 Status Update (Current Spec):** BlessBox now uses **6-digit code (email-only) authentication** via NextAuth and persists core data in the database. Parts of this document are historical and may describe pre-auth/pre-db states.
+
 ## Executive Summary
 Based on current implementation analysis, BlessBox has achieved significant progress with **real email verification** and **real QR code generation**. This document outlines the remaining features needed for production deployment.
+
+### Current Authentication (6-digit code)
+- **Login**: `/login` (6-digit code)
+- **Protected routes** redirect to `/login?next=...`
+- **Legacy 6-digit verification codes** may still exist for backwards compatibility, but are not the canonical production auth flow.
 
 ## ✅ **COMPLETED FEATURES**
 

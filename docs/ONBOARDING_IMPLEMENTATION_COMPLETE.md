@@ -5,6 +5,22 @@
 
 ---
 
+## 🔐 Dec 2025 Update: 6-digit code Authentication (Current Spec)
+
+BlessBox onboarding now uses **6-digit code (email-only) authentication** via **NextAuth Email Provider**.
+
+- **Sign-in page**: `/login`
+- **Protected onboarding entry**: `/onboarding/organization-setup` redirects to `/login?next=/onboarding/organization-setup` when signed out
+- **Email verification step**: `/onboarding/email-verification` is **deprecated** and should redirect to `/onboarding/form-builder` when signed in (or back to login when signed out)
+
+### Legacy endpoints (kept for backwards compatibility / QA)
+
+These endpoints may still exist for legacy flows and certain automated tests, but **6-digit code is the canonical production authentication**:
+- `POST /api/onboarding/send-verification` (legacy 6‑digit codes)
+- `POST /api/onboarding/verify-code` (legacy 6‑digit codes)
+
+---
+
 ## ✅ **COMPLETED COMPONENTS**
 
 ### 1. **API Endpoints** (100% Complete)

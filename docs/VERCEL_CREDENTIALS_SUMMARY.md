@@ -12,8 +12,8 @@
 **Status:** ✅ Configured
 
 **Credentials:**
-- **API Key:** `SG.bfOft2bRRRK92R_tSAqmQg.6LHtbuAkiRAWHmQLlfL0Dg27L6U_pP3JRWBJfk_re7I`
-- **From Email:** `contact@yolovibecodebootcamp.com`
+- **API Key:** `<REDACTED>` (stored in Vercel env as `SENDGRID_API_KEY`)
+- **From Email:** `<REDACTED>` (stored in Vercel env as `SENDGRID_FROM_EMAIL`)
 - **From Name:** `BlessBox Support`
 - **Email Provider:** `sendgrid`
 
@@ -86,8 +86,8 @@ The FROM email `contact@yolovibecodebootcamp.com` **must be verified** in SendGr
 
 2. **Check Vercel Logs:**
    - Vercel Dashboard → Project → Logs
-   - Look for email-related messages when requesting verification code
-   - Should see: `✅ Verification email sent successfully` or error messages
+   - Look for email-related messages when requesting a 6-digit code or sending notifications
+   - Should see success or error messages indicating SendGrid/SMTP results
 
 3. **Check SendGrid Activity:**
    - SendGrid Dashboard → Activity → Email Activity
@@ -95,7 +95,7 @@ The FROM email `contact@yolovibecodebootcamp.com` **must be verified** in SendGr
    - Check for delivery status
 
 4. **Test Email Sending:**
-   - Request verification code from onboarding page
+   - Request a 6-digit code from `/login`
    - Immediately check:
      - Vercel logs
      - SendGrid activity dashboard
@@ -112,7 +112,7 @@ The FROM email `contact@yolovibecodebootcamp.com` **must be verified** in SendGr
 3. Click **"Verify a Single Sender"** or **"Authenticate Your Domain"**
 4. Verify: `contact@yolovibecodebootcamp.com`
 5. Wait for verification (may take a few minutes)
-6. Test sending verification email again
+6. Test sending 6-digit code email again
 
 ### Fix 2: Check API Key Permissions
 

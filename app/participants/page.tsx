@@ -1,8 +1,11 @@
 'use client';
 
+// Force dynamic rendering - this page requires authentication
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useSession } from '@/lib/hooks/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
@@ -17,8 +20,9 @@ interface Participant {
 }
 
 export default function ParticipantsPage() {
-  const { data: session, status } = useSession();
+  const { user, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const { ready } = useRequireActiveOrganization();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,14 +30,14 @@ export default function ParticipantsPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session) {
-      router.push('/');
+    if (status === 'unauthenticated' || !user) {
+      router.replace(`/login?next=${encodeURIComponent(pathname || '/participants')}`);
       return;
     }
     if (!ready) return;
     fetchParticipants();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, session, status]);
+  }, [ready, user, status, router, pathname]);
 
   const fetchParticipants = async () => {
     setLoading(true);
@@ -58,7 +62,7 @@ export default function ParticipantsPage() {
     );
   }
 
-  if (!session) return null;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">

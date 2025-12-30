@@ -17,8 +17,8 @@
    - Requires `PROD_TEST_SEED_SECRET` header in production
    - Idempotent (safe to run multiple times)
 
-3. **`/api/test/verification-code`** - Fetch latest onboarding verification code
-   - Secret-gated helper for QA automation (no inbox access needed)
+3. **`/api/test/verification-code`** - Fetch latest onboarding verification code (legacy/back-compat)
+   - Secret-gated helper for QA automation of legacy verification-code flows (no inbox access needed)
    - Requires `PROD_TEST_SEED_SECRET` header in production
 
 ### Environment Variables Added
@@ -71,7 +71,7 @@ curl -X POST https://www.blessbox.org/api/test/seed-prod \
   }'
 ```
 
-### Fetch Latest Verification Code (Production)
+### Fetch Latest Verification Code (Production, legacy/back-compat)
 
 ```bash
 curl -X POST https://www.blessbox.org/api/test/verification-code \

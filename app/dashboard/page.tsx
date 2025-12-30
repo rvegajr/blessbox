@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed';
 import { AnalyticsChart } from '@/components/dashboard/AnalyticsChart';
@@ -15,7 +15,7 @@ import type { UsageDisplayData } from '@/lib/interfaces/IUsageDisplay';
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
-  const { status } = useSession();
+  const { status } = useAuth();
   const { ready } = useRequireActiveOrganization();
   const [subscription, setSubscription] = useState<any | null>(null);
   const [usage, setUsage] = useState<UsageDisplayData | null>(null);

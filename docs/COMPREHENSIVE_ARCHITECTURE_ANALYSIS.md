@@ -505,6 +505,8 @@ This document provides a complete architectural analysis of the BlessBox applica
 - View registrations
 - Process payments with coupons
 
+> **Dec 2025 Status Update (Current Spec):** “Sign up” is now **6-digit code sign-in** (`/login`). Any references elsewhere in this doc to “verification codes” are legacy/back-compat and not the canonical production authentication path.
+
 ---
 
 ### Phase 2: Enhanced Features (2 weeks) 🟡

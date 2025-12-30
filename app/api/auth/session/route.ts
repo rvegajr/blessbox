@@ -1,71 +1,54 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-
 /**
- * Explicit session endpoint to make local test-auth deterministic.
- *
- * NextAuth's catch-all route also supports /api/auth/session, but having this explicit
- * route lets us:
- * - Return a stable test session when `bb_test_auth=1` (local/dev only)
- * - Fall back to JWT decoding for real NextAuth sessions
+ * GET /api/auth/session
+ * 
+ * Get the current user session and their organizations.
+ * Returns null if not authenticated.
  */
-export async function GET() {
-  const cookieStore = await cookies();
 
-  // Local/dev auth bypass for tests
-  if (process.env.NODE_ENV !== 'production') {
-    const testAuth = cookieStore.get('bb_test_auth')?.value;
-    if (testAuth === '1') {
-      const email = cookieStore.get('bb_test_email')?.value || 'seed-local@example.com';
-      const orgId = cookieStore.get('bb_test_org_id')?.value;
-      const isAdmin = cookieStore.get('bb_test_admin')?.value === '1';
-      return NextResponse.json({
-        user: {
-          email,
-          name: isAdmin ? 'Test Admin' : 'Test User',
-          id: 'test-user',
-          ...(orgId ? { organizationId: orgId } : {}),
-          ...(isAdmin ? { role: 'super_admin' } : {}),
-        },
-        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      });
-    }
-  }
+import { NextRequest, NextResponse } from 'next/server';
+import { AuthService } from '@/lib/services/AuthService';
+import { getDbClient } from '@/lib/db';
 
-  // Fallback: decode NextAuth JWT from cookie
-  const sessionToken =
-    cookieStore.get('authjs.session-token')?.value ||
-    cookieStore.get('__Secure-authjs.session-token')?.value ||
-    cookieStore.get('next-auth.session-token')?.value ||
-    cookieStore.get('__Secure-next-auth.session-token')?.value;
+export const runtime = 'nodejs';
 
-  if (!sessionToken || !process.env.NEXTAUTH_SECRET) {
-    return NextResponse.json(null);
-  }
+const authService = new AuthService();
 
+export async function GET(_request: NextRequest) {
   try {
-    const decoded = jwt.verify(sessionToken, process.env.NEXTAUTH_SECRET) as any;
-    if (decoded?.email) {
-      return NextResponse.json({
-        user: {
-          email: decoded.email,
-          name: decoded.name || 'User',
-          id: decoded.id || decoded.sub || '1',
-          image: decoded.image || null,
-          // non-standard extra fields used by client pages
-          ...(decoded.organizationId ? { organizationId: decoded.organizationId } : {}),
-          ...(decoded.role ? { role: decoded.role } : {}),
-        },
-        expires: decoded.exp
-          ? new Date(decoded.exp * 1000).toISOString()
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      });
+    const session = await authService.getSession();
+
+    if (!session) {
+      return NextResponse.json({ user: null, organizations: [] });
     }
-  } catch {
-    // Invalid/expired token -> no session
+
+    // Fetch user's organizations
+    const db = getDbClient();
+    const orgsResult = await db.execute({
+      sql: `
+        SELECT o.id, o.name, o.contact_email, m.role
+        FROM memberships m
+        JOIN organizations o ON o.id = m.organization_id
+        WHERE m.user_id = ?
+        ORDER BY o.created_at DESC
+      `,
+      args: [session.user.id],
+    });
+
+    const organizations = (orgsResult.rows || []).map((r: any) => ({
+      id: String(r.id),
+      name: String(r.name ?? ''),
+      contactEmail: String(r.contact_email ?? ''),
+      role: String(r.role ?? 'member'),
+    }));
+
+    return NextResponse.json({
+      user: session.user,
+      expires: session.expires,
+      organizations,
+      activeOrganizationId: session.user.organizationId || null,
+    });
+  } catch (error) {
+    console.error('Get session error:', error);
+    return NextResponse.json({ user: null, organizations: [] });
   }
-
-  return NextResponse.json(null);
 }
-

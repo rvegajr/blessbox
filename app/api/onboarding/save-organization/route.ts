@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { OrganizationService } from '@/lib/services/OrganizationService';
+import { MembershipService } from '@/lib/services/MembershipService';
 import { ensureDbReady } from '@/lib/db-ready';
+import { getServerSession } from '@/lib/auth-helper';
+import { normalizeEmail } from '@/lib/utils/normalize-email';
 
 const organizationService = new OrganizationService();
+const membershipService = new MembershipService();
 
 export async function POST(request: NextRequest) {
   try {
     await ensureDbReady();
+    const session = await getServerSession();
+    const sessionEmail = normalizeEmail(session?.user?.email);
+    if (!sessionEmail) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { 
       name, 
       eventName, 
-      contactEmail, 
       contactPhone, 
       contactAddress, 
       contactCity, 
@@ -28,18 +38,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!contactEmail || typeof contactEmail !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'Contact email is required' },
-        { status: 400 }
-      );
-    }
-
     // Use OrganizationService to create organization
     const organization = await organizationService.createOrganization({
       name: name.trim(),
       eventName: eventName?.trim(),
-      contactEmail: contactEmail.trim(),
+      contactEmail: sessionEmail,
       contactPhone: contactPhone?.trim(),
       contactAddress: contactAddress?.trim(),
       contactCity: contactCity?.trim(),
@@ -48,7 +51,20 @@ export async function POST(request: NextRequest) {
       customDomain: customDomain?.trim(),
     });
 
-    return NextResponse.json(
+    // Create membership for signed-in user
+    const userId = session.user.id;
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User ID not found in session' },
+        { status: 401 }
+      );
+    }
+
+    await membershipService.ensureMembership(userId, organization.id, 'admin');
+
+    // Set active org context via cookie
+    const cookieStore = await cookies();
+    const response = NextResponse.json(
       {
         success: true,
         organization: {
@@ -68,6 +84,18 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
+
+    // Set active org cookie
+    const isProd = process.env.NODE_ENV === 'production';
+    response.cookies.set('bb_active_org_id', organization.id, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: isProd,
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+
+    return response;
   } catch (error) {
     console.error('Save organization error:', error);
     

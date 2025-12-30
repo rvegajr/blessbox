@@ -173,7 +173,7 @@
 ### ✅ Complete Application Flow Works
 The E2E tests successfully verify:
 
-1. **Email Verification Flow**
+1. **6-digit code Sign‑In (replaces verification-code flow)**
    - Codes generated and sent
    - Codes verified successfully
    - Rate limiting functional
@@ -204,8 +204,8 @@ The E2E tests successfully verify:
 ```
 ✅ Complete Application Flow Test:
    📧 Step 1: Email Verification
-      ✅ Verification code sent
-      ✅ Verification code received: 983531
+      ✅ 6-digit code email sent
+      ✅ User clicks 6-digit code and is signed in
 
    🔐 Step 2: Verify Email Code
       ✅ Email verified

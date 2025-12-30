@@ -1,11 +1,27 @@
+/**
+ * Email Verification Page
+ * 
+ * Second step of onboarding. Users verify their email with a 6-digit code.
+ * After verification:
+ * 1. Create organization (with data from localStorage)
+ * 2. Create user account
+ * 3. Create membership (user -> org)
+ * 4. Create session
+ * 5. Navigate to form builder
+ */
+
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { onboardingSession } from '@/lib/services/OnboardingSessionService';
 
 export default function EmailVerificationPage() {
   const router = useRouter();
+  const { sendCode, verifyCode, status } = useAuth();
+  
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,50 +30,68 @@ export default function EmailVerificationPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [codeSent, setCodeSent] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
+  // Load email from localStorage
   useEffect(() => {
-    // Get email from sessionStorage (only on client)
-    if (typeof window !== 'undefined') {
-      const storedEmail = sessionStorage.getItem('onboarding_contactEmail');
-      if (storedEmail) {
-        setEmail(storedEmail);
-        // Auto-send verification code (use storedEmail directly to avoid state timing issues)
-        void handleSendCode(storedEmail);
-      }
-    }
-  }, []);
-
-  const handleSendCode = async (emailOverride?: string) => {
-    const targetEmail = (emailOverride ?? email).trim();
-    if (!targetEmail) {
-      setError('Please enter your email address');
+    if (typeof window === 'undefined') return;
+    
+    const storedEmail = window.localStorage.getItem('onboarding_contactEmail');
+    if (!storedEmail) {
+      // No email saved - redirect back to org setup
+      router.replace('/onboarding/organization-setup');
       return;
     }
+    
+    setEmail(storedEmail);
+  }, [router]);
+
+  // Auto-send code when email is set
+  useEffect(() => {
+    if (email && !codeSent && !sending) {
+      handleSendCode();
+    }
+  }, [email]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  // If already authenticated, redirect to form builder
+  useEffect(() => {
+    if (status === 'authenticated') {
+      const orgId = typeof window !== 'undefined' 
+        ? window.localStorage.getItem('onboarding_organizationId') 
+        : null;
+      if (orgId) {
+        router.replace('/onboarding/form-builder');
+      }
+    }
+  }, [status, router]);
+
+  const handleSendCode = async () => {
+    if (!email || sending) return;
 
     setSending(true);
     setError(null);
     setSuccess(null);
 
-    try {
-      const response = await fetch('/api/onboarding/send-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: targetEmail }),
-      });
+    const result = await sendCode(email);
+    
+    setSending(false);
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to send verification code');
-      }
-
-      setCodeSent(true);
-      setSuccess('Verification code sent! Please check your email.');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to send code');
-    } finally {
-      setSending(false);
+    if (!result.success) {
+      setError(result.error || 'Failed to send verification code');
+      return;
     }
+
+    setCodeSent(true);
+    setCountdown(60);
+    setSuccess('Verification code sent! Check your email.');
   };
 
   const handleVerify = async (e: FormEvent) => {
@@ -72,35 +106,55 @@ export default function EmailVerificationPage() {
     setError(null);
 
     try {
-      const orgId =
-        typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_organizationId') : null;
+      // First, create the organization
+      const orgData = {
+        name: window.localStorage.getItem('onboarding_orgName') || '',
+        eventName: window.localStorage.getItem('onboarding_eventName') || '',
+        contactEmail: email,
+        contactPhone: window.localStorage.getItem('onboarding_contactPhone') || '',
+        contactAddress: window.localStorage.getItem('onboarding_contactAddress') || '',
+        contactCity: window.localStorage.getItem('onboarding_contactCity') || '',
+        contactState: window.localStorage.getItem('onboarding_contactState') || '',
+        contactZip: window.localStorage.getItem('onboarding_contactZip') || '',
+      };
 
-      const response = await fetch('/api/onboarding/verify-code', {
+      const orgResponse = await fetch('/api/onboarding/create-organization', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code, organizationId: orgId }),
+        body: JSON.stringify(orgData),
       });
 
-      const data = await response.json();
+      const orgResult = await orgResponse.json();
 
-      if (!response.ok || !data.verified) {
-        throw new Error(data.error || 'Invalid verification code');
+      if (!orgResponse.ok || !orgResult.success) {
+        throw new Error(orgResult.error || 'Failed to create organization');
+      }
+
+      const organizationId = orgResult.organization.id;
+
+      // Now verify the code and create session with organization context
+      const verifyResult = await verifyCode(email, code, organizationId);
+
+      if (!verifyResult.success) {
+        // If verification fails, we should clean up the org (or let it be orphaned for retry)
+        throw new Error(verifyResult.error || 'Invalid verification code');
       }
 
       setVerified(true);
       setSuccess('Email verified successfully!');
-      
-      // Mark email verification as complete
+
+      // Store organization ID for subsequent steps
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('onboarding_emailVerified', 'true');
-        if (data.userId) sessionStorage.setItem('onboarding_userId', String(data.userId));
-        sessionStorage.setItem('onboarding_step', '3'); // Move to step 3
+        window.localStorage.setItem('onboarding_organizationId', organizationId);
+        onboardingSession.setOrganizationId(organizationId);
+        onboardingSession.setEmailVerified(true);
+        onboardingSession.setCurrentStep(3);
       }
-      
-      // Navigate to form builder after a short delay
+
+      // Navigate to form builder
       setTimeout(() => {
         router.push('/onboarding/form-builder');
-      }, 1000);
+      }, 500);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Verification failed');
     } finally {
@@ -108,39 +162,31 @@ export default function EmailVerificationPage() {
     }
   };
 
+  const handleBackToOrgSetup = () => {
+    router.push('/onboarding/organization-setup');
+  };
+
   const verificationForm = (
     <div className="space-y-6" data-testid="form-email-verification" data-loading={loading || sending}>
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-          Email Address
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="email"
-            type="email"
-            data-testid="input-email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="your@email.com"
-            disabled={codeSent}
-            aria-label="Email address"
-          />
-          {!codeSent && (
-            <button
-              type="button"
-              data-testid="btn-send-code"
-              onClick={handleSendCode}
-              disabled={sending}
-              data-loading={sending}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              aria-label="Send verification code"
-            >
-              {sending ? 'Sending...' : 'Send Code'}
-            </button>
-          )}
-        </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p className="text-sm text-blue-800">
+          We're sending a 6-digit verification code to: <strong>{email}</strong>
+        </p>
+        <button
+          type="button"
+          onClick={handleBackToOrgSetup}
+          className="text-sm text-blue-600 hover:text-blue-800 mt-1"
+        >
+          Change email
+        </button>
       </div>
+
+      {!codeSent && sending && (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">Sending verification code...</span>
+        </div>
+      )}
 
       {codeSent && (
         <div>
@@ -151,6 +197,8 @@ export default function EmailVerificationPage() {
             <input
               id="code"
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               data-testid="input-verification-code"
               value={code}
               onChange={(e) => {
@@ -169,11 +217,11 @@ export default function EmailVerificationPage() {
                 type="button"
                 data-testid="btn-resend-code"
                 onClick={handleSendCode}
-                disabled={sending}
-                className="text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                disabled={countdown > 0 || sending}
+                className="text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed"
                 aria-label="Resend verification code"
               >
-                Resend Code
+                {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
               </button>
               <span className="text-gray-500">Code expires in 15 minutes</span>
             </div>
@@ -187,7 +235,7 @@ export default function EmailVerificationPage() {
         </div>
       )}
 
-      {success && (
+      {success && !verified && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4" data-testid="success-email-verification" role="status">
           <p className="text-sm text-green-600">{success}</p>
         </div>
@@ -203,7 +251,7 @@ export default function EmailVerificationPage() {
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           aria-label="Verify email with code"
         >
-          {loading ? 'Verifying...' : verified ? '✓ Verified' : 'Verify Email'}
+          {loading ? 'Verifying...' : verified ? '✓ Verified' : 'Verify & Continue'}
         </button>
       )}
     </div>
@@ -215,13 +263,13 @@ export default function EmailVerificationPage() {
       title: 'Organization Setup',
       description: 'Tell us about your organization',
       component: <div />,
-      isCompleted: typeof window !== 'undefined' ? !!sessionStorage.getItem('onboarding_organizationId') : false,
+      isCompleted: true, // Already completed
       isOptional: false,
     },
     {
       id: 'email-verification',
       title: 'Email Verification',
-      description: 'We sent a verification code to your email',
+      description: 'Verify your email address',
       component: verificationForm,
       isCompleted: verified,
       isOptional: false,

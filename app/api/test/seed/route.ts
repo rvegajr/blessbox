@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
             { label: 'Side Door', slug: 'side-door' },
           ];
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:7777';
+    const baseUrl = process.env.PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:7777';
     const qrCodes = entryPoints.map((ep: any) => ({
       id: `qr_${ep.slug}`,
       // NOTE: RegistrationService.getFormConfig matches QR codes by `label === qrLabel` (URL segment),

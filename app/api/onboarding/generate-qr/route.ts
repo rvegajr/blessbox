@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
+import { MembershipService } from '@/lib/services/MembershipService';
+import { getServerSession } from '@/lib/auth-helper';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
 
+const membershipService = new MembershipService();
+
 export async function POST(request: NextRequest) {
   try {
+    // Require authentication
+    const session = await getServerSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { organizationId } = body;
 
@@ -42,6 +52,12 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Organization ID is required' },
         { status: 400 }
       );
+    }
+
+    // Require membership for organization
+    const isMember = await membershipService.isMember(session.user.id, organizationId);
+    if (!isMember) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     if (!Array.isArray(entryPoints) || entryPoints.length === 0) {
@@ -131,6 +147,8 @@ export async function POST(request: NextRequest) {
     // Generate QR codes for each entry point
     const qrCodes = [];
     const baseUrl =
+      process.env.PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:7777');
 

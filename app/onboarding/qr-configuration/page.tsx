@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { QRConfigWizard } from '@/components/onboarding/QRConfigWizard';
 import type { QRConfigData } from '@/components/OnboardingWizard.interface';
+import { onboardingSession } from '@/lib/services/OnboardingSessionService';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 export default function QRConfigurationPage() {
   const router = useRouter();
+  const { status } = useAuth();
   const [configData, setConfigData] = useState<QRConfigData>({
     qrCodes: [],
     settings: {
@@ -25,13 +28,20 @@ export default function QRConfigurationPage() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const orgId = sessionStorage.getItem('onboarding_organizationId');
+    const orgId = window.localStorage.getItem('onboarding_organizationId');
     if (!orgId) {
       router.push('/onboarding/organization-setup');
       return;
     }
     setOrganizationId(orgId);
   }, [router]);
+
+  // Require auth for onboarding steps
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login?next=/onboarding/qr-configuration');
+    }
+  }, [router, status]);
 
   const handleGenerate = async () => {
     if (!organizationId) return;
@@ -86,7 +96,7 @@ export default function QRConfigurationPage() {
       
       // Mark QR configuration as complete
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('onboarding_qrGenerated', 'true');
+        onboardingSession.setQrGenerated(true);
       }
     } catch (error) {
       console.error('Generate QR error:', error);
@@ -144,7 +154,7 @@ export default function QRConfigurationPage() {
 
     // Clear onboarding session data
     if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('onboarding_step');
+      window.localStorage.removeItem('onboarding_step');
     }
     
     // Navigate to dashboard
@@ -167,7 +177,7 @@ export default function QRConfigurationPage() {
       title: 'Organization Setup',
       description: 'Tell us about your organization',
       component: <div />,
-      isCompleted: typeof window !== 'undefined' ? !!sessionStorage.getItem('onboarding_organizationId') : false,
+      isCompleted: typeof window !== 'undefined' ? !!window.localStorage.getItem('onboarding_organizationId') : false,
       isOptional: false,
     },
     {
@@ -175,7 +185,7 @@ export default function QRConfigurationPage() {
       title: 'Email Verification',
       description: 'Verify your email address',
       component: <div />,
-      isCompleted: typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_emailVerified') === 'true' : false,
+      isCompleted: typeof window !== 'undefined' ? window.localStorage.getItem('onboarding_emailVerified') === 'true' : false,
       isOptional: false,
     },
     {
@@ -183,7 +193,7 @@ export default function QRConfigurationPage() {
       title: 'Form Builder',
       description: 'Customize your registration form',
       component: <div />,
-      isCompleted: typeof window !== 'undefined' ? sessionStorage.getItem('onboarding_formSaved') === 'true' : false,
+      isCompleted: typeof window !== 'undefined' ? window.localStorage.getItem('onboarding_formSaved') === 'true' : false,
       isOptional: false,
     },
     {

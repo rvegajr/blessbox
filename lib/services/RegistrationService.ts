@@ -261,6 +261,14 @@ export class RegistrationService implements IRegistrationService {
       const orgName = org.name || 'BlessBox';
       const orgEmail = org.contact_email;
 
+      // CRITICAL: Ensure we're using the correct organization's email
+      // Normalize email to prevent case-sensitivity issues
+      const normalizedOrgEmail = orgEmail ? orgEmail.toLowerCase().trim() : null;
+      
+      if (!normalizedOrgEmail) {
+        console.warn(`Organization ${formConfig.organizationId} has no contact_email, skipping admin notification`);
+      }
+
       // Extract registrant email and name from formData
       const registrantEmail = formData.email || formData.Email || formData.emailAddress;
       const registrantName = formData.name || formData.Name || formData.fullName || 'Valued Customer';
@@ -282,11 +290,12 @@ export class RegistrationService implements IRegistrationService {
       }
 
       // Send admin notification to organization
-      if (orgEmail) {
+      if (normalizedOrgEmail) {
         try {
+          console.log(`Sending admin notification to ${normalizedOrgEmail} for organization ${formConfig.organizationId}`);
           await this.notificationService.notifyAdmin({
             organizationId: formConfig.organizationId,
-            adminEmail: orgEmail,
+            adminEmail: normalizedOrgEmail,
             eventType: 'new_registration',
             eventData: {
               registrant_name: String(registrantName),

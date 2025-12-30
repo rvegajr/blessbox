@@ -347,6 +347,42 @@ export class EmailService {
     }
   }
 
+  /**
+   * Send an Auth.js / NextAuth magic link email (no templates/logging).
+   * 3-line max: Minimal auth email sender for passwordless sign-in.
+   */
+  async sendAuthMagicLinkEmail(args: { to: string; url: string }): Promise<void> {
+    const subject = 'Sign in to BlessBox';
+    const html = `
+      <p>Click the link below to sign in to BlessBox:</p>
+      <p><a href="${args.url}">Sign in</a></p>
+      <p>If you did not request this email, you can safely ignore it.</p>
+    `;
+    const text = `Sign in to BlessBox: ${args.url}\n\nIf you did not request this email, you can ignore it.`;
+
+    if (process.env.SENDGRID_API_KEY) {
+      await this.sendViaSendGrid({ to: args.to, subject, html, text, replyTo: process.env.EMAIL_REPLY_TO });
+      return;
+    }
+
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      await this.sendViaSmtp({ to: args.to, subject, html, text, replyTo: process.env.EMAIL_REPLY_TO });
+      return;
+    }
+
+    if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+      await this.sendViaGmailSmtp({ to: args.to, subject, html, text, replyTo: process.env.EMAIL_REPLY_TO });
+      return;
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Dev/test: allow flows without email provider configured.
+      return;
+    }
+
+    throw new Error('No email provider configured (set SENDGRID_* or SMTP_* or GMAIL_*)');
+  }
+
   // Default Templates
   async createDefaultTemplates(organizationId: string): Promise<void> {
     const templates = [

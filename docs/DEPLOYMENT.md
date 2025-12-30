@@ -14,7 +14,8 @@ BlessBox uses branch-based deployments with Vercel:
 - [ ] Create separate Turso databases for prod/dev
 - [ ] Set up Gmail SMTP or SendGrid for each environment
 - [ ] Configure Square sandbox vs production accounts
-- [ ] Generate unique JWT secrets for each environment
+- [ ] Generate unique NextAuth secrets for each environment (`NEXTAUTH_SECRET`, `NEXTAUTH_URL`)
+- [ ] Keep `NEXTAUTH_URL` and `PUBLIC_APP_URL` origins identical (e.g. `https://www.blessbox.org`)
 
 ### ✅ **Database Setup**
 ```bash
@@ -53,6 +54,8 @@ vercel env add SQUARE_APPLICATION_ID production
 vercel env add SQUARE_ACCESS_TOKEN production
 vercel env add SQUARE_ENVIRONMENT production
 vercel env add JWT_SECRET production
+vercel env add NEXTAUTH_SECRET production
+vercel env add NEXTAUTH_URL production
 vercel env add PUBLIC_APP_URL production
 ```
 

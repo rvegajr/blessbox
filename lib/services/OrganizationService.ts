@@ -1,5 +1,6 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
+import { normalizeEmail } from '@/lib/utils/normalize-email';
 import type { 
   IOrganizationService,
   Organization,
@@ -44,7 +45,7 @@ export class OrganizationService implements IOrganizationService {
         data.name,
         data.eventName || null,
         data.customDomain || null,
-        data.contactEmail,
+        normalizeEmail(data.contactEmail),
         data.contactPhone || null,
         data.contactAddress || null,
         data.contactCity || null,
@@ -83,10 +84,12 @@ export class OrganizationService implements IOrganizationService {
   }
 
   async getOrganizationByEmail(email: string): Promise<Organization | null> {
+    const e = normalizeEmail(email);
+    if (!e) return null;
     const result = await this.db.execute({
       // Multi-org per email: return the most recently created organization for this email.
       sql: 'SELECT * FROM organizations WHERE contact_email = ? ORDER BY created_at DESC LIMIT 1',
-      args: [email]
+      args: [e]
     });
 
     if (result.rows.length === 0) {

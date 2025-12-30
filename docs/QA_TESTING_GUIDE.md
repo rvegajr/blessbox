@@ -41,7 +41,7 @@ This guide will walk you through testing every feature of BlessBox. Don't worry 
 ### Before You Begin
 
 1. **Open this guide** in a separate window or print it
-2. **Have your email ready** - you'll receive verification codes
+2. **Have your email ready** - you'll receive 6-digit verification codes
 3. **Prepare test data:**
    - Your email address
    - A test organization name (e.g., "Test Food Bank")
@@ -76,7 +76,7 @@ Before you start testing payments, make sure these coupons exist in the system. 
 
 ## Part 1: First Time Setup
 
-### Test 1.1: Creating Your Account
+### Test 1.1: Creating Your Account (Email Verification)
 
 **What you're testing:** Can a new user sign up?
 
@@ -86,41 +86,50 @@ Before you start testing payments, make sure these coupons exist in the system. 
 
 2. Fill in your organization information:
    - **Organization Name:** "Test Food Bank" (or any name)
-   - **Email:** Use your real email (you'll get a code)
+   - **Email:** Your email address
    - **Phone:** (555) 123-4567
    - **Address:** 123 Test Street, Test City, TS 12345
+
+3. Click **Continue** to proceed to email verification.
+
+4. Check your email inbox for a **6-digit verification code**.
+
+5. Enter the code on the verification page.
+
+6. **Expected:** Your account is created and you're signed in automatically.
    - **Organization Type:** Pick one from the dropdown
 
-3. Click **"Continue"** or **"Next"**
+7. Click **"Continue"** or **"Next"**
 
 **✅ What to check:**
 - [ ] Page loads without errors
+- [ ] If redirected to login, 6-digit code sign-in returns you to onboarding
 - [ ] All fields accept your input
+- [ ] Contact email is the signed-in email (case-insensitive)
 - [ ] You can click "Continue" and move to next step
 - [ ] If you leave a required field empty, you get a helpful error message
 
 ---
 
-### Test 1.2: Email Verification
+### Test 1.2: 6-digit code Sign‑In (Email Authentication)
 
-**What you're testing:** Does email verification work?
+**What you're testing:** Does email-only authentication work (6-digit code)?
 
 **Steps:**
 
-1. You should now be on the email verification page
-2. Your email should already be filled in
-3. Click **"Send Verification Code"**
+1. Go to: https://www.blessbox.org/login
+2. Enter your email address
+3. Click **"Send 6-digit code"** / **"Email me a sign-in link"**
 4. **Wait for email** (check your inbox - it might take 30 seconds)
-5. Find the 6-digit code in your email
-6. Type the code into the form
-7. Click **"Verify"**
+5. Click the link in the email
+6. **Expected:** You are signed in and redirected to the app (dashboard or your requested page)
 
 **✅ What to check:**
 - [ ] You receive an email within 30 seconds
-- [ ] The code is easy to read
-- [ ] When you enter the correct code, it works
-- [ ] If you enter a wrong code, you get an error message
-- [ ] You move to the next step after successful verification
+- [ ] The link points to `blessbox.org` (not another domain)
+- [ ] Clicking the link signs you in successfully
+- [ ] Protected routes redirect to `/login?next=...` and return after login
+- [ ] Session persists (refreshing `/dashboard` stays signed in)
 
 **💡 Tip:** If you don't get the email, check your spam folder!
 

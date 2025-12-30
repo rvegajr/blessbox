@@ -9,6 +9,8 @@
 
 ---
 
+> **Dec 2025 Status Update (Current Spec):** Authentication is **NextAuth v5 6-digit code (email-only)** via `/login`. The verification-code endpoints/services below are legacy/back-compat (kept for certain tests), not the canonical production sign-in flow.
+
 ## ✅ Completed Implementation Tasks
 
 ### 1. Organization Management (TDD + ISP) ✅

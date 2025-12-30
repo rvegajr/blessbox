@@ -12,7 +12,7 @@ Our E2E test suite consists of **3 focused test files** covering different aspec
 This is the main comprehensive E2E test that tests the complete application flow via API calls:
 
 **Test Flow:**
-1. ✅ **Email Verification** - Sends and verifies email codes (VerificationService)
+1. ✅ **Legacy Email Verification Codes (Test Harness)** - Sends and verifies 6-digit codes (legacy/back-compat)
 2. ✅ **Organization Creation** - Creates organization via API (OrganizationService)
 3. ✅ **Form Configuration** - Creates registration form configuration (FormConfigService)
 4. ✅ **QR Code Generation** - Generates QR codes for the organization (QRCodeService)
@@ -21,7 +21,7 @@ This is the main comprehensive E2E test that tests the complete application flow
 7. ✅ **Dashboard APIs** - Verifies dashboard endpoints
 8. ✅ **QR Code APIs** - Verifies QR code management
 9. ✅ **Registration APIs** - Verifies registration management
-10. ✅ **Rate Limiting** - Tests rate limiting on verification codes
+10. ✅ **Rate Limiting** - Tests rate limiting on legacy verification codes (if enabled)
 11. ✅ **Input Validation** - Tests validation (invalid email, missing fields, duplicates)
 12. ✅ **API Endpoints** - Comprehensive API health check
 
@@ -106,7 +106,7 @@ npx playwright test --debug tests/e2e/complete-application-flow.spec.ts
 - ✅ **NotificationService** - Email notifications (implicitly via registration)
 
 ### API Endpoints Tested
-- ✅ `/api/onboarding/send-verification` - Send verification code
+- ✅ `/api/onboarding/send-verification` - Send verification code (legacy/back-compat)
 - ✅ `/api/onboarding/verify-code` - Verify email code
 - ✅ `/api/onboarding/save-organization` - Create organization
 - ✅ `/api/onboarding/save-form-config` - Create form configuration

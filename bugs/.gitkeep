@@ -1,0 +1,3 @@
+# Bug reports directory
+# JSON files created by /api/report-bug when GITHUB_TOKEN is not set
+# Each file: BUG-{timestamp}.json with screenshots in BUG-{timestamp}/

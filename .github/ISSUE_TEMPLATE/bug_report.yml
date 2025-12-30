@@ -1,0 +1,95 @@
+name: Bug Report
+description: Report something that isn't working correctly
+title: "[Bug]: "
+labels: ["bug", "user-reported", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this issue! Please fill out the form below.
+
+        **Tip:** You can paste screenshots directly into any text field - just use Ctrl+V (or Cmd+V on Mac).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe what went wrong. Be as specific as possible.
+      placeholder: |
+        Example: "I clicked the Submit button on the registration form, but nothing happened. The button just stayed grayed out."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: |
+        Example: "I expected to see a confirmation message and receive an email."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we recreate this issue?
+      placeholder: |
+        1. Go to the registration page
+        2. Fill in name and email
+        3. Click Submit
+        4. See the problem
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: |
+        Paste any screenshots here. You can drag and drop images, or paste from clipboard (Ctrl+V / Cmd+V).
+      placeholder: |
+        Drag and drop images here, or paste from clipboard...
+
+  - type: input
+    id: url
+    attributes:
+      label: Page URL
+      description: What page were you on when this happened?
+      placeholder: "https://www.blessbox.org/dashboard/registrations"
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Safari
+        - Firefox
+        - Edge
+        - Mobile Safari (iPhone)
+        - Mobile Chrome (Android)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Desktop/Laptop
+        - iPhone
+        - Android Phone
+        - iPad/Tablet
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other details that might help us fix this?
+      placeholder: |
+        Example: "This only happens when I'm not logged in" or "It worked yesterday"

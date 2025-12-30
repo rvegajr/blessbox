@@ -23,10 +23,10 @@ This will show:
 ### Step 2: Check Vercel Logs
 
 1. Go to Vercel Dashboard → Your Project → **Logs**
-2. Request a verification code from the onboarding page
+2. Request a **6-digit code** from the login page (`/login`) or trigger a notification email (e.g., registration confirmation)
 3. Immediately check the logs for:
-   - `✅ Verification email sent successfully` (success)
-   - `❌ Failed to send verification email` (failure)
+   - `✅ ... email sent ...` (success)
+   - `❌ Failed to send ... email` (failure)
    - `❌ SendGrid error:` (SendGrid specific error)
    - Any error messages
 
@@ -34,7 +34,7 @@ This will show:
 
 1. Go to SendGrid Dashboard: https://app.sendgrid.com
 2. Navigate to: **Activity → Email Activity**
-3. Request a verification code
+3. Request a 6-digit code or trigger an app notification email
 4. Check if the email appears in SendGrid activity
 5. Look for:
    - **Delivered** (email sent successfully)
@@ -130,7 +130,7 @@ This will show:
 
 1. Go to: https://www.blessbox.org/onboarding/organization-setup
 2. Enter your email address
-3. Click "Send Verification Code"
+3. Request the 6-digit code
 4. **Immediately:**
    - Check Vercel logs
    - Check SendGrid Activity dashboard

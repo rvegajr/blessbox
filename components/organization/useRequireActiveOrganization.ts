@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { usePathname, useRouter } from 'next/navigation';
 
 type OrgListResponse = {
@@ -10,11 +10,11 @@ type OrgListResponse = {
 };
 
 export function useRequireActiveOrganization(): { ready: boolean; activeOrganizationId: string | null } {
-  const { data: session, status } = useSession();
+  const { user, status } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
-  const sessionOrgId = useMemo(() => ((session?.user as any)?.organizationId as string | undefined) || null, [session]);
+  const sessionOrgId = useMemo(() => (user?.organizationId as string | undefined) || null, [user]);
   const [ready, setReady] = useState(false);
   const [activeOrganizationId, setActiveOrganizationId] = useState<string | null>(sessionOrgId);
 
