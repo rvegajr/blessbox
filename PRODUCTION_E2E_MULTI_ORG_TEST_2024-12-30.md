@@ -192,3 +192,4 @@ All other bug fixes from earlier (registration list, QR codes) are also working 
 
 **ROLE: engineer STRICT=true**
 
+
