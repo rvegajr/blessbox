@@ -38,7 +38,7 @@ export function FormBuilderWizard({
     };
 
     if (type === 'select') {
-      newField.options = ['Option 1', 'Option 2'];
+      newField.options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
     }
 
     setFields([...fields, newField]);
@@ -213,18 +213,23 @@ export function FormBuilderWizard({
 
                       {field.type === 'select' && (
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Options (one per line)</label>
+                          <label className="block text-xs text-gray-600 mb-1">
+                            Options (one per line, add as many as needed)
+                          </label>
                           <textarea
                             data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
                             onChange={(e) => updateField(field.id, {
                               options: e.target.value.split('\n').filter(o => o.trim())
                             })}
-                            rows={3}
+                            rows={6}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                            placeholder="Option 1\nOption 2\nOption 3"
+                            placeholder="Option 1\nOption 2\nOption 3\nOption 4\nOption 5\n... (add more)"
                             aria-label={`Options for ${field.label || 'select field'}`}
                           />
+                          <p className="text-xs text-gray-500 mt-1">
+                            💡 Tip: You can add unlimited options. Just add one option per line.
+                          </p>
                         </div>
                       )}
 
