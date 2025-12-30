@@ -5,14 +5,14 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from '@/lib/hooks/useAuth';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 type Org = { id: string; name: string; contactEmail: string; role: string };
 
 export default function SelectOrganizationClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { status, setActiveOrganization, refresh } = useAuth();
 
   const nextPath = useMemo(() => {
     const next = searchParams.get('next');
@@ -57,23 +57,29 @@ export default function SelectOrganizationClient() {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch('/api/me/active-organization', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ organizationId: selected }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Failed to set active organization');
+      // Use the auth context's setActiveOrganization method
+      const result = await setActiveOrganization(selected);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to set active organization');
+      }
+      
+      // Refresh the auth context to get updated state
+      await refresh();
+      
+      // Small delay to ensure state is updated
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Now navigate
       router.replace(nextPath);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to set active organization');
-    } finally {
       setSaving(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="page-select-organization">
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
           <h1 className="text-2xl font-bold text-gray-900">Select an organization</h1>
@@ -82,24 +88,25 @@ export default function SelectOrganizationClient() {
           </p>
 
           {status !== 'authenticated' && (
-            <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3 text-sm">
+            <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3 text-sm" data-testid="warning-auth">
               You must be signed in to select an organization.
             </div>
           )}
 
           {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm">{error}</div>
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm" data-testid="error-select-org" role="alert">{error}</div>
           )}
 
           {loading ? (
-            <div className="mt-8 text-gray-600">Loading organizations…</div>
+            <div className="mt-8 text-gray-600" data-testid="loading-organizations" data-loading="true">Loading organizations…</div>
           ) : orgs.length === 0 ? (
-            <div className="mt-8 text-gray-600">No organizations found for your account.</div>
+            <div className="mt-8 text-gray-600" data-testid="empty-organizations">No organizations found for your account.</div>
           ) : (
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-3" data-testid="list-organizations">
               {orgs.map((o) => (
                 <label
                   key={o.id}
+                  data-testid={`org-option-${o.id}`}
                   className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
                     selected === o.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
                   }`}
@@ -111,6 +118,7 @@ export default function SelectOrganizationClient() {
                     checked={selected === o.id}
                     onChange={() => setSelected(o.id)}
                     className="mt-1"
+                    aria-label={`Select ${o.name}`}
                   />
                   <div className="min-w-0">
                     <div className="font-semibold text-gray-900 truncate">{o.name || 'Unnamed organization'}</div>
@@ -125,16 +133,21 @@ export default function SelectOrganizationClient() {
           <div className="mt-8 flex items-center justify-between gap-3">
             <button
               type="button"
+              data-testid="btn-add-organization"
               onClick={() => router.push('/onboarding/organization-setup')}
               className="text-sm text-blue-600 hover:text-blue-800"
+              aria-label="Register another organization"
             >
               + Register another organization
             </button>
             <button
               type="button"
+              data-testid="btn-confirm-organization"
               onClick={confirm}
               disabled={saving || !selected || status !== 'authenticated'}
               className="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              data-loading={saving}
+              aria-label="Continue with selected organization"
             >
               {saving ? 'Saving…' : 'Continue'}
             </button>
