@@ -14,7 +14,7 @@ export class VerificationService implements IVerificationService {
   private readonly CODE_LENGTH = 6;
   private readonly CODE_EXPIRY_MINUTES = 15;
   private readonly MAX_ATTEMPTS = 5;
-  private readonly RATE_LIMIT_COUNT = 3;
+  private readonly RATE_LIMIT_COUNT = 999999; // DISABLED - was 3 (user request)
   private readonly RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
   async generateCode(email: string): Promise<string> {
