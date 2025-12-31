@@ -35,20 +35,28 @@ async function clearProductionDatabase() {
   console.log('=' .repeat(70));
 
   try {
-    // Step 1: Get super admin user ID
-    console.log('\n📝 Step 1: Finding super admin...');
-    const superAdminResult = await db.execute({
-      sql: `SELECT id, email, role FROM users WHERE email = ?`,
+    // Step 1: Get super admin user ID (or create if doesn't exist)
+    console.log('\n📝 Step 1: Finding/creating super admin...');
+    let superAdminResult = await db.execute({
+      sql: `SELECT id, email FROM users WHERE email = ?`,
       args: [SUPERADMIN_EMAIL],
     });
 
+    let superAdmin: any;
+    
     if (superAdminResult.rows.length === 0) {
-      console.error(`❌ ERROR: Super admin not found with email ${SUPERADMIN_EMAIL}`);
-      process.exit(1);
+      console.log(`   ⚠️  Super admin not found, creating new user: ${SUPERADMIN_EMAIL}`);
+      const newAdminId = `user_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      await db.execute({
+        sql: `INSERT INTO users (id, email, created_at, updated_at) VALUES (?, ?, datetime('now'), datetime('now'))`,
+        args: [newAdminId, SUPERADMIN_EMAIL],
+      });
+      superAdmin = { id: newAdminId, email: SUPERADMIN_EMAIL };
+    } else {
+      superAdmin = superAdminResult.rows[0] as any;
     }
-
-    const superAdmin = superAdminResult.rows[0] as any;
-    console.log(`   ✅ Found super admin: ${superAdmin.email} (ID: ${superAdmin.id})`);
+    
+    console.log(`   ✅ Super admin ready: ${superAdmin.email} (ID: ${superAdmin.id})`);
 
     // Step 2: Get count of data to be deleted
     console.log('\n📊 Step 2: Counting data to be deleted...');
@@ -116,7 +124,7 @@ async function clearProductionDatabase() {
     // Step 9: Verify super admin still exists
     console.log('\n✅ Step 9: Verifying super admin...');
     const verifyAdmin = await db.execute({
-      sql: `SELECT id, email, role FROM users WHERE id = ?`,
+      sql: `SELECT id, email FROM users WHERE id = ?`,
       args: [superAdmin.id],
     });
     
