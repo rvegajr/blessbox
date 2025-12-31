@@ -25,14 +25,42 @@ export function LoginClient({ nextPath }: { nextPath: string }) {
   // Redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated') {
-      // If user has organizations but none selected, redirect to org selection
+      console.log('[Login] Authenticated, checking organizations:', {
+        orgsCount: organizations?.length,
+        activeOrgId: activeOrganizationId,
+        orgNames: organizations?.map(o => o.name)
+      });
+      
+      // If user has multiple organizations but none selected, redirect to org selection
       if (organizations && organizations.length > 1 && !activeOrganizationId) {
+        console.log('[Login] Multiple orgs, no active org -> redirecting to select-organization');
         router.push(`/select-organization?next=${encodeURIComponent(nextPath)}`);
-      } else {
+      } 
+      // If user has exactly ONE organization, auto-select it if not already selected
+      else if (organizations && organizations.length === 1 && !activeOrganizationId) {
+        console.log('[Login] Single org, auto-selecting:', organizations[0].name);
+        // Auto-select the only organization
+        const singleOrg = organizations[0];
+        fetch('/api/me/active-organization', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizationId: singleOrg.id })
+        }).then(() => {
+          refresh().then(() => {
+            console.log('[Login] Auto-selected single org, now redirecting to:', nextPath);
+            router.push(nextPath);
+          });
+        }).catch(err => {
+          console.error('[Login] Failed to auto-select organization:', err);
+          router.push(nextPath); // Try anyway
+        });
+      }
+      else {
+        console.log('[Login] Active org already set, redirecting to:', nextPath);
         router.push(nextPath);
       }
     }
-  }, [status, router, nextPath, organizations, activeOrganizationId]);
+  }, [status, router, nextPath, organizations, activeOrganizationId, refresh]);
 
   // Countdown timer for resend
   useEffect(() => {
