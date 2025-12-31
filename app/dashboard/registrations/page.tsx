@@ -381,16 +381,47 @@ export default function RegistrationsPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRegistrations.map((reg) => {
                     const data = JSON.parse(reg.registrationData);
+                    
+                    // Extract name - try multiple strategies
+                    let name = '-';
+                    if (data.name) {
+                      name = data.name;
+                    } else if (data.firstName || data.lastName) {
+                      name = [data.firstName, data.lastName].filter(Boolean).join(' ');
+                    } else {
+                      // Find any field that looks like a name (contains "name" in key or is first non-email text field)
+                      for (const [key, value] of Object.entries(data)) {
+                        if (typeof value === 'string' && value.trim() && !value.includes('@')) {
+                          name = value;
+                          break;
+                        }
+                      }
+                    }
+                    
+                    // Extract email - try multiple strategies
+                    let email = '-';
+                    if (data.email) {
+                      email = data.email;
+                    } else {
+                      // Find any field that looks like an email (contains @)
+                      for (const value of Object.values(data)) {
+                        if (typeof value === 'string' && value.includes('@')) {
+                          email = value;
+                          break;
+                        }
+                      }
+                    }
+                    
                     return (
                       <tr key={reg.id} className="hover:bg-gray-50" data-testid={`row-registration-${reg.id}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {data.name || (data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.firstName || data.lastName || '-')}
+                            {name}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-500">
-                            {data.email || '-'}
+                            {email}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -399,7 +430,10 @@ export default function RegistrationsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={getStatusBadge(reg.deliveryStatus)}>
+                          <span 
+                            className={getStatusBadge(reg.deliveryStatus)}
+                            title={reg.deliveryStatus === 'pending' ? 'Registration received, awaiting processing or delivery' : undefined}
+                          >
                             {reg.deliveryStatus}
                           </span>
                         </td>
