@@ -63,8 +63,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Auto-generate a default QR code if none exist
-    // This ensures users don't have to manually generate QR codes
+    // Auto-generate a default QR code ONLY if:
+    // 1. No QR codes exist yet
+    // 2. This is a brand new form config (not an update)
+    // This ensures users can edit forms without triggering auto-generation
     try {
       const qrSetResult = await db.execute({
         sql: `SELECT qr_codes FROM qr_code_sets WHERE id = ?`,
@@ -80,8 +82,10 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Only auto-generate if no QR codes exist yet
-      if (existingQrCodes.length === 0) {
+      // Only auto-generate if:
+      // - No QR codes exist AND
+      // - This was a new form config creation (not an update)
+      if (existingQrCodes.length === 0 && !existing) {
         console.log(`🔧 Auto-generating default QR code for organization ${organizationId}`);
         
         // Get organization details for slug
