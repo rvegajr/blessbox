@@ -28,9 +28,7 @@ interface UpgradeModalProps {
 export function UpgradeModal({ targetPlan, isOpen, onClose, onSuccess }: UpgradeModalProps) {
   const [preview, setPreview] = useState<UpgradePreview | null>(null);
   const [loading, setLoading] = useState(false);
-  const [upgrading, setUpgrading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (isOpen && targetPlan) {
@@ -60,35 +58,10 @@ export function UpgradeModal({ targetPlan, isOpen, onClose, onSuccess }: Upgrade
   }
 
   async function handleUpgrade() {
-    setUpgrading(true);
-    setError(null);
-    
-    try {
-      const response = await fetch('/api/subscription/upgrade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: targetPlan })
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        setError(data.error || 'Upgrade failed');
-        return;
-      }
-      
-      setSuccess(true);
-      
-      // Call success callback after a brief delay
-      setTimeout(() => {
-        onSuccess?.();
-        onClose();
-      }, 2000);
-    } catch (err) {
-      setError('Upgrade failed. Please try again.');
-    } finally {
-      setUpgrading(false);
-    }
+    // Redirect to checkout page with the selected plan
+    // Payment must be collected before upgrading the subscription
+    const checkoutUrl = `/checkout?plan=${targetPlan}`;
+    window.location.href = checkoutUrl;
   }
 
   if (!isOpen) return null;
@@ -178,21 +151,20 @@ export function UpgradeModal({ targetPlan, isOpen, onClose, onSuccess }: Upgrade
                 <button
                   onClick={onClose}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                  disabled={upgrading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUpgrade}
-                  disabled={upgrading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  data-testid="btn-proceed-to-checkout"
                 >
-                  {upgrading ? 'Upgrading...' : `Upgrade to ${preview.targetPlanName}`}
+                  Proceed to Checkout →
                 </button>
               </div>
 
               <p className="text-xs text-center text-gray-500 mt-4">
-                You can cancel anytime. Changes take effect immediately.
+                You'll be taken to the checkout page to complete payment.
               </p>
             </>
           )}
