@@ -213,6 +213,16 @@ export class RegistrationService implements IRegistrationService {
       ]
     });
 
+    // Increment scan count for the QR code set
+    await this.db.execute({
+      sql: `
+        UPDATE qr_code_sets 
+        SET scan_count = scan_count + 1, updated_at = ?
+        WHERE id = ?
+      `,
+      args: [now, formConfig.id]
+    });
+
     // Increment registration counter in subscription
     await this.incrementRegistrationCount(formConfig.organizationId);
 
