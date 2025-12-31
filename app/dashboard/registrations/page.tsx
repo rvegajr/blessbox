@@ -90,9 +90,14 @@ export default function RegistrationsPage() {
   const filteredRegistrations = registrations.filter(reg => {
     const data = JSON.parse(reg.registrationData);
     const matchesStatus = !filters.deliveryStatus || reg.deliveryStatus === filters.deliveryStatus;
-    const matchesSearch = !filters.search || 
-      data.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
-      data.email?.toLowerCase().includes(filters.search.toLowerCase());
+    
+    // Search through all registration data fields (handles both field IDs and semantic keys)
+    const matchesSearch = !filters.search || Object.values(data).some(value => {
+      if (typeof value === 'string') {
+        return value.toLowerCase().includes(filters.search.toLowerCase());
+      }
+      return false;
+    });
     
     return matchesStatus && matchesSearch;
   });
