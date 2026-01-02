@@ -29,6 +29,7 @@ export function UpgradeModal({ targetPlan, isOpen, onClose, onSuccess }: Upgrade
   const [preview, setPreview] = useState<UpgradePreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (isOpen && targetPlan) {
@@ -101,6 +102,17 @@ export function UpgradeModal({ targetPlan, isOpen, onClose, onSuccess }: Upgrade
               <div className="text-4xl mb-2">🎉</div>
               <p className="text-green-700 font-medium">Upgrade successful!</p>
               <p className="text-green-600 text-sm">Your new limits are now active.</p>
+              <button
+                onClick={() => {
+                  setSuccess(false);
+                  onSuccess?.();
+                  onClose();
+                }}
+                className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                data-testid="btn-close-success"
+              >
+                Close
+              </button>
             </div>
           )}
 

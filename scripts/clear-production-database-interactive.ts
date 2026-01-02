@@ -1,62 +1,93 @@
 /**
- * Clear Production Database (Keep Super Admin)
+ * Interactive Clear Production Database Script
  * 
- * ⚠️ DANGER: This script clears ALL user data from production
- * 
- * What it does:
- * 1. Preserves super admin user and their data
- * 2. Deletes all other users, organizations, registrations, QR codes
- * 3. Cleans up old verification codes
- * 
- * Usage:
- *   npx tsx scripts/clear-production-database.ts
- * 
- * Requires:
- *   SUPERADMIN_EMAIL environment variable
+ * Prompts for required values if not in environment
  */
 
-// Load environment variables from .env.local if it exists
 import { config } from 'dotenv';
 import { resolve } from 'path';
+import * as readline from 'readline';
+
 config({ path: resolve(process.cwd(), '.env.local') });
 
 import { getDbClient } from '../lib/db';
 
-const SUPERADMIN_EMAIL = process.env.SUPERADMIN_EMAIL;
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+function question(prompt: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(prompt, resolve);
+  });
+}
+
+async function getEnvVar(name: string, promptText: string, isSecret = false): Promise<string> {
+  const existing = process.env[name];
+  if (existing) {
+    console.log(`✅ ${name} found in environment`);
+    return existing;
+  }
+  
+  const value = await question(`${promptText}: `);
+  if (isSecret) {
+    console.log(`✅ ${name} set (hidden)`);
+  } else {
+    console.log(`✅ ${name} set`);
+  }
+  return value.trim();
+}
 
 async function clearProductionDatabase() {
-  if (!SUPERADMIN_EMAIL) {
-    console.error('❌ ERROR: SUPERADMIN_EMAIL environment variable not set!');
-    console.error('   This is required to preserve the super admin account.');
-    process.exit(1);
-  }
-
-  const db = getDbClient();
-
   console.log('\n⚠️  DATABASE CLEAR OPERATION');
-  console.log('=' .repeat(70));
-  console.log(`Super Admin Email: ${SUPERADMIN_EMAIL}`);
+  console.log('='.repeat(70));
+  
+  // Get required values
+  const superAdminEmail = await getEnvVar('SUPERADMIN_EMAIL', 'Enter super admin email to preserve');
+  const tursoUrl = await getEnvVar('TURSO_DATABASE_URL', 'Enter Turso database URL (libsql://...)');
+  const tursoToken = await getEnvVar('TURSO_AUTH_TOKEN', 'Enter Turso auth token', true);
+  
+  // Set in process.env for getDbClient
+  process.env.SUPERADMIN_EMAIL = superAdminEmail;
+  process.env.TURSO_DATABASE_URL = tursoUrl;
+  process.env.TURSO_AUTH_TOKEN = tursoToken;
+  
+  console.log('\n' + '='.repeat(70));
+  console.log(`Super Admin Email: ${superAdminEmail}`);
+  console.log(`Database: ${tursoUrl.substring(0, 40)}...`);
   console.log('This will DELETE all data except the super admin account.');
-  console.log('=' .repeat(70));
+  console.log('='.repeat(70));
+  
+  const confirm = await question('\nType "CLEAR" to confirm: ');
+  if (confirm !== 'CLEAR') {
+    console.log('❌ Cancelled. Database not cleared.');
+    rl.close();
+    return;
+  }
+  
+  rl.close();
+  
+  const db = getDbClient();
 
   try {
     // Step 1: Get super admin user ID (or create if doesn't exist)
     console.log('\n📝 Step 1: Finding/creating super admin...');
     let superAdminResult = await db.execute({
       sql: `SELECT id, email FROM users WHERE email = ?`,
-      args: [SUPERADMIN_EMAIL],
+      args: [superAdminEmail],
     });
 
     let superAdmin: any;
     
     if (superAdminResult.rows.length === 0) {
-      console.log(`   ⚠️  Super admin not found, creating new user: ${SUPERADMIN_EMAIL}`);
+      console.log(`   ⚠️  Super admin not found, creating new user: ${superAdminEmail}`);
       const newAdminId = `user_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
       await db.execute({
         sql: `INSERT INTO users (id, email, created_at, updated_at) VALUES (?, ?, datetime('now'), datetime('now'))`,
-        args: [newAdminId, SUPERADMIN_EMAIL],
+        args: [newAdminId, superAdminEmail],
       });
-      superAdmin = { id: newAdminId, email: SUPERADMIN_EMAIL };
+      superAdmin = { id: newAdminId, email: superAdminEmail };
     } else {
       superAdmin = superAdminResult.rows[0] as any;
     }
@@ -150,9 +181,9 @@ async function clearProductionDatabase() {
     console.log(`   Users: ${(finalUsers.rows[0] as any).count} (should be 1 - super admin only)`);
     console.log(`   Registrations: ${(finalRegs.rows[0] as any).count}`);
 
-    console.log('\n' + '=' .repeat(70));
+    console.log('\n' + '='.repeat(70));
     console.log('✅ DATABASE CLEARED SUCCESSFULLY');
-    console.log('=' .repeat(70));
+    console.log('='.repeat(70));
     console.log('\nSuper admin preserved and ready for use.');
     console.log('You can now start fresh with onboarding!\n');
 
@@ -162,11 +193,5 @@ async function clearProductionDatabase() {
   }
 }
 
-// Confirmation prompt
-console.log('\n⚠️  WARNING: This will clear the PRODUCTION database!');
-console.log('All organizations, users (except super admin), and registrations will be deleted.');
-console.log('\nPress Ctrl+C to cancel, or wait 5 seconds to proceed...\n');
+clearProductionDatabase().catch(console.error);
 
-setTimeout(() => {
-  clearProductionDatabase().catch(console.error);
-}, 5000);

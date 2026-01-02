@@ -84,6 +84,12 @@ export class SquarePaymentService implements IPaymentProcessor {
             Array.isArray(errs) && errs.length > 0
               ? errs.map((e: any) => e?.detail || e?.code).filter(Boolean).join('; ')
               : '';
+          
+          // Provide user-friendly error messages for common issues
+          if (error.statusCode === 401) {
+            return `Square payment authorization failed. Please contact support - your payment credentials may need to be updated.`;
+          }
+          
           return `Square error${error.statusCode ? ` (${error.statusCode})` : ''}${msg ? `: ${msg}` : ''}`;
         }
         return error instanceof Error ? error.message : String(error);
