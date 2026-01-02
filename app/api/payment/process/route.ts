@@ -23,10 +23,30 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ success: false, error: 'Not authenticated' }), { status: 401 });
   }
 
-  const org =
-    session ? await resolveOrganizationForSession(session as any) : await getOrCreateOrganizationForEmail(email);
+  let org;
+  try {
+    org = session ? await resolveOrganizationForSession(session as any) : await getOrCreateOrganizationForEmail(email);
+  } catch (orgError) {
+    console.error('Organization resolution error:', orgError);
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Failed to resolve organization',
+        message: 'Please ensure you have selected an organization or try logging in again.'
+      }), 
+      { status: 500 }
+    );
+  }
+  
   if (!org) {
-    return new Response(JSON.stringify({ success: false, error: 'Organization selection required' }), { status: 409 });
+    return new Response(
+      JSON.stringify({ 
+        success: false, 
+        error: 'Organization selection required',
+        message: 'Please select an organization from your dashboard before proceeding with payment.'
+      }), 
+      { status: 409 }
+    );
   }
 
   // If payment token is provided, process with Square
@@ -62,13 +82,19 @@ export async function POST(req: NextRequest) {
         );
 
         if (!paymentResult.success) {
+          // Provide user-friendly error message
+          const errorMessage = paymentResult.error || 'Payment failed';
+          const isAuthError = errorMessage.includes('401') || errorMessage.includes('authorization');
+          
           return new Response(
             JSON.stringify({
               success: false,
-              error: paymentResult.error || 'Payment failed',
+              error: isAuthError 
+                ? 'Payment authorization failed. Please contact support - payment credentials may need to be updated.'
+                : errorMessage,
               payment: paymentResult,
             }),
-            { status: 400 }
+            { status: isAuthError ? 500 : 400 }
           );
         }
 

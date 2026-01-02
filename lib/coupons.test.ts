@@ -16,6 +16,7 @@ describe('CouponService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDb.execute.mockReset(); // Reset all mocks
     service = new CouponService();
     // Avoid schema DDL noise in unit tests
     (service as any).ensureSchema = vi.fn().mockResolvedValue(undefined);
@@ -33,7 +34,7 @@ describe('CouponService', () => {
           active: 1,
           max_uses: 100,
           current_uses: 0,
-          expires_at: '2025-12-31T23:59:59Z',
+          expires_at: '2026-12-31T23:59:59Z',
           applicable_plans: JSON.stringify(['standard', 'enterprise']),
           created_at: '2024-01-01T00:00:00Z',
           created_by: 'admin',
@@ -87,7 +88,7 @@ describe('CouponService', () => {
         applicable_plans: JSON.stringify(['standard']),
         max_uses: 100,
         current_uses: 0,
-        expires_at: '2025-12-31T23:59:59Z',
+        expires_at: '2026-12-31T23:59:59Z',
         created_at: '2024-01-01T00:00:00Z',
         created_by: 'admin',
         updated_at: '2024-01-01T00:00:00Z',
@@ -112,7 +113,7 @@ describe('CouponService', () => {
         applicable_plans: JSON.stringify(['standard']),
         max_uses: 100,
         current_uses: 0,
-        expires_at: '2025-12-31T23:59:59Z',
+        expires_at: '2026-12-31T23:59:59Z',
         created_at: '2024-01-01T00:00:00Z',
         created_by: 'admin',
         updated_at: '2024-01-01T00:00:00Z',
@@ -137,7 +138,7 @@ describe('CouponService', () => {
         applicable_plans: JSON.stringify(['standard']),
         max_uses: 100,
         current_uses: 0,
-        expires_at: '2025-12-31T23:59:59Z',
+        expires_at: '2026-12-31T23:59:59Z',
         created_at: '2024-01-01T00:00:00Z',
         created_by: 'admin',
         updated_at: '2024-01-01T00:00:00Z',
@@ -162,7 +163,7 @@ describe('CouponService', () => {
         applicable_plans: JSON.stringify(['standard']),
         max_uses: 100,
         current_uses: 0,
-        expires_at: '2025-12-31T23:59:59Z',
+        expires_at: '2026-12-31T23:59:59Z',
         created_at: '2024-01-01T00:00:00Z',
         created_by: 'admin',
         updated_at: '2024-01-01T00:00:00Z',
@@ -192,7 +193,7 @@ describe('CouponService', () => {
         applicable_plans: JSON.stringify(['enterprise']),
         max_uses: 100,
         current_uses: 0,
-        expires_at: '2025-12-31T23:59:59Z',
+        expires_at: '2026-12-31T23:59:59Z',
         created_at: '2024-01-01T00:00:00Z',
         created_by: 'admin',
         updated_at: '2024-01-01T00:00:00Z',
@@ -237,7 +238,7 @@ describe('CouponService', () => {
             created_by: 'admin-123',
             updated_at: '2024-01-01T00:00:00Z',
           }]
-        });
+        }); // getCoupon SELECT
 
       const result = await service.createCoupon(couponData as any);
       expect(result.code).toBe('NEWCOUPON');
@@ -246,8 +247,9 @@ describe('CouponService', () => {
     });
 
     it('throws for duplicate code', async () => {
-      mockDb.execute.mockRejectedValueOnce(new Error('UNIQUE constraint failed: coupons.code'));
-      await expect(service.createCoupon({ code: 'DUPLICATE', discountType: 'percentage', discountValue: 10, createdBy: 'admin' } as any)).rejects.toThrow();
+      mockDb.execute
+        .mockRejectedValueOnce(new Error('UNIQUE constraint failed: coupons.code')); // INSERT fails
+      await expect(service.createCoupon({ code: 'DUPLICATE', discountType: 'percentage', discountValue: 10, createdBy: 'admin' } as any)).rejects.toThrow('UNIQUE constraint');
     });
   });
 

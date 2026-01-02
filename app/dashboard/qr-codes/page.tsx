@@ -36,7 +36,7 @@ interface QRCodeSet {
 
 export default function QRCodesPage() {
   const { data: session } = useSession();
-  const { ready } = useRequireActiveOrganization();
+  const { ready, activeOrganizationId } = useRequireActiveOrganization();
   const [qrCodes, setQRCodes] = useState<QRCode[]>([]);
   const [qrCodeSets, setQRCodeSets] = useState<QRCodeSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,13 +203,12 @@ export default function QRCodesPage() {
 
     setGeneratingNew(true);
     try {
-      // Get organization ID from session
-      const sessionResponse = await fetch('/api/auth/session');
-      const sessionData = await sessionResponse.json();
-      const organizationId = sessionData?.activeOrganizationId || sessionData?.user?.organizationId;
+      // Use active organization from hook
+      const organizationId = activeOrganizationId;
 
       if (!organizationId) {
-        alert('Organization ID not found');
+        alert('Please select an organization first. If you have multiple organizations, go to the organization selector.');
+        setGeneratingNew(false);
         return;
       }
 
