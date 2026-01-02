@@ -38,7 +38,7 @@ export function FormBuilderWizard({
     };
 
     if (type === 'select') {
-      newField.options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
+      newField.options = []; // Start empty - admin enters their own options
     }
 
     setFields([...fields, newField]);
