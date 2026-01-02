@@ -63,23 +63,41 @@ async function getOrganizationIdsForUser(userId: string): Promise<string[]> {
 export async function resolveOrganizationForSession(session: Session): Promise<{ id: string; contact_email: string } | null> {
   const explicitOrgId = (session.user as any)?.organizationId as string | undefined;
   if (explicitOrgId) {
-    return await getOrganizationById(explicitOrgId);
+    const org = await getOrganizationById(explicitOrgId);
+    if (!org) {
+      console.warn(`[resolveOrganizationForSession] Explicit org ID ${explicitOrgId} not found in database`);
+    }
+    return org;
   }
 
   const userId = session.user?.id;
   if (userId) {
     const orgIds = await getOrganizationIdsForUser(String(userId));
     if (orgIds.length === 1) {
-      return await getOrganizationById(orgIds[0]);
+      const org = await getOrganizationById(orgIds[0]);
+      if (!org) {
+        console.warn(`[resolveOrganizationForSession] Org ID ${orgIds[0]} from membership not found in database`);
+      }
+      return org;
     }
     if (orgIds.length > 1) {
       // Multiple orgs, none selected yet.
+      console.log(`[resolveOrganizationForSession] User ${userId} has ${orgIds.length} organizations, none selected`);
       return null;
     }
   }
 
   const email = session.user?.email;
-  return email ? await getOrCreateOrganizationForEmail(email) : null;
+  if (!email) {
+    console.warn('[resolveOrganizationForSession] No email in session, cannot resolve organization');
+    return null;
+  }
+  
+  const org = await getOrCreateOrganizationForEmail(email);
+  if (!org) {
+    console.warn(`[resolveOrganizationForSession] Failed to get/create org for email ${email}`);
+  }
+  return org;
 }
 
 export async function getOrCreateOrganizationForEmail(email: string): Promise<{ id: string; contact_email: string } | null> {
