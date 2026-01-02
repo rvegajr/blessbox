@@ -220,15 +220,16 @@ export function FormBuilderWizard({
                             data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
                             onChange={(e) => updateField(field.id, {
-                              options: e.target.value.split('\n').filter(o => o.trim())
+                              options: e.target.value.split('\n').map(o => o.trim()).filter(o => o !== '')
                             })}
-                            rows={6}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                            placeholder="Option 1\nOption 2\nOption 3\nOption 4\nOption 5\n... (add more)"
+                            rows={10}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono resize-y"
+                            placeholder="Newborn\nSize 1\nSize 2\nSize 3\nSize 4\nSize 5\n... (add as many as you need)"
                             aria-label={`Options for ${field.label || 'select field'}`}
+                            style={{ minHeight: '120px' }}
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            💡 Tip: You can add unlimited options. Just add one option per line.
+                            💡 Tip: Add unlimited options, one per line. Empty lines will be removed. You can resize this box by dragging the corner.
                           </p>
                         </div>
                       )}
