@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { format = 'csv', filters } = body;
+    const { format = 'csv', filters, timezone = 'America/Los_Angeles' } = body;
 
     // Get registrations with filters
     const registrations = await registrationService.listRegistrations(
@@ -64,10 +64,10 @@ export async function POST(request: NextRequest) {
         const standardValues = [
           reg.id,
           reg.qrCodeId,
-          new Date(reg.registeredAt).toLocaleString(),
+          new Date(reg.registeredAt).toLocaleString('en-US', { timeZone: timezone }),
           reg.deliveryStatus,
           reg.checkedInAt ? 'Yes' : 'No',
-          reg.checkedInAt ? new Date(reg.checkedInAt).toLocaleString() : ''
+          reg.checkedInAt ? new Date(reg.checkedInAt).toLocaleString('en-US', { timeZone: timezone }) : ''
         ];
         const dynamicValues = Object.keys(firstFormData).map(key => {
           const value = formData[key];
@@ -121,10 +121,10 @@ export async function POST(request: NextRequest) {
           const standardValues = [
             reg.id,
             reg.qrCodeId,
-            new Date(reg.registeredAt).toLocaleString(),
+            new Date(reg.registeredAt).toLocaleString('en-US', { timeZone: timezone }),
             reg.deliveryStatus,
             reg.checkedInAt ? 'Yes' : 'No',
-            reg.checkedInAt ? new Date(reg.checkedInAt).toLocaleString() : '',
+            reg.checkedInAt ? new Date(reg.checkedInAt).toLocaleString('en-US', { timeZone: timezone }) : '',
           ];
           const dynamicValues = Object.keys(firstFormData).map((key) => {
             const v = formData[key];
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
       });
       y -= titleSize + 8;
       drawLine(`Organization: ${organization.id}`);
-      drawLine(`Generated: ${new Date().toLocaleString()}`);
+      drawLine(`Generated: ${new Date().toLocaleString('en-US', { timeZone: timezone })} (${timezone})`);
       y -= 6;
 
       if (rows.length === 0) {
