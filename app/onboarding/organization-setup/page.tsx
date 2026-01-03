@@ -275,7 +275,7 @@ export default function OrganizationSetupPage() {
 
       <button
         type="submit"
-        data-testid="btn-submit-org-setup"
+        data-testid="btn-submit-org-setup btn-continue-org-setup"
         disabled={loading}
         data-loading={loading}
         className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -328,6 +328,14 @@ export default function OrganizationSetupPage() {
           steps={steps}
           currentStep={0}
           onStepChange={(step) => {
+            // Prevent navigation from wizard - form must be submitted first
+            if (step > 0 && !organizationId) {
+              // Trigger form submission by clicking the Continue button
+              const continueBtn = document.querySelector('[data-testid="btn-continue-org-setup"]') as HTMLButtonElement;
+              if (continueBtn) continueBtn.click();
+              return;
+            }
+            // Allow navigation to email verification only after org is created
             if (step === 0) return;
             router.push(['/onboarding/organization-setup', '/onboarding/email-verification', '/onboarding/form-builder', '/onboarding/qr-configuration'][step]);
           }}
