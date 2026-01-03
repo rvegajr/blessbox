@@ -291,7 +291,7 @@ export default function OrganizationSetupPage() {
 
       <button
         type="submit"
-        data-testid="btn-submit-org-setup btn-continue-org-setup"
+        data-testid="btn-continue-org-setup"
         disabled={loading}
         data-loading={loading}
         className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
