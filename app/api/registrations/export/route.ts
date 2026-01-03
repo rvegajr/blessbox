@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const orgId = searchParams.get('orgId');
     const format = (searchParams.get('format') || 'csv').toLowerCase();
+    const timezone = searchParams.get('timezone') || 'America/Los_Angeles';
 
     if (!orgId) {
       return NextResponse.json(
@@ -29,9 +30,9 @@ export async function GET(request: NextRequest) {
     const registrations = await registrationService.listRegistrations(orgId, {});
 
     if (format === 'csv') {
-      return generateCSV(registrations);
+      return generateCSV(registrations, timezone);
     } else if (format === 'pdf') {
-      return await generatePDF(registrations);
+      return await generatePDF(registrations, timezone);
     }
 
     return NextResponse.json(
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateCSV(registrations: any[]): NextResponse {
+function generateCSV(registrations: any[], timezone: string): NextResponse {
   if (registrations.length === 0) {
     return new NextResponse('No registrations to export', {
       status: 200,
@@ -76,10 +77,10 @@ function generateCSV(registrations: any[]): NextResponse {
     const standardValues = [
       reg.id,
       reg.qrCodeId,
-      new Date(reg.registeredAt).toLocaleString(),
+      new Date(reg.registeredAt).toLocaleString('en-US', { timeZone: timezone }),
       reg.deliveryStatus,
       reg.checkedInAt ? 'Yes' : 'No',
-      reg.checkedInAt ? new Date(reg.checkedInAt).toLocaleString() : ''
+      reg.checkedInAt ? new Date(reg.checkedInAt).toLocaleString('en-US', { timeZone: timezone }) : ''
     ];
     const dynamicValues = Object.keys(firstFormData).map(key => {
       const value = formData[key];
@@ -110,7 +111,7 @@ function generateCSV(registrations: any[]): NextResponse {
   });
 }
 
-async function generatePDF(registrations: any[]): Promise<NextResponse> {
+async function generatePDF(registrations: any[], timezone: string): Promise<NextResponse> {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([612, 792]); // US Letter size
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -131,7 +132,7 @@ async function generatePDF(registrations: any[]): Promise<NextResponse> {
   y -= 30;
 
   // Date
-  page.drawText(`Exported: ${new Date().toLocaleString()}`, {
+  page.drawText(`Exported: ${new Date().toLocaleString('en-US', { timeZone: timezone })} (${timezone})`, {
     x: margin,
     y,
     size: 10,
@@ -225,7 +226,7 @@ async function generatePDF(registrations: any[]): Promise<NextResponse> {
     x += colWidths[1];
 
     // Registered date
-    page.drawText(new Date(reg.registeredAt).toLocaleDateString(), {
+    page.drawText(new Date(reg.registeredAt).toLocaleString('en-US', { timeZone: timezone, dateStyle: 'short', timeStyle: 'short' }), {
       x,
       y,
       size: 8,

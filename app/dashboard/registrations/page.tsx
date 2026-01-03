@@ -163,11 +163,13 @@ export default function RegistrationsPage() {
               data-testid="btn-export-csv"
               onClick={async () => {
                 try {
+                  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                   const response = await fetch('/api/export/registrations', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       format: 'csv',
+                      timezone,
                       filters: {
                         deliveryStatus: filters.deliveryStatus || undefined,
                       },
@@ -201,11 +203,13 @@ export default function RegistrationsPage() {
               data-testid="btn-export-pdf"
               onClick={async () => {
                 try {
+                  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                   const response = await fetch('/api/export/registrations', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       format: 'pdf',
+                      timezone,
                       filters: {
                         deliveryStatus: filters.deliveryStatus || undefined,
                       },
