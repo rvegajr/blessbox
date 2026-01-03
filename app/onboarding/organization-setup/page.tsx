@@ -126,6 +126,7 @@ export default function OrganizationSetupPage() {
         </label>
         <input
           id="name"
+          name="name"
           type="text"
           data-testid="input-org-name"
           value={formData.name}
@@ -135,6 +136,7 @@ export default function OrganizationSetupPage() {
           }`}
           placeholder="e.g., Hope Community Food Bank"
           required
+          autoComplete="organization"
           aria-describedby={errors.name ? "org-name-error" : undefined}
           aria-label="Organization name"
         />
@@ -151,12 +153,14 @@ export default function OrganizationSetupPage() {
         </label>
         <input
           id="eventName"
+          name="eventName"
           type="text"
           data-testid="input-event-name"
           value={formData.eventName}
           onChange={(e) => handleInputChange('eventName', e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="e.g., Weekly Food Distribution"
+          autoComplete="off"
           aria-label="Event name"
         />
       </div>
@@ -167,6 +171,7 @@ export default function OrganizationSetupPage() {
         </label>
         <input
           id="contactEmail"
+          name="contactEmail"
           type="email"
           data-testid="input-contact-email"
           value={formData.contactEmail}
@@ -176,6 +181,7 @@ export default function OrganizationSetupPage() {
           }`}
           placeholder="contact@example.com"
           required
+          autoComplete="email"
           aria-describedby={errors.contactEmail ? "contact-email-error" : undefined}
           aria-label="Contact email"
         />
@@ -193,12 +199,14 @@ export default function OrganizationSetupPage() {
         </label>
         <input
           id="contactPhone"
+          name="contactPhone"
           type="tel"
           data-testid="input-contact-phone"
           value={formData.contactPhone}
           onChange={(e) => handleInputChange('contactPhone', e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="(555) 123-4567"
+          autoComplete="tel"
           aria-label="Contact phone"
         />
       </div>
@@ -212,12 +220,14 @@ export default function OrganizationSetupPage() {
           </label>
           <input
             id="contactAddress"
+            name="contactAddress"
             type="text"
             data-testid="input-contact-address"
             value={formData.contactAddress}
             onChange={(e) => handleInputChange('contactAddress', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="123 Main Street"
+            autoComplete="street-address"
             aria-label="Street address"
           />
         </div>
@@ -229,12 +239,14 @@ export default function OrganizationSetupPage() {
             </label>
             <input
               id="contactCity"
+              name="contactCity"
               type="text"
               data-testid="input-contact-city"
               value={formData.contactCity}
               onChange={(e) => handleInputChange('contactCity', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="City"
+              autoComplete="address-level2"
               aria-label="City"
             />
           </div>
@@ -245,12 +257,14 @@ export default function OrganizationSetupPage() {
             </label>
             <input
               id="contactState"
+              name="contactState"
               type="text"
               data-testid="input-contact-state"
               value={formData.contactState}
               onChange={(e) => handleInputChange('contactState', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="ST"
+              autoComplete="address-level1"
               aria-label="State"
             />
           </div>
@@ -262,12 +276,14 @@ export default function OrganizationSetupPage() {
           </label>
           <input
             id="contactZip"
+            name="contactZip"
             type="text"
             data-testid="input-contact-zip"
             value={formData.contactZip}
             onChange={(e) => handleInputChange('contactZip', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="12345"
+            autoComplete="postal-code"
             aria-label="ZIP code"
           />
         </div>
