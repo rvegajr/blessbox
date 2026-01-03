@@ -19,8 +19,9 @@ export default function DashboardPage() {
   const { ready } = useRequireActiveOrganization();
   const [subscription, setSubscription] = useState<any | null>(null);
   const [usage, setUsage] = useState<UsageDisplayData | null>(null);
-  const [classes, setClasses] = useState<any[]>([]);
-  const [participants, setParticipants] = useState<any[]>([]);
+  // Classes and Participants features hidden for MVP
+  // const [classes, setClasses] = useState<any[]>([]);
+  // const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
