@@ -29,11 +29,12 @@ export default function DashboardPage() {
     async function load() {
       if (!ready || status === 'loading') return;
       try {
-        const [subscriptionRes, usageRes, classesRes, participantsRes] = await Promise.all([
+        const [subscriptionRes, usageRes] = await Promise.all([
           fetch('/api/subscriptions'),
           fetch('/api/usage'),
-          fetch('/api/classes'),
-          fetch('/api/participants')
+          // Classes and Participants APIs hidden for MVP
+          // fetch('/api/classes'),
+          // fetch('/api/participants')
         ]);
         
         if (!ignore) {
@@ -45,11 +46,12 @@ export default function DashboardPage() {
             setUsage(usageData.data);
           }
           
-          const classesData = await classesRes.json();
-          setClasses(classesData);
+          // Classes and Participants data fetching hidden for MVP
+          // const classesData = await classesRes.json();
+          // setClasses(classesData);
           
-          const participantsData = await participantsRes.json();
-          setParticipants(participantsData);
+          // const participantsData = await participantsRes.json();
+          // setParticipants(participantsData);
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -175,50 +177,8 @@ export default function DashboardPage() {
                   }}
                 />
 
-                {/* Quick Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Classes Card */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Classes</h3>
-                        <p className="text-3xl font-bold text-blue-600">{classes.length}</p>
-                      </div>
-                      <div className="text-4xl text-blue-100">📚</div>
-                    </div>
-                    <div className="mt-4">
-                      <Link 
-                        href="/classes"
-                        data-testid="link-manage-classes"
-                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                        aria-label="Manage classes"
-                      >
-                        Manage Classes →
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Participants Card */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Participants</h3>
-                        <p className="text-3xl font-bold text-green-600">{participants.length}</p>
-                      </div>
-                      <div className="text-4xl text-green-100">👥</div>
-                    </div>
-                    <div className="mt-4">
-                      <Link 
-                        href="/participants"
-                        data-testid="link-manage-participants"
-                        className="text-green-600 hover:text-green-800 font-medium text-sm"
-                        aria-label="Manage participants"
-                      >
-                        Manage Participants →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                {/* Quick Stats Cards - Classes and Participants hidden for MVP */}
+                {/* TODO: Re-enable when features are ready */}
               </div>
 
               {/* Right Column - Recent Activity */}
@@ -230,7 +190,7 @@ export default function DashboardPage() {
             {/* Quick Actions */}
             <div id="quick-actions" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" data-tutorial-target="quick-actions">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/registrations"
                   data-testid="link-view-registrations"
@@ -259,6 +219,8 @@ export default function DashboardPage() {
                   </div>
                 </Link>
                 
+                {/* Create Class link hidden for MVP - feature not ready */}
+                {/*
                 <Link
                   href="/classes/new"
                   data-testid="link-create-class"
@@ -271,6 +233,7 @@ export default function DashboardPage() {
                     <div className="text-sm text-gray-600">Add new</div>
                   </div>
                 </Link>
+                */}
                 
                 <Link
                   href="/pricing"
