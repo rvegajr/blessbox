@@ -53,7 +53,7 @@ test.describe('Form Builder Regression (navigation/preview/persistence)', () => 
     await page.waitForLoadState('networkidle');
 
     // Preview modal should open (regression for "Preview feature coming soon!" alert)
-    await page.getByRole('button', { name: /preview form/i }).click();
+    await page.getByTestId('btn-preview-form').click();
     await expect(page.getByText('Form Preview')).toBeVisible();
     // Close preview
     await page.getByTestId('form-preview-close').click();
