@@ -38,19 +38,36 @@ test.describe('Form Builder Regression (navigation/preview/persistence)', () => 
     await page.goto(BASE_URL);
     await page.evaluate(
       ({ organizationId, contactEmail }) => {
+        // Clear both storages
         sessionStorage.clear();
-        // Bypass onboarding redirects with a valid org
+        localStorage.clear();
+        // Bypass onboarding redirects with a valid org (form builder checks localStorage)
+        localStorage.setItem('onboarding_organizationId', organizationId);
+        localStorage.setItem('onboarding_contactEmail', contactEmail);
+        localStorage.setItem('onboarding_emailVerified', 'true');
+        // Also set in sessionStorage for other pages
         sessionStorage.setItem('onboarding_organizationId', organizationId);
         sessionStorage.setItem('onboarding_contactEmail', contactEmail);
         sessionStorage.setItem('onboarding_emailVerified', 'true');
       },
       { organizationId, contactEmail }
     );
+    
+    // Set test auth cookies for authentication (form builder requires auth)
+    await page.context().addCookies([
+      { name: 'bb_test_auth', value: '1', url: BASE_URL },
+      { name: 'bb_test_email', value: contactEmail, url: BASE_URL },
+      { name: 'bb_test_org_id', value: organizationId, url: BASE_URL },
+    ]);
   });
 
   test('Prev/Next works, Preview opens, data persists across navigation', async ({ page }) => {
     await page.goto(`${BASE_URL}/onboarding/form-builder`);
     await page.waitForLoadState('networkidle');
+    
+    // Wait for form builder to fully load
+    await page.waitForSelector('[data-testid="form-builder-wizard"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="btn-preview-form"]', { timeout: 10000 });
 
     // Preview modal should open (regression for "Preview feature coming soon!" alert)
     await page.getByTestId('btn-preview-form').click();
