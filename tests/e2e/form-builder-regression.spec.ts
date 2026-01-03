@@ -67,7 +67,7 @@ test.describe('Form Builder Regression (navigation/preview/persistence)', () => 
     await expect(page.locator('input[value="Full Name"]').first()).toBeVisible();
 
     // Next should navigate to QR configuration (regression for non-working Next)
-    await page.getByTestId('next-button').click();
+    await page.getByTestId('btn-next').click();
     await page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 20000 });
 
     // Navigate back to form builder and ensure the field is still present (persistence regression)
