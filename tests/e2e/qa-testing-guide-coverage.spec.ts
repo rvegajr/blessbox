@@ -123,9 +123,9 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
       return;
     }
 
-    await expect(page.getByLabel('Coupon Code')).toBeVisible();
-    await page.getByLabel('Coupon Code').fill('FREE100');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await expect(page.getByTestId('coupon-code-input')).toBeVisible();
+    await page.getByTestId('coupon-code-input').fill('FREE100');
+    await page.getByTestId('apply-coupon-btn').click();
     await expect(page.getByText('Applied FREE100')).toBeVisible();
     await expect(page.getByText('Total').locator('..')).toContainText('$0.00');
     if (allowCompleteCheckout) {
