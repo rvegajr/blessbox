@@ -142,30 +142,30 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
 
     // SAVE20 => $1.00 minimum
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
-    await page.getByLabel('Coupon Code').fill('SAVE20');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.getByTestId('input-coupon').fill('SAVE20');
+    await page.getByTestId('btn-apply-coupon').click();
     await expect(page.getByText('Applied SAVE20')).toBeVisible();
     await expect(page.getByText('Total').locator('..')).toContainText('$1.00');
 
     // FIRST10 => $9.00
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
-    await page.getByLabel('Coupon Code').fill('FIRST10');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.getByTestId('input-coupon').fill('FIRST10');
+    await page.getByTestId('btn-apply-coupon').click();
     await expect(page.getByText('Applied FIRST10')).toBeVisible();
     await expect(page.getByText('Total').locator('..')).toContainText('$9.00');
 
     // Invalid coupon errors
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
-    await page.getByLabel('Coupon Code').fill('INVALID');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.getByTestId('input-coupon').fill('INVALID');
+    await page.getByTestId('btn-apply-coupon').click();
     await expect(page.getByText(/invalid coupon|coupon not found/i)).toBeVisible();
 
-    await page.getByLabel('Coupon Code').fill('EXPIRED');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.getByTestId('input-coupon').fill('EXPIRED');
+    await page.getByTestId('btn-apply-coupon').click();
     await expect(page.getByText(/coupon (has )?expired/i)).toBeVisible();
 
-    await page.getByLabel('Coupon Code').fill('MAXEDOUT');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.getByTestId('input-coupon').fill('MAXEDOUT');
+    await page.getByTestId('btn-apply-coupon').click();
     await expect(page.getByText(/limit reached|maximum uses/i)).toBeVisible();
   });
 
