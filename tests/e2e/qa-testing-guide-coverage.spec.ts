@@ -135,8 +135,8 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
 
     // WELCOME50 => $9.50
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
-    await page.getByLabel('Coupon Code').fill('WELCOME50');
-    await page.getByRole('button', { name: 'Apply' }).click();
+    await page.getByTestId('input-coupon').fill('WELCOME50');
+    await page.getByTestId('btn-apply-coupon').click();
     await expect(page.getByText('Applied WELCOME50')).toBeVisible();
     await expect(page.getByText('Total').locator('..')).toContainText('$9.50');
 
