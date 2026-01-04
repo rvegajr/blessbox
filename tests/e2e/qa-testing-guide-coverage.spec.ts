@@ -317,7 +317,7 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
     await expect(page.getByRole('heading', { name: /coupon management/i })).toBeVisible();
     await page.getByRole('link', { name: /create coupon/i }).click();
     const couponCode = `TEST${Date.now()}`;
-    await page.getByLabel('Coupon Code *').fill(couponCode);
+    await page.getByTestId('input-coupon').fill(couponCode);
     await page.getByLabel('Discount Type *').selectOption('percentage');
     await page.getByLabel(/discount value/i).fill('25');
     await page.getByRole('button', { name: /create|save/i }).click();
