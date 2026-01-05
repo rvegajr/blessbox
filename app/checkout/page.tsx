@@ -82,9 +82,10 @@ function CheckoutContent() {
 
   const handlePaymentSuccess = (paymentResult: any) => {
     setStatus('Payment successful! Redirecting to dashboard...');
+    // Use replace instead of push to prevent back button issues
     setTimeout(() => {
-      router.push('/dashboard');
-    }, 2000);
+      router.replace('/dashboard');
+    }, 1500);
   };
 
   const handlePaymentError = (error: string) => {

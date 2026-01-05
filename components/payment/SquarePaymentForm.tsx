@@ -147,7 +147,7 @@ export default function SquarePaymentForm({
 
   const handlePayment = async () => {
     if (!card || !payments) {
-      onPaymentError('Payment form not initialized');
+      onPaymentError('Payment form not initialized. Please refresh the page.');
       return;
     }
 
@@ -160,9 +160,10 @@ export default function SquarePaymentForm({
     setIsLoading(true);
 
     try {
+      // Tokenize card - Square will validate postal code automatically
       const result = await card.tokenize();
       
-      if (result.status === 'OK') {
+      if (result.status === 'OK' && result.token) {
         // Send the payment token to our backend
         const response = await fetch('/api/payment/process', {
           method: 'POST',
@@ -184,14 +185,20 @@ export default function SquarePaymentForm({
         if (paymentResult.success) {
           onPaymentSuccess(paymentResult);
         } else {
-          onPaymentError(paymentResult.error || 'Payment failed');
+          onPaymentError(paymentResult.error || paymentResult.message || 'Payment failed');
         }
       } else {
-        onPaymentError('Card tokenization failed');
+        // Square validation errors
+        const errorDetails = result.errors || [];
+        const errorMessage = errorDetails.length > 0 
+          ? errorDetails.map((e: any) => e.detail || e.message).join(', ')
+          : 'Card validation failed. Please check your card details and postal code.';
+        onPaymentError(errorMessage);
       }
     } catch (error) {
       console.error('Payment processing error:', error);
-      onPaymentError('Payment processing failed');
+      const errorMessage = error instanceof Error ? error.message : 'Payment processing failed';
+      onPaymentError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -204,14 +211,17 @@ export default function SquarePaymentForm({
           Payment Information
         </h3>
         
-        {/* Square Card Input - always rendered so Square can attach to it */}
-        <div id="card-container" className="mb-4 min-h-[50px]">
-          {/* Square will inject the card form here */}
-        </div>
         {isInitializing && (
-          <div className="flex items-center justify-center p-2 mb-4" data-testid="loading-payment-form">
+          <div className="flex items-center justify-center p-4 mb-4" data-testid="loading-payment-form">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
+          </div>
+        )}
+        
+        {/* Square Card Input - only render container when not initializing to prevent duplicates */}
+        {!isInitializing && (
+          <div id="card-container" className="mb-4 min-h-[50px]" key={`card-container-${applicationId}-${locationId}`}>
+            {/* Square will inject the card form here */}
           </div>
         )}
 
