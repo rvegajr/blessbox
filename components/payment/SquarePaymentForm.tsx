@@ -94,7 +94,7 @@ export default function SquarePaymentForm({
         const payments = window.Square.payments(applicationId, locationId);
         setPayments(payments);
 
-        // Create card payment method
+        // Create card payment method with postal code requirement
         const card = await payments.card({
           style: {
             '.input-container': {
@@ -114,6 +114,7 @@ export default function SquarePaymentForm({
               color: '#E74C3C',
             },
           },
+          postalCode: 'required', // Require postal code for validation
         });
 
         // Attach card to container
