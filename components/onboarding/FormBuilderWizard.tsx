@@ -38,7 +38,8 @@ export function FormBuilderWizard({
     };
 
     if (type === 'select') {
-      newField.options = []; // Start empty - admin enters their own options
+      // Provide default options - users can modify, add more, or delete as needed
+      newField.options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
     }
 
     setFields([...fields, newField]);
@@ -220,24 +221,21 @@ export function FormBuilderWizard({
                             data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
                             onChange={(e) => {
-                              const lines = e.target.value.split('\n');
-                              // Preserve empty lines but filter out trailing empty lines
-                              const trimmedLines = lines.map(o => o.trim());
-                              // Keep all non-empty lines, but allow empty lines in the middle
-                              const options = trimmedLines.filter((o, i) => {
-                                // Keep if not empty, or if it's not the last empty line
-                                return o !== '' || (i < trimmedLines.length - 1 && trimmedLines.slice(i + 1).some(l => l !== ''));
-                              });
+                              // Simple: split by newline, trim, filter empty
+                              const options = e.target.value
+                                .split('\n')
+                                .map(o => o.trim())
+                                .filter(o => o !== '');
                               updateField(field.id, { options });
                             }}
                             rows={10}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono resize-y"
-                            placeholder="Newborn\nSize 1\nSize 2\nSize 3\nSize 4\nSize 5\n... (add as many as you need)"
+                            placeholder="Option 1\nOption 2\nOption 3\n... (add as many as you need)"
                             aria-label={`Options for ${field.label || 'select field'}`}
                             style={{ minHeight: '120px' }}
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            💡 Tip: Add unlimited options, one per line. Empty lines will be removed. You can resize this box by dragging the corner.
+                            💡 Tip: Add unlimited options, one per line. You can resize this box by dragging the corner.
                           </p>
                         </div>
                       )}
