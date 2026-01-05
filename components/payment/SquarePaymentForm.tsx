@@ -211,17 +211,14 @@ export default function SquarePaymentForm({
           Payment Information
         </h3>
         
+        {/* Square Card Input - always render container so Square can attach to it */}
+        <div id="card-container" className="mb-4 min-h-[50px]" key={`card-container-${applicationId}-${locationId}`}>
+          {/* Square will inject the card form here */}
+        </div>
         {isInitializing && (
-          <div className="flex items-center justify-center p-4 mb-4" data-testid="loading-payment-form">
+          <div className="flex items-center justify-center p-2 mb-4" data-testid="loading-payment-form">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
             <span className="ml-2 text-gray-600 text-sm">Loading payment form...</span>
-          </div>
-        )}
-        
-        {/* Square Card Input - only render container when not initializing to prevent duplicates */}
-        {!isInitializing && (
-          <div id="card-container" className="mb-4 min-h-[50px]" key={`card-container-${applicationId}-${locationId}`}>
-            {/* Square will inject the card form here */}
           </div>
         )}
 
