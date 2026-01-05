@@ -219,9 +219,17 @@ export function FormBuilderWizard({
                           <textarea
                             data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
-                            onChange={(e) => updateField(field.id, {
-                              options: e.target.value.split('\n').map(o => o.trim()).filter(o => o !== '')
-                            })}
+                            onChange={(e) => {
+                              const lines = e.target.value.split('\n');
+                              // Preserve empty lines but filter out trailing empty lines
+                              const trimmedLines = lines.map(o => o.trim());
+                              // Keep all non-empty lines, but allow empty lines in the middle
+                              const options = trimmedLines.filter((o, i) => {
+                                // Keep if not empty, or if it's not the last empty line
+                                return o !== '' || (i < trimmedLines.length - 1 && trimmedLines.slice(i + 1).some(l => l !== ''));
+                              });
+                              updateField(field.id, { options });
+                            }}
                             rows={10}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono resize-y"
                             placeholder="Newborn\nSize 1\nSize 2\nSize 3\nSize 4\nSize 5\n... (add as many as you need)"

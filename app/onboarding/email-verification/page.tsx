@@ -299,11 +299,34 @@ export default function EmailVerificationPage() {
           steps={steps}
           currentStep={1}
           onStepChange={(step) => {
-            const paths = ['/onboarding/organization-setup', '/onboarding/email-verification', '/onboarding/form-builder', '/onboarding/qr-configuration'];
-            router.push(paths[step]);
+            // Prevent navigation forward until email is verified
+            if (step > 1 && !verified) {
+              // If trying to go forward, trigger verification instead
+              if (code.length === 6) {
+                handleVerify({ preventDefault: () => {} } as any);
+              }
+              return;
+            }
+            // Allow navigation backward
+            if (step < 1) {
+              const paths = ['/onboarding/organization-setup', '/onboarding/email-verification', '/onboarding/form-builder', '/onboarding/qr-configuration'];
+              router.push(paths[step]);
+            }
+            // Only allow forward navigation if verified
+            if (step > 1 && verified) {
+              const paths = ['/onboarding/organization-setup', '/onboarding/email-verification', '/onboarding/form-builder', '/onboarding/qr-configuration'];
+              router.push(paths[step]);
+            }
           }}
-          onComplete={() => handleVerify({} as any)}
-          onSkip={() => router.push('/onboarding/form-builder')}
+          onComplete={() => handleVerify({ preventDefault: () => {} } as any)}
+          onSkip={() => {
+            // Skip should still require verification for security
+            if (!verified && code.length === 6) {
+              handleVerify({ preventDefault: () => {} } as any);
+            } else if (verified) {
+              router.push('/onboarding/form-builder');
+            }
+          }}
         />
       </div>
     </div>
