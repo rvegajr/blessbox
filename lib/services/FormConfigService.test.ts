@@ -393,14 +393,14 @@ describe('FormConfigService', () => {
           label: 'Size',
           required: true,
           order: 0,
-          // Missing options
+          // Missing options - now allowed (users can add options later)
         } as FormField,
       ];
 
       const result = await service.validateFormFields(fields);
 
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toBeDefined();
+      // Select fields without options are now valid (users can add options later)
+      expect(result.isValid).toBe(true);
     });
   });
 });

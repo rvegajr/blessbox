@@ -14,7 +14,7 @@ export class QRCodeService implements IQRCodeService {
     // Get all QR code sets for this organization
     const qrSetResult = await this.db.execute({
       sql: `
-        SELECT id, qr_codes, is_active, created_at, updated_at
+        SELECT id, qr_codes, is_active, scan_count, created_at, updated_at
         FROM qr_code_sets
         WHERE organization_id = ? AND is_active = 1
         ORDER BY created_at DESC

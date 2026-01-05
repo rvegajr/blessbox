@@ -225,8 +225,10 @@ export class FormConfigService implements IFormConfigService {
         errors.push(`Field ${index + 1}: Invalid type. Must be one of: ${validTypes.join(', ')}`);
       }
 
-      if (field.type === 'select' && (!field.options || field.options.length === 0)) {
-        errors.push(`Field ${index + 1}: Select fields must have options`);
+      // Allow select fields with empty options array - users can add options later
+      // Only validate that options is an array if it exists
+      if (field.type === 'select' && field.options !== undefined && !Array.isArray(field.options)) {
+        errors.push(`Field ${index + 1}: Select field options must be an array`);
       }
 
       if (typeof field.required !== 'boolean') {
