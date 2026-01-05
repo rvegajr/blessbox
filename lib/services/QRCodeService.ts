@@ -56,7 +56,9 @@ export class QRCodeService implements IQRCodeService {
           dataUrl: qrCodeData.dataUrl || '',
           description: qrCodeData.description || undefined,
           isActive: true, // QR codes inherit active status from set
-          scanCount: qrSetRow.scan_count || 0,
+          // Fix: Use per-QR-code registration count, not set-level scan_count
+          // Each QR code should show its own scan count based on registrations
+          scanCount: registrationCount,
           registrationCount,
           createdAt: qrCodeData.createdAt || qrSetRow.created_at,
           updatedAt: qrSetRow.updated_at,
