@@ -149,21 +149,26 @@ test.describe('Dropdown Options Regression', () => {
     const optionsTextarea = page.locator('textarea[data-testid^="input-select-options-"]').first();
     await expect(optionsTextarea).toBeVisible({ timeout: 5000 });
 
-    // BUG: Currently options textarea is EMPTY after adding a select field
-    // EXPECTED: Should have 5 default options: "Option 1", "Option 2", etc.
+    // EXPECTED: Should have 10 default options: "1", "2", "3", ... "10" (no "Option" prefix)
     const optionsValue = await optionsTextarea.inputValue();
     
     console.log('Options textarea value:', JSON.stringify(optionsValue));
     
-    // Verify default options are present
-    expect(optionsValue).toContain('Option 1');
-    expect(optionsValue).toContain('Option 2');
-    expect(optionsValue).toContain('Option 3');
-    expect(optionsValue).toContain('Option 4');
-    expect(optionsValue).toContain('Option 5');
+    // Verify 10 default options are present (numbered 1-10, no prefix)
+    const options = optionsValue.split('\n').filter((o: string) => o.trim() !== '');
+    expect(options.length).toBe(10);
+    
+    // Verify each number from 1 to 10 is present
+    for (let i = 1; i <= 10; i++) {
+      expect(optionsValue).toContain(String(i));
+    }
+    
+    // Verify no "Option" or "Choice" prefix
+    expect(optionsValue).not.toContain('Option');
+    expect(optionsValue).not.toContain('Choice');
   });
 
-  test('User can add more than 5 options to a dropdown', async ({ page }) => {
+  test('User can add more than 10 options to a dropdown', async ({ page }) => {
     await page.goto(`${BASE_URL}/onboarding/form-builder`);
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="form-builder-wizard"]', { timeout: 10000 });
@@ -177,8 +182,8 @@ test.describe('Dropdown Options Regression', () => {
     const optionsTextarea = page.locator('textarea[data-testid^="input-select-options-"]').first();
     await expect(optionsTextarea).toBeVisible({ timeout: 5000 });
 
-    // Type 10 options (more than the default 5)
-    const tenOptions = [
+    // Type 15 options (more than the default 10)
+    const fifteenOptions = [
       'Small',
       'Medium', 
       'Large',
@@ -189,21 +194,26 @@ test.describe('Dropdown Options Regression', () => {
       'Size 2',
       'Size 3',
       'Size 4',
+      'Size 5',
+      'Size 6',
+      'Size 7',
+      'Size 8',
+      'Size 9',
     ].join('\n');
 
-    await optionsTextarea.fill(tenOptions);
+    await optionsTextarea.fill(fifteenOptions);
 
-    // Verify all 10 options are preserved
+    // Verify all 15 options are preserved
     const savedValue = await optionsTextarea.inputValue();
     const savedOptions = savedValue.split('\n').filter((o: string) => o.trim() !== '');
     
     console.log('Saved options count:', savedOptions.length);
     console.log('Saved options:', savedOptions);
     
-    // EXPECTED: All 10 options should be preserved
-    expect(savedOptions.length).toBe(10);
+    // EXPECTED: All 15 options should be preserved (more than default 10)
+    expect(savedOptions.length).toBe(15);
     expect(savedOptions).toContain('Small');
-    expect(savedOptions).toContain('Size 4');
+    expect(savedOptions).toContain('Size 9');
   });
 
   test('Deleting an option should not reduce available slots', async ({ page }) => {

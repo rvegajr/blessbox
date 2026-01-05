@@ -38,8 +38,8 @@ export function FormBuilderWizard({
     };
 
     if (type === 'select') {
-      // Provide default options - users can modify, add more, or delete as needed
-      newField.options = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
+      // Provide 10 default options (numbered 1-10, no prefix) - users can modify, add more, or delete as needed
+      newField.options = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
     }
 
     setFields([...fields, newField]);
