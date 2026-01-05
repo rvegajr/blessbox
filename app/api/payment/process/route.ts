@@ -60,7 +60,30 @@ export async function POST(req: NextRequest) {
         const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
         const applicationId = (process.env.SQUARE_APPLICATION_ID || '').trim();
         const locationId = (process.env.SQUARE_LOCATION_ID || '').trim();
+        
+        // Enhanced logging for payment diagnostics
+        console.log('[PAYMENT] Processing payment:', {
+          timestamp: new Date().toISOString(),
+          organizationId: org.id,
+          organizationName: org.name,
+          email,
+          planType,
+          amount,
+          currency,
+          tokenLength: paymentToken?.length || 0,
+          tokenPrefix: paymentToken?.substring(0, 10) || 'none',
+          hasAccessToken: !!accessToken,
+          hasApplicationId: !!applicationId,
+          hasLocationId: !!locationId,
+          environment: process.env.SQUARE_ENVIRONMENT || 'not-set',
+        });
+        
         if (!accessToken || !applicationId || !locationId) {
+          console.error('[PAYMENT] Missing Square configuration:', {
+            hasAccessToken: !!accessToken,
+            hasApplicationId: !!applicationId,
+            hasLocationId: !!locationId,
+          });
           return new Response(
             JSON.stringify({
               success: false,
@@ -74,6 +97,7 @@ export async function POST(req: NextRequest) {
         const squarePaymentService = new SquarePaymentService();
         
         // Process payment with Square
+        console.log('[PAYMENT] Calling SquarePaymentService.processPayment...');
         const paymentResult = await squarePaymentService.processPayment(
           String(paymentToken),
           Number(amount),
@@ -81,10 +105,25 @@ export async function POST(req: NextRequest) {
           org.id
         );
 
+        console.log('[PAYMENT] Square payment result:', {
+          success: paymentResult.success,
+          paymentId: paymentResult.paymentId,
+          squarePaymentId: paymentResult.squarePaymentId,
+          error: paymentResult.error,
+          amount: paymentResult.amount,
+          currency: paymentResult.currency,
+        });
+
         if (!paymentResult.success) {
           // Provide user-friendly error message
           const errorMessage = paymentResult.error || 'Payment failed';
           const isAuthError = errorMessage.includes('401') || errorMessage.includes('authorization');
+          
+          console.error('[PAYMENT] Payment failed:', {
+            error: errorMessage,
+            isAuthError,
+            paymentResult,
+          });
           
           return new Response(
             JSON.stringify({
@@ -98,13 +137,21 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        console.log(`Square payment successful: ${paymentResult.paymentId || paymentResult.squarePaymentId}`);
+        console.log(`[PAYMENT] ✅ Square payment successful: ${paymentResult.paymentId || paymentResult.squarePaymentId}`);
       } else {
         // Local/dev: allow checkout flows without Square credentials.
-        console.log(`[mock-payment] accepted token for ${email}, amount=${amount} ${currency}`);
+        console.log(`[PAYMENT] [mock-payment] accepted token for ${email}, amount=${amount} ${currency}`);
       }
     } catch (error) {
-      console.error('Square payment processing error:', error);
+      console.error('[PAYMENT] ❌ Square payment processing error:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : typeof error,
+        organizationId: org.id,
+        email,
+        amount,
+        currency,
+      });
       return new Response(JSON.stringify({ 
         success: false, 
         error: 'Payment processing failed',

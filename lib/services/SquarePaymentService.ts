@@ -53,22 +53,57 @@ export class SquarePaymentService implements IPaymentProcessor {
     currency: string,
     customerId?: string
   ): Promise<PaymentResult> {
+    const startTime = Date.now();
+    console.log('[SQUARE] processPayment called:', {
+      timestamp: new Date().toISOString(),
+      sourceIdLength: sourceId?.length || 0,
+      sourceIdPrefix: sourceId?.substring(0, 20) || 'none',
+      amount,
+      currency,
+      customerId,
+      environment: this.environment === SquareEnvironment.Production ? 'production' : 'sandbox',
+    });
+
     try {
       const idempotencyKey = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`) as string;
-      const response = await this.client.payments.create({
+      
+      console.log('[SQUARE] Creating payment request:', {
+        idempotencyKey,
+        amount,
+        currency,
+        hasCustomerId: !!customerId,
+      });
+
+      const requestPayload = {
         sourceId,
         amountMoney: { amount: BigInt(amount), currency },
         idempotencyKey,
         ...(customerId ? { customerId } : {}),
         note: customerId ? `BlessBox subscription payment (${customerId})` : 'BlessBox subscription payment',
+      };
+
+      const response = await this.client.payments.create(requestPayload);
+
+      const duration = Date.now() - startTime;
+      console.log('[SQUARE] Payment API response received:', {
+        duration: `${duration}ms`,
+        hasResult: !!response.result,
+        hasPayment: !!response.result?.payment,
+        paymentId: response.result?.payment?.id,
+        paymentStatus: response.result?.payment?.status,
+        paymentAmount: response.result?.payment?.amountMoney?.amount?.toString(),
+        paymentCurrency: response.result?.payment?.amountMoney?.currency,
       });
 
       const payment = response.result.payment;
       if (!payment?.id) {
+        console.error('[SQUARE] ❌ No payment ID in response:', {
+          response: JSON.stringify(response.result, null, 2),
+        });
         return { success: false, error: 'No payment returned from Square' };
       }
 
-      return {
+      const result = {
         success: payment.status === 'COMPLETED',
         paymentId: payment.id,
         squarePaymentId: payment.id,
@@ -76,7 +111,24 @@ export class SquarePaymentService implements IPaymentProcessor {
         currency,
         ...(payment.status === 'COMPLETED' ? {} : { error: `Payment ${payment.status || 'UNKNOWN'}` }),
       };
+
+      if (result.success) {
+        console.log('[SQUARE] ✅ Payment successful:', {
+          paymentId: result.paymentId,
+          amount: result.amount,
+          currency: result.currency,
+        });
+      } else {
+        console.warn('[SQUARE] ⚠️ Payment not completed:', {
+          paymentId: result.paymentId,
+          status: payment.status,
+          error: result.error,
+        });
+      }
+
+      return result;
     } catch (error) {
+      const duration = Date.now() - startTime;
       const details = (() => {
         if (error instanceof SquareError) {
           const errs = (error as any)?.errors;
@@ -84,6 +136,14 @@ export class SquarePaymentService implements IPaymentProcessor {
             Array.isArray(errs) && errs.length > 0
               ? errs.map((e: any) => e?.detail || e?.code).filter(Boolean).join('; ')
               : '';
+          
+          console.error('[SQUARE] ❌ SquareError caught:', {
+            duration: `${duration}ms`,
+            statusCode: error.statusCode,
+            errors: errs,
+            message: msg,
+            fullError: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+          });
           
           // Provide user-friendly error messages for common issues
           if (error.statusCode === 401) {
@@ -94,7 +154,14 @@ export class SquarePaymentService implements IPaymentProcessor {
         }
         return error instanceof Error ? error.message : String(error);
       })();
-      console.error('Square payment processing failed:', details);
+      
+      console.error('[SQUARE] ❌ Payment processing failed:', {
+        duration: `${duration}ms`,
+        error: details,
+        errorType: error instanceof SquareError ? 'SquareError' : error instanceof Error ? 'Error' : typeof error,
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      
       return {
         success: false,
         error: details || 'Payment processing failed',
