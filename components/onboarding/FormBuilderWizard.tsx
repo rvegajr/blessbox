@@ -221,12 +221,25 @@ export function FormBuilderWizard({
                             data-testid={`input-select-options-${field.id}`}
                             value={field.options?.join('\n') || ''}
                             onChange={(e) => {
-                              // Simple: split by newline, trim, filter empty
+                              // Preserve all input during typing - don't trim yet
+                              // Only filter completely empty lines (all whitespace)
+                              const lines = e.target.value.split('\n');
+                              const options = lines.filter(o => o.trim() !== '');
+                              updateField(field.id, { options });
+                            }}
+                            onBlur={(e) => {
+                              // Trim whitespace when user finishes editing (clicks away)
                               const options = e.target.value
                                 .split('\n')
                                 .map(o => o.trim())
                                 .filter(o => o !== '');
                               updateField(field.id, { options });
+                            }}
+                            onKeyDown={(e) => {
+                              // Prevent spacebar from triggering navigation when typing in textarea
+                              if (e.key === ' ') {
+                                e.stopPropagation();
+                              }
                             }}
                             rows={10}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono resize-y"
