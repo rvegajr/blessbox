@@ -250,5 +250,133 @@ test.describe('Dropdown Options Regression', () => {
     expect(finalOptions.length).toBe(5);
     expect(finalOptions).toContain('F');
   });
+
+  test('Spacebar should not trigger navigation when typing in options textarea', async ({ page }) => {
+    await page.goto(`${BASE_URL}/onboarding/form-builder`);
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[data-testid="form-builder-wizard"]', { timeout: 10000 });
+
+    // Add a dropdown field
+    const dropdownButton = page.getByRole('button', { name: /dropdown/i });
+    await dropdownButton.click();
+
+    const optionsTextarea = page.locator('textarea[data-testid^="input-select-options-"]').first();
+    await expect(optionsTextarea).toBeVisible({ timeout: 5000 });
+
+    // Focus the textarea
+    await optionsTextarea.click();
+    await optionsTextarea.focus();
+
+    // Get current URL to verify we don't navigate
+    const initialUrl = page.url();
+
+    // Type text with spaces in the textarea
+    await optionsTextarea.type('Size 1', { delay: 50 });
+    
+    // Press spacebar multiple times
+    await optionsTextarea.press('Space');
+    await optionsTextarea.press('Space');
+    await optionsTextarea.type('Size 2', { delay: 50 });
+
+    // Verify we're still on the same page (no navigation)
+    expect(page.url()).toBe(initialUrl);
+    
+    // Verify spaces were preserved in the textarea
+    const value = await optionsTextarea.inputValue();
+    expect(value).toContain('Size 1');
+    expect(value).toContain('Size 2');
+    console.log('Textarea value after typing with spaces:', JSON.stringify(value));
+  });
+
+  test('Spaces should be preserved during typing, trimmed on blur', async ({ page }) => {
+    await page.goto(`${BASE_URL}/onboarding/form-builder`);
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[data-testid="form-builder-wizard"]', { timeout: 10000 });
+
+    const dropdownButton = page.getByRole('button', { name: /dropdown/i });
+    await dropdownButton.click();
+
+    const optionsTextarea = page.locator('textarea[data-testid^="input-select-options-"]').first();
+    await expect(optionsTextarea).toBeVisible({ timeout: 5000 });
+
+    // Type options with leading/trailing spaces
+    await optionsTextarea.fill('  Size 1  \n  Size 2  \n  Size 3  ');
+
+    // While focused, spaces should be preserved
+    let valueDuringTyping = await optionsTextarea.inputValue();
+    console.log('Value during typing (before blur):', JSON.stringify(valueDuringTyping));
+    
+    // Verify spaces are present during typing
+    expect(valueDuringTyping).toContain('  Size 1  ');
+    expect(valueDuringTyping).toContain('  Size 2  ');
+
+    // Blur the textarea (simulate clicking away)
+    await optionsTextarea.blur();
+    
+    // Wait a bit for onChange/onBlur handlers to process
+    await page.waitForTimeout(100);
+
+    // After blur, spaces should be trimmed
+    const valueAfterBlur = await optionsTextarea.inputValue();
+    console.log('Value after blur (trimmed):', JSON.stringify(valueAfterBlur));
+    
+    const optionsAfterBlur = valueAfterBlur.split('\n').filter((o: string) => o.trim() !== '');
+    
+    // Verify trimming happened
+    expect(optionsAfterBlur.length).toBeGreaterThan(0);
+    optionsAfterBlur.forEach(option => {
+      // Each option should not have leading/trailing spaces
+      expect(option).toBe(option.trim());
+    });
+    
+    // But middle spaces should be preserved
+    expect(optionsAfterBlur.some(o => o.includes(' '))).toBe(true);
+  });
+
+  test('Options with numbers at start should work correctly', async ({ page }) => {
+    await page.goto(`${BASE_URL}/onboarding/form-builder`);
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[data-testid="form-builder-wizard"]', { timeout: 10000 });
+
+    const dropdownButton = page.getByRole('button', { name: /dropdown/i });
+    await dropdownButton.click();
+
+    const optionsTextarea = page.locator('textarea[data-testid^="input-select-options-"]').first();
+    await expect(optionsTextarea).toBeVisible({ timeout: 5000 });
+
+    // Type options starting with numbers
+    await optionsTextarea.fill('1Newborn\n2Size1\n3Size2\n4Size3');
+
+    // Blur to trigger trimming
+    await optionsTextarea.blur();
+    await page.waitForTimeout(100);
+
+    const value = await optionsTextarea.inputValue();
+    const options = value.split('\n').filter((o: string) => o.trim() !== '');
+    
+    console.log('Options with numbers:', options);
+    
+    // Verify numbers at start are preserved
+    expect(options).toContain('1Newborn');
+    expect(options).toContain('2Size1');
+    expect(options).toContain('3Size2');
+    expect(options).toContain('4Size3');
+    
+    // Verify we can delete numbers without losing the option
+    await optionsTextarea.click();
+    await optionsTextarea.fill('Newborn\nSize1\nSize2\nSize3');
+    await optionsTextarea.blur();
+    await page.waitForTimeout(100);
+
+    const valueAfterDelete = await optionsTextarea.inputValue();
+    const optionsAfterDelete = valueAfterDelete.split('\n').filter((o: string) => o.trim() !== '');
+    
+    console.log('Options after deleting numbers:', optionsAfterDelete);
+    
+    // Verify options without numbers are preserved
+    expect(optionsAfterDelete).toContain('Newborn');
+    expect(optionsAfterDelete).toContain('Size1');
+    expect(optionsAfterDelete.length).toBe(4);
+  });
 });
 
