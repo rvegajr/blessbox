@@ -84,8 +84,21 @@ test.describe('Form Builder Regression (navigation/preview/persistence)', () => 
     await expect(page.locator('input[value="Full Name"]').first()).toBeVisible();
 
     // Next should navigate to QR configuration (regression for non-working Next)
+    // Click Next and wait for navigation - handleSave() will save and navigate
+    // First, wait for any loading states to clear
+    await page.waitForLoadState('networkidle');
+    
+    // Click Next button
     await page.getByTestId('btn-next').click();
-    await page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 20000 });
+    
+    // Wait for either navigation or error message
+    await Promise.race([
+      page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 30000 }),
+      page.waitForSelector('[role="alert"], .error, [data-testid*="error"]', { timeout: 5000 }).then(async () => {
+        const errorText = await page.textContent('body');
+        throw new Error(`Save failed with error: ${errorText?.substring(0, 200)}`);
+      }),
+    ]);
 
     // Navigate back to form builder and ensure the field is still present (persistence regression)
     await page.goto(`${BASE_URL}/onboarding/form-builder`);
