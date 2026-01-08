@@ -205,6 +205,8 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
       external_subscription_id TEXT,
       start_date TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       end_date TEXT,
+      cancellation_reason TEXT,
+      cancelled_at TEXT,
       created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
@@ -478,6 +480,10 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
   await tryExec(`ALTER TABLE subscription_plans ADD COLUMN end_date TEXT;`);
   await tryExec(`ALTER TABLE subscription_plans ADD COLUMN created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP);`);
   await tryExec(`ALTER TABLE subscription_plans ADD COLUMN updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP);`);
+
+  // Cancellation tracking columns (added for SubscriptionCancel service)
+  await tryExec(`ALTER TABLE subscription_plans ADD COLUMN cancellation_reason TEXT;`);
+  await tryExec(`ALTER TABLE subscription_plans ADD COLUMN cancelled_at TEXT;`);
 
   return { success: true } as const;
 }
