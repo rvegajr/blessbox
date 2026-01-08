@@ -100,6 +100,8 @@ export const subscriptionPlans = sqliteTable('subscription_plans', {
   currency: text('currency').default('USD').notNull(),
   startDate: text('start_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
   endDate: text('end_date'),
+  cancellationReason: text('cancellation_reason'),
+  cancelledAt: text('cancelled_at'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
