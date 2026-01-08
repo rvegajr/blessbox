@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 // Square Web Payments SDK types
 declare global {
@@ -8,7 +8,7 @@ declare global {
     Square: {
       payments: (applicationId: string, locationId: string) => {
         card: () => Promise<{
-          tokenize: () => Promise<{ status: string; token?: string }>;
+          tokenize: () => Promise<{ status: string; token?: string; errors?: Array<{ detail?: string; message?: string }> }>;
           attach: (selector: string) => Promise<void>;
           destroy: () => Promise<void>;
         }>;
@@ -48,6 +48,65 @@ export default function SquarePaymentForm({
   const [isInitializing, setIsInitializing] = useState(true);
   const initializingRef = useRef(false);
   const cardRef = useRef<any>(null);
+  const paymentsRef = useRef<any>(null);
+
+  /** Re-creates the card form (after a failed payment or destroyed card) */
+  const reinitializeCard = useCallback(async () => {
+    if (!paymentsRef.current) return;
+    
+    setIsInitializing(true);
+    
+    try {
+      // Destroy old card if it exists
+      if (cardRef.current) {
+        try {
+          await cardRef.current.destroy();
+        } catch {
+          // Ignore - card may already be destroyed
+        }
+        cardRef.current = null;
+        setCard(null);
+      }
+
+      // Clear container
+      const container = document.getElementById('card-container');
+      if (container) {
+        container.innerHTML = '';
+      }
+
+      // Create new card instance
+      const newCard = await paymentsRef.current.card({
+        style: {
+          '.input-container': {
+            borderColor: '#E0E0E0',
+            borderRadius: '8px',
+          },
+          '.input-container.is-focus': {
+            borderColor: '#4A90E2',
+          },
+          '.input-container.is-error': {
+            borderColor: '#E74C3C',
+          },
+          '.message-text': {
+            color: '#E74C3C',
+          },
+          '.message-icon': {
+            color: '#E74C3C',
+          },
+        },
+        postalCode: 'required',
+      });
+
+      await newCard.attach('#card-container');
+      cardRef.current = newCard;
+      setCard(newCard);
+    } catch (error) {
+      console.error('Failed to reinitialize card:', error);
+      onPaymentError('Failed to reset payment form. Please refresh the page.');
+    } finally {
+      setIsInitializing(false);
+    }
+  }, [onPaymentError]);
 
   useEffect(() => {
     // Prevent double initialization (React Strict Mode)
@@ -91,11 +150,12 @@ export default function SquarePaymentForm({
         }
 
         // Initialize Square Payments
-        const payments = window.Square.payments(applicationId, locationId);
-        setPayments(payments);
+        const paymentsInstance = window.Square.payments(applicationId, locationId);
+        paymentsRef.current = paymentsInstance;
+        setPayments(paymentsInstance);
 
         // Create card payment method with postal code requirement
-        const card = await payments.card({
+        const cardInstance = await paymentsInstance.card({
           style: {
             '.input-container': {
               borderColor: '#E0E0E0',
@@ -118,9 +178,9 @@ export default function SquarePaymentForm({
         });
 
         // Attach card to container
-        await card.attach('#card-container');
-        cardRef.current = card;
-        setCard(card);
+        await cardInstance.attach('#card-container');
+        cardRef.current = cardInstance;
+        setCard(cardInstance);
         setIsInitializing(false);
       } catch (error) {
         console.error('Failed to initialize Square Payments:', error);
@@ -137,17 +197,18 @@ export default function SquarePaymentForm({
       if (cardRef.current) {
         try {
           cardRef.current.destroy();
-        } catch (e) {
+        } catch {
           // Ignore cleanup errors
         }
         cardRef.current = null;
       }
+      paymentsRef.current = null;
       initializingRef.current = false;
     };
   }, [applicationId, locationId, environment, onPaymentError]);
 
   const handlePayment = async () => {
-    if (!card || !payments) {
+    if (!cardRef.current || !paymentsRef.current) {
       onPaymentError('Payment form not initialized. Please refresh the page.');
       return;
     }
@@ -162,7 +223,7 @@ export default function SquarePaymentForm({
 
     try {
       // Tokenize card - Square will validate postal code automatically
-      const result = await card.tokenize();
+      const result = await cardRef.current.tokenize();
       
       if (result.status === 'OK' && result.token) {
         // Send the payment token to our backend
@@ -186,20 +247,32 @@ export default function SquarePaymentForm({
         if (paymentResult.success) {
           onPaymentSuccess(paymentResult);
         } else {
+          // Payment failed - reinitialize card for retry
+          await reinitializeCard();
           onPaymentError(paymentResult.error || paymentResult.message || 'Payment failed');
         }
       } else {
-        // Square validation errors
+        // Square validation errors - reinitialize card for retry
+        await reinitializeCard();
         const errorDetails = result.errors || [];
         const errorMessage = errorDetails.length > 0 
-          ? errorDetails.map((e: any) => e.detail || e.message).join(', ')
+          ? errorDetails.map((e: { detail?: string; message?: string }) => e.detail || e.message).join(', ')
           : 'Card validation failed. Please check your card details and postal code.';
         onPaymentError(errorMessage);
       }
     } catch (error) {
       console.error('Payment processing error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Payment processing failed';
-      onPaymentError(errorMessage);
+      
+      // Check if the error is about destroyed card - reinitialize
+      if (errorMessage.includes('destroyed') || errorMessage.includes('Card')) {
+        await reinitializeCard();
+        onPaymentError('Payment form was reset. Please enter your card details again and retry.');
+      } else {
+        // Any other error - still reinitialize to be safe
+        await reinitializeCard();
+        onPaymentError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
