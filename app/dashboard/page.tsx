@@ -82,19 +82,30 @@ export default function DashboardPage() {
               <DashboardStats />
             </div>
 
-            {/* Usage Bar */}
+            {/* Usage Bar - Consolidated with Subscription Info */}
             {usage && (
               <div id="usage-bar" data-tutorial-target="usage-bar">
                 <UsageBar 
                   usage={usage} 
+                  subscription={subscription ? {
+                    status: subscription.status as 'active' | 'canceling' | 'canceled' | 'none',
+                    currentPeriodEnd: subscription.current_period_end,
+                  } : null}
                   showUpgradeLink={usage.planType !== 'enterprise'} 
-                  onUpgradeSuccess={() => {
-                    // Reload all data after upgrade
-                    window.location.reload();
-                  }}
+                  onCancelClick={() => setShowCancelModal(true)}
                 />
               </div>
             )}
+            
+            {/* Cancel Modal */}
+            <CancelModal
+              isOpen={showCancelModal}
+              onClose={() => setShowCancelModal(false)}
+              onSuccess={() => {
+                setShowCancelModal(false);
+                window.location.reload();
+              }}
+            />
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -102,81 +113,6 @@ export default function DashboardPage() {
               <div className="lg:col-span-2 space-y-8">
                 {/* Analytics Chart */}
                 <AnalyticsChart />
-
-                {/* Subscription Info */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">Subscription</h2>
-                  {subscription ? (
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Plan:</span>
-                        <span className="font-medium text-blue-600 uppercase">{subscription.plan_type}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Status:</span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          subscription.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : subscription.status === 'canceling'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {subscription.status === 'canceling' ? 'Canceling' : subscription.status}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Billing:</span>
-                        <span className="font-medium">{subscription.billing_cycle}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Limit:</span>
-                        <span className="font-medium">{subscription.registration_limit} participants</span>
-                      </div>
-                      
-                      {/* Subscription Actions */}
-                      {subscription.plan_type !== 'free' && subscription.status === 'active' && (
-                        <div className="pt-3 border-t mt-3">
-                          <button
-                            data-testid="btn-cancel-subscription"
-                            onClick={() => setShowCancelModal(true)}
-                            className="text-sm text-red-600 hover:text-red-800"
-                            aria-label="Cancel subscription"
-                          >
-                            Cancel subscription
-                          </button>
-                        </div>
-                      )}
-                      
-                      {subscription.status === 'canceling' && subscription.current_period_end && (
-                        <div className="pt-3 border-t mt-3 text-sm text-yellow-700">
-                          Access until: {new Date(subscription.current_period_end).toLocaleDateString()}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-gray-600">
-                      <p className="mb-4">No active subscription</p>
-                      <Link 
-                        href="/pricing"
-                        data-testid="link-view-plans"
-                        className="text-blue-600 hover:text-blue-800 font-medium"
-                        aria-label="View pricing plans"
-                      >
-                        View Plans →
-                      </Link>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Cancel Modal */}
-                <CancelModal
-                  isOpen={showCancelModal}
-                  onClose={() => setShowCancelModal(false)}
-                  onSuccess={() => {
-                    setShowCancelModal(false);
-                    window.location.reload();
-                  }}
-                />
 
                 {/* Quick Stats Cards - Classes and Participants hidden for MVP */}
                 {/* TODO: Re-enable when features are ready */}
