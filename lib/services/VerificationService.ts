@@ -64,16 +64,32 @@ export class VerificationService implements IVerificationService {
       args: [id, email, code, 0, now.toISOString(), expiresAt.toISOString(), 0]
     });
 
-    // Send email (required - fail if email cannot be sent)
+    // Send email with retry logic
     // For verification emails during onboarding, we don't have an organization yet
     // So we send directly without using the template system
-    try {
-      await this.sendVerificationEmailDirect(email, code);
-      if (process.env.NODE_ENV !== 'test') {
-        console.log(`✅ Verification email sent successfully to ${email}`);
+    let emailSent = false;
+    let lastError: Error | null = null;
+    const maxRetries = 2;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        await this.sendVerificationEmailDirect(email, code);
+        if (process.env.NODE_ENV !== 'test') {
+          console.log(`✅ Verification email sent successfully to ${email}${attempt > 0 ? ` (after ${attempt} retries)` : ''}`);
+        }
+        emailSent = true;
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error');
+        if (attempt < maxRetries) {
+          console.warn(`⚠️ Email send attempt ${attempt + 1} failed, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
+        }
       }
-    } catch (error) {
-      console.error('❌ Failed to send verification email:', error);
+    }
+    
+    if (!emailSent) {
+      console.error('❌ Failed to send verification email after retries:', lastError);
       console.error('Email configuration check:');
       console.error('  SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'SET' : 'NOT SET');
       console.error('  SMTP_HOST:', process.env.SMTP_HOST || 'NOT SET');
@@ -86,7 +102,7 @@ export class VerificationService implements IVerificationService {
       });
       
       // Return error with helpful message
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = lastError?.message || 'Unknown error';
       const hasSendGrid = !!process.env.SENDGRID_API_KEY;
       const hasSMTP = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
       
@@ -99,7 +115,7 @@ export class VerificationService implements IVerificationService {
       
       return {
         success: false,
-        message: `Failed to send verification email: ${errorMessage}. Please check your email address and try again.`
+        message: `Failed to send verification email after ${maxRetries + 1} attempts: ${errorMessage}. Please try again or contact support.`
       };
     }
 
