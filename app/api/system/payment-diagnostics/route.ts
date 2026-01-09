@@ -92,14 +92,14 @@ export async function GET(req: NextRequest) {
 
       // 4. Test Square API Connectivity (List Locations)
       try {
-        const { Client, Environment } = require('square');
+        const { SquareClient, SquareEnvironment } = require('square');
         
-        const client = new Client({
+        const client = new SquareClient({
           accessToken,
-          environment: environment === 'production' ? Environment.Production : Environment.Sandbox,
+          environment: environment === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
         });
 
-        const locationsResponse = await client.locations.listLocations();
+        const locationsResponse = await client.locationsApi.listLocations();
         
         const locations = locationsResponse.result.locations || [];
         const configuredLocation = locations.find((loc: any) => loc.id === locationId);
