@@ -127,6 +127,23 @@ export default function DashboardPage() {
             {/* Quick Actions */}
             <div id="quick-actions" className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" data-tutorial-target="quick-actions">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+              
+              {/* PROMINENT: Check-In Attendees Button */}
+              <div className="mb-6">
+                <Link
+                  href="/dashboard/check-in"
+                  data-testid="btn-check-in-attendees"
+                  className="flex items-center justify-center p-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all"
+                  aria-label="Check-in attendees"
+                >
+                  <div className="text-4xl mr-4">✓</div>
+                  <div className="text-left">
+                    <div className="text-xl font-bold">Check-In Attendees</div>
+                    <div className="text-sm text-green-100">Scan QR codes • Search • Browse list</div>
+                  </div>
+                </Link>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/registrations"
