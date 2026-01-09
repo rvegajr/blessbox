@@ -14,6 +14,9 @@ export interface RegistrationConfirmationData {
   registrationId: string;
   registrationData: Record<string, any>;
   qrCodeLabel?: string;
+  checkInToken?: string;
+  checkInUrl?: string;
+  successPageUrl?: string;
 }
 
 export interface AdminNotificationData {

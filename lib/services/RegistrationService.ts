@@ -12,6 +12,7 @@ import type {
 import { EmailService } from './EmailService';
 import { NotificationService } from './NotificationService';
 import { getUsageLimitChecker } from './UsageLimitChecker';
+import { getCheckInTokenGenerator } from './CheckInTokenGenerator';
 
 // Custom error for limit exceeded
 export class RegistrationLimitError extends Error {
@@ -191,13 +192,18 @@ export class RegistrationService implements IRegistrationService {
     const registrationId = uuidv4();
     const now = new Date().toISOString();
 
+    // Generate check-in token for QR code magic
+    const tokenGenerator = getCheckInTokenGenerator();
+    const checkInToken = tokenGenerator.generateToken(registrationId);
+
     // Insert registration into database
     await this.db.execute({
       sql: `
         INSERT INTO registrations (
           id, qr_code_set_id, qr_code_id, organization_id, registration_data, 
-          ip_address, user_agent, referrer, delivery_status, registered_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ip_address, user_agent, referrer, delivery_status, registered_at,
+          check_in_token, token_status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       args: [
         registrationId,
@@ -209,7 +215,9 @@ export class RegistrationService implements IRegistrationService {
         metadata?.userAgent || null,
         metadata?.referrer || null,
         'pending',
-        now
+        now,
+        checkInToken,
+        'active'
       ]
     });
 
@@ -235,11 +243,13 @@ export class RegistrationService implements IRegistrationService {
       userAgent: metadata?.userAgent,
       referrer: metadata?.referrer,
       deliveryStatus: 'pending',
-      registeredAt: now
+      registeredAt: now,
+      checkInToken,
+      tokenStatus: 'active'
     };
 
-    // Send email notifications (non-blocking)
-    this.sendRegistrationEmails(registration, formConfig, formData, matchingQR).catch(err => {
+    // Send email notifications (non-blocking) with check-in token
+    this.sendRegistrationEmails(registration, formConfig, formData, matchingQR, checkInToken).catch(err => {
       console.error('Error sending registration emails:', err);
       // Don't throw - email failure shouldn't block registration
     });
@@ -251,7 +261,8 @@ export class RegistrationService implements IRegistrationService {
     registration: Registration,
     formConfig: RegistrationFormConfig,
     formData: RegistrationFormData,
-    matchingQR: { id: string; label: string; url: string }
+    matchingQR: { id: string; label: string; url: string },
+    checkInToken: string
   ): Promise<void> {
     try {
       // Get organization details
@@ -286,6 +297,11 @@ export class RegistrationService implements IRegistrationService {
       // Send confirmation email to registrant (if email provided)
       if (registrantEmail && typeof registrantEmail === 'string') {
         try {
+          // Generate check-in URL for email
+          const tokenGenerator = getCheckInTokenGenerator();
+          const checkInUrl = tokenGenerator.generateCheckInUrl(checkInToken);
+          const successPageUrl = `${checkInUrl.split('/check-in/')[0]}/registration-success?id=${registration.id}`;
+
           await this.notificationService.sendRegistrationConfirmation({
             recipientEmail: registrantEmail,
             recipientName: String(registrantName),
@@ -293,6 +309,9 @@ export class RegistrationService implements IRegistrationService {
             registrationId: registration.id,
             registrationData: formData,
             qrCodeLabel: matchingQR.label,
+            checkInToken,
+            checkInUrl,
+            successPageUrl
           });
         } catch (err) {
           console.error('Error sending confirmation email:', err);

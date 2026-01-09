@@ -43,6 +43,9 @@ export class NotificationService implements INotificationService {
         recipient_email: data.recipientEmail,
         registration_id: data.registrationId,
         qr_code_label: data.qrCodeLabel || 'registration',
+        check_in_token: data.checkInToken || '',
+        check_in_url: data.checkInUrl || '',
+        success_page_url: data.successPageUrl || '',
         ...data.registrationData,
       };
 
