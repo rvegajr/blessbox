@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Allow up to 60 seconds for database operations
 
 const SUPERADMIN_EMAIL = process.env.SUPERADMIN_EMAIL || 'admin@blessbox.app';
 
@@ -89,12 +90,18 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('Database clear error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Database clear failed';
+    const isTimeout = errorMessage.includes('timeout') || errorMessage.includes('TIMEOUT');
+    
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Database clear failed',
+        error: errorMessage,
+        hint: isTimeout 
+          ? 'Operation timed out. Database may be large. Try clearing tables individually or contact support.'
+          : 'Check server logs for details. Ensure database connection is stable.',
       },
-      { status: 500 }
+      { status: isTimeout ? 504 : 500 }
     );
   }
 }

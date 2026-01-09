@@ -64,7 +64,7 @@ export class VerificationService implements IVerificationService {
       args: [id, email, code, 0, now.toISOString(), expiresAt.toISOString(), 0]
     });
 
-    // Send email (non-blocking)
+    // Send email (required - fail if email cannot be sent)
     // For verification emails during onboarding, we don't have an organization yet
     // So we send directly without using the template system
     try {
@@ -78,8 +78,29 @@ export class VerificationService implements IVerificationService {
       console.error('  SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'SET' : 'NOT SET');
       console.error('  SMTP_HOST:', process.env.SMTP_HOST || 'NOT SET');
       console.error('  SMTP_USER:', process.env.SMTP_USER ? 'SET' : 'NOT SET');
-      // Continue even if email fails - code is still stored
-      // But log the error for debugging
+      
+      // Delete the code we just created since email failed
+      await this.db.execute({
+        sql: `DELETE FROM verification_codes WHERE id = ?`,
+        args: [id]
+      });
+      
+      // Return error with helpful message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const hasSendGrid = !!process.env.SENDGRID_API_KEY;
+      const hasSMTP = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+      
+      if (!hasSendGrid && !hasSMTP) {
+        return {
+          success: false,
+          message: 'Email service not configured. Please contact support.'
+        };
+      }
+      
+      return {
+        success: false,
+        message: `Failed to send verification email: ${errorMessage}. Please check your email address and try again.`
+      };
     }
 
     // In development/test mode, return the code
