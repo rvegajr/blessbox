@@ -99,9 +99,12 @@ export async function GET(req: NextRequest) {
           environment: environment === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
         });
 
-        // Test API connectivity by trying to list payments (minimal permissions needed)
+        // Test API connectivity by attempting to list payments
         try {
-          const testResponse = await client.paymentsApi.listPayments(locationId, undefined, undefined, undefined, undefined, 1);
+          const testResponse = await client.payments.list({
+            locationId,
+            limit: 1
+          });
           
           diagnostics.connectivity.squareAPI = {
             success: true,
@@ -109,7 +112,7 @@ export async function GET(req: NextRequest) {
               ? 'https://connect.squareup.com' 
               : 'https://connect.squareupsandbox.com',
             message: 'Successfully authenticated with Square API',
-            testCall: 'listPayments',
+            testCall: 'payments.list',
             locationId: locationId,
             configuredLocationValid: true // If we can call API with this location, it's valid
           };
