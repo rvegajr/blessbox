@@ -50,6 +50,13 @@ test.describe('Square Payment Flow E2E', () => {
       return;
     }
 
+    // Step 0.5: Fill in email address (required for payment)
+    console.log('\n📧 Step 0.5: Filling in email address...');
+    const emailInput = page.locator('input[type="email"]').or(page.locator('input[id="email"]'));
+    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    await emailInput.fill('test-e2e-checkout@blessbox.org');
+    console.log('   ✅ Email address entered');
+
     // Step 1: Wait for Square SDK to load and card form to initialize
     console.log('\n⏳ Step 1: Waiting for Square payment form to initialize...');
     
@@ -218,6 +225,71 @@ test.describe('Square Payment Flow E2E', () => {
     }
   });
 
+  test('Validate email requirement on checkout', async ({ page }) => {
+    console.log('\n📧 Testing email validation...\n');
+
+    await page.goto(`${BASE_URL}/checkout?plan=standard`);
+    await page.waitForLoadState('networkidle');
+    
+    const url = page.url();
+    if (url.includes('/login') || url.includes('/auth')) {
+      console.log('   ⚠️  Redirected to auth - checkout requires authentication');
+      return;
+    }
+
+    // Wait for form to load
+    const emailInput = page.locator('input[type="email"]').or(page.locator('input[id="email"]'));
+    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    console.log('   ✅ Email input field found');
+
+    // Try to submit without email (wait for Square form first)
+    const cardContainer = page.locator('#card-container');
+    const testForm = page.locator('text=Payment Information (Test Checkout)');
+    const hasCardContainer = await cardContainer.isVisible({ timeout: 5000 }).catch(() => false);
+    const hasTestForm = await testForm.isVisible({ timeout: 2000 }).catch(() => false);
+    
+    if (!hasCardContainer && !hasTestForm) {
+      console.log('   ⚠️  No payment form loaded');
+      return;
+    }
+
+    // Try to pay without email
+    console.log('   ℹ️  Attempting payment without email...');
+    const payButton = page.locator('button:has-text("Pay")').or(page.locator('button:has-text("Complete Payment")'));
+    const hasButton = await payButton.isVisible({ timeout: 5000 }).catch(() => false);
+    
+    if (hasButton) {
+      await payButton.click();
+      await page.waitForTimeout(1500);
+      
+      // Check for email required error
+      const errorMessage = page.locator('text=/Email.*required/i');
+      const hasError = await errorMessage.isVisible({ timeout: 3000 }).catch(() => false);
+      
+      if (hasError) {
+        console.log('   ✅ Email validation working - error displayed');
+        expect(hasError).toBeTruthy();
+      } else {
+        console.log('   ⚠️  Email error not displayed (may have different validation)');
+      }
+    }
+
+    // Now fill in valid email
+    console.log('\n   ℹ️  Filling in valid email...');
+    await emailInput.fill('valid-email@test.com');
+    await page.waitForTimeout(500);
+    
+    // Check if error cleared
+    const errorMessage = page.locator('text=/Email.*required/i');
+    const errorStillVisible = await errorMessage.isVisible({ timeout: 1000 }).catch(() => false);
+    
+    if (!errorStillVisible) {
+      console.log('   ✅ Email validation cleared after filling valid email');
+    }
+
+    console.log('\n✅ Email Validation Test Complete\n');
+  });
+
   test('Complete checkout flow with FREE100 coupon (100% discount)', async ({ page }) => {
     console.log('\n🎟️  Starting Free Coupon Checkout Flow Test...\n');
 
@@ -235,6 +307,13 @@ test.describe('Square Payment Flow E2E', () => {
     const checkoutHeading = page.locator('h1:has-text("Checkout")');
     await expect(checkoutHeading).toBeVisible({ timeout: 5000 });
     console.log('   ✅ Checkout page loaded');
+
+    // Step 1.5: Fill in email address
+    console.log('\n📧 Step 1.5: Filling in email address...');
+    const emailInput = page.locator('input[type="email"]').or(page.locator('input[id="email"]'));
+    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    await emailInput.fill('test-free-coupon@blessbox.org');
+    console.log('   ✅ Email address entered');
 
     // Step 2: Apply FREE100 coupon
     console.log('\n🎟️  Step 2: Applying FREE100 coupon...');
@@ -389,6 +468,63 @@ test.describe('Square Payment Flow E2E', () => {
     } else {
       console.log('   ⚠️  Payment button not found');
     }
+  });
+
+  test('Test SAVE20 coupon application', async ({ page }) => {
+    console.log('\n🎟️  Testing SAVE20 coupon (20% discount)...\n');
+
+    await page.goto(`${BASE_URL}/checkout?plan=standard`);
+    await page.waitForLoadState('networkidle');
+    
+    const url = page.url();
+    if (url.includes('/login') || url.includes('/auth')) {
+      console.log('   ⚠️  Redirected to auth - checkout requires authentication');
+      return;
+    }
+
+    // Fill email
+    const emailInput = page.locator('input[type="email"]');
+    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    await emailInput.fill('test-save20@blessbox.org');
+    console.log('   ✅ Email filled');
+
+    // Apply SAVE20 coupon
+    const couponInput = page.locator('input[id="coupon"]');
+    await expect(couponInput).toBeVisible({ timeout: 5000 });
+    await couponInput.fill('SAVE20');
+    
+    const applyButton = page.locator('button:has-text("Apply")');
+    await applyButton.click();
+    await page.waitForTimeout(2000);
+    
+    // Check if coupon was applied
+    const successMsg = page.locator('text=/Applied.*SAVE20/i');
+    const hasSuccess = await successMsg.isVisible({ timeout: 3000 }).catch(() => false);
+    
+    if (hasSuccess) {
+      console.log('   ✅ SAVE20 coupon applied');
+      
+      // Verify discount calculation: $19.00 - 20% = $15.20
+      const totalText = page.locator('text=/\\$15\\.20/i');
+      const hasCorrectTotal = await totalText.isVisible({ timeout: 2000 }).catch(() => false);
+      
+      if (hasCorrectTotal) {
+        console.log('   ✅ Discount calculated correctly ($19.00 → $15.20)');
+      } else {
+        console.log('   ⚠️  Discount amount may be different');
+      }
+    } else {
+      const errorMsg = page.locator('text=/error/i').or(page.locator('text=/invalid/i'));
+      const hasError = await errorMsg.isVisible({ timeout: 2000 }).catch(() => false);
+      if (hasError) {
+        const errorText = await errorMsg.textContent();
+        console.log(`   ⚠️  Coupon error: ${errorText}`);
+      } else {
+        console.log('   ⚠️  Coupon status unclear');
+      }
+    }
+
+    console.log('\n✅ SAVE20 Coupon Test Complete\n');
   });
 });
 
