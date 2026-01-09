@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
         message: 'SquarePaymentService initialized successfully'
       };
 
-      // 4. Test Square API Connectivity (List Locations)
+      // 4. Test Square API Connectivity
       try {
         const { SquareClient, SquareEnvironment } = require('square');
         
@@ -99,49 +99,65 @@ export async function GET(req: NextRequest) {
           environment: environment === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
         });
 
-        const locationsResponse = await client.locationsApi.listLocations();
-        
-        const locations = locationsResponse.result.locations || [];
-        const configuredLocation = locations.find((loc: any) => loc.id === locationId);
+        // Test API connectivity by trying to list payments (minimal permissions needed)
+        try {
+          const testResponse = await client.paymentsApi.listPayments(locationId, undefined, undefined, undefined, undefined, 1);
+          
+          diagnostics.connectivity.squareAPI = {
+            success: true,
+            endpoint: environment === 'production' 
+              ? 'https://connect.squareup.com' 
+              : 'https://connect.squareupsandbox.com',
+            message: 'Successfully authenticated with Square API',
+            testCall: 'listPayments',
+            locationId: locationId,
+            configuredLocationValid: true // If we can call API with this location, it's valid
+          };
 
-        diagnostics.connectivity.squareAPI = {
-          success: true,
-          endpoint: environment === 'production' 
-            ? 'https://connect.squareup.com' 
-            : 'https://connect.squareupsandbox.com',
-          locationsFound: locations.length,
-          locationNames: locations.map((loc: any) => ({
-            id: loc.id,
-            name: loc.name,
-            configured: loc.id === locationId
-          })),
-          configuredLocationValid: !!configuredLocation,
-          configuredLocationName: configuredLocation?.name || 'NOT FOUND'
-        };
+        } catch (apiError: any) {
+          const statusCode = apiError.statusCode || apiError.status || 0;
+          
+          diagnostics.connectivity.squareAPI = {
+            success: false,
+            error: apiError.message || String(apiError),
+            statusCode,
+            errorCode: apiError.code,
+            details: apiError.errors || []
+          };
 
-        if (!configuredLocation) {
-          diagnostics.recommendations.push({
-            severity: 'ERROR',
-            message: `Configured location ID '${locationId}' not found in Square account`,
-            action: 'Verify SQUARE_LOCATION_ID matches a location in your Square dashboard'
-          });
+          if (statusCode === 401) {
+            diagnostics.recommendations.push({
+              severity: 'CRITICAL',
+              message: 'Square API authentication failed (401 Unauthorized)',
+              action: 'SQUARE_ACCESS_TOKEN is invalid or expired. Generate new token in Square Dashboard → Developer → Applications'
+            });
+          } else if (statusCode === 403) {
+            diagnostics.recommendations.push({
+              severity: 'CRITICAL',
+              message: 'Square API permission denied (403 Forbidden)',
+              action: 'Access token lacks required permissions. Generate new token with PAYMENTS_WRITE permission'
+            });
+          } else if (apiError.message?.includes('location')) {
+            diagnostics.recommendations.push({
+              severity: 'ERROR',
+              message: 'Location ID may be invalid',
+              action: 'Verify SQUARE_LOCATION_ID matches a location in your Square account'
+            });
+          } else {
+            diagnostics.recommendations.push({
+              severity: 'ERROR',
+              message: `Square API error: ${apiError.message || 'Unknown'}`,
+              action: 'Check Square Dashboard for account status and API logs'
+            });
+          }
         }
 
-      } catch (apiError: any) {
+      } catch (apiTestError: any) {
+        // Catch errors from the API test try block
         diagnostics.connectivity.squareAPI = {
           success: false,
-          error: apiError.message || String(apiError),
-          statusCode: apiError.statusCode,
-          details: apiError.errors || []
+          error: apiTestError.message || String(apiTestError)
         };
-
-        if (apiError.statusCode === 401) {
-          diagnostics.recommendations.push({
-            severity: 'CRITICAL',
-            message: 'Square API authentication failed',
-            action: 'Verify SQUARE_ACCESS_TOKEN is valid and not expired'
-          });
-        }
       }
 
     } catch (sdkError: any) {
