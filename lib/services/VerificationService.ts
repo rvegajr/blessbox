@@ -285,13 +285,17 @@ export class VerificationService implements IVerificationService {
   }
 
   private async sendVerificationEmailDirect(email: string, code: string): Promise<void> {
-    // Try to use SendGrid if available
-    if (process.env.SENDGRID_API_KEY) {
+    // Import env utility
+    const { getEnv } = await import('../utils/env');
+    
+    // Try to use SendGrid if available (with sanitized env vars)
+    const sendGridApiKey = getEnv('SENDGRID_API_KEY');
+    if (sendGridApiKey) {
       try {
         const sgMail = require('@sendgrid/mail');
-        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        sgMail.setApiKey(sendGridApiKey);
 
-        const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@blessbox.app';
+        const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.app');
         
         const html = `
           <h2>Verify Your BlessBox Email</h2>

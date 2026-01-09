@@ -10,6 +10,7 @@ import type {
   EmailMessage, 
   EmailResult 
 } from '../interfaces/IEmailTransport';
+import { getRequiredEnv, getEnv } from '../utils/env';
 
 export class SendGridTransport implements IEmailTransport {
   private apiKey: string;
@@ -17,18 +18,10 @@ export class SendGridTransport implements IEmailTransport {
   private fromName: string;
 
   constructor() {
-    // Validate required configuration
-    this.apiKey = process.env.SENDGRID_API_KEY?.trim() || '';
-    this.fromEmail = process.env.SENDGRID_FROM_EMAIL?.trim() || '';
-    this.fromName = process.env.SENDGRID_FROM_NAME?.trim() || 'BlessBox';
-
-    if (!this.apiKey) {
-      throw new Error('SendGrid API key not configured. Set SENDGRID_API_KEY environment variable.');
-    }
-
-    if (!this.fromEmail) {
-      throw new Error('SendGrid from email not configured. Set SENDGRID_FROM_EMAIL environment variable.');
-    }
+    // Get configuration with automatic sanitization (removes newlines, quotes, whitespace)
+    this.apiKey = getRequiredEnv('SENDGRID_API_KEY', 'SendGrid API key not configured. Set SENDGRID_API_KEY environment variable.');
+    this.fromEmail = getRequiredEnv('SENDGRID_FROM_EMAIL', 'SendGrid from email not configured. Set SENDGRID_FROM_EMAIL environment variable.');
+    this.fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
   }
 
   async sendDirect(message: EmailMessage): Promise<EmailResult> {
