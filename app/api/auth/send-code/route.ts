@@ -38,8 +38,9 @@ export async function POST(request: NextRequest) {
           { status: 429 }
         );
       }
+      // Return the actual error message from the service
       return NextResponse.json(
-        { success: false, error: result.message },
+        { success: false, error: result.message || 'Failed to send verification code' },
         { status: 400 }
       );
     }
