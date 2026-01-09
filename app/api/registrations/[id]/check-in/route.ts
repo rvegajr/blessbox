@@ -12,27 +12,11 @@ export async function POST(
 ) {
   const params = context.params;
   try {
-    const session = await getServerSession();
-    if (!session || !session.user?.email) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const organization = await resolveOrganizationForSession(session);
-    if (!organization) {
-      return NextResponse.json(
-        { success: false, error: 'Organization selection required' },
-        { status: 409 }
-      );
-    }
-
     const { id } = await params;
     const body = await request.json().catch(() => ({}));
-    const { checkedInBy } = body;
+    const { checkedInBy, token } = body;
 
-    // Verify the registration belongs to this organization
+    // Fetch registration first
     const registration = await registrationService.getRegistration(id);
     if (!registration) {
       return NextResponse.json(
@@ -41,24 +25,52 @@ export async function POST(
       );
     }
 
-    // Get the organization ID from the QR code set
-    const db = (await import('@/lib/db')).getDbClient();
-    const qrSetResult = await db.execute({
-      sql: 'SELECT organization_id FROM qr_code_sets WHERE id = ?',
-      args: [registration.qrCodeSetId]
-    });
+    // Authentication: Either session-based OR token-based
+    const session = await getServerSession();
+    
+    // Token-based auth: If a valid check-in token is provided, allow check-in
+    const isTokenAuth = token && registration.checkInToken && token === registration.checkInToken;
+    
+    // Session-based auth: User is logged in with organization access
+    const isSessionAuth = session && session.user?.email;
 
-    if (qrSetResult.rows.length === 0 || (qrSetResult.rows[0] as any).organization_id !== organization.id) {
+    if (!isTokenAuth && !isSessionAuth) {
       return NextResponse.json(
-        { success: false, error: 'Forbidden' },
-        { status: 403 }
+        { success: false, error: 'Unauthorized: Login or provide valid check-in token' },
+        { status: 401 }
       );
     }
 
+    // For session-based auth, verify organization ownership
+    if (isSessionAuth && !isTokenAuth) {
+      const organization = await resolveOrganizationForSession(session);
+      if (!organization) {
+        return NextResponse.json(
+          { success: false, error: 'Organization selection required' },
+          { status: 409 }
+        );
+      }
+
+      // Get the organization ID from the QR code set
+      const db = (await import('@/lib/db')).getDbClient();
+      const qrSetResult = await db.execute({
+        sql: 'SELECT organization_id FROM qr_code_sets WHERE id = ?',
+        args: [registration.qrCodeSetId]
+      });
+
+      if (qrSetResult.rows.length === 0 || (qrSetResult.rows[0] as any).organization_id !== organization.id) {
+        return NextResponse.json(
+          { success: false, error: 'Forbidden' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Perform check-in
+    const checkedInByValue = checkedInBy || (session?.user?.email) || 'Staff';
     const checkedInRegistration = await registrationService.checkInRegistration(
       id,
-      checkedInBy || session.user.email
+      checkedInByValue
     );
 
     return NextResponse.json({
