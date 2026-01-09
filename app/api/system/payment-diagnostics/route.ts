@@ -37,11 +37,12 @@ export async function GET(req: NextRequest) {
   };
 
   try {
-    // 1. Check Environment Variables
-    const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
-    const applicationId = (process.env.SQUARE_APPLICATION_ID || '').trim();
-    const locationId = (process.env.SQUARE_LOCATION_ID || '').trim();
-    const environment = (process.env.SQUARE_ENVIRONMENT || '').trim();
+    // 1. Check Environment Variables (with sanitization)
+    const { getEnv } = await import('@/lib/utils/env');
+    const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
+    const applicationId = getEnv('SQUARE_APPLICATION_ID');
+    const locationId = getEnv('SQUARE_LOCATION_ID');
+    const environment = getEnv('SQUARE_ENVIRONMENT');
 
     diagnostics.configuration = {
       SQUARE_ACCESS_TOKEN: {

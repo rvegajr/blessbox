@@ -1,21 +1,19 @@
 import { SquareClient, SquareEnvironment, SquareError } from 'square';
 import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
 import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
+import { getRequiredEnv, getEnv } from '../utils/env';
 
 export class SquarePaymentService implements IPaymentProcessor {
   private client: SquareClient;
   private environment: SquareEnvironment;
 
   constructor() {
-    // Initialize Square client
-    const env = (process.env.SQUARE_ENVIRONMENT || '').trim().toLowerCase();
+    // Initialize Square client with sanitized env vars
+    const env = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
     this.environment = env === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox;
 
-    // Vercel env vars can accidentally include trailing newlines/spaces.
-    const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
-    if (!accessToken) {
-      throw new Error('Square is not configured: SQUARE_ACCESS_TOKEN is missing');
-    }
+    // Get access token with automatic sanitization (removes newlines, quotes, whitespace)
+    const accessToken = getRequiredEnv('SQUARE_ACCESS_TOKEN', 'Square is not configured: SQUARE_ACCESS_TOKEN is missing');
     
     this.client = new SquareClient({
       accessToken,
