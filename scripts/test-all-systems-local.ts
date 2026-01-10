@@ -42,19 +42,53 @@ async function testAllSystems() {
     allPassed = false;
   }
 
-  // Test 2: Square Payment Service
-  console.log('2️⃣  Testing Square Payment Service...');
+  // Test 2: Square Payment Service - REAL API VALIDATION
+  console.log('2️⃣  Testing Square Payment Service (REAL API CALL)...');
   try {
     const squareService = new SquarePaymentService();
     console.log('   ✅ SquarePaymentService initialized');
     
-    // Test payment intent creation (doesn't charge)
-    const intent = await squareService.createPaymentIntent(100, 'USD');
-    console.log('   ✅ Payment intent created:', intent.id);
-    console.log(`   ✅ Square credentials valid\n`);
+    // REAL API CALL - Validates token actually works with Square servers
+    console.log('   🔄 Calling Square API to verify credentials...');
+    const { SquareClient, SquareEnvironment } = await import('square');
+    const { getEnv } = await import('../lib/utils/env');
+    
+    const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
+    const environment = getEnv('SQUARE_ENVIRONMENT', 'sandbox')?.toLowerCase();
+    
+    // SDK v43+ uses "token" not "accessToken"
+    const testClient = new SquareClient({
+      token: accessToken!,
+      environment: environment === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
+    });
+    
+    // This ACTUALLY calls Square API - will fail with 401 if token is invalid
+    const locationsResponse = await testClient.locations.list();
+    
+    // SDK v43 changed response structure - locations directly on response
+    const locations = (locationsResponse as any).locations || (locationsResponse as any).result?.locations;
+    
+    if (locations && locations.length > 0) {
+      console.log(`   ✅ Square API authentication VERIFIED`);
+      console.log(`   ✅ Found ${locations.length} location(s):`);
+      for (const loc of locations) {
+        console.log(`      - ${loc.name} (${loc.id})`);
+      }
+      console.log(`   ✅ Square credentials are VALID\n`);
+    } else {
+      console.log('   ⚠️  API call succeeded but no locations found');
+      console.log(`   ✅ Square credentials are VALID (no locations configured)\n`);
+    }
   } catch (error: any) {
-    console.log('   ❌ Square service failed');
-    console.log(`   Error: ${error.message}\n`);
+    console.log('   ❌ Square API authentication FAILED');
+    if (error.statusCode === 401) {
+      console.log('   ❌ ERROR: 401 Unauthorized - Token is INVALID');
+      console.log('   ❌ The Square access token is rejected by Square servers');
+      console.log('   💡 Generate a new token at: https://squareup.com/dashboard/applications');
+    } else {
+      console.log(`   Error: ${error.message}`);
+    }
+    console.log('');
     allPassed = false;
   }
 

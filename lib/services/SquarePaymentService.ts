@@ -13,10 +13,11 @@ export class SquarePaymentService implements IPaymentProcessor {
     this.environment = env === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox;
 
     // Get access token with automatic sanitization (removes newlines, quotes, whitespace)
-    const accessToken = getRequiredEnv('SQUARE_ACCESS_TOKEN', 'Square is not configured: SQUARE_ACCESS_TOKEN is missing');
+    // Note: Square SDK v43+ uses "token" property, not "accessToken"
+    const token = getRequiredEnv('SQUARE_ACCESS_TOKEN', 'Square is not configured: SQUARE_ACCESS_TOKEN is missing');
     
     this.client = new SquareClient({
-      accessToken,
+      token,  // SDK v43 changed from "accessToken" to "token"
       environment: this.environment,
     });
   }
@@ -74,29 +75,28 @@ export class SquarePaymentService implements IPaymentProcessor {
 
       const requestPayload = {
         sourceId,
-        amountMoney: { amount: BigInt(amount), currency },
+        amountMoney: { amount: BigInt(amount), currency: currency as any },
         idempotencyKey,
         ...(customerId ? { customerId } : {}),
         note: customerId ? `BlessBox subscription payment (${customerId})` : 'BlessBox subscription payment',
       };
 
-      const response = await this.client.payments.create(requestPayload);
+      const response = await this.client.payments.create(requestPayload as any);
 
       const duration = Date.now() - startTime;
+      // SDK v43 changed response structure - payment is directly on response, not response.result
+      const payment = (response as any).payment || (response as any).result?.payment;
       console.log('[SQUARE] Payment API response received:', {
         duration: `${duration}ms`,
-        hasResult: !!response.result,
-        hasPayment: !!response.result?.payment,
-        paymentId: response.result?.payment?.id,
-        paymentStatus: response.result?.payment?.status,
-        paymentAmount: response.result?.payment?.amountMoney?.amount?.toString(),
-        paymentCurrency: response.result?.payment?.amountMoney?.currency,
+        hasPayment: !!payment,
+        paymentId: payment?.id,
+        paymentStatus: payment?.status,
+        paymentAmount: payment?.amountMoney?.amount?.toString(),
+        paymentCurrency: payment?.amountMoney?.currency,
       });
-
-      const payment = response.result.payment;
       if (!payment?.id) {
         console.error('[SQUARE] ❌ No payment ID in response:', {
-          response: JSON.stringify(response.result, null, 2),
+          response: JSON.stringify(response, null, 2),
         });
         return { success: false, error: 'No payment returned from Square' };
       }
@@ -190,11 +190,13 @@ export class SquarePaymentService implements IPaymentProcessor {
 
       const response = await this.client.refunds.refundPayment(request as any);
       
-      if (response.result.refund) {
+      // SDK v43 changed response structure
+      const refund = (response as any).refund || (response as any).result?.refund;
+      if (refund) {
         return {
           success: true,
-          refundId: response.result.refund.id!,
-          squareRefundId: response.result.refund.id!,
+          refundId: refund.id!,
+          squareRefundId: refund.id!,
           ...(typeof amount === 'number' ? { amount } : {}),
         };
       }

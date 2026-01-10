@@ -95,8 +95,9 @@ export async function GET(req: NextRequest) {
       try {
         const { SquareClient, SquareEnvironment } = require('square');
         
+        // SDK v43+ uses "token" not "accessToken"
         const client = new SquareClient({
-          accessToken,
+          token: accessToken,
           environment: environment === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox,
         });
 

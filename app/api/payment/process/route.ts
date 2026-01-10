@@ -51,9 +51,12 @@ export async function POST(req: NextRequest) {
 
   // If payment token is provided, process with Square
   if (paymentToken && amount) {
-    const shouldMockPayment =
+    // FORCE_REAL_SQUARE=true bypasses all mock paths for local testing
+    const forceRealSquare = process.env.FORCE_REAL_SQUARE === 'true';
+    const shouldMockPayment = !forceRealSquare && (
       process.env.NODE_ENV !== 'production' &&
-      (process.env.TEST_ENV === 'local' || !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_APPLICATION_ID);
+      (process.env.TEST_ENV === 'local' || !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_APPLICATION_ID)
+    );
 
     try {
       if (!shouldMockPayment) {
@@ -66,7 +69,7 @@ export async function POST(req: NextRequest) {
         console.log('[PAYMENT] Processing payment:', {
           timestamp: new Date().toISOString(),
           organizationId: org.id,
-          organizationName: org.name,
+          organizationName: (org as any).name || 'Organization',
           email,
           planType,
           amount,
