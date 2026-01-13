@@ -417,6 +417,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-2">
             <p className="text-sm text-gray-500">BlessBox - Simplifying registration and verification for organizations</p>
+            <p className="text-xs text-gray-400">
+              Need help? <a href="mailto:support@blessbox.org" className="text-blue-600 hover:text-blue-700 underline">Contact Support</a>
+            </p>
             <p className="text-xs text-gray-400">A Proud YOLOVibeCode Project - Copyright 2025 Noctusoft, Inc ®</p>
           </div>
         </div>
