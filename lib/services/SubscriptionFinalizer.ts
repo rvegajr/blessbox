@@ -32,7 +32,7 @@ export class SubscriptionFinalizer {
       args: [now],
     });
 
-    return (result.rows || []) as ExpiredCancellation[];
+    return (result.rows || []) as unknown as ExpiredCancellation[];
   }
 
   /**

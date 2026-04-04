@@ -38,7 +38,7 @@ export class MembershipService implements IMembershipService {
       sql: `SELECT organization_id as id FROM memberships WHERE user_id = ? ORDER BY created_at DESC`,
       args: [userId],
     });
-    return result.rows as Array<{ id: string }>;
+    return result.rows as unknown as Array<{ id: string }>;
   }
 }
 

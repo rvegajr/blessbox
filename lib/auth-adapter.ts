@@ -40,13 +40,11 @@ export function createLibsqlAuthAdapter(): Adapter {
       if (!email) throw new Error('Email is required');
       
       // Check if user already exists
-      const existing = await this.getUserByEmail(email);
-      if (existing) {
-        // User exists, update and return existing user
-        return await this.updateUser({
-          ...user,
-          id: existing.id,
-        });
+      const existingRes = await db.execute({ sql: `SELECT * FROM users WHERE email = ? LIMIT 1`, args: [email] });
+      const existingRow = (existingRes.rows?.[0] as DbRow | undefined) ?? undefined;
+      if (existingRow) {
+        // User exists, return existing user
+        return mapUserRow(existingRow);
       }
       
       const id = user.id ? String(user.id) : uuidv4();

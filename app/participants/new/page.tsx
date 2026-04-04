@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 export default function NewParticipantPage() {
-  const { user, status } = useSession();
+  const { data, status } = useSession(); const user = data?.user;
   const router = useRouter();
   const pathname = usePathname();
   const { ready } = useRequireActiveOrganization();
@@ -33,7 +33,7 @@ export default function NewParticipantPage() {
     }
   }, [user, status, router, pathname]);
 
-  if (status === 'loading' || !session || !ready) {
+  if (status === 'loading' || !user || !ready) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

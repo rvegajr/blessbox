@@ -154,3 +154,7 @@ playwright-report/
 # Pre-commit
 .pre-commit-config.yaml
 .env.production
+.env.current.prod
+
+# Traklet
+.traklet/

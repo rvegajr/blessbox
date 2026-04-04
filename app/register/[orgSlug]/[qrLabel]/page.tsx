@@ -100,7 +100,7 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
       if (data.registration?.id) {
         window.location.href = `/registration-success?id=${data.registration.id}`;
       } else {
-        setSubmitted(true);
+      setSubmitted(true);
       }
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : 'Failed to submit');

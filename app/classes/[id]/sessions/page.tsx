@@ -25,7 +25,7 @@ export default function ClassSessionsPage() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { user, status } = useSession();
+  const { data, status } = useSession(); const user = data?.user;
   const { ready } = useRequireActiveOrganization();
   const classId = params.id as string;
 

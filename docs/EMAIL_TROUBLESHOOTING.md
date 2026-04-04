@@ -157,7 +157,7 @@ Should show:
 You can test SendGrid directly:
 ```bash
 curl -X POST https://api.sendgrid.com/v3/mail/send \
-  -H "Authorization: Bearer ***SENDGRID_KEY_REDACTED***" \
+  -H "Authorization: Bearer SG.****REDACTED****" \
   -H "Content-Type: application/json" \
   -d '{
     "personalizations": [{

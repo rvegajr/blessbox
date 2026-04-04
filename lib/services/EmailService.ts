@@ -241,7 +241,7 @@ export class EmailService {
       args: [id]
     });
 
-    return result.rows[0] as EmailLog || null;
+    return result.rows[0] as unknown as EmailLog || null;
   }
 
   // Email Sending (placeholder - integrate with your email provider)
@@ -501,7 +501,7 @@ export class EmailService {
           <p>Thank you for your payment. Here are the details:</p>
           <p><strong>Payment Details:</strong></p>
           <ul>
-            <li>Amount: ${{amount}}</li>
+            <li>Amount: \${{amount}}</li>
             <li>Date: {{payment_date}}</li>
             <li>Transaction ID: {{transaction_id}}</li>
             <li>Class: {{class_name}}</li>
@@ -517,7 +517,7 @@ export class EmailService {
           Thank you for your payment. Here are the details:
           
           Payment Details:
-          - Amount: ${{amount}}
+          - Amount: \${{amount}}
           - Date: {{payment_date}}
           - Transaction ID: {{transaction_id}}
           - Class: {{class_name}}

@@ -10,7 +10,7 @@ import ClassList from '@/components/classes/ClassList';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 
 export default function ClassesPage() {
-  const { user, status } = useSession();
+  const { data, status } = useSession(); const user = data?.user;
   const router = useRouter();
   const pathname = usePathname();
   const { ready } = useRequireActiveOrganization();

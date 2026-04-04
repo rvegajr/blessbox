@@ -135,7 +135,7 @@ The FROM email `contact@yolovibecodebootcamp.com` **must be verified** in SendGr
 
 ### Email
 - ✅ `EMAIL_PROVIDER` = `sendgrid`
-- ✅ `SENDGRID_API_KEY` = `***SENDGRID_KEY_REDACTED***`
+- ✅ `SENDGRID_API_KEY` = `SG.****REDACTED****`
 - ✅ `SENDGRID_FROM_EMAIL` = `contact@yolovibecodebootcamp.com`
 - ✅ `SENDGRID_FROM_NAME` = `BlessBox Support`
 - ✅ `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_PORT` (fallback)

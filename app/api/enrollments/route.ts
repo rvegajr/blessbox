@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
             duration_minutes: sessionDetails?.duration_minutes || 60,
             location: sessionDetails?.location || 'TBD',
             instructor_name: sessionDetails?.instructor_name || 'TBD',
-            organization_name: organization.name,
+            organization_name: (organization as any).name || 'Organization',
             confirmation_link: `${process.env.PUBLIC_APP_URL || process.env.NEXTAUTH_URL || ''}/enrollments/${enrollment.id}/confirm`
           }
         );
