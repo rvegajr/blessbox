@@ -88,6 +88,7 @@
     "square": "^43.2.0",
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.1.7",
+    "traklet": "^0.1.6",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
