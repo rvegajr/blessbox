@@ -27,7 +27,7 @@ export async function getOrganizationByEmail(email: string): Promise<{ id: strin
     args: [e],
   });
   if (result.rows.length > 0) {
-    return result.rows[0] as { id: string; contact_email: string };
+    return result.rows[0] as unknown as { id: string; contact_email: string };
   }
   return null;
 }
@@ -39,7 +39,7 @@ export async function getOrganizationById(id: string): Promise<{ id: string; con
     args: [id],
   });
   if (result.rows.length > 0) {
-    return result.rows[0] as { id: string; contact_email: string };
+    return result.rows[0] as unknown as { id: string; contact_email: string };
   }
   return null;
 }

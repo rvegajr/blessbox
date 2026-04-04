@@ -123,11 +123,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Update state with new session
-      setState({
+      setState(prev => ({
+        ...prev,
         user: data.user as AuthUser,
         status: 'authenticated',
         expires: data.expires || null,
-      });
+      }));
 
       return { success: true };
     } catch (error) {

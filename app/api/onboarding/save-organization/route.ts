@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create membership for signed-in user
-    const userId = session.user.id;
+    const userId = session?.user?.id;
     if (!userId) {
       return NextResponse.json(
         { success: false, error: 'User ID not found in session' },

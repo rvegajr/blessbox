@@ -160,7 +160,7 @@ export class PlanUpgrade implements IPlanUpgrade {
       args: [organizationId]
     });
 
-    return result.rows[0] as any || null;
+    return result.rows[0] as unknown as any || null;
   }
 }
 

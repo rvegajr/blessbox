@@ -21,14 +21,14 @@ Your Square payment integration is now **fully configured** for both development
 ### Sandbox (Development/Testing)
 ```env
 SQUARE_APPLICATION_ID=sandbox-sq0idb-wmodH19wX_VVwhJOkrunbw
-SQUARE_ACCESS_TOKEN=EAAAl0pENUgztZDUnprG7tlvbpzMVoDdTPBxjQWfaLddD9YN8OlXWyRaHo0P-BQ4
+SQUARE_ACCESS_TOKEN=REDACTED_SQUARE_TOKEN
 SQUARE_ENVIRONMENT=sandbox
 ```
 
 ### Production (Live Payments)
 ```env
 SQUARE_APPLICATION_ID=sq0idp-ILxW5EBGufGuE1-FsJTpbg
-SQUARE_ACCESS_TOKEN=EAAAl55EVF4Hyu8QAWCU_ovRdLwFQEPHp21n8K6LvZtU4PGZ70DDfOn-SRictvY3
+SQUARE_ACCESS_TOKEN=REDACTED_SQUARE_TOKEN
 SQUARE_ENVIRONMENT=production
 ```
 

@@ -48,21 +48,21 @@ export async function POST(
         return NextResponse.json(
           { success: false, error: 'Organization selection required' },
           { status: 409 }
-        );
-      }
+      );
+    }
 
-      // Get the organization ID from the QR code set
-      const db = (await import('@/lib/db')).getDbClient();
-      const qrSetResult = await db.execute({
-        sql: 'SELECT organization_id FROM qr_code_sets WHERE id = ?',
-        args: [registration.qrCodeSetId]
-      });
+    // Get the organization ID from the QR code set
+    const db = (await import('@/lib/db')).getDbClient();
+    const qrSetResult = await db.execute({
+      sql: 'SELECT organization_id FROM qr_code_sets WHERE id = ?',
+      args: [registration.qrCodeSetId]
+    });
 
-      if (qrSetResult.rows.length === 0 || (qrSetResult.rows[0] as any).organization_id !== organization.id) {
-        return NextResponse.json(
-          { success: false, error: 'Forbidden' },
-          { status: 403 }
-        );
+    if (qrSetResult.rows.length === 0 || (qrSetResult.rows[0] as any).organization_id !== organization.id) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
       }
     }
 

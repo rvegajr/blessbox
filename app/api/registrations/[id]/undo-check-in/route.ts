@@ -32,17 +32,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       const organization = await resolveOrganizationForSession(session);
       if (!organization) {
         return NextResponse.json({ success: false, error: 'Organization selection required' }, { status: 409 });
-      }
+    }
 
-      // Verify org owns the QR code set
-      const db = (await import('@/lib/db')).getDbClient();
-      const qrSetResult = await db.execute({
-        sql: 'SELECT organization_id FROM qr_code_sets WHERE id = ?',
-        args: [registration.qrCodeSetId],
-      });
+    // Verify org owns the QR code set
+    const db = (await import('@/lib/db')).getDbClient();
+    const qrSetResult = await db.execute({
+      sql: 'SELECT organization_id FROM qr_code_sets WHERE id = ?',
+      args: [registration.qrCodeSetId],
+    });
 
-      if (qrSetResult.rows.length === 0 || (qrSetResult.rows[0] as any).organization_id !== organization.id) {
-        return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (qrSetResult.rows.length === 0 || (qrSetResult.rows[0] as any).organization_id !== organization.id) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
       }
     }
 

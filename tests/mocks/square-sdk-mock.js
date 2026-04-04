@@ -249,3 +249,4 @@ window.Square = {
 
 console.log('[MOCK] Square SDK mock loaded successfully');
 
+

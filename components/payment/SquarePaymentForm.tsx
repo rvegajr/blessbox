@@ -155,7 +155,8 @@ export default function SquarePaymentForm({
         setPayments(paymentsInstance);
 
         // Create card payment method with postal code requirement
-        const cardInstance = await paymentsInstance.card({
+        // Note: Web Payments SDK card() accepts options, but type definitions may be out of sync
+        const cardInstance = await (paymentsInstance.card as any)({
           style: {
             '.input-container': {
               borderColor: '#E0E0E0',

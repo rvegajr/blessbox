@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
       },
       activeOrganization: activeOrg ? {
         id: activeOrg.id,
-        name: activeOrg.name
+        name: (activeOrg as any).name || 'Unknown'
       } : null,
       organizations: orgsWithData,
       sessionCookies: {

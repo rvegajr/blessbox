@@ -33,7 +33,7 @@ export class UsageDisplay implements IUsageDisplay {
       args: [organizationId]
     });
 
-    const subscription = subscriptionResult.rows[0] as {
+    const subscription = subscriptionResult.rows[0] as unknown as {
       plan_type: string;
       registration_limit: number;
       current_registration_count: number | null;

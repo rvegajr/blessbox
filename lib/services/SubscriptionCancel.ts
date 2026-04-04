@@ -163,7 +163,7 @@ export class SubscriptionCancel implements ISubscriptionCancel {
       args: [organizationId]
     });
 
-    return result.rows[0] as any || null;
+    return result.rows[0] as unknown as any || null;
   }
 }
 

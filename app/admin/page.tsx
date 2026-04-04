@@ -52,7 +52,8 @@ interface Organization {
 }
 
 export default function AdminPage() {
-  const { user } = useSession();
+  const { data } = useSession();
+  const user = data?.user;
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [orgs, setOrgs] = useState<Organization[]>([]);

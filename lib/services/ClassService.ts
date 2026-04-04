@@ -78,7 +78,7 @@ export class ClassService {
       args: [id]
     });
 
-    return result.rows[0] as Class || null;
+    return result.rows[0] as unknown as Class || null;
   }
 
   async getClassesByOrganization(organizationId: string): Promise<Class[]> {
@@ -87,7 +87,7 @@ export class ClassService {
       args: [organizationId]
     });
 
-    return result.rows as Class[];
+    return result.rows as unknown as Class[];
   }
 
   async updateClass(id: string, updates: Partial<Omit<Class, 'id' | 'created_at' | 'updated_at'>>): Promise<Class> {
@@ -147,7 +147,7 @@ export class ClassService {
       args: [id]
     });
 
-    return result.rows[0] as ClassSession || null;
+    return result.rows[0] as unknown as ClassSession || null;
   }
 
   async getSessionsByClass(classId: string): Promise<ClassSession[]> {
@@ -156,7 +156,7 @@ export class ClassService {
       args: [classId]
     });
 
-    return result.rows as ClassSession[];
+    return result.rows as unknown as ClassSession[];
   }
 
   // Participant Management
@@ -179,7 +179,7 @@ export class ClassService {
       args: [id]
     });
 
-    return result.rows[0] as Participant || null;
+    return result.rows[0] as unknown as Participant || null;
   }
 
   async getParticipantsByOrganization(organizationId: string): Promise<Participant[]> {
@@ -188,7 +188,7 @@ export class ClassService {
       args: [organizationId]
     });
 
-    return result.rows as Participant[];
+    return result.rows as unknown as Participant[];
   }
 
   // Enrollment Management
@@ -211,7 +211,7 @@ export class ClassService {
       args: [id]
     });
 
-    return result.rows[0] as Enrollment || null;
+    return result.rows[0] as unknown as Enrollment || null;
   }
 
   async getEnrollmentsByClass(classId: string): Promise<Enrollment[]> {
@@ -224,7 +224,7 @@ export class ClassService {
       args: [classId]
     });
 
-    return result.rows as Enrollment[];
+    return result.rows as unknown as Enrollment[];
   }
 
   async updateEnrollmentStatus(id: string, status: Enrollment['enrollment_status']): Promise<Enrollment> {

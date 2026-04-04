@@ -15,7 +15,8 @@ interface SquareConfig {
 function CheckoutContent() {
   const params = useSearchParams();
   const router = useRouter();
-  const { user } = useSession();
+  const { data } = useSession();
+  const user = data?.user;
   const [status, setStatus] = useState<string>('');
   const [squareConfig, setSquareConfig] = useState<SquareConfig | null>(null);
   const [email, setEmail] = useState('');

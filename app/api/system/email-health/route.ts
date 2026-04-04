@@ -130,7 +130,7 @@ function isAuthorizedBySecret(req: NextRequest): boolean {
   const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
   const cronSecret = process.env.CRON_SECRET;
   const diagnosticsSecret = process.env.DIAGNOSTICS_SECRET;
-  return !!token && ((cronSecret && token === cronSecret) || (diagnosticsSecret && token === diagnosticsSecret));
+  return !!token && Boolean((cronSecret && token === cronSecret) || (diagnosticsSecret && token === diagnosticsSecret));
 }
 
 async function isAuthorized(req: NextRequest): Promise<boolean> {
