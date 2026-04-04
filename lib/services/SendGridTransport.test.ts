@@ -22,16 +22,22 @@ describe('SendGridTransport', () => {
   });
 
   describe('configuration validation', () => {
-    it('throws error if SENDGRID_API_KEY missing', () => {
+    it('returns error if SENDGRID_API_KEY missing on first send', async () => {
       delete process.env.SENDGRID_API_KEY;
-      
-      expect(() => new SendGridTransport()).toThrow('SendGrid API key not configured');
+
+      const transport = new SendGridTransport();
+      const result = await transport.sendDirect({ to: 'a@b.com', subject: 'x', html: '<p>x</p>' });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('SendGrid API key not configured');
     });
 
-    it('throws error if SENDGRID_FROM_EMAIL missing', () => {
+    it('returns error if SENDGRID_FROM_EMAIL missing on first send', async () => {
       delete process.env.SENDGRID_FROM_EMAIL;
-      
-      expect(() => new SendGridTransport()).toThrow('SendGrid from email not configured');
+
+      const transport = new SendGridTransport();
+      const result = await transport.sendDirect({ to: 'a@b.com', subject: 'x', html: '<p>x</p>' });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('SendGrid from email not configured');
     });
 
     it('uses default from name if not provided', () => {
