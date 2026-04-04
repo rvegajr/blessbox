@@ -4,6 +4,7 @@ import './globals.css'
 // import 'aos/dist/aos.css'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { TutorialSystemLoader } from '@/components/TutorialSystemLoader'
+import { TrakletDevWidget } from '@/components/dev/TrakletDevWidget'
 
 const geist = Geist({ 
   subsets: ['latin'],
@@ -48,6 +49,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <TutorialSystemLoader />
+          <TrakletDevWidget />
         </AuthProvider>
       </body>
     </html>
