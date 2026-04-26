@@ -102,13 +102,35 @@ async function collectApiRoutes(): Promise<RouteCheck[]> {
   });
 }
 
+// Routes intentionally hidden behind a diagnostics secret in production.
+// Without the secret these return 404 by design (security hardening).
+const EXPECT_404_IN_PROD: ReadonlySet<string> = new Set([
+  '/api/debug-db-info',
+  '/api/debug-email-config',
+  '/api/debug-form-config',
+  '/api/debug-auth-url',
+  '/api/debug/session-org-data',
+  '/api/test-registration-service',
+  '/api/test/magic-link-url',
+  '/api/test-email-send',
+  '/api/test-production-email',
+  '/api/system/clear-database',
+  '/api/test/seed',
+  '/api/test/auth',
+  '/api/test/login',
+  '/api/test/verification-code',
+  '/api/test/create-registration',
+  '/api/dev/traklet-proxy',
+]);
+
 function shouldAllow404(route: RouteCheck): boolean {
   // Dynamic routes can legitimately 404 for missing records.
   if (route.isDynamic) return true;
 
-  // In production, local-only test helpers intentionally return 404.
+  // In production, local-only test/debug helpers intentionally return 404.
   if (IS_PRODUCTION) {
-    if (route.urlPath.startsWith('/api/test/') && !['/api/test/login', '/api/test/seed-prod'].includes(route.urlPath)) {
+    if (EXPECT_404_IN_PROD.has(route.urlPath)) return true;
+    if (route.urlPath.startsWith('/api/test/') && route.urlPath !== '/api/test/seed-prod') {
       return true;
     }
   }

@@ -1,6 +1,37 @@
 import { test, expect } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
+const TEST_ENV = process.env.TEST_ENV || 'local';
+const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
+
+// Routes intentionally hidden behind a diagnostics secret in production.
+// Without the secret these return 404 by design (security hardening).
+const EXPECT_404_IN_PROD: ReadonlySet<string> = new Set([
+  '/api/debug-db-info',
+  '/api/debug-email-config',
+  '/api/debug-form-config',
+  '/api/debug-auth-url',
+  '/api/debug/session-org-data',
+  '/api/test-registration-service',
+  '/api/test/magic-link-url',
+  '/api/test-email-send',
+  '/api/test-production-email',
+  '/api/system/clear-database',
+  '/api/test/seed',
+  '/api/test/auth',
+  '/api/test/login',
+  '/api/test/verification-code',
+  '/api/test/create-registration',
+]);
+
+// Routes that are now auth-gated (IDOR-closed) in production. 401 is correct.
+const EXPECT_401_IN_PROD: ReadonlySet<string> = new Set([
+  '/api/registrations',
+  '/api/registrations/test-id',
+  '/api/registrations/test-id/check-in',
+  '/api/registrations/export',
+  '/api/export/registrations',
+]);
 
 type ApiCase = {
   name: string;
@@ -120,8 +151,14 @@ test.describe('API Inventory Smoke (route existence)', () => {
       }
 
       // 404 means route missing unless explicitly allowed (e.g. record not found)
-      if (!api.allow404) {
+      // In production, diagnostic/test routes return 404 by design (secret-gated).
+      const allow404Here = api.allow404 || (IS_PRODUCTION && EXPECT_404_IN_PROD.has(api.path));
+      if (!allow404Here) {
         expect(status, `[${api.name}] ${method} ${api.path}`).not.toBe(404);
+      }
+      // Suppress passive note: in prod some routes 401 by design (auth-gated). Accept and move on.
+      if (IS_PRODUCTION && EXPECT_401_IN_PROD.has(api.path) && status === 401) {
+        // expected — auth-gated in prod
       }
     }
 

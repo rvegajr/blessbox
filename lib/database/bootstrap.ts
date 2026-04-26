@@ -1,4 +1,5 @@
 import { createClient } from '@libsql/client';
+import { getEnv } from '@/lib/utils/env';
 
 async function organizationsHasUniqueIndexOn(client: any, column: string): Promise<boolean> {
   try {
@@ -73,8 +74,8 @@ async function migrateOrganizationsDropContactEmailUnique(client: any): Promise<
 }
 
 export async function ensureLibsqlSchema(config?: { url?: string; authToken?: string }) {
-  const url = config?.url || process.env.TURSO_DATABASE_URL || 'file:./.tmp/test-db.sqlite';
-  const authToken = config?.authToken || process.env.TURSO_AUTH_TOKEN || '';
+  const url = config?.url || getEnv('TURSO_DATABASE_URL', 'file:./.tmp/test-db.sqlite');
+  const authToken = config?.authToken || getEnv('TURSO_AUTH_TOKEN');
   const client = createClient({ url, authToken });
 
   // Idempotent schema creation for libsql/sqlite

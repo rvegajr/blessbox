@@ -44,7 +44,8 @@ test.describe('Public registration flow (seeded)', () => {
     await page.getByLabel(/^email/i).fill(`pw-user-${Date.now()}@example.com`);
 
     await page.getByTestId('btn-submit-registration').click();
-    await expect(page.getByText(/registration submitted!/i)).toBeVisible({ timeout: 10000 });
+    // Successful submission redirects to /registration-success?id=...
+    await page.waitForURL(/\/registration-success/, { timeout: 15000 });
   });
 });
 

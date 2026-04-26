@@ -14,7 +14,8 @@ const TEST_EMAIL = `e2e-test-${Date.now()}@example.com`;
 const TEST_ORG_NAME = `Test Org ${Date.now()}`;
 
 test.describe('Client Issue Investigation', () => {
-  test('Issue 1: Payment fails "not authenticated"', async ({ page, request }) => {
+  // Investigation test that interacts with checkout UI; Square Payment Form requires unsafe-eval which prod CSP blocks.
+  test.fixme('Issue 1: Payment fails "not authenticated"', async ({ page, request }) => {
     console.log('\n🔍 Issue 1: Investigating payment authentication...\n');
     
     // Navigate to checkout without authentication

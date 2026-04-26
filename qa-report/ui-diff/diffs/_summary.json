@@ -1,0 +1,178 @@
+[
+  {
+    "slug": "home_mobile",
+    "mismatched": 315684,
+    "total": 1849380,
+    "pct": 17.06972066314116,
+    "w": 390,
+    "h": 4742
+  },
+  {
+    "slug": "onboarding-form_mobile",
+    "mismatched": 52424,
+    "total": 471510,
+    "pct": 11.11832198680834,
+    "w": 390,
+    "h": 1209
+  },
+  {
+    "slug": "onboarding-qr_mobile",
+    "mismatched": 52424,
+    "total": 471510,
+    "pct": 11.11832198680834,
+    "w": 390,
+    "h": 1209
+  },
+  {
+    "slug": "onboarding-email_mobile",
+    "mismatched": 44136,
+    "total": 471510,
+    "pct": 9.360564993319336,
+    "w": 390,
+    "h": 1209
+  },
+  {
+    "slug": "dashboard_desktop",
+    "mismatched": 110625,
+    "total": 1296000,
+    "pct": 8.53587962962963,
+    "w": 1440,
+    "h": 900
+  },
+  {
+    "slug": "report-bug_mobile",
+    "mismatched": 37087,
+    "total": 457080,
+    "pct": 8.113896910825238,
+    "w": 390,
+    "h": 1172
+  },
+  {
+    "slug": "login_mobile",
+    "mismatched": 25683,
+    "total": 329160,
+    "pct": 7.802588406853809,
+    "w": 390,
+    "h": 844
+  },
+  {
+    "slug": "dashboard_mobile",
+    "mismatched": 43832,
+    "total": 618540,
+    "pct": 7.086364665179293,
+    "w": 390,
+    "h": 1586
+  },
+  {
+    "slug": "onboarding-form_desktop",
+    "mismatched": 82586,
+    "total": 1717920,
+    "pct": 4.807325137375431,
+    "w": 1440,
+    "h": 1193
+  },
+  {
+    "slug": "onboarding-qr_desktop",
+    "mismatched": 82586,
+    "total": 1717920,
+    "pct": 4.807325137375431,
+    "w": 1440,
+    "h": 1193
+  },
+  {
+    "slug": "onboarding-email_desktop",
+    "mismatched": 75539,
+    "total": 1717920,
+    "pct": 4.39711977274844,
+    "w": 1440,
+    "h": 1193
+  },
+  {
+    "slug": "report-bug_desktop",
+    "mismatched": 56529,
+    "total": 1589760,
+    "pct": 3.5558197463768115,
+    "w": 1440,
+    "h": 1104
+  },
+  {
+    "slug": "login_desktop",
+    "mismatched": 28379,
+    "total": 1296000,
+    "pct": 2.1897376543209877,
+    "w": 1440,
+    "h": 900
+  },
+  {
+    "slug": "home_desktop",
+    "mismatched": 61315,
+    "total": 3506400,
+    "pct": 1.7486595938854665,
+    "w": 1440,
+    "h": 2435
+  },
+  {
+    "slug": "register-orgslug_mobile",
+    "mismatched": 947,
+    "total": 329160,
+    "pct": 0.28770202940819056,
+    "w": 390,
+    "h": 844
+  },
+  {
+    "slug": "select-org_mobile",
+    "mismatched": 925,
+    "total": 329160,
+    "pct": 0.2810183497387289,
+    "w": 390,
+    "h": 844
+  },
+  {
+    "slug": "pricing_mobile",
+    "mismatched": 915,
+    "total": 339300,
+    "pct": 0.2696728558797524,
+    "w": 390,
+    "h": 870
+  },
+  {
+    "slug": "onboarding-org_mobile",
+    "mismatched": 920,
+    "total": 471510,
+    "pct": 0.19511781298381795,
+    "w": 390,
+    "h": 1209
+  },
+  {
+    "slug": "pricing_desktop",
+    "mismatched": 941,
+    "total": 1296000,
+    "pct": 0.07260802469135802,
+    "w": 1440,
+    "h": 900
+  },
+  {
+    "slug": "select-org_desktop",
+    "mismatched": 919,
+    "total": 1296000,
+    "pct": 0.0709104938271605,
+    "w": 1440,
+    "h": 900
+  },
+  {
+    "slug": "register-orgslug_desktop",
+    "mismatched": 911,
+    "total": 1296000,
+    "pct": 0.07029320987654321,
+    "w": 1440,
+    "h": 900
+  },
+  {
+    "slug": "onboarding-org_desktop",
+    "mismatched": 920,
+    "total": 1717920,
+    "pct": 0.05355313402253889,
+    "w": 1440,
+    "h": 1193
+  }
+]

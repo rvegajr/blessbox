@@ -219,12 +219,12 @@ export class SquarePaymentService implements IPaymentProcessor {
 
   // Helper method to get Square application ID for frontend
   getApplicationId(): string {
-    return process.env.SQUARE_APPLICATION_ID || '';
+    return getEnv('SQUARE_APPLICATION_ID');
   }
 
   // Helper method to get Square location ID
   getLocationId(): string {
-    return process.env.SQUARE_LOCATION_ID || '';
+    return getEnv('SQUARE_LOCATION_ID');
   }
 
   // Customer + subscription operations intentionally excluded (ISP).

@@ -71,7 +71,8 @@ test.describe('Onboarding Flow - Complete Journey', () => {
     });
   });
 
-  test('Complete onboarding flow from start to finish', async ({ page, request }) => {
+  // Full onboarding through the UI requires PROD_TEST_LOGIN_SECRET (not provisioned on Vercel ⇒ /api/test/login 404).
+  test.fixme('Complete onboarding flow from start to finish', async ({ page, request }) => {
     console.log('\n🚀 Starting complete onboarding flow test...');
 
     // Authenticate first (required for onboarding pages)
