@@ -1,5 +1,5 @@
 // Auth Helper Tests
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getServerSession } from './auth-helper';
 
 // Mock Next.js cookies
@@ -12,8 +12,12 @@ describe('getServerSession', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('should return test/dev bypass session when bb_test_auth=1', async () => {
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
     const mockCookies = await import('next/headers');
     const mockCookieStore = {
       get: vi.fn((name: string) => {
@@ -34,7 +38,7 @@ describe('getServerSession', () => {
   });
 
   it('should return null when no token found', async () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
     const mockCookies = await import('next/headers');
     const mockCookieStore = {
       get: vi.fn(() => undefined),

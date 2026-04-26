@@ -2,45 +2,52 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureDbReady } from '@/lib/db-ready';
 import { EmailService } from '@/lib/services/EmailService';
 import { getDbClient } from '@/lib/db';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 /**
- * Comprehensive production email test endpoint
- * Tests email sending and provides detailed diagnostics
+ * POST /api/test-production-email
+ * Diagnostics-only production email pipeline check.
+ *
+ * Hardened:
+ *  - Requires DIAGNOSTICS_SECRET (404 in prod when missing/invalid).
+ *  - `from` is hardcoded to SENDGRID_FROM_EMAIL — client value ignored.
+ *  - `replyTo` accepted only if it ends in `@blessbox.org`; otherwise ignored.
+ *  - `to` MUST equal DIAGNOSTICS_TEST_RECIPIENT.
  */
 export async function POST(request: NextRequest) {
+  const authFailure = requireDiagnosticsSecret(request);
+  if (authFailure) return authFailure;
+
   try {
-    const body = await request.json();
-    const { email, fromEmail, replyTo } = body as { email?: string; fromEmail?: string; replyTo?: string };
+    const body = await request.json().catch(() => ({} as any));
+    const requestedTo = typeof body?.email === 'string' ? body.email.trim() : '';
+    const requestedReplyTo = typeof body?.replyTo === 'string' ? body.replyTo.trim() : '';
 
-    if (!email || typeof email !== 'string') {
+    const allowed = (process.env.DIAGNOSTICS_TEST_RECIPIENT || '').trim();
+    if (!allowed) {
       return NextResponse.json(
-        { success: false, error: 'Email is required' },
-        { status: 400 }
+        { success: false, error: 'DIAGNOSTICS_TEST_RECIPIENT not configured on server' },
+        { status: 500 }
       );
     }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (requestedTo && requestedTo.toLowerCase() !== allowed.toLowerCase()) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email format' },
-        { status: 400 }
+        { success: false, error: 'Recipient not on diagnostics allowlist' },
+        { status: 403 }
       );
     }
+    const to = allowed;
 
-    // This endpoint is restricted in production (use diagnostics secret).
-    const auth = request.headers.get('authorization') || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
-    const secret = process.env.DIAGNOSTICS_SECRET || process.env.CRON_SECRET;
-    if (process.env.NODE_ENV === 'production' && (!secret || token !== secret)) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    // replyTo: only accept if @blessbox.org domain. Otherwise drop silently.
+    const safeReplyTo =
+      requestedReplyTo && /^[^\s@]+@blessbox\.org$/i.test(requestedReplyTo)
+        ? requestedReplyTo
+        : undefined;
 
     await ensureDbReady();
     const service = new EmailService();
     const orgId = (process.env.TEST_ORG_ID || 'org-email-test') as string;
 
-    // Ensure org exists (email_templates has FK to organizations).
     const db = getDbClient();
     await db.execute({
       sql: `INSERT OR IGNORE INTO organizations (id, name, contact_email, email_verified, created_at, updated_at)
@@ -50,16 +57,23 @@ export async function POST(request: NextRequest) {
 
     await service.ensureDefaultTemplates(orgId);
 
-    const result = await service.sendEmail(orgId, email, 'admin_notification', {
-      organization_name: 'BlessBox',
-      recipient_name: 'Tester',
-      event_type: 'production_email_test',
-      registration_id: 'test',
-      qr_code_label: 'test',
-    }, {
-      ...(typeof fromEmail === 'string' && fromEmail.trim() ? { fromEmailOverride: fromEmail.trim() } : {}),
-      ...(typeof replyTo === 'string' && replyTo.trim() ? { replyTo: replyTo.trim() } : {}),
-    });
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL || '';
+    const result = await service.sendEmail(
+      orgId,
+      to,
+      'admin_notification',
+      {
+        organization_name: 'BlessBox',
+        recipient_name: 'Tester',
+        event_type: 'production_email_test',
+        registration_id: 'test',
+        qr_code_label: 'test',
+      },
+      {
+        ...(fromEmail ? { fromEmailOverride: fromEmail } : {}),
+        ...(safeReplyTo ? { replyTo: safeReplyTo } : {}),
+      }
+    );
 
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error || 'Failed to send' }, { status: 500 });
@@ -68,18 +82,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Test email sent successfully!',
-      email,
-      note: 'Prefer /api/system/email-health for full diagnostics.',
+      email: to,
     });
   } catch (error) {
-    console.error('❌ Production email test error:', error);
+    console.error('Production email test error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error',
-      },
+      { success: false, error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
 }
-

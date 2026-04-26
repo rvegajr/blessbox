@@ -6,17 +6,29 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { AuthService } from '@/lib/services/AuthService';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
+import { parseBody } from '@/lib/api/validate';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 export const runtime = 'nodejs';
 
 const authService = new AuthService();
 
+const SendCodeSchema = z.object({
+  email: z.string().email(),
+});
+
 export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 5/min
+  const ipLimit = rateLimit(request, { key: 'auth/send-code:ip', limit: 5, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
+  const parsed = await parseBody(request, SendCodeSchema);
+  if ('error' in parsed) return parsed.error;
   try {
-    const body = await request.json();
-    const { email } = body;
+    const { email } = parsed.data;
 
     // Validate email
     const normalized = normalizeEmail(email);
@@ -26,6 +38,15 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Per-email rate limit: 20/hr — guards against email-bomb against a single victim
+    const emailLimit = rateLimit(request, {
+      key: 'auth/send-code:email',
+      identifier: normalized,
+      limit: 20,
+      windowMs: 60 * 60_000,
+    });
+    if (!emailLimit.allowed) return rateLimitResponse(emailLimit.retryAfterSec);
 
     // Send verification code
     const result = await authService.sendVerificationCode(normalized);

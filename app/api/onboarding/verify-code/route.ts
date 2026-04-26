@@ -3,53 +3,47 @@ import { VerificationService } from '@/lib/services/VerificationService';
 import { ensureDbReady } from '@/lib/db-ready';
 import { getDbClient } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
+import {
+  badRequestResponse,
+  internalErrorResponse,
+} from '@/lib/api/errorResponse';
+import { parseBody } from '@/lib/api/validate';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 const verificationService = new VerificationService();
 
+const OnboardingVerifyCodeSchema = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits'),
+  organizationId: z.string().optional(),
+});
+
 export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 10/min — guards OTP brute force
+  const ipLimit = rateLimit(request, { key: 'onboarding/verify-code:ip', limit: 10, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
+  const parsed = await parseBody(request, OnboardingVerifyCodeSchema);
+  if ('error' in parsed) return parsed.error;
+  const { email, code, organizationId } = parsed.data;
+
   try {
-    const body = await request.json();
-    const { email, code, organizationId } = body;
-
-    // Validate inputs
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { success: false, verified: false, error: 'Email is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!code || typeof code !== 'string') {
-      return NextResponse.json(
-        { success: false, verified: false, error: 'Verification code is required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate code format (6 digits)
-    if (!/^\d{6}$/.test(code)) {
-      return NextResponse.json(
-        { success: false, verified: false, error: 'Invalid code format. Code must be 6 digits.' },
-        { status: 400 }
-      );
-    }
-
-    // Use VerificationService to verify code
     const result = await verificationService.verifyCode(email, code);
 
     if (!result.success) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           verified: false,
           error: result.message,
-          remainingAttempts: result.remainingAttempts
+          remainingAttempts: result.remainingAttempts,
         },
         { status: 400 }
       );
     }
 
-    // If verified, ensure we have a user record (account identity) and optionally attach membership to organization.
+    // If verified, ensure we have a user record and optionally attach membership.
     await ensureDbReady();
     const db = getDbClient();
     const normalizedEmail = email.trim().toLowerCase();
@@ -72,10 +66,27 @@ export async function POST(request: NextRequest) {
     });
     const resolvedUserId = String((userRow.rows?.[0] as any)?.id || userId);
 
-    // Optionally create membership if org was provided
+    // Optionally create membership if org was provided.
+    // IMPORTANT: verify the org exists FIRST. Per spec, verify-code may be called
+    // before create-organization runs; in that case we must not write a membership
+    // row (FK violation -> SQLITE_CONSTRAINT_FOREIGNKEY 500). Return a clean 400.
     let membershipCreated = false;
     if (typeof organizationId === 'string' && organizationId.trim()) {
       const orgId = organizationId.trim();
+
+      const orgCheck = await db.execute({
+        sql: `SELECT id FROM organizations WHERE id = ? LIMIT 1`,
+        args: [orgId],
+      });
+
+      if (!orgCheck.rows || orgCheck.rows.length === 0) {
+        // Parent row does not exist — return clean error, never leak SQLite text.
+        return badRequestResponse('Invalid organization', {
+          verified: result.verified || false,
+          userId: resolvedUserId,
+          membershipCreated: false,
+        });
+      }
 
       // Mark org email as verified (only if it matches this email)
       await db.execute({
@@ -102,14 +113,6 @@ export async function POST(request: NextRequest) {
       membershipCreated,
     });
   } catch (error) {
-    console.error('Verify code error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        verified: false,
-        error: error instanceof Error ? error.message : 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse(error, 'Verify code');
   }
 }

@@ -1,0 +1,82 @@
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
+const coreWebVitals = require('eslint-config-next/core-web-vitals')
+const nextTs = require('eslint-config-next/typescript')
+
+export default [
+  {
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      'out/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      'playwright-report/**',
+      'test-results/**',
+      'src/**',
+      'drizzle/**',
+      'mcp-server/**',
+      'scripts/**',
+      'tests/**',
+      'backups/**',
+      'public/**',
+      '**/*.config.js',
+      '**/*.config.mjs',
+      '**/*.config.ts',
+      'next-env.d.ts',
+    ],
+  },
+  ...coreWebVitals,
+  ...nextTs,
+  {
+    rules: {
+      // Style/noise rules - off
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-this-alias': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
+      '@typescript-eslint/no-wrapper-object-types': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/triple-slash-reference': 'off',
+      'prefer-const': 'off',
+      'react/no-unescaped-entities': 'off',
+      'react/display-name': 'off',
+      'react/jsx-key': 'warn',
+      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      // React Compiler / hooks v6 strictness — off (existing code; migration noise)
+      'react-hooks/immutability': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/set-state-in-render': 'off',
+      'react-hooks/component-hook-factories': 'off',
+      'react-hooks/config': 'off',
+      'react-hooks/error-boundaries': 'off',
+      'react-hooks/gating': 'off',
+      'react-hooks/globals': 'off',
+      'react-hooks/incompatible-library': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/static-components': 'off',
+      'react-hooks/unsupported-syntax': 'off',
+      'react-hooks/use-memo': 'off',
+      'react/use': 'off',
+      '@next/next/no-img-element': 'off',
+      '@next/next/no-html-link-for-pages': 'off',
+      '@next/next/no-page-custom-font': 'off',
+      '@next/next/no-sync-scripts': 'off',
+      '@next/next/no-assign-module-variable': 'off',
+      // Correctness/security - keep on
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'react/no-danger': 'warn',
+    },
+  },
+]

@@ -1,4 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
+import { parseBody } from '@/lib/api/validate';
+
+const ImageSchema = z.object({
+  name: z.string().max(255),
+  type: z.string().max(100),
+  data: z.string().max(8 * 1024 * 1024), // ~6MB raw after base64
+});
+
+const BugReportSchema = z.object({
+  description: z.string().min(1).max(5000),
+  expected: z.string().min(1).max(5000),
+  steps: z.string().min(1).max(5000),
+  pageUrl: z.string().max(2000).optional(),
+  browser: z.string().min(1).max(200),
+  device: z.string().min(1).max(200),
+  images: z.array(ImageSchema).max(10).optional(),
+  userAgent: z.string().max(500).optional(),
+  labels: z.array(z.string().max(50)).max(10).optional(),
+});
 
 /**
  * POST /api/report-bug
@@ -27,23 +48,15 @@ const GITHUB_REPO = process.env.GITHUB_REPO || 'rvegajr/BlessBox';
 const GITHUB_API = 'https://api.github.com';
 
 export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 5/hr — bug reports are low-volume; this stops spam
+  const ipLimit = rateLimit(request, { key: 'report-bug:ip', limit: 5, windowMs: 60 * 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
+  // Allow up to 10MB to accommodate base64-encoded screenshots
+  const parsed = await parseBody(request, BugReportSchema, { maxBytes: 10 * 1024 * 1024 });
+  if ('error' in parsed) return parsed.error;
   try {
-    const body: BugReportPayload = await request.json();
-
-    // Validate required fields
-    if (!body.description || !body.expected || !body.steps) {
-      return NextResponse.json(
-        { error: 'Missing required fields: description, expected, steps' },
-        { status: 400 }
-      );
-    }
-
-    if (!body.browser || !body.device) {
-      return NextResponse.json(
-        { error: 'Missing required fields: browser, device' },
-        { status: 400 }
-      );
-    }
+    const body: BugReportPayload = parsed.data as BugReportPayload;
 
     // If no GitHub token, store locally and return success
     if (!GITHUB_TOKEN) {

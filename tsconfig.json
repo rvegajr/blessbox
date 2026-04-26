@@ -47,6 +47,8 @@
     "scripts/**/*",
     "tests/**/*",
     "src/tests/**/*",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
     "src/pages/**/*",
     "src/pages-old-astro/**/*",
     "src/**/*.astro",

@@ -72,22 +72,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Enforce capacity limits (non-cancelled enrollments)
-    const currentEnrollments = await classService.getEnrollmentsByClass(class_id);
-    const activeCount = currentEnrollments.filter((e: any) => e.enrollment_status !== 'cancelled').length;
-    if (classDetails.capacity > 0 && activeCount >= classDetails.capacity) {
+    // Capacity semantics:
+    //   capacity > 0  -> hard cap
+    //   capacity == 0 -> CLOSED (no enrollments accepted) — historically meant
+    //                    "unlimited"; that silently-permissive default is now a
+    //                    deliberate "closed" gate. Use a large number for
+    //                    effectively-unlimited classes until null is supported.
+    if (classDetails.capacity === 0) {
+      return NextResponse.json({ error: 'Class is closed for enrollment' }, { status: 409 });
+    }
+
+    // Race-safe enrollment: a single INSERT ... WHERE (count) < capacity
+    // statement is evaluated atomically by libsql/SQLite, so concurrent POSTs
+    // can't both pass the capacity check. The UNIQUE index on
+    // (class_id, participant_id) also blocks duplicate enrollments.
+    let inserted: { id: string } | null = null;
+    try {
+      inserted = await classService.enrollParticipantWithCapacity(
+        {
+          participant_id,
+          class_id,
+          session_id: session_id || null,
+          enrollment_status: 'pending',
+          enrolled_at: new Date().toISOString(),
+          notes: notes || ''
+        },
+        classDetails.capacity // capacity > 0; 0 was rejected above
+      );
+    } catch (e: any) {
+      const msg = String(e?.message || e);
+      if (/UNIQUE constraint failed.*enrollments/i.test(msg)) {
+        return NextResponse.json(
+          { error: 'Participant is already enrolled in this class' },
+          { status: 409 }
+        );
+      }
+      throw e;
+    }
+
+    if (!inserted) {
       return NextResponse.json({ error: 'Class capacity reached' }, { status: 409 });
     }
 
-    // Create enrollment
-    const enrollment = await classService.enrollParticipant({
-      participant_id,
-      class_id,
-      session_id: session_id || null,
-      enrollment_status: 'pending',
-      enrolled_at: new Date().toISOString(),
-      notes: notes || ''
-    });
+    const enrollment = await classService.getEnrollment(inserted.id);
+    if (!enrollment) {
+      return NextResponse.json({ error: 'Failed to create enrollment' }, { status: 500 });
+    }
 
     // Get participant and class details for email
     const participant = await classService.getParticipant(participant_id);

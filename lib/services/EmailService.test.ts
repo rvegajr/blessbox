@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 const sendgridSetApiKey = vi.fn();
 const sendgridSend = vi.fn();
@@ -10,7 +10,7 @@ vi.mock('@sendgrid/mail', () => ({
 }));
 
 const smtpSendMail = vi.fn();
-const createTransport = vi.fn(() => ({ sendMail: smtpSendMail }));
+const createTransport = vi.fn((..._args: any[]) => ({ sendMail: smtpSendMail }));
 vi.mock('nodemailer', () => ({
   default: { createTransport: (...args: any[]) => createTransport(...args) },
 }));
@@ -22,10 +22,14 @@ describe('EmailService', () => {
   let EmailService: typeof import('./EmailService').EmailService;
   let getDbClient: any;
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.resetModules();
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
 
     mockDb = {
       execute: vi.fn(async ({ sql, args }: { sql: string; args?: any[] }) => {
@@ -122,7 +126,7 @@ describe('EmailService', () => {
   });
 
   it('fails in production if no provider is configured', async () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
     delete process.env.SENDGRID_API_KEY;
     delete process.env.SENDGRID_FROM_EMAIL;
     delete process.env.SMTP_HOST;

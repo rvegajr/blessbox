@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 /**
  * Test endpoint to verify magic link URL generation logic
- * Simulates what happens in sendVerificationRequest callback
+ * Simulates what happens in sendVerificationRequest callback.
+ * Diagnostics-secret gated in ALL environments.
  */
 export async function POST(req: NextRequest) {
+  const authFailure = requireDiagnosticsSecret(req);
+  if (authFailure) return authFailure;
   try {
     const body = await req.json();
     const { originalUrl, email } = body;

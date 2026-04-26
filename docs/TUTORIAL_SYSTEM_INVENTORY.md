@@ -397,7 +397,7 @@ This document inventories all existing tutorials, wizards, help files, and guida
 | `advanced-forms` | Advanced Form Features | `/form-builder` | 7-9 | ❌ Not Created | P2 |
 | `team-management` | Manage Team Members | `/dashboard/team` | 4-5 | ❌ Not Created | P2 |
 
-**Total**: 13 tutorials to create
+**Total**: 19 tutorials to create
 
 ---
 

@@ -1,28 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { RegistrationService } from '@/lib/services/RegistrationService';
+import { parseBody } from '@/lib/api/validate';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 const registrationService = new RegistrationService();
+
+const RegistrationSubmitAliasSchema = z.object({
+  orgSlug: z.string().min(1).max(200),
+  qrLabel: z.string().min(1).max(200),
+  formData: z.record(z.string(), z.unknown()),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
 
 /**
  * Backwards-compatible alias for older tests/specs that call `/api/registrations/submit`.
  * The canonical endpoint is `POST /api/registrations`.
  */
 export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 30/min — shares the registrations submit policy
+  const ipLimit = rateLimit(request, { key: 'registrations/submit:ip', limit: 30, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
+  const parsed = await parseBody(request, RegistrationSubmitAliasSchema);
+  if ('error' in parsed) return parsed.error;
   try {
-    const { orgSlug, qrLabel, formData, metadata } = await request.json();
+    const { orgSlug, qrLabel, formData, metadata } = parsed.data;
 
-    if (!orgSlug || !qrLabel || !formData) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: orgSlug, qrLabel, and formData are required' },
-        { status: 400 }
-      );
-    }
-
-    if (typeof formData !== 'object' || formData === null) {
-      return NextResponse.json({ success: false, error: 'formData must be an object' }, { status: 400 });
-    }
-
-    const registration = await registrationService.submitRegistration(orgSlug, qrLabel, formData, metadata);
+    const registration = await registrationService.submitRegistration(orgSlug, qrLabel, formData as any, metadata as any);
 
     return NextResponse.json({
       success: true,

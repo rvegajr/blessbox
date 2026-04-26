@@ -1,34 +1,24 @@
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { CouponService } from '@/lib/coupons';
+import { parseBody } from '@/lib/api/validate';
 
 const couponService = new CouponService();
 
+const CouponApplySchema = z.object({
+  code: z.string().min(1).max(50),
+  planType: z.string().min(1).max(50),
+  amountCents: z.number().int().nonnegative(),
+});
+
 // POST /api/coupons/apply - Compute discounted amount (in cents) for a plan + coupon
 export async function POST(req: NextRequest) {
+  const parsed = await parseBody(req, CouponApplySchema);
+  if ('error' in parsed) return parsed.error;
   try {
-    const body = await req.json().catch(() => ({}));
-    const code = String(body.code || '').trim();
-    const planType = String(body.planType || '').trim().toLowerCase();
-    const amountCents = Number(body.amountCents);
-
-    if (!code) {
-      return new Response(JSON.stringify({ success: false, valid: false, error: 'Coupon code required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    if (!Number.isFinite(amountCents)) {
-      return new Response(JSON.stringify({ success: false, valid: false, error: 'amountCents required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    if (!planType) {
-      return new Response(JSON.stringify({ success: false, valid: false, error: 'planType required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const code = parsed.data.code.trim();
+    const planType = parsed.data.planType.trim().toLowerCase();
+    const amountCents = parsed.data.amountCents;
 
     const discountedAmountCents = await couponService.applyCoupon(code, amountCents, planType);
     const discountAppliedCents = Math.max(0, amountCents - discountedAmountCents);

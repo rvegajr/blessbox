@@ -1,22 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 /**
- * Debug endpoint to check email configuration
- * Helps diagnose why verification emails aren't being sent
+ * Debug endpoint to check email configuration.
+ * Diagnostics-secret gated in ALL environments (returns 404 in prod when secret absent).
  */
 export async function GET(request: NextRequest) {
-  // Allow access in all environments for debugging (can be restricted later)
-  // In production, this helps diagnose email issues
-
-  // In production, require diagnostics secret (or cron secret) to avoid leaking config.
-  if (process.env.NODE_ENV === 'production') {
-    const auth = request.headers.get('authorization') || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
-    const secret = process.env.DIAGNOSTICS_SECRET || process.env.CRON_SECRET;
-    if (!secret || token !== secret) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-  }
+  const authFailure = requireDiagnosticsSecret(request);
+  if (authFailure) return authFailure;
 
   const isDev = process.env.NODE_ENV !== 'production';
 

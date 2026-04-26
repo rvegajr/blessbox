@@ -19,10 +19,69 @@ import {
 import { readdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { isAbsolute, normalize, sep } from 'path';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+// === Runtime input validation ===
+// Lightweight JSON-Schema-ish validator covering the subset our tools use:
+// type (string/object/array/boolean), enum, required, properties, items, default.
+function validateInput(schema, input, path = 'input') {
+  if (!schema) return input;
+  const value = input === undefined ? {} : input;
+
+  const checkType = (s, v, p) => {
+    if (s.type === 'object') {
+      if (v === null || typeof v !== 'object' || Array.isArray(v)) {
+        throw new Error(`${p} must be an object`);
+      }
+    } else if (s.type === 'array') {
+      if (!Array.isArray(v)) throw new Error(`${p} must be an array`);
+    } else if (s.type === 'string') {
+      if (typeof v !== 'string') throw new Error(`${p} must be a string`);
+    } else if (s.type === 'boolean') {
+      if (typeof v !== 'boolean') throw new Error(`${p} must be a boolean`);
+    } else if (s.type === 'number' || s.type === 'integer') {
+      if (typeof v !== 'number') throw new Error(`${p} must be a number`);
+    }
+    if (s.enum && !s.enum.includes(v)) {
+      throw new Error(`${p} must be one of: ${s.enum.join(', ')}`);
+    }
+  };
+
+  checkType(schema, value, path);
+
+  if (schema.type === 'object') {
+    const out = { ...value };
+    if (schema.properties) {
+      for (const [k, sub] of Object.entries(schema.properties)) {
+        if (out[k] === undefined && sub.default !== undefined) {
+          out[k] = sub.default;
+        }
+        if (out[k] !== undefined) {
+          checkType(sub, out[k], `${path}.${k}`);
+          if (sub.type === 'array' && sub.items) {
+            out[k].forEach((item, i) =>
+              checkType(sub.items, item, `${path}.${k}[${i}]`)
+            );
+          }
+        }
+      }
+    }
+    if (schema.required) {
+      for (const r of schema.required) {
+        if (out[r] === undefined || out[r] === null || out[r] === '') {
+          throw new Error(`${path}.${r} is required`);
+        }
+      }
+    }
+    return out;
+  }
+
+  return value;
+}
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, '..', '..');
 const BUGS_DIR = join(PROJECT_ROOT, 'bugs');
@@ -44,9 +103,7 @@ const server = new Server(
 );
 
 // Tool definitions
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
+const TOOL_DEFINITIONS = [
       {
         name: 'list-bugs',
         description: 'List all open bug reports from GitHub Issues (labeled "user-reported") or local bug files',
@@ -168,27 +225,43 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['bugId'],
         },
       },
-    ],
-  };
-});
+];
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: TOOL_DEFINITIONS,
+}));
+
+// Cache tool schemas by name for runtime validation
+const TOOL_SCHEMAS = new Map(
+  TOOL_DEFINITIONS.map((t) => [t.name, t.inputSchema])
+);
 
 // Tool implementations
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
+  // Runtime JSON-Schema validation – never trust the SDK / client.
+  const schema = TOOL_SCHEMAS.get(name);
+  let validated;
+  try {
+    validated = validateInput(schema, args || {});
+  } catch (err) {
+    throw new Error(`Invalid input for ${name}: ${err.message}`);
+  }
+
   switch (name) {
     case 'list-bugs':
-      return await listBugs(args);
+      return await listBugs(validated);
     case 'get-bug':
-      return await getBug(args);
+      return await getBug(validated);
     case 'run-test':
-      return await runTest(args);
+      return await runTest(validated);
     case 'create-regression-test':
-      return await createRegressionTest(args);
+      return await createRegressionTest(validated);
     case 'mark-fixed':
-      return await markFixed(args);
+      return await markFixed(validated);
     case 'analyze-bug':
-      return await analyzeBug(args);
+      return await analyzeBug(validated);
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -332,29 +405,59 @@ async function getBug(args) {
   throw new Error(`Cannot determine source for bug ID: ${id}`);
 }
 
+// Strict: relative path under tests/e2e/, no traversal, no absolute paths.
+const TEST_FILE_RE = /^[A-Za-z0-9_./-]+$/;
+const TEST_NAME_RE = /^[\w\s\-\.]+$/;
+
+function validateTestFile(testFile) {
+  if (typeof testFile !== 'string' || testFile.length === 0) {
+    throw new Error('testFile must be a non-empty string');
+  }
+  if (isAbsolute(testFile)) {
+    throw new Error('testFile must be a relative path (no absolute paths)');
+  }
+  if (!TEST_FILE_RE.test(testFile)) {
+    throw new Error('testFile contains disallowed characters');
+  }
+  const norm = normalize(testFile);
+  if (norm.startsWith('..') || norm.split(sep).includes('..')) {
+    throw new Error('testFile must not traverse parent directories');
+  }
+  return `tests/e2e/${norm}`;
+}
+
 async function runTest(args) {
   const { testFile, testName, headed } = args;
 
-  let command = 'npx playwright test';
+  // Build argv – NO shell, NO interpolation.
+  const argv = ['playwright', 'test'];
 
   if (testFile) {
-    command += ` tests/e2e/${testFile}`;
+    argv.push(validateTestFile(testFile));
   }
 
   if (testName) {
-    command += ` -g "${testName}"`;
+    if (typeof testName !== 'string' || !TEST_NAME_RE.test(testName)) {
+      throw new Error(
+        'testName must match /^[\\w\\s\\-\\.]+$/ (alphanumerics, spaces, _ - .)'
+      );
+    }
+    argv.push('-g', testName);
   }
 
   if (headed) {
-    command += ' --headed';
+    argv.push('--headed');
   }
 
-  command += ' --reporter=list';
+  argv.push('--reporter=list');
+
+  const displayCommand = `npx ${argv.join(' ')}`;
 
   try {
-    const { stdout, stderr } = await execAsync(command, {
+    const { stdout, stderr } = await execFileAsync('npx', argv, {
       cwd: PROJECT_ROOT,
       timeout: 120000, // 2 minutes
+      shell: false,
     });
 
     return {
@@ -364,7 +467,7 @@ async function runTest(args) {
           text: JSON.stringify(
             {
               success: true,
-              command,
+              command: displayCommand,
               output: stdout,
               errors: stderr,
             },
@@ -382,7 +485,7 @@ async function runTest(args) {
           text: JSON.stringify(
             {
               success: false,
-              command,
+              command: displayCommand,
               error: error.message,
               stdout: error.stdout,
               stderr: error.stderr,
@@ -438,8 +541,21 @@ async function markFixed(args) {
   if (isGitHub && GITHUB_TOKEN) {
     const issueNumber = id.replace('GH-', '');
 
+    const assertOk = async (label, res) => {
+      if (!res.ok) {
+        let detail = '';
+        try {
+          detail = await res.text();
+        } catch {}
+        throw new Error(
+          `GitHub ${label} failed: HTTP ${res.status} ${res.statusText}${detail ? ` – ${detail.slice(0, 300)}` : ''}`
+        );
+      }
+      return res;
+    };
+
     // Add comment with fix summary
-    await fetch(
+    const commentRes = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/issues/${issueNumber}/comments`,
       {
         method: 'POST',
@@ -453,9 +569,10 @@ async function markFixed(args) {
         }),
       }
     );
+    await assertOk('comment-post', commentRes);
 
     // Close issue
-    await fetch(
+    const closeRes = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/issues/${issueNumber}`,
       {
         method: 'PATCH',
@@ -470,6 +587,7 @@ async function markFixed(args) {
         }),
       }
     );
+    await assertOk('issue-close', closeRes);
 
     return {
       content: [

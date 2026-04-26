@@ -84,8 +84,9 @@ Thumbs.db
 blessbox.db
 blessbox.db-journal
 
-# Drizzle
-drizzle/
+# Drizzle (ignore working artifacts but keep versioned migrations)
+drizzle/*
+!drizzle/migrations/
 *.db-*
 
 # Turso (keep auth tokens secret!)
@@ -158,3 +159,6 @@ playwright-report/
 
 # Traklet
 .traklet/
+
+# Local DB backups
+backups/

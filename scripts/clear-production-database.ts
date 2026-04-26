@@ -20,6 +20,9 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 config({ path: resolve(process.cwd(), '.env.local') });
 
+// Safety: refuse to run unless a backup exists in backups/ from the last hour.
+import './_require-recent-backup';
+
 import { getDbClient } from '../lib/db';
 
 const SUPERADMIN_EMAIL = process.env.SUPERADMIN_EMAIL;

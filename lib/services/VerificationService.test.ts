@@ -1,7 +1,7 @@
 // VerificationService Tests - TDD Approach
 // Tests the actual implementation against the interface
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { VerificationService } from './VerificationService';
 import type { 
   VerificationCode,
@@ -19,11 +19,15 @@ describe('VerificationService', () => {
   let service: VerificationService;
   let mockDb: any;
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     
     // Keep non-production behavior (code is returned), but stub email sending.
-    process.env.NODE_ENV = 'test';
+    vi.stubEnv('NODE_ENV', 'test');
     
     mockDb = {
       execute: vi.fn(),

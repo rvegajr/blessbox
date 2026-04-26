@@ -417,6 +417,10 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
     `CREATE INDEX IF NOT EXISTS enrollments_class_id_idx ON enrollments(class_id);`,
     `CREATE INDEX IF NOT EXISTS enrollments_participant_id_idx ON enrollments(participant_id);`,
     `CREATE INDEX IF NOT EXISTS enrollments_session_id_idx ON enrollments(session_id);`,
+    // Block duplicate enrollments at the DB layer (one active row per participant per class).
+    // We cannot index on a "WHERE status != 'cancelled'" filter portably, so apply across all
+    // rows; the API soft-cancels rather than re-inserting, so this is safe in practice.
+    `CREATE UNIQUE INDEX IF NOT EXISTS enrollments_class_participant_uniq ON enrollments(class_id, participant_id);`,
     `CREATE INDEX IF NOT EXISTS email_logs_organization_id_idx ON email_logs(organization_id);`,
     `CREATE INDEX IF NOT EXISTS email_logs_recipient_email_idx ON email_logs(recipient_email);`
   ];

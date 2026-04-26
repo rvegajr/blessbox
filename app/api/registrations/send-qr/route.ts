@@ -8,10 +8,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SendGridTransport } from '@/lib/services/SendGridTransport';
 import { getDbClient } from '@/lib/db';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 const emailTransport = new SendGridTransport();
 
 export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 10/hr — guards against email-bombing via the QR resend endpoint
+  const ipLimit = rateLimit(request, { key: 'registrations/send-qr:ip', limit: 10, windowMs: 60 * 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
   try {
     const body = await request.json();
     const { registrationId, checkInToken, qrCodeDataUrl } = body;

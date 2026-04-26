@@ -1,12 +1,15 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
+import { PLANS } from '@/lib/pricing/plans';
 
-const plans = [
-  { key: 'free', name: 'Free Plan', price: 0, features: ['Up to 100 registrations'] },
-  { key: 'standard', name: 'Standard Plan', price: 19, features: ['Up to 5,000 registrations', 'Email support'] },
-  { key: 'enterprise', name: 'Enterprise Plan', price: 99, features: ['Up to 50,000 registrations', 'Priority support'] },
-] as const;
+// Display-only mapping from canonical PLANS source of truth.
+const plans = PLANS.map((p) => ({
+  key: p.key,
+  name: p.name,
+  price: p.priceMonthly,
+  features: p.features,
+}));
 
 export default function PricingPage() {
   const router = useRouter();

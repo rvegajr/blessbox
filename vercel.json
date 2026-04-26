@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/finalize-cancellations", "schedule": "0 2 * * *" }
+  ]
+}
