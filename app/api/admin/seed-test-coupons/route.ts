@@ -7,13 +7,22 @@ import { ensureDbReady } from '@/lib/db-ready';
  * POST /api/admin/seed-test-coupons
  *
  * Production-safe seeding for QA guide coupon codes.
- * - In production: requires header `x-seed-secret` matching env `SEED_TEST_COUPONS_SECRET`
+ * - In production: requires header `x-seed-secret` (or `x-test-seed-secret`) matching
+ *   env `SEED_TEST_COUPONS_SECRET` or `PROD_TEST_SEED_SECRET`
  * - In non-production: allowed without secret (useful for local/dev recovery)
  */
 export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === 'production';
-  const secret = (process.env.SEED_TEST_COUPONS_SECRET || '').trim();
-  const provided = (req.headers.get('x-seed-secret') || '').trim();
+  const secret = (
+    process.env.SEED_TEST_COUPONS_SECRET ||
+    process.env.PROD_TEST_SEED_SECRET ||
+    ''
+  ).trim();
+  const provided = (
+    req.headers.get('x-seed-secret') ||
+    req.headers.get('x-test-seed-secret') ||
+    ''
+  ).trim();
 
   if (isProd) {
     if (!secret || !provided || provided !== secret) {
@@ -60,6 +69,11 @@ export async function POST(req: NextRequest) {
       ensure({ code: 'FIRST10', discountType: 'fixed', discountValue: 1000, applicablePlans: ['standard', 'enterprise'] }),
       ensure({ code: 'EXPIRED', discountType: 'percentage', discountValue: 10, expiresAt: past, applicablePlans: ['standard', 'enterprise'] }),
       ensure({ code: 'MAXEDOUT', discountType: 'percentage', discountValue: 10, maxUses: 1, applicablePlans: ['standard', 'enterprise'] }),
+      // Additional QA coupons referenced by production-real-data-test.spec.ts
+      ensure({ code: 'WELCOME25', discountType: 'percentage', discountValue: 25, applicablePlans: ['standard', 'enterprise'] }),
+      ensure({ code: 'SAVE10', discountType: 'fixed', discountValue: 1000, applicablePlans: ['standard', 'enterprise'] }),
+      ensure({ code: 'NGO50', discountType: 'percentage', discountValue: 50, applicablePlans: ['standard', 'enterprise'] }),
+      ensure({ code: 'FIXED500', discountType: 'fixed', discountValue: 50000, applicablePlans: ['standard', 'enterprise'] }),
     ]);
 
     // Force MAXEDOUT to be exhausted (best-effort)
