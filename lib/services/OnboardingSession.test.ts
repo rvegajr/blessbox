@@ -10,11 +10,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { 
-  OnboardingSessionService, 
-  clearOnboardingSession 
+import {
+  OnboardingSessionService,
+  clearOnboardingSession
 } from './OnboardingSessionService';
 import { ONBOARDING_SESSION_KEYS } from '../interfaces/IOnboardingSession';
+
+/**
+ * Helper to explicitly remove all onboarding keys from sessionStorage.
+ * We avoid sessionStorage.clear() because some happy-dom versions in CI
+ * don't reliably clear between tests.
+ */
+function forceCleanSessionStorage(): void {
+  ONBOARDING_SESSION_KEYS.forEach(key => sessionStorage.removeItem(key));
+  // Also remove any extras that tests might set
+  sessionStorage.removeItem('other_key');
+  sessionStorage.removeItem('user_preferences');
+}
 
 /**
  * Helper to populate mock session data
@@ -32,11 +44,11 @@ function populateOnboardingSession(): void {
 describe('Onboarding Session Management', () => {
   beforeEach(() => {
     // Clear sessionStorage before each test
-    sessionStorage.clear();
+    forceCleanSessionStorage();
   });
 
   afterEach(() => {
-    sessionStorage.clear();
+    forceCleanSessionStorage();
   });
 
   describe('clearOnboardingSession', () => {
@@ -177,12 +189,12 @@ describe('OnboardingSessionService (ISP Compliance)', () => {
   let service: OnboardingSessionService;
 
   beforeEach(() => {
-    sessionStorage.clear();
+    forceCleanSessionStorage();
     service = new OnboardingSessionService();
   });
 
   afterEach(() => {
-    sessionStorage.clear();
+    forceCleanSessionStorage();
   });
 
   describe('Organization ID management', () => {

@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
+import { mkdirSync } from 'fs';
 
 describe('createLibsqlAuthAdapter', () => {
   it('stores and consumes verification tokens (case-insensitive identifier)', async () => {
+    mkdirSync('.tmp', { recursive: true });
     process.env.TURSO_DATABASE_URL = `file:./.tmp/auth-adapter-test-${Date.now()}-${Math.random()
       .toString(16)
       .slice(2)}.sqlite`;
