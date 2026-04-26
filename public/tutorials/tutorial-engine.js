@@ -2,6 +2,24 @@
  * BlessBox Tutorial System - Context-Independent
  * Pure vanilla JavaScript/TypeScript - zero framework dependencies
  * Can be easily removed by deleting script tag
+ *
+ * ============================================================
+ * CANONICAL localStorage SCHEMA (do not diverge):
+ *   key:   'blessbox_tutorials'
+ *   value: JSON of shape:
+ *     {
+ *       [tutorialId: string]: {
+ *         completed: boolean,
+ *         version:   number,
+ *         completedAt: string  // ISO 8601
+ *       }
+ *     }
+ *
+ * A one-time migration runs at construction time that reads any
+ * legacy per-tutorial keys of the form `tutorial-<id>` (written
+ * by the now-deleted React TutorialManager) and folds them into
+ * the canonical map above, then removes the legacy keys.
+ * ============================================================
  */
 /**
  * BlessBox Tutorial System
@@ -14,6 +32,9 @@ export class BlessBoxTutorials {
         this.initialized = false;
         this.storageKey = options.storageKey || 'blessbox_tutorials';
         this.debug = options.debug || false;
+        this.keydownHandler = null;
+        // One-time migration from legacy per-tutorial keys
+        this.migrateLegacyStorage();
         // Initialize on DOM ready
         if (typeof document !== 'undefined') {
             if (document.readyState === 'loading') {
@@ -131,8 +152,11 @@ export class BlessBoxTutorials {
             },
             onDestroyed: () => {
                 this.currentTutorial = null;
+                this.unbindKeyboardHandlers();
             }
         });
+        // Bind keyboard handlers (Esc/Arrows/Enter) for the active tutorial
+        this.bindKeyboardHandlers(driverObj, tutorial);
         // Start the tour
         driverObj.drive();
     }
@@ -314,6 +338,96 @@ export class BlessBoxTutorials {
             childList: true,
             subtree: true
         });
+    }
+    /**
+     * One-time migration from legacy `tutorial-<id>` keys (written by the
+     * removed React TutorialManager) into the canonical `blessbox_tutorials` map.
+     * Safe to call repeatedly: removes the legacy keys after merging.
+     */
+    migrateLegacyStorage() {
+        const storage = this.getLocalStorage();
+        if (!storage) return;
+        try {
+            const data = this.getStorageData();
+            const legacyKeys = [];
+            for (let i = 0; i < storage.length; i++) {
+                const k = storage.key(i);
+                if (k && k.startsWith('tutorial-') && k !== this.storageKey) {
+                    legacyKeys.push(k);
+                }
+            }
+            if (legacyKeys.length === 0) return;
+            let changed = false;
+            for (const key of legacyKeys) {
+                try {
+                    const raw = storage.getItem(key);
+                    if (!raw) { storage.removeItem(key); continue; }
+                    const parsed = JSON.parse(raw);
+                    const id = key.slice('tutorial-'.length);
+                    if (parsed && parsed.completed && !data[id]) {
+                        data[id] = {
+                            completed: true,
+                            version: parsed.version || 1,
+                            completedAt: parsed.completedAt || new Date().toISOString()
+                        };
+                        changed = true;
+                    }
+                    storage.removeItem(key);
+                } catch (_) {
+                    storage.removeItem(key);
+                }
+            }
+            if (changed) {
+                storage.setItem(this.storageKey, JSON.stringify(data));
+            }
+            this.log(`Migrated ${legacyKeys.length} legacy tutorial key(s)`);
+        } catch (e) {
+            console.warn('[BlessBox Tutorials] migration failed:', e);
+        }
+    }
+    /**
+     * Bind global keyboard handlers for the active tutorial.
+     * Esc = close, ArrowLeft = prev, ArrowRight/Enter = next.
+     * Only active while a tutorial is running.
+     */
+    bindKeyboardHandlers(driverObj, tutorial) {
+        if (typeof document === 'undefined') return;
+        this.unbindKeyboardHandlers();
+        this.keydownHandler = (event) => {
+            if (!this.currentTutorial) return;
+            // Don't hijack typing inside form fields
+            const target = event.target;
+            if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+                return;
+            }
+            switch (event.key) {
+                case 'Escape':
+                    if (tutorial.dismissible !== false) {
+                        event.preventDefault();
+                        try { driverObj.destroy(); } catch (_) {}
+                    }
+                    break;
+                case 'ArrowRight':
+                case 'Enter':
+                    event.preventDefault();
+                    try {
+                        if (driverObj.isLastStep()) driverObj.destroy();
+                        else driverObj.moveNext();
+                    } catch (_) {}
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    try { driverObj.movePrevious(); } catch (_) {}
+                    break;
+            }
+        };
+        document.addEventListener('keydown', this.keydownHandler);
+    }
+    unbindKeyboardHandlers() {
+        if (this.keydownHandler && typeof document !== 'undefined') {
+            document.removeEventListener('keydown', this.keydownHandler);
+        }
+        this.keydownHandler = null;
     }
     /**
      * Debug logger

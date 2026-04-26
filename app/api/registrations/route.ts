@@ -1,36 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { RegistrationService, RegistrationLimitError } from '@/lib/services/RegistrationService';
 import { parseODataQuery } from '@/lib/utils/odataParser';
+import { parseBody } from '@/lib/api/validate';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 const registrationService = new RegistrationService();
 
+// formData is dynamic per organization's form-config — accept any string-keyed
+// record. Required base fields are always present.
+const RegistrationSubmitSchema = z.object({
+  orgSlug: z.string().min(1).max(200),
+  qrLabel: z.string().min(1).max(200),
+  formData: z.record(z.string(), z.unknown()),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
 // POST /api/registrations - Submit a new registration
 export async function POST(request: NextRequest) {
-  try {
-    const { orgSlug, qrLabel, formData, metadata } = await request.json();
-    
-    // Validate required fields
-    if (!orgSlug || !qrLabel || !formData) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: orgSlug, qrLabel, and formData are required' },
-        { status: 400 }
-      );
-    }
+  // Per-IP rate limit: 30/min — high enough for legit kiosk use, blocks scripted abuse
+  const ipLimit = rateLimit(request, { key: 'registrations/submit:ip', limit: 30, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
 
-    // Validate formData is an object
-    if (typeof formData !== 'object' || formData === null) {
-      return NextResponse.json(
-        { success: false, error: 'formData must be an object' },
-        { status: 400 }
-      );
-    }
+  const parsed = await parseBody(request, RegistrationSubmitSchema);
+  if ('error' in parsed) return parsed.error;
+  try {
+    const { orgSlug, qrLabel, formData, metadata } = parsed.data;
 
     // Submit registration
     const registration = await registrationService.submitRegistration(
       orgSlug,
       qrLabel,
-      formData,
-      metadata
+      formData as any,
+      metadata as any
     );
     
     return NextResponse.json({ 

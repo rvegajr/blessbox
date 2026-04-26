@@ -16,38 +16,38 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { AuthService } from '@/lib/services/AuthService';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
+import { parseBody } from '@/lib/api/validate';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 export const runtime = 'nodejs';
 
 const authService = new AuthService();
 
+const VerifyCodeSchema = z.object({
+  email: z.string().email(),
+  code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits'),
+  organizationId: z.string().optional(),
+});
+
 export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 10/min — guards OTP brute force
+  const ipLimit = rateLimit(request, { key: 'auth/verify-code:ip', limit: 10, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
+  const parsed = await parseBody(request, VerifyCodeSchema);
+  if ('error' in parsed) return parsed.error;
   try {
-    const body = await request.json();
-    const { email, code, organizationId } = body;
+    const { email, code, organizationId } = parsed.data;
 
-    // Validate email
-    const normalized = normalizeEmail(email);
-    if (!normalized) {
-      return NextResponse.json(
-        { success: false, error: 'Valid email address is required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate code format
-    if (!code || typeof code !== 'string' || !/^\d{6}$/.test(code)) {
-      return NextResponse.json(
-        { success: false, error: 'Valid 6-digit code is required' },
-        { status: 400 }
-      );
-    }
+    // Normalize email (zod already validated format)
+    const normalized = normalizeEmail(email) || email;
 
     // Verify code and create session
     const result = await authService.verifyCodeAndCreateSession(normalized, code, {
-      organizationId: typeof organizationId === 'string' ? organizationId : undefined,
+      organizationId,
     });
 
     if (!result.success || !result.session) {

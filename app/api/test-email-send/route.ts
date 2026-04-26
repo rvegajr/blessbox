@@ -2,44 +2,45 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureDbReady } from '@/lib/db-ready';
 import { EmailService } from '@/lib/services/EmailService';
 import { getDbClient } from '@/lib/db';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 /**
- * Test endpoint to send a verification email directly
- * Bypasses database to test email sending only
+ * POST /api/test-email-send
+ * Diagnostics-only test that the email pipeline is wired correctly.
+ *
+ * Hardened:
+ *  - Requires DIAGNOSTICS_SECRET (404 in prod when missing/invalid).
+ *  - `from` is hardcoded to SENDGRID_FROM_EMAIL — client cannot set it.
+ *  - `replyTo` from client is ignored.
+ *  - `to` MUST equal DIAGNOSTICS_TEST_RECIPIENT (server-controlled allowlist).
  */
 export async function POST(request: NextRequest) {
+  const authFailure = requireDiagnosticsSecret(request);
+  if (authFailure) return authFailure;
+
   try {
-    const body = await request.json();
-    const { email } = body;
+    const body = await request.json().catch(() => ({} as any));
+    const requestedTo = typeof body?.email === 'string' ? body.email.trim() : '';
 
-    if (!email || typeof email !== 'string') {
+    const allowed = (process.env.DIAGNOSTICS_TEST_RECIPIENT || '').trim();
+    if (!allowed) {
       return NextResponse.json(
-        { success: false, error: 'Email is required' },
-        { status: 400 }
+        { success: false, error: 'DIAGNOSTICS_TEST_RECIPIENT not configured on server' },
+        { status: 500 }
       );
     }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (requestedTo && requestedTo.toLowerCase() !== allowed.toLowerCase()) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email format' },
-        { status: 400 }
+        { success: false, error: 'Recipient not on diagnostics allowlist' },
+        { status: 403 }
       );
     }
-
-    // This endpoint is intended for local/dev.
-    // In production, use /api/system/email-health (authorized) instead.
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ success: false, error: 'Use /api/system/email-health in production' }, { status: 403 });
-    }
+    const to = allowed;
 
     await ensureDbReady();
     const service = new EmailService();
-    // Reuse a deterministic org id for local testing
     const orgId = 'org-email-test';
 
-    // Ensure org exists (email templates have a FK to organizations)
     const db = getDbClient();
     await db.execute({
       sql: `INSERT OR IGNORE INTO organizations (id, name, contact_email, email_verified, created_at, updated_at)
@@ -49,27 +50,29 @@ export async function POST(request: NextRequest) {
 
     await service.ensureDefaultTemplates(orgId);
 
-    const result = await service.sendEmail(orgId, email, 'admin_notification', {
-      organization_name: 'BlessBox',
-      recipient_name: 'Tester',
-      event_type: 'test_email_send',
-      registration_id: 'test',
-      qr_code_label: 'test',
-    });
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL || '';
+    const result = await service.sendEmail(
+      orgId,
+      to,
+      'admin_notification',
+      {
+        organization_name: 'BlessBox',
+        recipient_name: 'Tester',
+        event_type: 'test_email_send',
+        registration_id: 'test',
+        qr_code_label: 'test',
+      },
+      fromEmail ? { fromEmailOverride: fromEmail } : undefined
+    );
 
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error || 'Failed to send' }, { status: 500 });
     }
-
-    return NextResponse.json({ success: true, message: 'Test email sent successfully!', email });
+    return NextResponse.json({ success: true, message: 'Test email sent successfully!', email: to });
   } catch (error) {
-    console.error('❌ Test email send error:', error);
+    console.error('Test email send error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error',
-        details: 'Check server logs for more information'
-      },
+      { success: false, error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }

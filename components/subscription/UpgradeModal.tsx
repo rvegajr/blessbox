@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { PlanType } from '@/lib/subscriptions';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 interface UpgradePreview {
   currentPlan: PlanType;
@@ -65,19 +66,29 @@ export function UpgradeModal({ targetPlan, isOpen, onClose, onSuccess }: Upgrade
     window.location.href = checkoutUrl;
   }
 
+  const handleEscape = useCallback(() => onClose(), [onClose]);
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen, handleEscape);
+
   if (!isOpen) return null;
 
   const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-modal-title"
+        tabIndex={-1}
+        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 overflow-hidden"
+      >
         {/* Header */}
         <div className="bg-blue-600 px-6 py-4">
-          <h2 className="text-xl font-semibold text-white">
+          <h2 id="upgrade-modal-title" className="text-xl font-semibold text-white">
             Upgrade Your Plan
           </h2>
         </div>

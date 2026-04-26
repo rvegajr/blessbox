@@ -283,7 +283,7 @@ You have a **sophisticated, dual-system tutorial architecture** that is:
 |---------|------------|---------------------|-----|
 | Tutorial Engine | ✅ Spec exists | ✅ 95% complete | 5% |
 | Context Engine | ✅ Spec exists | ✅ 95% complete | 5% |
-| Tutorial Definitions | 13 tutorials planned | 5 tutorials defined | 8 missing |
+| Tutorial Definitions | 19 tutorials planned | 5 tutorials defined | 8 missing |
 | Context Triggers | 11 triggers planned | 0 triggers defined | 11 missing |
 | Data Attributes | 50+ elements planned | ~0 elements tagged | 50+ missing |
 | Help Articles | 10 articles planned | 0 articles created | 10 missing |

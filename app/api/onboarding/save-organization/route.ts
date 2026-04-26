@@ -5,9 +5,23 @@ import { MembershipService } from '@/lib/services/MembershipService';
 import { ensureDbReady } from '@/lib/db-ready';
 import { getServerSession } from '@/lib/auth-helper';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
+import { z } from 'zod';
+import { internalErrorResponse } from '@/lib/api/errorResponse';
+import { parseBody } from '@/lib/api/validate';
 
 const organizationService = new OrganizationService();
 const membershipService = new MembershipService();
+
+const SaveOrgSchema = z.object({
+  name: z.string().trim().min(1, 'Organization name is required').max(200),
+  eventName: z.string().trim().max(200).optional(),
+  contactPhone: z.string().trim().max(50).optional(),
+  contactAddress: z.string().trim().max(300).optional(),
+  contactCity: z.string().trim().max(100).optional(),
+  contactState: z.string().trim().max(100).optional(),
+  contactZip: z.string().trim().max(20).optional(),
+  customDomain: z.string().trim().max(253).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,37 +32,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { 
-      name, 
-      eventName, 
-      contactPhone, 
-      contactAddress, 
-      contactCity, 
-      contactState, 
+    const parsed = await parseBody(request, SaveOrgSchema);
+    if ('error' in parsed) return parsed.error;
+    const {
+      name,
+      eventName,
+      contactPhone,
+      contactAddress,
+      contactCity,
+      contactState,
       contactZip,
-      customDomain
-    } = body;
-
-    // Validate required fields
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Organization name is required' },
-        { status: 400 }
-      );
-    }
+      customDomain,
+    } = parsed.data;
 
     // Use OrganizationService to create organization
     const organization = await organizationService.createOrganization({
-      name: name.trim(),
-      eventName: eventName?.trim(),
+      name,
+      eventName,
       contactEmail: sessionEmail,
-      contactPhone: contactPhone?.trim(),
-      contactAddress: contactAddress?.trim(),
-      contactCity: contactCity?.trim(),
-      contactState: contactState?.trim(),
-      contactZip: contactZip?.trim(),
-      customDomain: customDomain?.trim(),
+      contactPhone,
+      contactAddress,
+      contactCity,
+      contactState,
+      contactZip,
+      customDomain,
     });
 
     // Create membership for signed-in user
@@ -116,12 +123,6 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse(error, 'Save organization');
   }
 }

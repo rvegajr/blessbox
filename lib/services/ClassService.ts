@@ -127,6 +127,13 @@ export class ClassService {
     return this.getClass(id) as Promise<Class>;
   }
 
+  async deleteClass(id: string): Promise<void> {
+    await this.db.execute({
+      sql: 'DELETE FROM classes WHERE id = ?',
+      args: [id]
+    });
+  }
+
   // Session Management
   async createSession(data: Omit<ClassSession, 'id' | 'created_at' | 'updated_at'>): Promise<ClassSession> {
     const id = uuidv4();
@@ -197,12 +204,66 @@ export class ClassService {
     const now = new Date().toISOString();
 
     await this.db.execute({
-      sql: `INSERT INTO enrollments (id, participant_id, class_id, session_id, enrollment_status, enrolled_at, confirmed_at, attended_at, notes, created_at, updated_at) 
+      sql: `INSERT INTO enrollments (id, participant_id, class_id, session_id, enrollment_status, enrolled_at, confirmed_at, attended_at, notes, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [id, data.participant_id, data.class_id, data.session_id || null, data.enrollment_status, data.enrolled_at, data.confirmed_at || null, data.attended_at || null, data.notes || null, now, now]
     });
 
     return this.getEnrollment(id) as Promise<Enrollment>;
+  }
+
+  /**
+   * Race-safe capacity-bounded enrollment.
+   *
+   * Uses a single conditional INSERT (`INSERT ... SELECT ... WHERE COUNT < cap`)
+   * so that the capacity check and the insert are evaluated atomically by
+   * SQLite/libsql. If the resulting `rowsAffected` is 0, capacity was reached.
+   *
+   * Pass `capacity = null` to skip the bound (truly unlimited).
+   * Returns the enrollment id on success, or null if capacity was reached.
+   *
+   * NOTE: a UNIQUE constraint violation on (class_id, participant_id) will
+   * still throw — the caller should map that to a 409 "already enrolled".
+   */
+  async enrollParticipantWithCapacity(
+    data: Omit<Enrollment, 'id' | 'created_at' | 'updated_at'>,
+    capacity: number | null
+  ): Promise<{ id: string } | null> {
+    const id = uuidv4();
+    const now = new Date().toISOString();
+
+    if (capacity === null) {
+      await this.enrollParticipant(data);
+      return { id: (await this.getEnrollmentByParticipant(data.class_id, data.participant_id))!.id };
+    }
+
+    const result = await this.db.execute({
+      sql: `INSERT INTO enrollments
+              (id, participant_id, class_id, session_id, enrollment_status,
+               enrolled_at, confirmed_at, attended_at, notes, created_at, updated_at)
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            WHERE (
+              SELECT COUNT(*) FROM enrollments
+              WHERE class_id = ? AND enrollment_status != 'cancelled'
+            ) < ?`,
+      args: [
+        id, data.participant_id, data.class_id, data.session_id || null,
+        data.enrollment_status, data.enrolled_at, data.confirmed_at || null,
+        data.attended_at || null, data.notes || null, now, now,
+        data.class_id, capacity
+      ]
+    });
+
+    const affected = Number((result as any)?.rowsAffected ?? (result as any)?.rows_affected ?? 0);
+    return affected === 1 ? { id } : null;
+  }
+
+  async getEnrollmentByParticipant(classId: string, participantId: string): Promise<Enrollment | null> {
+    const result = await this.db.execute({
+      sql: `SELECT * FROM enrollments WHERE class_id = ? AND participant_id = ? LIMIT 1`,
+      args: [classId, participantId]
+    });
+    return (result.rows[0] as unknown as Enrollment) || null;
   }
 
   async getEnrollment(id: string): Promise<Enrollment | null> {
@@ -212,6 +273,30 @@ export class ClassService {
     });
 
     return result.rows[0] as unknown as Enrollment || null;
+  }
+
+  /**
+   * Count non-cancelled enrollments for a class. Used by the capacity-race fix
+   * in /api/enrollments to verify capacity wasn't exceeded after an insert.
+   */
+  async countActiveEnrollments(classId: string): Promise<number> {
+    const result = await this.db.execute({
+      sql: `SELECT COUNT(*) AS c FROM enrollments
+            WHERE class_id = ? AND enrollment_status != 'cancelled'`,
+      args: [classId]
+    });
+    const row = result.rows[0] as any;
+    return Number(row?.c ?? 0);
+  }
+
+  /**
+   * Delete an enrollment row by id. Used to roll back an over-capacity insert.
+   */
+  async deleteEnrollment(id: string): Promise<void> {
+    await this.db.execute({
+      sql: 'DELETE FROM enrollments WHERE id = ?',
+      args: [id]
+    });
   }
 
   async getEnrollmentsByClass(classId: string): Promise<Enrollment[]> {

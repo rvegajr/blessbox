@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow up to 60 seconds for database operations
@@ -7,29 +8,31 @@ export const maxDuration = 60; // Allow up to 60 seconds for database operations
 const SUPERADMIN_EMAIL = process.env.SUPERADMIN_EMAIL || 'admin@blessbox.app';
 
 /**
- * Authorization check using DIAGNOSTICS_SECRET
- * In non-production, always allowed for testing
- */
-function isAuthorized(req: NextRequest): boolean {
-  if (process.env.NODE_ENV !== 'production') return true;
-  
-  const auth = req.headers.get('authorization') || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
-  const diagnosticsSecret = process.env.DIAGNOSTICS_SECRET;
-  
-  return !!diagnosticsSecret && token === diagnosticsSecret;
-}
-
-/**
  * POST /api/system/clear-database
- * Clears all production data except super admin
- * Protected by DIAGNOSTICS_SECRET in production
+ * Clears all production data except super admin.
+ *
+ * Required in ALL environments:
+ *  (a) `Authorization: Bearer ${DIAGNOSTICS_SECRET}`
+ *  (b) `x-confirm: WIPE` header
+ *
+ * In production additionally requires `ALLOW_DB_CLEAR === 'true'`.
  */
 export async function POST(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  const authFailure = requireDiagnosticsSecret(req);
+  if (authFailure) return authFailure;
+
+  const confirm = req.headers.get('x-confirm') || '';
+  if (confirm !== 'WIPE') {
     return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
+      { success: false, error: 'Missing or invalid x-confirm header (expected "WIPE")' },
+      { status: 400 }
+    );
+  }
+
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DB_CLEAR !== 'true') {
+    return NextResponse.json(
+      { success: false, error: 'Database clear is disabled in production (set ALLOW_DB_CLEAR=true)' },
+      { status: 403 }
     );
   }
 

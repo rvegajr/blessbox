@@ -7,56 +7,58 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { OrganizationService } from '@/lib/services/OrganizationService';
 import { ensureDbReady } from '@/lib/db-ready';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
+import { internalErrorResponse } from '@/lib/api/errorResponse';
+import { parseBody } from '@/lib/api/validate';
 
 const organizationService = new OrganizationService();
 
+const CreateOrgSchema = z.object({
+  name: z.string().trim().min(1, 'Organization name is required').max(200),
+  eventName: z.string().trim().max(200).optional(),
+  contactEmail: z.string().email(),
+  contactPhone: z.string().trim().max(50).optional(),
+  contactAddress: z.string().trim().max(300).optional(),
+  contactCity: z.string().trim().max(100).optional(),
+  contactState: z.string().trim().max(100).optional(),
+  contactZip: z.string().trim().max(20).optional(),
+  customDomain: z.string().trim().max(253).optional(),
+});
+
 export async function POST(request: NextRequest) {
+  const parsed = await parseBody(request, CreateOrgSchema);
+  if ('error' in parsed) return parsed.error;
   try {
     await ensureDbReady();
-    
-    const body = await request.json();
-    const { 
-      name, 
-      eventName, 
+
+    const {
+      name,
+      eventName,
       contactEmail,
-      contactPhone, 
-      contactAddress, 
-      contactCity, 
-      contactState, 
+      contactPhone,
+      contactAddress,
+      contactCity,
+      contactState,
       contactZip,
-      customDomain
-    } = body;
+      customDomain,
+    } = parsed.data;
 
-    // Validate required fields
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'Organization name is required' },
-        { status: 400 }
-      );
-    }
-
-    const normalizedEmail = normalizeEmail(contactEmail);
-    if (!normalizedEmail) {
-      return NextResponse.json(
-        { success: false, error: 'Valid contact email is required' },
-        { status: 400 }
-      );
-    }
+    const normalizedEmail = normalizeEmail(contactEmail) || contactEmail;
 
     // Create organization (email_verified will be set to 0 by default)
     const organization = await organizationService.createOrganization({
-      name: name.trim(),
-      eventName: eventName?.trim(),
+      name,
+      eventName,
       contactEmail: normalizedEmail,
-      contactPhone: contactPhone?.trim(),
-      contactAddress: contactAddress?.trim(),
-      contactCity: contactCity?.trim(),
-      contactState: contactState?.trim(),
-      contactZip: contactZip?.trim(),
-      customDomain: customDomain?.trim(),
+      contactPhone,
+      contactAddress,
+      contactCity,
+      contactState,
+      contactZip,
+      customDomain,
     });
 
     return NextResponse.json(
@@ -99,13 +101,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse(error, 'Create organization');
   }
 }
 

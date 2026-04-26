@@ -73,18 +73,22 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/subscription/upgrade
- * 
- * Execute an upgrade to the specified plan.
- * Body: { plan: 'standard' | 'enterprise' }
- * 
- * Note: In production, this would be called AFTER payment is confirmed.
- * For now, it directly upgrades (suitable for FREE100 coupon testing).
+ *
+ * DISABLED as a self-service mutation path.
+ *
+ * Subscription tier changes MUST go through `/api/payment/process`, which is
+ * the only path that:
+ *   - charges the server-authoritative price for the plan
+ *   - re-validates coupons server-side
+ *   - records a Square payment before mutating the tier
+ *
+ * Allowing this endpoint to mutate the plan without a verified payment
+ * would let any logged-in user self-grant Enterprise for free. We refuse
+ * here and direct the caller to the payment endpoint.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated session
     const session = await getServerSession();
-    
     if (!session?.user) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
@@ -92,54 +96,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body = await request.json();
-    const targetPlan = body.plan as PlanType | undefined;
-
-    if (!targetPlan || !VALID_PLANS.includes(targetPlan)) {
-      return NextResponse.json(
-        { success: false, error: 'Valid plan required (standard or enterprise)' },
-        { status: 400 }
-      );
-    }
-
-    // Can't "upgrade" to free
-    if (targetPlan === 'free') {
-      return NextResponse.json(
-        { success: false, error: 'Cannot upgrade to free plan. Use cancellation instead.' },
-        { status: 400 }
-      );
-    }
-
-    // Resolve organization from session
-    const organization = await resolveOrganizationForSession(session);
-    
-    if (!organization) {
-      return NextResponse.json(
-        { success: false, error: 'No organization found' },
-        { status: 404 }
-      );
-    }
-
-    // Execute upgrade
-    const planUpgrade = getPlanUpgrade();
-    const result = await planUpgrade.executeUpgrade(organization.id, targetPlan);
-
-    if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error || result.message },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        message: result.message,
-        newPlanType: result.newPlanType,
-        newLimit: result.newLimit
-      }
-    });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Payment required',
+        message:
+          'Plan upgrades must be completed via /api/payment/process with a verified payment token.',
+      },
+      { status: 402 }
+    );
   } catch (error) {
     console.error('Upgrade execution error:', error);
     return NextResponse.json(

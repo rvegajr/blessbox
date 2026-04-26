@@ -63,7 +63,7 @@ More: `docs/TECH_SMOKE_TESTS.md`
 ### 1. Tutorial System Tests ✅
 **File**: `tests/e2e/tutorial-system-comprehensive.spec.ts`
 - Tests tutorial system foundation
-- Tests all 13 tutorials
+- Tests all 19 tutorials
 - Tests context-aware triggers
 - **Status**: Fully tested
 

@@ -4,8 +4,27 @@ import { MembershipService } from '@/lib/services/MembershipService';
 import { getServerSession } from '@/lib/auth-helper';
 import { v4 as uuidv4 } from 'uuid';
 import QRCode from 'qrcode';
+import { z } from 'zod';
+import { internalErrorResponse } from '@/lib/api/errorResponse';
+import { parseBody } from '@/lib/api/validate';
 
 const membershipService = new MembershipService();
+
+// Schema is permissive on optional fields to preserve backwards-compat with
+// older clients (formConfigId vs qrCodeSetId, qrCodes vs entryPoints, qrLabel).
+const EntryPointSchema = z.object({
+  label: z.string().min(1).max(200),
+  slug: z.string().min(1).max(200),
+}).passthrough();
+
+const GenerateQrSchema = z.object({
+  organizationId: z.string().min(1, 'Organization ID is required'),
+  qrCodeSetId: z.string().optional(),
+  formConfigId: z.string().optional(),
+  entryPoints: z.array(EntryPointSchema).max(100).optional(),
+  qrCodes: z.array(EntryPointSchema).max(100).optional(),
+  qrLabel: z.string().max(200).optional(),
+}).passthrough();
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +34,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const parsed = await parseBody(request, GenerateQrSchema);
+    if ('error' in parsed) return parsed.error;
+    const body = parsed.data as any;
     const { organizationId } = body;
 
     // Backward compatibility:
@@ -226,13 +247,6 @@ export async function POST(request: NextRequest) {
       qrSetId,
     });
   } catch (error) {
-    console.error('Generate QR error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse(error, 'Generate QR');
   }
 }

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 export async function GET(request: NextRequest) {
+  const authFailure = requireDiagnosticsSecret(request);
+  if (authFailure) return authFailure;
   try {
     const db = getDbClient();
     

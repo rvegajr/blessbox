@@ -44,8 +44,20 @@ export async function POST(req: NextRequest) {
 
     const { name, description, capacity, timezone } = await req.json();
 
-    if (!name || !capacity) {
+    if (!name || capacity === undefined || capacity === null || capacity === '') {
       return NextResponse.json({ error: 'Name and capacity are required' }, { status: 400 });
+    }
+
+    // Capacity semantics: capacity must be a non-negative integer.
+    //   > 0 -> hard cap
+    //   = 0 -> "closed" (no enrollments accepted). NOTE: this changes the
+    //          previous behavior where capacity=0 silently meant "unlimited".
+    const capacityNum = parseInt(String(capacity), 10);
+    if (Number.isNaN(capacityNum) || capacityNum < 0) {
+      return NextResponse.json(
+        { error: 'capacity must be a non-negative integer (0 = closed)' },
+        { status: 400 }
+      );
     }
 
     const classService = new ClassService();
@@ -53,7 +65,7 @@ export async function POST(req: NextRequest) {
       organization_id: organization.id,
       name,
       description: description || '',
-      capacity: parseInt(capacity),
+      capacity: capacityNum,
       timezone: timezone || 'UTC',
       status: 'active'
     });

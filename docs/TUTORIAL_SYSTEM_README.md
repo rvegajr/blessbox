@@ -36,7 +36,7 @@ This folder contains comprehensive documentation for implementing a **framework-
 - ✅ What exists today (CLI wizards, docs, components)
 - ❌ What's missing (pages, content, videos)
 - 📊 Summary statistics
-- 🎯 Tutorial content to create (13 tutorials)
+- 🎯 Tutorial content to create (19 tutorials)
 - 🎥 Video tutorials to record (8 videos)
 - 📖 Help files to write (10 articles)
 - 🔄 Migration plan (React → Vanilla JS)
@@ -108,7 +108,7 @@ This folder contains comprehensive documentation for implementing a **framework-
 4. Create basic tutorial definitions
 
 ### Step 3: Create Content
-1. Write tutorial content (13 tutorials)
+1. Write tutorial content (19 tutorials)
 2. Write help articles (10 files)
 3. Record video tutorials (8 videos)
 4. Add data attributes to components

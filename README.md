@@ -78,7 +78,7 @@ To fully understand and work with this project, follow this systematic approach:
 - **Email Verification** - Passwordless authentication with verification codes
 - **Multi-Entry Tracking** - Monitor different entry points (doors, lanes, checkpoints)
 - **Export & Analytics** - Download registration data and view comprehensive analytics
-- **Tutorial System** - Interactive walkthroughs for new users (13 tutorials available)
+- **Tutorial System** - Interactive walkthroughs for new users (19 tutorials available)
 
 ## Tech Stack
 

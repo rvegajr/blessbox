@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { VerificationService } from '@/lib/services/VerificationService';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
+import { internalErrorResponse } from '@/lib/api/errorResponse';
+import { parseBody } from '@/lib/api/validate';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 const verificationService = new VerificationService();
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { email } = body;
+const SendVerificationSchema = z.object({
+  email: z.string().email(),
+});
 
-    // Validate email
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'Email is required' },
-        { status: 400 }
-      );
-    }
+export async function POST(request: NextRequest) {
+  // Per-IP rate limit: 5/min
+  const ipLimit = rateLimit(request, { key: 'onboarding/send-verification:ip', limit: 5, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
+  const parsed = await parseBody(request, SendVerificationSchema);
+  if ('error' in parsed) return parsed.error;
+  try {
+    const { email } = parsed.data;
 
     // Use VerificationService to send code
     const result = await verificationService.sendVerificationCode(normalizeEmail(email));
@@ -43,13 +48,6 @@ export async function POST(request: NextRequest) {
       ...(process.env.NODE_ENV === 'development' && result.code ? { code: result.code } : {}),
     });
   } catch (error) {
-    console.error('Send verification error:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Internal server error' 
-      },
-      { status: 500 }
-    );
+    return internalErrorResponse(error, 'Send verification');
   }
 }

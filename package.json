@@ -12,6 +12,7 @@
     "clean:all": "npm run clean && rm -rf node_modules && npm install",
     "start": "next start --port 7777",
     "build": "next build",
+    "lint": "eslint . --quiet",
     "preview": "next start",
     "test": "vitest",
     "test:ui": "vitest --ui",
@@ -59,7 +60,8 @@
     "setup:vercel": "./scripts/setup-vercel.sh",
     "env:pull": "vercel env pull .env.local",
     "env:list": "vercel env ls",
-    "mailhog:check": "node scripts/check-mailhog.js"
+    "mailhog:check": "node scripts/check-mailhog.js",
+    "postinstall": "node -e \"const fs=require('fs');if(fs.existsSync('mcp-server/package.json')){require('child_process').execSync('npm --prefix mcp-server install --no-audit --no-fund',{stdio:'inherit'})}\""
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
@@ -89,7 +91,8 @@
     "tailwind-scrollbar-hide": "^2.0.0",
     "tailwindcss": "^4.1.7",
     "traklet": "^0.1.6",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
@@ -103,6 +106,8 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.4",
     "happy-dom": "^18.0.1",
     "jsdom": "^27.0.1",
     "playwright": "^1.54.2",

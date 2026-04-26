@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { getDbClient } from '@/lib/db';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
+import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 
 /**
  * Diagnostic endpoint to check session and organization data
  * GET /api/debug/session-org-data
+ * Diagnostics-secret gated in ALL environments.
  */
 export async function GET(request: NextRequest) {
+  const authFailure = requireDiagnosticsSecret(request);
+  if (authFailure) return authFailure;
   try {
     const session = await getServerSession();
     

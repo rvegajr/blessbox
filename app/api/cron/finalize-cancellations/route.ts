@@ -20,17 +20,21 @@ import { SubscriptionFinalizer } from '@/lib/services/SubscriptionFinalizer';
 export async function GET(request: NextRequest) {
   // Verify cron secret (Vercel sends this in Authorization header)
   const authHeader = request.headers.get('authorization');
+  const vercelCronHeader = request.headers.get('x-vercel-cron');
   const cronSecret = process.env.CRON_SECRET;
 
   if (!cronSecret) {
     console.error('[Cron] CRON_SECRET not configured');
     return NextResponse.json(
-      { error: 'Cron secret not configured' },
-      { status: 500 }
+      { error: 'Cron endpoint not configured' },
+      { status: 503 }
     );
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  const hasValidBearer = authHeader === `Bearer ${cronSecret}`;
+  const hasVercelCronHeader = vercelCronHeader === '1';
+
+  if (!hasValidBearer && !hasVercelCronHeader) {
     console.warn('[Cron] Unauthorized cron request');
     return NextResponse.json(
       { error: 'Unauthorized' },

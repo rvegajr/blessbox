@@ -1,7 +1,7 @@
 // IRegistrationService Interface Tests
 // Tests the interface contract and expected behaviors
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import type { 
   IRegistrationService, 
   RegistrationFormConfig, 
@@ -119,6 +119,14 @@ class MockRegistrationService implements IRegistrationService {
       throw new Error('Registration not found');
     }
     // Mock successful deletion
+  }
+
+  async checkInRegistration(id: string, _checkedInBy?: string): Promise<Registration> {
+    const registration = await this.getRegistration(id);
+    if (!registration) {
+      throw new Error('Registration not found');
+    }
+    return { ...registration, checkedInAt: new Date().toISOString() } as Registration;
   }
 
   async getRegistrationStats(organizationId: string): Promise<{

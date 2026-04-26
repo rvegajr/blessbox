@@ -403,6 +403,25 @@ export class RegistrationService implements IRegistrationService {
     }));
   }
 
+  /**
+   * Resolve the organization_id that owns a registration.
+   * Prefers the registrations.organization_id column; falls back to the
+   * qr_code_sets join in case the column is missing on legacy rows.
+   * Returns null if the registration does not exist.
+   */
+  async getRegistrationOrganizationId(id: string): Promise<string | null> {
+    const result = await this.db.execute({
+      sql: `SELECT COALESCE(r.organization_id, qcs.organization_id) AS organization_id
+            FROM registrations r
+            LEFT JOIN qr_code_sets qcs ON qcs.id = r.qr_code_set_id
+            WHERE r.id = ?`,
+      args: [id]
+    });
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0] as any;
+    return row.organization_id ?? null;
+  }
+
   async getRegistration(id: string): Promise<Registration | null> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM registrations WHERE id = ?',
@@ -490,37 +509,35 @@ export class RegistrationService implements IRegistrationService {
     id: string,
     checkedInBy?: string
   ): Promise<Registration> {
-    // Get current registration
-    const registration = await this.getRegistration(id);
-    if (!registration) {
-      throw new Error('Registration not found');
-    }
-
-    // Check if already checked in
-    const currentReg = await this.db.execute({
-      sql: 'SELECT checked_in_at, token_status FROM registrations WHERE id = ?',
-      args: [id]
-    });
-
-    const row = currentReg.rows[0] as any;
-    if (row?.checked_in_at) {
-      throw new Error('Registration already checked in');
-    }
-
-    // Update check-in fields
+    // Atomic conditional UPDATE: only succeeds if not already checked in.
+    // This collapses the previous SELECT-then-UPDATE into one statement,
+    // eliminating the double-check-in race under concurrent requests.
     const now = new Date().toISOString();
-    await this.db.execute({
+    const result = await this.db.execute({
       sql: `
-        UPDATE registrations 
-        SET checked_in_at = ?, 
+        UPDATE registrations
+        SET checked_in_at = ?,
             checked_in_by = ?,
             token_status = 'used'
-        WHERE id = ?
+        WHERE id = ? AND checked_in_at IS NULL
       `,
       args: [now, checkedInBy || null, id]
     });
 
-    // Return updated registration
+    // libsql exposes affected rows as `rowsAffected`. Be defensive about shape.
+    const affected = Number(
+      (result as any)?.rowsAffected ?? (result as any)?.rows_affected ?? 0
+    );
+
+    if (affected === 0) {
+      // Distinguish "not found" from "already checked in" via a single SELECT.
+      const existing = await this.getRegistration(id);
+      if (!existing) {
+        throw new Error('Registration not found');
+      }
+      throw new Error('Registration already checked in');
+    }
+
     return this.getRegistration(id) as Promise<Registration>;
   }
 

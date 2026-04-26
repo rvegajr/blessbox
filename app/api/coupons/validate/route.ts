@@ -1,19 +1,20 @@
 // Coupon validation endpoint - ISP compliant
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { CouponService } from '@/lib/coupons';
+import { parseBody } from '@/lib/api/validate';
 
 const couponService = new CouponService();
 
+const CouponValidateSchema = z.object({
+  code: z.string().min(1).max(50),
+});
+
 export async function POST(req: NextRequest) {
+  const parsed = await parseBody(req, CouponValidateSchema);
+  if ('error' in parsed) return parsed.error;
   try {
-    const { code } = await req.json();
-    
-    if (!code) {
-      return new Response(
-        JSON.stringify({ valid: false, error: 'Coupon code required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    const { code } = parsed.data;
 
     const result = await couponService.validateCoupon(code);
     

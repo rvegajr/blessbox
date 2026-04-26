@@ -6,9 +6,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getServerSession } from '@/lib/auth-helper';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { getDbClient } from '@/lib/db';
+
+const SearchQuerySchema = z.object({
+  q: z.string().max(200).optional().default(''),
+  filter: z.enum(['all', 'pending', 'checked-in']).optional().default('all'),
+  limit: z.coerce.number().int().min(1).max(500).optional().default(50),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,11 +37,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get search parameters
+    // Get search parameters (validated via zod)
     const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('q') || '';
-    const filter = searchParams.get('filter') || 'all'; // all, pending, checked-in
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const qsParse = SearchQuerySchema.safeParse({
+      q: searchParams.get('q') ?? undefined,
+      filter: searchParams.get('filter') ?? undefined,
+      limit: searchParams.get('limit') ?? undefined,
+    });
+    if (!qsParse.success) {
+      return NextResponse.json(
+        { success: false, error: 'Validation failed', details: qsParse.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const { q: query, filter, limit } = qsParse.data;
 
     const db = getDbClient();
 

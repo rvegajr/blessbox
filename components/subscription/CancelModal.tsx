@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { CancelReason } from '@/lib/interfaces/ISubscriptionCancel';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 interface CancelPreview {
   currentPlan: string;
@@ -108,17 +109,30 @@ export function CancelModal({ isOpen, onClose, onSuccess }: CancelModalProps) {
     }
   }
 
+  const handleEscape = useCallback(() => {
+    if (!canceling) onClose();
+  }, [canceling, onClose]);
+
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen, handleEscape);
+
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={(e) => e.target === e.currentTarget && !canceling && onClose()}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 overflow-hidden">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-modal-title"
+        tabIndex={-1}
+        className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 overflow-hidden"
+      >
         {/* Header */}
         <div className="bg-red-600 px-6 py-4">
-          <h2 className="text-xl font-semibold text-white">
+          <h2 id="cancel-modal-title" className="text-xl font-semibold text-white">
             Cancel Subscription
           </h2>
         </div>
