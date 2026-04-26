@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureSubscriptionSchema, nowIso } from '@/lib/db';
 import { SubscriptionFinalizer } from '@/lib/services/SubscriptionFinalizer';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * Vercel Cron Job: Finalize Cancellations
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
   // Verify cron secret (Vercel sends this in Authorization header)
   const authHeader = request.headers.get('authorization');
   const vercelCronHeader = request.headers.get('x-vercel-cron');
-  const cronSecret = process.env.CRON_SECRET;
+  const cronSecret = getEnv('CRON_SECRET');
 
   if (!cronSecret) {
     console.error('[Cron] CRON_SECRET not configured');

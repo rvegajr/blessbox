@@ -34,10 +34,11 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
     // Navigate to checkout
     await page.goto(`${BASE_URL}/checkout?plan=standard`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     // Verify email field is present
-    const emailInput = page.locator('input[type="email"]#email').or(page.locator('input[type="email"]'));
+    const emailInput = page.getByTestId('input-email').or(page.locator('input[type="email"]').first());
     await expect(emailInput).toBeVisible({ timeout: 5000 });
     console.log('   ✅ Email input field is visible');
 
@@ -118,7 +119,8 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
     // Navigate to organization setup (this should clear old session)
     await page.goto(`${BASE_URL}/onboarding/organization-setup`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     // Check that sessionStorage is cleared (or at least onboarding keys are not present)
     const sessionData = await page.evaluate(() => {
@@ -174,7 +176,8 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
     // This test requires authentication - skip if not logged in
     await page.goto(`${BASE_URL}/dashboard/qr-codes`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     // Check if we're redirected to login
     if (page.url().includes('login') || page.url().includes('auth')) {
@@ -325,7 +328,8 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
             // Step 6: Test actual form page
             await page.goto(qrUrl);
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
             await page.waitForTimeout(2000);
 
             const form = page.locator('form');
@@ -430,7 +434,8 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
     // Step 1: Organization Setup (should clear old session)
     await page.goto(`${BASE_URL}/onboarding/organization-setup`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     const orgNameInput = page.locator('input[id="name"]');
     const emailInput = page.locator('input[id="contactEmail"]');
@@ -450,7 +455,8 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
     // Step 3: Form Builder (with dropdown)
     await page.goto(`${BASE_URL}/onboarding/form-builder`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     // Add dropdown field
     const dropdownButton = page.locator('button:has-text("Dropdown")').or(page.locator('text=/Dropdown/i'));
@@ -468,7 +474,8 @@ test.describe('Production Verification - All Client Issue Fixes', () => {
 
     // Step 4: QR Configuration
     await page.goto(`${BASE_URL}/onboarding/qr-configuration`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('input[type="email"]').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
 
     const addEntryPointBtn = page.locator('button:has-text("Add Entry Point")');
     if (await addEntryPointBtn.isVisible({ timeout: 5000 }).catch(() => false)) {

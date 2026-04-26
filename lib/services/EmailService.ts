@@ -2,6 +2,7 @@ import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 import sgMail from '@sendgrid/mail';
 import nodemailer from 'nodemailer';
+import { getEnv } from '../utils/env';
 
 export type EmailTemplateType =
   | 'class_invitation'
@@ -94,9 +95,9 @@ export class EmailService {
     fromEmailOverride?: string;
     replyTo?: string;
   }) {
-    const apiKey = process.env.SENDGRID_API_KEY;
-    const fromEmail = process.env.SENDGRID_FROM_EMAIL;
-    const fromName = process.env.SENDGRID_FROM_NAME || 'BlessBox';
+    const apiKey = getEnv('SENDGRID_API_KEY');
+    const fromEmail = getEnv('SENDGRID_FROM_EMAIL');
+    const fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
 
     if (!apiKey || !fromEmail) {
       throw new Error('SendGrid not configured (SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are required)');
@@ -104,7 +105,7 @@ export class EmailService {
 
     sgMail.setApiKey(apiKey);
     const from = { email: args.fromEmailOverride || fromEmail, name: fromName };
-    const replyTo = args.replyTo || process.env.EMAIL_REPLY_TO;
+    const replyTo = args.replyTo || getEnv('EMAIL_REPLY_TO') || undefined;
 
     try {
       const [res] = await sgMail.send({

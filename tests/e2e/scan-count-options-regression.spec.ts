@@ -87,6 +87,9 @@ test.describe('Scan Count Regression - Per QR Code Counts', () => {
 });
 
 test.describe('Dropdown Options Regression', () => {
+  // /onboarding/form-builder is auth-gated in prod and the cookie test-bypass (bb_test_auth=1)
+  // is rejected by middleware in production. No prod entry path until /api/test/login is provisioned on Vercel.
+  test.fixme(/blessbox\.org/i.test(process.env.BASE_URL || '') || process.env.TEST_ENV === 'production', 'form-builder UI not auth-bypassable in prod');
   test.beforeEach(async ({ page, request }) => {
     // Seed organization for form builder access
     let organizationId: string;

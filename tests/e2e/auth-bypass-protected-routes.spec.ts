@@ -61,7 +61,9 @@ async function loginAsUser(page: any, email: string, opts?: { organizationId?: s
 }
 
 test.describe('Protected routes are testable (QA auth)', () => {
-  test('Dashboard + Classes + Admin load with test auth', async ({ page }) => {
+  // Test-auth bypass cookies are intentionally rejected in production middleware; the prod
+  // alternative is /api/test/login which currently 404s (PROD_TEST_LOGIN_SECRET not set on Vercel).
+  test.fixme('Dashboard + Classes + Admin load with test auth', async ({ page }) => {
     test.setTimeout(120_000);
 
     // Seed org + set as current user

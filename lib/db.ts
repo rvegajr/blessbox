@@ -1,12 +1,13 @@
 import { createClient, Client } from '@libsql/client';
+import { getEnv } from './utils/env';
 
 let cachedClient: Client | null = null;
 
 export function getDbClient(): Client {
   if (cachedClient) return cachedClient;
 
-  const url = process.env.TURSO_DATABASE_URL || 'file:./blessbox.db';
-  const authToken = process.env.TURSO_AUTH_TOKEN || '';
+  const url = getEnv('TURSO_DATABASE_URL', 'file:./blessbox.db');
+  const authToken = getEnv('TURSO_AUTH_TOKEN');
 
   cachedClient = createClient({ url, authToken });
   return cachedClient;

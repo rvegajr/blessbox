@@ -5,6 +5,7 @@ import { getDbClient, nowIso } from '@/lib/db';
 import { createSubscription } from '@/lib/subscriptions';
 import { CouponService } from '@/lib/coupons';
 import { ClassService } from '@/lib/services/ClassService';
+import { getEnv } from '@/lib/utils/env';
 
 export const runtime = 'nodejs';
 
@@ -52,7 +53,7 @@ function slugify(input: string): string {
  */
 export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === 'production';
-  const secret = (process.env.PROD_TEST_SEED_SECRET || '').trim();
+  const secret = getEnv('PROD_TEST_SEED_SECRET');
   // NOTE: Some production CDNs/WAFs may strip headers containing the word "secret".
   // Prefer token-style header names, but keep backward compatibility.
   const provided = (req.headers.get('x-qa-seed-token') || req.headers.get('x-test-seed-secret') || '').trim();

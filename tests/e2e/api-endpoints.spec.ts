@@ -363,11 +363,13 @@ test.describe(`BlessBox API Endpoint Tests - ${ENV.charAt(0).toUpperCase() + ENV
 
       console.log(`   Response status: ${response.status()}`);
       
-      expect(response.status()).toBe(400);
-      
-      const body = await response.json();
-      expect(body.success).toBe(false);
-      expect(body.error).toContain('orgId is required');
+      // /api/registrations/export was IDOR-closed in prod (now requires auth) → 401 short-circuits before validation.
+      expect([400, 401]).toContain(response.status());
+      if (response.status() === 400) {
+        const body = await response.json();
+        expect(body.success).toBe(false);
+        expect(body.error).toContain('orgId is required');
+      }
       
       console.log('   ✅ Properly handles missing orgId parameter');
     } catch (error) {
@@ -393,11 +395,13 @@ test.describe(`BlessBox API Endpoint Tests - ${ENV.charAt(0).toUpperCase() + ENV
 
       console.log(`   Response status: ${response.status()}`);
       
-      expect(response.status()).toBe(400);
-      
-      const body = await response.json();
-      expect(body.success).toBe(false);
-      expect(body.error).toContain('format must be csv or pdf');
+      // 401 in prod (auth-gated) is acceptable here too.
+      expect([400, 401]).toContain(response.status());
+      if (response.status() === 400) {
+        const body = await response.json();
+        expect(body.success).toBe(false);
+        expect(body.error).toContain('format must be csv or pdf');
+      }
       
       console.log('   ✅ Properly handles invalid format parameter');
     } catch (error) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * Shared diagnostics-secret gate for all debug/test/system endpoints.
@@ -13,7 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export function requireDiagnosticsSecret(req: NextRequest | Request): Response | null {
   const isProd = process.env.NODE_ENV === 'production';
-  const secret = process.env.DIAGNOSTICS_SECRET || process.env.CRON_SECRET;
+  const secret = getEnv('DIAGNOSTICS_SECRET') || getEnv('CRON_SECRET');
 
   const authHeader = (req.headers.get('authorization') || '').trim();
   const token = authHeader.toLowerCase().startsWith('bearer ')

@@ -1,5 +1,6 @@
 import { ensureSubscriptionSchema } from './db';
 import { ensureLibsqlSchema } from '@/lib/database/bootstrap';
+import { getEnv } from './utils/env';
 
 let initPromise: Promise<void> | null = null;
 
@@ -11,8 +12,8 @@ let initPromise: Promise<void> | null = null;
  */
 export async function ensureDbReady(): Promise<void> {
   if (!initPromise) {
-    const url = process.env.TURSO_DATABASE_URL || 'file:./blessbox.db';
-    const authToken = process.env.TURSO_AUTH_TOKEN || '';
+    const url = getEnv('TURSO_DATABASE_URL', 'file:./blessbox.db');
+    const authToken = getEnv('TURSO_AUTH_TOKEN');
 
     initPromise = (async () => {
       await ensureLibsqlSchema({ url, authToken });
