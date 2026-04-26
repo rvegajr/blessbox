@@ -10,12 +10,16 @@
  * Verifies ISP compliance of OnboardingSessionService
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   OnboardingSessionService,
   clearOnboardingSession
 } from './OnboardingSessionService';
 import { ONBOARDING_SESSION_KEYS } from '../interfaces/IOnboardingSession';
+
+// Force isClient() to return true in CI where window may not be detected
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(OnboardingSessionService.prototype as any).isClient = () => true;
 
 /**
  * Helper to explicitly remove all onboarding keys from sessionStorage.
