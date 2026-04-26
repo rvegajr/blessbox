@@ -30,6 +30,32 @@ export async function GET(req: NextRequest) {
     };
   };
 
+  // Live SendGrid send attempt with the runtime key
+  let sendResult: any = null;
+  try {
+    const key = getEnv('SENDGRID_API_KEY');
+    const from = getEnv('SENDGRID_FROM_EMAIL');
+    const recipient = getEnv('DIAGNOSTICS_TEST_RECIPIENT') || 'admin@blessbox.app';
+    const sgMail = (await import('@sendgrid/mail')).default;
+    sgMail.setApiKey(key);
+    const [resp] = await sgMail.send({
+      to: recipient,
+      from,
+      subject: 'env-probe diagnostic',
+      text: 'env-probe direct send via SDK',
+    });
+    sendResult = { ok: true, status: resp.statusCode, headers: resp.headers };
+  } catch (e: any) {
+    sendResult = {
+      ok: false,
+      message: e.message,
+      code: e.code,
+      sgBody: e.response?.body,
+      sgStatus: e.response?.statusCode,
+      sgHeaders: e.response?.headers,
+    };
+  }
+
   return NextResponse.json({
     NODE_ENV: process.env.NODE_ENV,
     SENDGRID_API_KEY: probe('SENDGRID_API_KEY'),
@@ -39,5 +65,6 @@ export async function GET(req: NextRequest) {
     PROD_TEST_SEED_SECRET: probe('PROD_TEST_SEED_SECRET'),
     DIAGNOSTICS_TEST_RECIPIENT: probe('DIAGNOSTICS_TEST_RECIPIENT'),
     TURSO_AUTH_TOKEN: probe('TURSO_AUTH_TOKEN'),
+    sendgrid_send_result: sendResult,
   });
 }
