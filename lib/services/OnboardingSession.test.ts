@@ -1,6 +1,7 @@
+// @vitest-environment jsdom
 /**
  * Onboarding Session Tests (TDD)
- * 
+ *
  * Tests the onboarding session management:
  * - Session cleanup when starting new organization
  * - Session keys management
