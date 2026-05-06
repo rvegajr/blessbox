@@ -9,6 +9,9 @@ import { test, expect } from '@playwright/test';
  */
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
+const IS_PRODUCTION = /blessbox\.org/i.test(BASE_URL);
+const PROD_TEST_LOGIN_SECRET = process.env.PROD_TEST_LOGIN_SECRET || '';
+const HAS_PROD_LOGIN = !!PROD_TEST_LOGIN_SECRET;
 
 // Square sandbox test nonces (pre-authorized tokens)
 const SQUARE_TEST_NONCES = {
@@ -21,6 +24,8 @@ const SQUARE_TEST_NONCES = {
 };
 
 test.describe('Payment Processing API Tests', () => {
+  test.skip(IS_PRODUCTION && !HAS_PROD_LOGIN, '/api/payment/process requires an authenticated session; set PROD_TEST_LOGIN_SECRET to run against production.');
+
   test('Process payment with successful Square test nonce', async ({ request }) => {
     console.log('\n💳 Testing successful payment via API...\n');
 
