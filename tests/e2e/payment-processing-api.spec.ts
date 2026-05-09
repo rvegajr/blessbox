@@ -24,7 +24,25 @@ const SQUARE_TEST_NONCES = {
 };
 
 test.describe('Payment Processing API Tests', () => {
-  test.skip(IS_PRODUCTION && !HAS_PROD_LOGIN, '/api/payment/process requires an authenticated session; set PROD_TEST_LOGIN_SECRET to run against production.');
+  // These tests create real Square payment intents and write to the org DB.
+  // They are designed for sandbox/local runs (BASE_URL=http://localhost:7777
+  // with SQUARE_ENVIRONMENT=sandbox) and intentionally skip against production
+  // to avoid generating live payment artifacts and hitting prod rate limits.
+  test.skip(IS_PRODUCTION, 'Sandbox/local-only: run with BASE_URL=http://localhost:7777 + Square sandbox creds.');
+
+  test.beforeEach(async ({ request }) => {
+    // Authenticate via /api/test/login so /api/payment/process accepts the request.
+    const loginResp = await request.post(`${BASE_URL}/api/test/login`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(PROD_TEST_LOGIN_SECRET ? { 'x-qa-login-token': PROD_TEST_LOGIN_SECRET } : {}),
+      },
+      data: { email: 'qa-payment-tests@blessbox.app', admin: true },
+    });
+    if (!loginResp.ok()) {
+      throw new Error(`Test auth failed: ${loginResp.status()} ${await loginResp.text()}`);
+    }
+  });
 
   test('Process payment with successful Square test nonce', async ({ request }) => {
     console.log('\n💳 Testing successful payment via API...\n');
