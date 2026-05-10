@@ -131,8 +131,7 @@ test.describe('Production E2E Tests - Real Data', () => {
     console.log('\n✅ Organization Creation API Working!\n');
   });
 
-  // /api/onboarding/send-verification fails in prod with SendGrid Unauthorized — real product/infra bug.
-  test.fixme('4. Test Email Verification Flow (Production)', async ({ request }) => {
+  test('4. Test Email Verification Flow (Production)', async ({ request }) => {
     console.log('\n📧 Testing Email Verification on Production...\n');
 
     const testEmail = `verify-test-${Date.now()}@example.com`;

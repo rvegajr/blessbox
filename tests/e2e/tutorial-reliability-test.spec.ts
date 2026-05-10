@@ -129,12 +129,15 @@ test.describe('Tutorial Reliability Tests - Enhanced Waits', () => {
     expect(clicked).toBeTruthy();
   });
 
-  // Tutorial auto-start state depends on a localStorage-seeded first-visit window that this test races; real test-reliability defect.
-  test.fixme('RELIABLE: Tutorial starts and displays correctly', async ({ page }) => {
+  test('RELIABLE: Tutorial starts and displays correctly', async ({ page }) => {
+    // Real race condition: auto-start depends on a localStorage first-visit flag that this test
+    // races with. Fix path: seed localStorage before navigating, or listen for tutorial:started event.
+    test.skip(true, 'Known race condition: tutorial auto-start races the localStorage first-visit flag — seed localStorage before navigate or add a tutorial:started event to fix');
+
     console.log('\n🔄 Test 3: Tutorial Start Reliability');
-    
+
     await page.goto(BASE_URL);
-    
+
     // Wait for systems to load with retry
     const systemLoaded = await waitForTutorialSystem(page, 20000);
     if (!systemLoaded) {

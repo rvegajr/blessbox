@@ -36,10 +36,10 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('2. Attendee scans REGISTRATION QR → Fills form → Submits', async ({ page, seededOrg }) => {
-    // In prod, the public registration-form POST does not redirect to
-    // /registration-success — it 401s or stays on the form (documented in
-    // qa-report/fix-e2e-brittleness.md). Real product gap, not a test bug.
-    test.fixme(IS_PRODUCTION, 'prod registration-form submit does not reach /registration-success (auth-gating regression)');
+    // Known bug: public registration-form POST does not redirect to /registration-success in
+    // prod — it 401s or stays on the form. Tracked as a product gap (not a test infra issue).
+    // When this is fixed, remove this skip and let the serial chain tests below run in prod.
+    test.skip(IS_PRODUCTION, 'Known product bug: registration form submit 401s in prod — fix the route auth-gating then remove this skip');
     await page.goto(seededOrg.registrationUrl);
     await page.waitForLoadState('domcontentloaded');
 
@@ -74,7 +74,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('3. Success page displays CHECK-IN QR code', async ({ page }) => {
-    test.skip(!registrationId, 'depends on test #2 producing a registrationId');
+    test.skip(IS_PRODUCTION || !registrationId, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #2 producing a registrationId');
     await page.goto(`${BASE_URL}/registration-success?id=${registrationId}`);
     await page.waitForLoadState('domcontentloaded');
 
@@ -93,7 +93,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('4. Fetch check-in token from database', async ({ authedRequest }) => {
-    test.skip(!registrationId, 'depends on test #2 producing a registrationId');
+    test.skip(IS_PRODUCTION || !registrationId, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #2 producing a registrationId');
     // /api/registrations/[id] is auth-gated; use authedRequest with the seeded owner cookie.
     const response = await authedRequest.get(`/api/registrations/${registrationId}`);
     expect(response.ok()).toBeTruthy();
@@ -107,7 +107,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('5. Worker scans CHECK-IN QR → Opens check-in interface', async ({ authedPage }) => {
-    test.skip(!checkInUrl, 'depends on test #4 producing a checkInUrl');
+    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4 producing a checkInUrl');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const checkInHeading = authedPage.locator('h1:has-text("Check-In"), h1:has-text("Check In")');
@@ -117,7 +117,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('6. Worker clicks "Check In" button → Attendee is checked in', async ({ authedPage }) => {
-    test.skip(!checkInUrl, 'depends on test #4 producing a checkInUrl');
+    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4 producing a checkInUrl');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const checkInBtn = authedPage
@@ -134,7 +134,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('7. Verify check-in recorded in database', async ({ authedRequest }) => {
-    test.skip(!registrationId, 'depends on test #2/#6');
+    test.skip(IS_PRODUCTION || !registrationId, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #2/#6');
     const response = await authedRequest.get(`/api/registrations/${registrationId}`);
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
@@ -144,7 +144,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('8. Verify QR code cannot be used again (prevent double check-in)', async ({ authedPage }) => {
-    test.skip(!checkInUrl, 'depends on test #4');
+    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const alreadyCheckedIn = authedPage.locator('text=/already checked in/i, h1:has-text("Already")');
@@ -157,7 +157,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('9. Test undo check-in functionality', async ({ authedPage }) => {
-    test.skip(!checkInUrl, 'depends on test #4');
+    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const undoBtn = authedPage.locator('[data-testid="btn-undo-checkin"]');
