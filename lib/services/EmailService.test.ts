@@ -125,6 +125,60 @@ describe('EmailService', () => {
     expect(sendgridSend).not.toHaveBeenCalled();
   });
 
+  it('tolerates env-var pollution: SendGrid API key with trailing newline + quoted from-email', async () => {
+    // Vercel pulls + .env files commonly produce values like "SG.xxx\n" or quoted "noreply@x.com".
+    // The service must sanitize these so the underlying SDK gets a clean value.
+    process.env.SENDGRID_API_KEY = 'SG.real-key-value\n';
+    process.env.SENDGRID_FROM_EMAIL = '"noreply@blessbox.org"\n';
+    process.env.SENDGRID_FROM_NAME = '  BlessBox Support  \r\n';
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+
+    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-2' } }]);
+
+    const service = new EmailService();
+    const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
+      recipient_name: 'Ada',
+      organization_name: 'Org',
+      event_type: 'test',
+    });
+
+    expect(res.success).toBe(true);
+    expect(sendgridSetApiKey).toHaveBeenCalledWith('SG.real-key-value');
+    const sendCall = sendgridSend.mock.calls[0]?.[0];
+    expect(sendCall.from.email).toBe('noreply@blessbox.org');
+    expect(sendCall.from.name).toBe('BlessBox Support');
+  });
+
+  it('tolerates env-var pollution: SMTP credentials with newlines and quotes', async () => {
+    delete process.env.SENDGRID_API_KEY;
+    delete process.env.SENDGRID_FROM_EMAIL;
+    process.env.SMTP_HOST = '"smtp.example.com"\n';
+    process.env.SMTP_PORT = '587\n';
+    process.env.SMTP_USER = 'apikey\n';
+    process.env.SMTP_PASS = 'SG.smtp-secret\n';
+    process.env.SMTP_FROM = '  from@example.com  ';
+
+    smtpSendMail.mockResolvedValueOnce({ messageId: 'smtp-2' });
+
+    const service = new EmailService();
+    const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
+      recipient_name: 'Ada',
+      organization_name: 'Org',
+      event_type: 'test',
+    });
+
+    expect(res.success).toBe(true);
+    const transportArgs = createTransport.mock.calls[0]?.[0];
+    expect(transportArgs.host).toBe('smtp.example.com');
+    expect(transportArgs.port).toBe(587);
+    expect(transportArgs.auth.user).toBe('apikey');
+    expect(transportArgs.auth.pass).toBe('SG.smtp-secret');
+    const sendArgs = smtpSendMail.mock.calls[0]?.[0];
+    expect(sendArgs.from).toContain('from@example.com');
+  });
+
   it('fails in production if no provider is configured', async () => {
     vi.stubEnv('NODE_ENV', 'production');
     delete process.env.SENDGRID_API_KEY;

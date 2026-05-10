@@ -136,13 +136,13 @@ export class EmailService {
   }
 
   private async sendViaSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
-    const host = process.env.SMTP_HOST;
-    const port = Number(process.env.SMTP_PORT || 587);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-    const secure = String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || port === 465;
-    const fromEmail = process.env.SMTP_FROM || user;
-    const fromName = process.env.SMTP_FROM_NAME || 'BlessBox';
+    const host = getEnv('SMTP_HOST');
+    const port = Number(getEnv('SMTP_PORT', '587'));
+    const user = getEnv('SMTP_USER');
+    const pass = getEnv('SMTP_PASS');
+    const secure = getEnv('SMTP_SECURE').toLowerCase() === 'true' || port === 465;
+    const fromEmail = getEnv('SMTP_FROM') || user;
+    const fromName = getEnv('SMTP_FROM_NAME', 'BlessBox');
 
     if (!host || !user || !pass || !fromEmail) {
       throw new Error('SMTP not configured (SMTP_HOST, SMTP_USER, SMTP_PASS are required)');
@@ -168,10 +168,10 @@ export class EmailService {
   }
 
   private async sendViaGmailSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
-    const user = process.env.GMAIL_USER;
-    const pass = process.env.GMAIL_PASS;
-    const fromEmail = process.env.EMAIL_FROM || user;
-    const fromName = process.env.EMAIL_FROM_NAME || 'BlessBox';
+    const user = getEnv('GMAIL_USER');
+    const pass = getEnv('GMAIL_PASS');
+    const fromEmail = getEnv('EMAIL_FROM') || user;
+    const fromName = getEnv('EMAIL_FROM_NAME', 'BlessBox');
 
     if (!user || !pass || !fromEmail) {
       throw new Error('Gmail SMTP not configured (GMAIL_USER and GMAIL_PASS are required)');
@@ -280,25 +280,23 @@ export class EmailService {
 
       // Send via configured provider
       let sendResult: { provider: 'sendgrid' | 'smtp'; messageId?: string };
-      if (process.env.SENDGRID_API_KEY) {
-        const replyTo = options?.replyTo || process.env.EMAIL_REPLY_TO;
+      const replyToFromEnv = getEnv('EMAIL_REPLY_TO') || undefined;
+      if (getEnv('SENDGRID_API_KEY')) {
         sendResult = await this.sendViaSendGrid({
           to: recipientEmail,
           subject,
           html: htmlContent,
           text: textContent,
-          replyTo,
+          replyTo: options?.replyTo || replyToFromEnv,
           fromEmailOverride: options?.fromEmailOverride,
         });
-      } else if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-        const replyTo = options?.replyTo || process.env.EMAIL_REPLY_TO;
-        sendResult = await this.sendViaSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo });
-      } else if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-        const replyTo = options?.replyTo || process.env.EMAIL_REPLY_TO;
-        sendResult = await this.sendViaGmailSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo });
+      } else if (getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS')) {
+        sendResult = await this.sendViaSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo: options?.replyTo || replyToFromEnv });
+      } else if (getEnv('GMAIL_USER') && getEnv('GMAIL_PASS')) {
+        sendResult = await this.sendViaGmailSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo: options?.replyTo || replyToFromEnv });
       } else {
         // In dev/test, allow "no-op" send so the app can still be exercised.
-        if (process.env.NODE_ENV !== 'production') {
+        if (getEnv('NODE_ENV') !== 'production') {
           sendResult = { provider: 'smtp' };
         } else {
           throw new Error('No email provider configured (set SENDGRID_* or SMTP_*)');
@@ -360,23 +358,24 @@ export class EmailService {
       <p>If you did not request this email, you can safely ignore it.</p>
     `;
     const text = `Sign in to BlessBox: ${args.url}\n\nIf you did not request this email, you can ignore it.`;
+    const replyTo = getEnv('EMAIL_REPLY_TO') || undefined;
 
-    if (process.env.SENDGRID_API_KEY) {
-      await this.sendViaSendGrid({ to: args.to, subject, html, text, replyTo: process.env.EMAIL_REPLY_TO });
+    if (getEnv('SENDGRID_API_KEY')) {
+      await this.sendViaSendGrid({ to: args.to, subject, html, text, replyTo });
       return;
     }
 
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      await this.sendViaSmtp({ to: args.to, subject, html, text, replyTo: process.env.EMAIL_REPLY_TO });
+    if (getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS')) {
+      await this.sendViaSmtp({ to: args.to, subject, html, text, replyTo });
       return;
     }
 
-    if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-      await this.sendViaGmailSmtp({ to: args.to, subject, html, text, replyTo: process.env.EMAIL_REPLY_TO });
+    if (getEnv('GMAIL_USER') && getEnv('GMAIL_PASS')) {
+      await this.sendViaGmailSmtp({ to: args.to, subject, html, text, replyTo });
       return;
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (getEnv('NODE_ENV') !== 'production') {
       // Dev/test: allow flows without email provider configured.
       return;
     }
