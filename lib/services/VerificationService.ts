@@ -302,31 +302,26 @@ export class VerificationService implements IVerificationService {
         `;
         const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
-        // Relay path: when SENDGRID_API_URL is set, send via the relay using
-        // its simplified payload + X-Api-Key auth. We detect the SGXXX-style
-        // relay (the Vercel-friendly one) by URL: /v1/email/send + X-Api-Key.
-        // The /v3/mail/send drop-in is IP-restricted and only useful from
-        // trusted IPs, so we don't use it from serverless.
+        // Relay path: SendGrid-compatible drop-in (api.sendgrid.noctusoft.com).
+        // Same SendGrid v3 protocol; only the host changes. The relay's egress
+        // IP is what's allowlisted at SendGrid, so this bypasses Vercel-egress
+        // IP restrictions on the SendGrid key.
         if (apiBaseUrl) {
-          const relayKey = getEnv('SENDGRID_RELAY_KEY');
-          if (!relayKey) {
-            throw new Error('SENDGRID_RELAY_KEY is required when SENDGRID_API_URL is set');
-          }
-          const url = apiBaseUrl.includes('/v1/email/send')
-            ? apiBaseUrl
-            : `${apiBaseUrl.replace(/\/$/, '')}/v1/email/send`;
+          const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
           const res = await fetch(url, {
             method: 'POST',
             headers: {
-              'X-Api-Key': relayKey,
+              Authorization: `Bearer ${sendGridApiKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              to: email,
-              from: fromEmail,
+              personalizations: [{ to: [{ email }] }],
+              from: { email: fromEmail, name: fromName },
               subject: 'Verify Your BlessBox Email',
-              html,
-              text,
+              content: [
+                { type: 'text/plain', value: text },
+                { type: 'text/html', value: html },
+              ],
             }),
           });
           if (!res.ok) {
