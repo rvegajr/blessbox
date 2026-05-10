@@ -183,22 +183,22 @@ describe('EmailService', () => {
     expect(sendArgs.from).toContain('from@example.com');
   });
 
-  it('routes through SGXXX relay (X-Api-Key + simplified payload) when SENDGRID_API_URL+RELAY_KEY are set', async () => {
-    // Production scenario: Vercel serverless egress can't use the SendGrid
-    // drop-in (IP-restricted). The SGXXX relay accepts X-Api-Key from any host.
+  it('routes through SendGrid-compatible relay (v3 protocol + Bearer) when SENDGRID_API_URL is set', async () => {
+    // Production scenario: SendGrid key has IP-allowlist; Vercel egress isn't
+    // listed. The relay (api.sendgrid.noctusoft.com) is — its IP IS allowlisted.
+    // Same v3 protocol, same Bearer auth — only the host changes.
     process.env.SENDGRID_API_KEY = 'SG.real-key';
     process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
     process.env.SENDGRID_FROM_NAME = 'BlessBox NoReply';
-    process.env.SENDGRID_API_URL = 'https://sgxxx.noctusoft.com';
-    process.env.SENDGRID_RELAY_KEY = 'sgxxx_api_key_value';
+    process.env.SENDGRID_API_URL = 'https://api.sendgrid.noctusoft.com';
     delete process.env.SMTP_HOST;
     delete process.env.SMTP_USER;
     delete process.env.SMTP_PASS;
 
     const fetchMock = vi.fn().mockResolvedValueOnce({
       ok: true,
-      status: 200,
-      headers: { get: () => null },
+      status: 202,
+      headers: { get: (k: string) => (k === 'x-message-id' ? 'm-relay' : null) },
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -215,62 +215,14 @@ describe('EmailService', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://sgxxx.noctusoft.com/v1/email/send');
-    expect(init.headers['X-Api-Key']).toBe('sgxxx_api_key_value');
-    expect(init.headers).not.toHaveProperty('Authorization');
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(init.headers.Authorization).toBe('Bearer SG.real-key');
     const body = JSON.parse(init.body);
-    expect(body.from).toBe('noreply@blessbox.org');
-    expect(body.to).toBe('to@example.com');
-    expect(body.subject).toBe('Hello Ada'); // template-rendered
+    expect(body.from.email).toBe('noreply@blessbox.org');
+    expect(body.from.name).toBe('BlessBox NoReply');
+    expect(body.personalizations[0].to[0].email).toBe('to@example.com');
 
     vi.unstubAllGlobals();
-    delete process.env.SENDGRID_API_URL;
-    delete process.env.SENDGRID_RELAY_KEY;
-  });
-
-  it('preserves /v1/email/send when SENDGRID_API_URL already includes the path', async () => {
-    process.env.SENDGRID_API_KEY = 'SG.real-key';
-    process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
-    process.env.SENDGRID_API_URL = 'https://sgxxx.noctusoft.com/v1/email/send';
-    process.env.SENDGRID_RELAY_KEY = 'sgxxx_api_key_value';
-    delete process.env.SMTP_HOST;
-    delete process.env.SMTP_USER;
-    delete process.env.SMTP_PASS;
-
-    const fetchMock = vi.fn().mockResolvedValueOnce({
-      ok: true, status: 200, headers: { get: () => null },
-    });
-    vi.stubGlobal('fetch', fetchMock);
-
-    const service = new EmailService();
-    await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
-      recipient_name: 'Ada', organization_name: 'Org', event_type: 'test',
-    });
-
-    const [url] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://sgxxx.noctusoft.com/v1/email/send');
-
-    vi.unstubAllGlobals();
-    delete process.env.SENDGRID_API_URL;
-    delete process.env.SENDGRID_RELAY_KEY;
-  });
-
-  it('throws when SENDGRID_API_URL is set but SENDGRID_RELAY_KEY is missing', async () => {
-    process.env.SENDGRID_API_KEY = 'SG.real-key';
-    process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
-    process.env.SENDGRID_API_URL = 'https://sgxxx.noctusoft.com';
-    delete process.env.SENDGRID_RELAY_KEY;
-    delete process.env.SMTP_HOST;
-    delete process.env.SMTP_USER;
-    delete process.env.SMTP_PASS;
-
-    const service = new EmailService();
-    const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
-      recipient_name: 'Ada', organization_name: 'Org', event_type: 'test',
-    });
-    expect(res.success).toBe(false);
-    expect(res.error).toMatch(/SENDGRID_RELAY_KEY is required/);
-
     delete process.env.SENDGRID_API_URL;
   });
 

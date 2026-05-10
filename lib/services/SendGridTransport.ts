@@ -40,28 +40,24 @@ export class SendGridTransport implements IEmailTransport {
 
   async sendDirect(message: EmailMessage): Promise<EmailResult> {
     try {
-      // Relay path (SGXXX-style): simplified payload + X-Api-Key auth.
+      // Relay path: SendGrid-compatible drop-in. Same v3 protocol + Bearer auth.
       const apiBaseUrl = getEnv('SENDGRID_API_URL');
       if (apiBaseUrl) {
-        const relayKey = getEnv('SENDGRID_RELAY_KEY');
-        if (!relayKey) {
-          return { success: false, error: 'SENDGRID_RELAY_KEY is required when SENDGRID_API_URL is set' };
-        }
-        const url = apiBaseUrl.includes('/v1/email/send')
-          ? apiBaseUrl
-          : `${apiBaseUrl.replace(/\/$/, '')}/v1/email/send`;
+        const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
         const res = await fetch(url, {
           method: 'POST',
           headers: {
-            'X-Api-Key': relayKey,
+            Authorization: `Bearer ${this.apiKey}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            to: message.to,
-            from: this.fromEmail,
+            personalizations: [{ to: [{ email: message.to }] }],
+            from: { email: this.fromEmail, name: this.fromName },
             subject: message.subject,
-            html: message.html,
-            ...(message.text ? { text: message.text } : {}),
+            content: [
+              ...(message.text ? [{ type: 'text/plain', value: message.text }] : []),
+              { type: 'text/html', value: message.html },
+            ],
           }),
         });
         if (!res.ok) {
