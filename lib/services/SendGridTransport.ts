@@ -41,13 +41,15 @@ export class SendGridTransport implements IEmailTransport {
   async sendDirect(message: EmailMessage): Promise<EmailResult> {
     try {
       // Relay path: raw fetch bypasses SDK quirks under Next.js bundling.
+      // SENDGRID_RELAY_KEY authenticates the relay itself for non-trusted IPs.
       const apiBaseUrl = getEnv('SENDGRID_API_URL');
       if (apiBaseUrl) {
+        const bearer = getEnv('SENDGRID_RELAY_KEY') || this.apiKey;
         const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
         const res = await fetch(url, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${this.apiKey}`,
+            Authorization: `Bearer ${bearer}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
