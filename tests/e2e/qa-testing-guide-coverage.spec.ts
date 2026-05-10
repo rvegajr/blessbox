@@ -1,77 +1,8 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
+import { loginAsUser, seedOrg, IS_PRODUCTION, HAS_PROD_SECRETS } from './_helpers/auth';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
-const TEST_ENV = process.env.TEST_ENV || 'local';
-const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
-
-// Production-safe secrets (from Vercel/CI env, not git)
-const PROD_TEST_LOGIN_SECRET = process.env.PROD_TEST_LOGIN_SECRET || '';
-const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
-const HAS_PROD_SECRETS = !!(PROD_TEST_LOGIN_SECRET && PROD_TEST_SEED_SECRET);
-
-/**
- * Production-safe login: issues authjs.session-token cookie via secret-gated endpoint.
- * Falls back to local cookie-based auth in non-production.
- */
-async function loginAsUser(page: any, email: string, options?: { organizationId?: string; admin?: boolean }) {
-  if (IS_PRODUCTION && HAS_PROD_SECRETS) {
-    // Production: use secret-gated login endpoint
-    const loginResp = await page.request.post(`${BASE_URL}/api/test/login`, {
-      headers: { 'x-qa-login-token': PROD_TEST_LOGIN_SECRET },
-      data: {
-        email,
-        organizationId: options?.organizationId,
-        admin: options?.admin || false,
-        expiresIn: 3600, // 1 hour
-      },
-    });
-    expect(loginResp.ok()).toBeTruthy();
-    const login = await loginResp.json();
-    expect(login.success).toBe(true);
-    // Cookie is set automatically via Set-Cookie header
-    return login;
-  } else if (!IS_PRODUCTION) {
-    // Local: use cookie-based test auth
-    const url = BASE_URL.startsWith('http') ? BASE_URL : `http://${BASE_URL}`;
-    await page.context().addCookies([
-      { name: 'bb_test_auth', value: '1', url },
-      { name: 'bb_test_email', value: email, url },
-      ...(options?.organizationId ? [{ name: 'bb_test_org_id', value: options.organizationId, url }] : []),
-      ...(options?.admin ? [{ name: 'bb_test_admin', value: '1', url }] : []),
-    ]);
-    return { email, organizationId: options?.organizationId };
-  } else {
-    throw new Error('Production login requires PROD_TEST_LOGIN_SECRET env var');
-  }
-}
-
-/**
- * Production-safe seeding: creates deterministic QA data via secret-gated endpoint.
- * Falls back to local seed endpoint in non-production.
- */
-async function seedOrg(page: any, seedKey: string) {
-  if (IS_PRODUCTION && HAS_PROD_SECRETS) {
-    // Production: use secret-gated seed endpoint
-    const seedResp = await page.request.post(`${BASE_URL}/api/test/seed-prod`, {
-      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
-      data: { seedKey },
-    });
-    expect(seedResp.ok()).toBeTruthy();
-    const seed = await seedResp.json();
-    expect(seed.success).toBe(true);
-    return seed;
-  } else if (!IS_PRODUCTION) {
-    // Local: use local seed endpoint
-    const seedResp = await page.request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey } });
-    expect(seedResp.ok()).toBeTruthy();
-    const seed = await seedResp.json();
-    expect(seed.success).toBe(true);
-    return seed;
-  } else {
-    throw new Error('Production seeding requires PROD_TEST_SEED_SECRET env var');
-  }
-}
 
 test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   test.describe.configure({ mode: 'serial' });
@@ -92,7 +23,7 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   });
 
   // Depends on /api/test/login which 404s in prod (PROD_TEST_LOGIN_SECRET not provisioned on Vercel).
-  test.fixme('Part 5: Pricing + coupons + checkout totals', async ({ page }) => {
+  test('Part 5: Pricing + coupons + checkout totals', async ({ page }) => {
     test.setTimeout(120_000);
     const requireCouponUi = !IS_PRODUCTION || process.env.PROD_STRICT === 'true';
 
@@ -171,7 +102,7 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   });
 
   // /api/test/login currently returns 404 in prod (PROD_TEST_LOGIN_SECRET not provisioned on Vercel).
-  test.fixme('Parts 3-4-7: registration appears, can view, check-in, undo, export CSV/PDF', async ({ page }) => {
+  test('Parts 3-4-7: registration appears, can view, check-in, undo, export CSV/PDF', async ({ page }) => {
     test.setTimeout(120_000);
 
     // Skip only if production AND no secrets (requires seeded org + authenticated dashboard)
@@ -236,7 +167,7 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   });
 
   // /api/test/login currently returns 404 in prod (PROD_TEST_LOGIN_SECRET not provisioned on Vercel).
-  test.fixme('Part 8: create class, add session, add participant, enroll with capacity enforcement', async ({ page }) => {
+  test('Part 8: create class, add session, add participant, enroll with capacity enforcement', async ({ page }) => {
     test.setTimeout(120_000);
 
     // Skip only if production AND no secrets (requires seeded org + authenticated routes)
@@ -291,7 +222,7 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
   });
 
   // /api/test/login currently returns 404 in prod (PROD_TEST_LOGIN_SECRET not provisioned on Vercel).
-  test.fixme('Part 6: admin can access stats, orgs, subscriptions, coupons (and create a coupon)', async ({ page }) => {
+  test('Part 6: admin can access stats, orgs, subscriptions, coupons (and create a coupon)', async ({ page }) => {
     test.setTimeout(120_000);
 
     // Skip only if production AND no secrets (requires super-admin authentication)
@@ -321,7 +252,9 @@ test.describe('QA Testing Guide coverage (local, DB-backed)', () => {
     await expect(page.getByRole('heading', { name: /coupon management/i })).toBeVisible();
     await page.getByRole('link', { name: /create coupon/i }).click();
     const couponCode = `TEST${Date.now()}`;
-    await page.getByTestId('input-coupon').fill(couponCode);
+    // Admin coupon-create form uses a labelled textbox; checkout's "input-coupon" testid
+    // belongs to a different page. Match by accessible label here.
+    await page.getByLabel(/coupon code/i).fill(couponCode);
     await page.getByLabel('Discount Type *').selectOption('percentage');
     await page.getByLabel(/discount value/i).fill('25');
     await page.getByRole('button', { name: /create|save/i }).click();

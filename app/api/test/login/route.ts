@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 import { isSuperAdminEmail } from '@/lib/auth';
 import { ensureDbReady } from '@/lib/db-ready';
 import { getDbClient } from '@/lib/db';
@@ -46,9 +46,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const nextAuthSecret = getEnv('NEXTAUTH_SECRET');
-  if (!nextAuthSecret) {
-    return NextResponse.json({ success: false, error: 'NEXTAUTH_SECRET not configured' }, { status: 500 });
+  // Match what AuthService.getJwtSecret() reads (NEXTAUTH_SECRET || JWT_SECRET).
+  // The session is verified via lib/services/AuthService.validateToken() using
+  // jose.jwtVerify(token, secret), so we must sign with the same secret + alg.
+  const jwtSecret = getEnv('NEXTAUTH_SECRET') || getEnv('JWT_SECRET');
+  if (!jwtSecret) {
+    return NextResponse.json({ success: false, error: 'NEXTAUTH_SECRET or JWT_SECRET not configured' }, { status: 500 });
   }
 
   try {
@@ -101,50 +104,60 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Determine role based on email
+    // Determine role. AuthService's AuthUser['role'] is 'superadmin' | 'user'.
     const role = admin || isSuperAdminEmail(email) ? 'superadmin' : 'user';
-    // Create JWT token matching NextAuth format
-    const tokenPayload: any = {
+    const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+
+    // Sign with jose to match how AuthService.validateToken() verifies (jose.jwtVerify).
+    // Payload shape mirrors AuthService.createSession (sub, email, name,
+    // organizationId, role).
+    const sessionToken = await new SignJWT({
+      sub: userId,
       email,
       name: admin ? 'Test Admin' : 'Test User',
-      id: userId,
-      sub: userId, // NextAuth uses 'sub' as the subject
       role,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + expiresInSeconds,
-    };
+      ...(organizationId ? { organizationId } : {}),
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime(expiresAt)
+      .sign(new TextEncoder().encode(jwtSecret));
 
-    // Add organizationId if provided (non-standard field, but used by our app)
-    if (organizationId) {
-      tokenPayload.organizationId = organizationId;
-    }
-
-    const sessionToken = jwt.sign(tokenPayload, nextAuthSecret);
-
-    // Determine cookie name (NextAuth v5 uses authjs.session-token)
-    const cookieName = isProd ? '__Secure-authjs.session-token' : 'authjs.session-token';
+    // Cookie name MUST match SESSION_COOKIE_NAME in lib/services/AuthService.ts
+    // (`bb_session`), not the NextAuth-style name we used previously.
+    const cookieName = 'bb_session';
     const cookieOptions: any = {
       path: '/',
       httpOnly: true,
       sameSite: 'lax' as const,
       maxAge: expiresInSeconds,
     };
-
     if (isProd) {
-      cookieOptions.secure = true; // HTTPS only in production
+      cookieOptions.secure = true;
     }
-
-    const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString();
 
     const res = NextResponse.json({
       success: true,
       email,
-      expiresAt,
+      expiresAt: expiresAt.toISOString(),
       role,
       ...(organizationId ? { organizationId } : {}),
     });
 
     res.cookies.set(cookieName, sessionToken, cookieOptions);
+
+    // Also set the active-organization cookie so client-side hooks like
+    // useRequireActiveOrganization don't bounce the page back to org selection.
+    // This mirrors what the real login flow does once the user picks an org.
+    if (organizationId) {
+      res.cookies.set('bb_active_org_id', organizationId, {
+        path: '/',
+        httpOnly: false, // client reads this to know the active org
+        sameSite: 'lax' as const,
+        maxAge: expiresInSeconds,
+        ...(isProd ? { secure: true } : {}),
+      });
+    }
 
     return res;
   } catch (error) {

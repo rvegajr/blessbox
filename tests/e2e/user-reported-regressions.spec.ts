@@ -15,53 +15,10 @@ import { test, expect } from '@playwright/test';
  * - Once you fix the underlying behavior, remove `test.fail()` to make them enforceable.
  */
 
+import { loginAsUser, IS_PRODUCTION, HAS_PROD_LOGIN } from './_helpers/auth';
+
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
-const TEST_ENV = process.env.TEST_ENV || 'local';
-const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
 const ALLOW_KNOWN_FAILURES = process.env.KNOWN_BUGS === '1';
-
-const PROD_TEST_LOGIN_SECRET = process.env.PROD_TEST_LOGIN_SECRET || '';
-const HAS_PROD_LOGIN = !!PROD_TEST_LOGIN_SECRET;
-
-async function setTestAuthCookies(page: any, cookies: Array<{ name: string; value: string }>) {
-  const url = BASE_URL.startsWith('http') ? BASE_URL : `http://${BASE_URL}`;
-  await page.context().addCookies(
-    cookies.map((c) => ({
-      name: c.name,
-      value: c.value,
-      url,
-    }))
-  );
-}
-
-async function loginAsUser(page: any, email: string, opts?: { organizationId?: string; admin?: boolean }) {
-  if (IS_PRODUCTION) {
-    if (!HAS_PROD_LOGIN) {
-      console.log('   ⚠️  PROD_TEST_LOGIN_SECRET not set - skipping authentication');
-      return;
-    }
-    const resp = await page.request.post(`${BASE_URL}/api/test/login`, {
-      headers: { 'x-qa-login-token': PROD_TEST_LOGIN_SECRET },
-      data: { email, organizationId: opts?.organizationId, admin: !!opts?.admin, expiresIn: 3600 },
-    });
-    if (!resp.ok()) {
-      throw new Error(`Login failed: ${resp.status()}`);
-    }
-    const body = await resp.json();
-    if (!body.success) {
-      throw new Error(`Login failed: ${body.error || 'Unknown error'}`);
-    }
-    return body;
-  }
-
-  // Local/dev: cookie-based bypass
-  await setTestAuthCookies(page, [
-    { name: 'bb_test_auth', value: '1' },
-    { name: 'bb_test_email', value: email },
-    ...(opts?.organizationId ? [{ name: 'bb_test_org_id', value: opts.organizationId }] : []),
-    ...(opts?.admin ? [{ name: 'bb_test_admin', value: '1' }] : []),
-  ]);
-}
 
 async function takeDebugArtifacts(page: any, name: string) {
   try {
