@@ -9,8 +9,10 @@ export default defineConfig({
   // Maximum time one test can run
   timeout: 30 * 1000,
   
-  // Maximum time entire test suite can run
-  globalTimeout: 10 * 60 * 1000, // 10 minutes
+  // Maximum time entire test suite can run.
+  // 20 min covers the full prod E2E (~12-15 min serial with relay round-trips
+  // and onboarding flows enabled). CI can override with PLAYWRIGHT_GLOBAL_TIMEOUT_MS.
+  globalTimeout: Number(process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS || 20 * 60 * 1000),
   
   // Test execution settings
   fullyParallel: false, // Run tests sequentially to avoid data conflicts
