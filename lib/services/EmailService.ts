@@ -114,12 +114,16 @@ export class EmailService {
     // When SENDGRID_API_URL is set (e.g. Noctusoft relay), bypass the SDK and
     // post directly. Next.js + serverless can mangle the SDK's internal Client
     // override; raw fetch removes that uncertainty and is what the relay docs use.
+    // SENDGRID_RELAY_KEY (Noctusoft API key, e.g. nsins_sk_...) authenticates
+    // the relay itself when called from non-trusted IPs (e.g. Vercel egress).
+    // Falls back to the SendGrid key for local/trusted-IP runs.
     if (apiBaseUrl) {
+      const bearer = getEnv('SENDGRID_RELAY_KEY') || apiKey;
       const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${bearer}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

@@ -217,13 +217,40 @@ describe('EmailService', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
-    expect(init.headers.Authorization).toBe('Bearer SG.real-key');
+    expect(init.headers.Authorization).toBe('Bearer SG.real-key'); // falls back to SG key when SENDGRID_RELAY_KEY unset
     const body = JSON.parse(init.body);
     expect(body.from.email).toBe('noreply@blessbox.org');
     expect(body.from.name).toBe('BlessBox NoReply');
     expect(body.personalizations[0].to[0].email).toBe('to@example.com');
 
     vi.unstubAllGlobals();
+  });
+
+  it('uses SENDGRID_RELAY_KEY as Bearer (not SG key) when set with relay URL', async () => {
+    process.env.SENDGRID_API_KEY = 'SG.real-key';
+    process.env.SENDGRID_API_URL = 'https://api.sendgrid.noctusoft.com';
+    process.env.SENDGRID_RELAY_KEY = 'nsins_sk_relay_admin_key';
+    process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true, status: 202,
+      headers: { get: () => null },
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const service = new EmailService();
+    await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
+      recipient_name: 'Ada', organization_name: 'Org', event_type: 'test',
+    });
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.headers.Authorization).toBe('Bearer nsins_sk_relay_admin_key');
+
+    vi.unstubAllGlobals();
+    delete process.env.SENDGRID_RELAY_KEY;
   });
 
   it('uses SDK directly when SENDGRID_API_URL is unset', async () => {

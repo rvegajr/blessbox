@@ -303,12 +303,14 @@ export class VerificationService implements IVerificationService {
         const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
         // Relay path: raw fetch (bypasses SDK Client redirect quirks under Next.js bundling).
+        // SENDGRID_RELAY_KEY authenticates the relay itself for non-trusted IPs.
         if (apiBaseUrl) {
+          const bearer = getEnv('SENDGRID_RELAY_KEY') || sendGridApiKey;
           const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
           const res = await fetch(url, {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${sendGridApiKey}`,
+              Authorization: `Bearer ${bearer}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
