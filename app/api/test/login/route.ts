@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  if (!process.env.NEXTAUTH_SECRET) {
+  const nextAuthSecret = getEnv('NEXTAUTH_SECRET');
+  if (!nextAuthSecret) {
     return NextResponse.json({ success: false, error: 'NEXTAUTH_SECRET not configured' }, { status: 500 });
   }
 
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
       tokenPayload.organizationId = organizationId;
     }
 
-    const sessionToken = jwt.sign(tokenPayload, process.env.NEXTAUTH_SECRET);
+    const sessionToken = jwt.sign(tokenPayload, nextAuthSecret);
 
     // Determine cookie name (NextAuth v5 uses authjs.session-token)
     const cookieName = isProd ? '__Secure-authjs.session-token' : 'authjs.session-token';

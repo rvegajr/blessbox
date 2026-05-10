@@ -3,6 +3,7 @@ import { ensureDbReady } from '@/lib/db-ready';
 import { EmailService } from '@/lib/services/EmailService';
 import { getDbClient } from '@/lib/db';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * POST /api/test-production-email
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const requestedTo = typeof body?.email === 'string' ? body.email.trim() : '';
     const requestedReplyTo = typeof body?.replyTo === 'string' ? body.replyTo.trim() : '';
 
-    const allowed = (process.env.DIAGNOSTICS_TEST_RECIPIENT || '').trim();
+    const allowed = getEnv('DIAGNOSTICS_TEST_RECIPIENT');
     if (!allowed) {
       return NextResponse.json(
         { success: false, error: 'DIAGNOSTICS_TEST_RECIPIENT not configured on server' },
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     await ensureDbReady();
     const service = new EmailService();
-    const orgId = (process.env.TEST_ORG_ID || 'org-email-test') as string;
+    const orgId = getEnv('TEST_ORG_ID', 'org-email-test');
 
     const db = getDbClient();
     await db.execute({
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     await service.ensureDefaultTemplates(orgId);
 
-    const fromEmail = process.env.SENDGRID_FROM_EMAIL || '';
+    const fromEmail = getEnv('SENDGRID_FROM_EMAIL');
     const result = await service.sendEmail(
       orgId,
       to,

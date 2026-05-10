@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SendGridTransport } from '@/lib/services/SendGridTransport';
 import { getDbClient } from '@/lib/db';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
+import { getEnv } from '@/lib/utils/env';
 
 const emailTransport = new SendGridTransport();
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     const eventName = registration.event_name || '';
 
     // Generate check-in URL
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.PUBLIC_APP_URL || 'https://www.blessbox.org';
+    const baseUrl = getEnv('NEXTAUTH_URL') || getEnv('PUBLIC_APP_URL') || 'https://www.blessbox.org';
     const checkInUrl = `${baseUrl}/check-in/${checkInToken}`;
 
     // Create email HTML with embedded QR code

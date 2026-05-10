@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * Dev-only proxy for the Traklet widget.
@@ -23,7 +24,7 @@ async function handle(request: NextRequest, method: string): Promise<Response> {
     return new NextResponse('Not Found', { status: 404 });
   }
 
-  const token = process.env.TRAKLET_PAT;
+  const token = getEnv('TRAKLET_PAT');
   if (!token) {
     return NextResponse.json(
       { error: 'TRAKLET_PAT is not configured on the server' },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * Debug endpoint to check email configuration.
@@ -13,13 +14,13 @@ export async function GET(request: NextRequest) {
 
   const config = {
     nodeEnv: process.env.NODE_ENV,
-    emailProvider: process.env.EMAIL_PROVIDER || 'not set',
-    hasSendGrid: !!process.env.SENDGRID_API_KEY,
-    sendGridFromEmail: process.env.SENDGRID_FROM_EMAIL || 'not set',
-    hasSmtp: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
-    smtpHost: process.env.SMTP_HOST || 'not set',
-    smtpUser: process.env.SMTP_USER ? '***set***' : 'not set',
-    smtpPort: process.env.SMTP_PORT || 'not set',
+    emailProvider: getEnv('EMAIL_PROVIDER', 'not set'),
+    hasSendGrid: !!getEnv('SENDGRID_API_KEY'),
+    sendGridFromEmail: getEnv('SENDGRID_FROM_EMAIL', 'not set'),
+    hasSmtp: !!(getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS')),
+    smtpHost: getEnv('SMTP_HOST', 'not set'),
+    smtpUser: getEnv('SMTP_USER') ? '***set***' : 'not set',
+    smtpPort: getEnv('SMTP_PORT', 'not set'),
   };
 
   // Determine which email service will be used

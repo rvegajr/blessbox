@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
+import { getEnv, getEnvBoolean } from '@/lib/utils/env';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Allow up to 60 seconds for database operations
 
-const SUPERADMIN_EMAIL = process.env.SUPERADMIN_EMAIL || 'admin@blessbox.app';
+const SUPERADMIN_EMAIL = getEnv('SUPERADMIN_EMAIL', 'admin@blessbox.app');
 
 /**
  * POST /api/system/clear-database
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DB_CLEAR !== 'true') {
+  if (process.env.NODE_ENV === 'production' && !getEnvBoolean('ALLOW_DB_CLEAR')) {
     return NextResponse.json(
       { success: false, error: 'Database clear is disabled in production (set ALLOW_DB_CLEAR=true)' },
       { status: 403 }

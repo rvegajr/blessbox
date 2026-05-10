@@ -7,6 +7,7 @@ import { getPlanPriceCents, isValidPlan, type PlanType, type BillingCycle } from
 import { CouponService } from '@/lib/coupons';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
+import { getEnv, getEnvBoolean } from '@/lib/utils/env';
 
 // NOTE: We deliberately do NOT include `amount` in the schema — pricing is
 // always derived server-side from `planType` + `billingCycle`. Including it
@@ -119,15 +120,14 @@ export async function POST(req: NextRequest) {
       return json({ success: false, error: 'paymentToken required for paid plan' }, 400);
     }
 
-    const forceRealSquare = process.env.FORCE_REAL_SQUARE === 'true';
+    const forceRealSquare = getEnvBoolean('FORCE_REAL_SQUARE');
     const shouldMockPayment = !forceRealSquare && (
       process.env.NODE_ENV !== 'production' &&
-      (process.env.TEST_ENV === 'local' || !process.env.SQUARE_ACCESS_TOKEN || !process.env.SQUARE_APPLICATION_ID)
+      (getEnv('TEST_ENV') === 'local' || !getEnv('SQUARE_ACCESS_TOKEN') || !getEnv('SQUARE_APPLICATION_ID'))
     );
 
     try {
       if (!shouldMockPayment) {
-        const { getEnv } = await import('@/lib/utils/env');
         const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
         const applicationId = getEnv('SQUARE_APPLICATION_ID');
         const locationId = getEnv('SQUARE_LOCATION_ID');

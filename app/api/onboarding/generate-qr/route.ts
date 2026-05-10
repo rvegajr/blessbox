@@ -7,6 +7,7 @@ import QRCode from 'qrcode';
 import { z } from 'zod';
 import { internalErrorResponse } from '@/lib/api/errorResponse';
 import { parseBody } from '@/lib/api/validate';
+import { getEnv } from '@/lib/utils/env';
 
 const membershipService = new MembershipService();
 
@@ -167,11 +168,12 @@ export async function POST(request: NextRequest) {
 
     // Generate QR codes for each entry point
     const qrCodes = [];
+    const vercelUrl = getEnv('NEXT_PUBLIC_VERCEL_URL');
     const baseUrl =
-      process.env.PUBLIC_APP_URL ||
-      process.env.NEXTAUTH_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:7777');
+      getEnv('PUBLIC_APP_URL') ||
+      getEnv('NEXTAUTH_URL') ||
+      getEnv('NEXT_PUBLIC_APP_URL') ||
+      (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:7777');
 
     // Get existing QR codes to preserve them
     const existingSetResult = await db.execute({

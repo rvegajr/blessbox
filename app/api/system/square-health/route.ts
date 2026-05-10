@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
+import { getEnv } from '@/lib/utils/env';
 
 export const dynamic = 'force-dynamic';
 
 function isAuthorizedBySecret(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
-  const cronSecret = process.env.CRON_SECRET;
-  const diagnosticsSecret = process.env.DIAGNOSTICS_SECRET;
+  const cronSecret = getEnv('CRON_SECRET');
+  const diagnosticsSecret = getEnv('DIAGNOSTICS_SECRET');
   return !!token && Boolean((cronSecret && token === cronSecret) || (diagnosticsSecret && token === diagnosticsSecret));
 }
 
@@ -16,7 +17,7 @@ async function isAuthorized(req: NextRequest): Promise<boolean> {
   if (isAuthorizedBySecret(req)) return true;
 
   const session = await getServerSession();
-  const superAdmin = process.env.SUPERADMIN_EMAIL;
+  const superAdmin = getEnv('SUPERADMIN_EMAIL');
   return !!session?.user?.email && !!superAdmin && session.user.email === superAdmin;
 }
 
@@ -46,10 +47,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const environmentRaw = (process.env.SQUARE_ENVIRONMENT || 'sandbox').trim().toLowerCase();
+  const environmentRaw = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
   const environment = environmentRaw === 'production' ? 'production' : 'sandbox';
-  const accessToken = (process.env.SQUARE_ACCESS_TOKEN || '').trim();
-  const locationId = (process.env.SQUARE_LOCATION_ID || '').trim();
+  const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
+  const locationId = getEnv('SQUARE_LOCATION_ID');
 
   const enabled = !!accessToken;
   if (!enabled) {

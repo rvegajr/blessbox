@@ -3,6 +3,7 @@ import { ensureDbReady } from '@/lib/db-ready';
 import { getDbClient } from '@/lib/db';
 import { getServerSession } from '@/lib/auth-helper';
 import { EmailService } from '@/lib/services/EmailService';
+import { getEnv } from '@/lib/utils/env';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,12 +29,14 @@ async function fetchJsonWithTimeout(
 }
 
 async function getSendGridDiagnostics() {
-  const apiKey = process.env.SENDGRID_API_KEY;
+  const apiKey = getEnv('SENDGRID_API_KEY');
   if (!apiKey) return null;
 
-  const fromEmail = (process.env.SENDGRID_FROM_EMAIL || '').trim();
-  const desiredFrom = 'noreply@blessbox.org';
-  const desiredDomain = 'blessbox.org';
+  const fromEmail = getEnv('SENDGRID_FROM_EMAIL');
+  // Canonical sender we expect to be verified in the SendGrid account.
+  // Reads from env first so changing the brand doesn't require a code edit.
+  const desiredFrom = (fromEmail || 'noreply@blessbox.org').toLowerCase();
+  const desiredDomain = desiredFrom.split('@')[1] || 'blessbox.org';
 
   const out: any = {
     apiKeyPresent: true,
@@ -128,24 +131,33 @@ async function getSendGridDiagnostics() {
 function isAuthorizedBySecret(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
-  const cronSecret = process.env.CRON_SECRET;
-  const diagnosticsSecret = process.env.DIAGNOSTICS_SECRET;
+  const cronSecret = getEnv('CRON_SECRET');
+  const diagnosticsSecret = getEnv('DIAGNOSTICS_SECRET');
   return !!token && Boolean((cronSecret && token === cronSecret) || (diagnosticsSecret && token === diagnosticsSecret));
 }
 
 async function isAuthorized(req: NextRequest): Promise<boolean> {
-  if (process.env.NODE_ENV !== 'production') return true;
+  if (getEnv('NODE_ENV') !== 'production') return true;
   if (isAuthorizedBySecret(req)) return true;
 
   const session = await getServerSession();
-  const superAdmin = process.env.SUPERADMIN_EMAIL;
+  const superAdmin = getEnv('SUPERADMIN_EMAIL');
   return !!session?.user?.email && !!superAdmin && session.user.email === superAdmin;
 }
 
 function providerStatus() {
-  const hasSendGrid = !!process.env.SENDGRID_API_KEY && !!process.env.SENDGRID_FROM_EMAIL;
-  const hasSmtp = !!process.env.SMTP_HOST && !!process.env.SMTP_USER && !!process.env.SMTP_PASS;
-  const hasGmail = !!process.env.GMAIL_USER && !!process.env.GMAIL_PASS;
+  const sendgridApiKey = getEnv('SENDGRID_API_KEY');
+  const sendgridFromEmail = getEnv('SENDGRID_FROM_EMAIL');
+  const sendgridFromName = getEnv('SENDGRID_FROM_NAME');
+  const smtpHost = getEnv('SMTP_HOST');
+  const smtpUser = getEnv('SMTP_USER');
+  const smtpPass = getEnv('SMTP_PASS');
+  const gmailUser = getEnv('GMAIL_USER');
+  const gmailPass = getEnv('GMAIL_PASS');
+
+  const hasSendGrid = !!sendgridApiKey && !!sendgridFromEmail;
+  const hasSmtp = !!smtpHost && !!smtpUser && !!smtpPass;
+  const hasGmail = !!gmailUser && !!gmailPass;
 
   const provider = hasSendGrid ? 'sendgrid' : hasSmtp ? 'smtp' : hasGmail ? 'gmail_smtp' : 'none';
   return {
@@ -153,22 +165,22 @@ function providerStatus() {
     configured: provider !== 'none',
     sendgrid: {
       configured: hasSendGrid,
-      hasApiKey: !!process.env.SENDGRID_API_KEY,
-      hasFromEmail: !!process.env.SENDGRID_FROM_EMAIL,
-      fromName: !!process.env.SENDGRID_FROM_NAME,
+      hasApiKey: !!sendgridApiKey,
+      hasFromEmail: !!sendgridFromEmail,
+      fromName: !!sendgridFromName,
     },
     smtp: {
       configured: hasSmtp,
-      host: !!process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || null,
-      secure: process.env.SMTP_SECURE || null,
-      from: process.env.SMTP_FROM || null,
-      fromName: process.env.SMTP_FROM_NAME || null,
+      host: !!smtpHost,
+      port: getEnv('SMTP_PORT') || null,
+      secure: getEnv('SMTP_SECURE') || null,
+      from: getEnv('SMTP_FROM') || null,
+      fromName: getEnv('SMTP_FROM_NAME') || null,
     },
     gmailSmtp: {
       configured: hasGmail,
-      user: !!process.env.GMAIL_USER,
-      pass: !!process.env.GMAIL_PASS,
+      user: !!gmailUser,
+      pass: !!gmailPass,
     },
   };
 }
@@ -219,7 +231,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     success: true,
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV,
+    env: getEnv('NODE_ENV'),
     provider,
     ...(sendgridDiagnostics ? { sendgridDiagnostics } : {}),
     ...(orgId ? { organizationId: orgId, organization: org, templates, logs } : {}),

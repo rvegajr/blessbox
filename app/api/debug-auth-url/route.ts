@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * Debug endpoint to check auth URL configuration.
@@ -9,9 +10,9 @@ export async function GET(request: NextRequest) {
   const authFailure = requireDiagnosticsSecret(request);
   if (authFailure) return authFailure;
 
-  const nextAuthUrl = process.env.NEXTAUTH_URL || 'NOT SET';
-  const publicAppUrl = process.env.PUBLIC_APP_URL || 'NOT SET';
-  const nextPublicAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'NOT SET';
+  const nextAuthUrl = getEnv('NEXTAUTH_URL', 'NOT SET');
+  const publicAppUrl = getEnv('PUBLIC_APP_URL', 'NOT SET');
+  const nextPublicAppUrl = getEnv('NEXT_PUBLIC_APP_URL', 'NOT SET');
 
   const baseUrl =
     publicAppUrl !== 'NOT SET'

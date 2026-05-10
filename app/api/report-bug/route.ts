@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { parseBody } from '@/lib/api/validate';
+import { getEnv } from '@/lib/utils/env';
 
 const ImageSchema = z.object({
   name: z.string().max(255),
@@ -43,8 +44,8 @@ interface BugReportPayload {
   userAgent?: string;
 }
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO = process.env.GITHUB_REPO || 'rvegajr/BlessBox';
+const GITHUB_TOKEN = getEnv('GITHUB_TOKEN');
+const GITHUB_REPO = getEnv('GITHUB_REPO', 'rvegajr/BlessBox');
 const GITHUB_API = 'https://api.github.com';
 
 export async function POST(request: NextRequest) {
