@@ -131,7 +131,7 @@ test.describe('Onboarding Flow - Complete Journey', () => {
     // Save form config via API action on the page (it auto-navigates to qr-configuration)
     // Prefer a visible Save button; fallback to wizard Next.
     // Proceed to next step; Form Builder page will persist config when navigating to QR configuration
-    await page.locator('[data-testid="next-button"]').click();
+    await page.locator('[data-testid="btn-next"]').click();
     await page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 20000 });
     console.log('   ✅ Form builder completed');
     
@@ -159,7 +159,7 @@ test.describe('Onboarding Flow - Complete Journey', () => {
     console.log('   ✅ QR codes generated');
     
     // Complete onboarding
-    const completeBtn = page.locator('[data-testid="complete-button"]').first();
+    const completeBtn = page.locator('[data-testid="btn-complete"]').first();
     await completeBtn.click();
     await page.waitForURL(/\/dashboard/, { timeout: 20000 });
     console.log('   ✅ Onboarding flow completed!');
