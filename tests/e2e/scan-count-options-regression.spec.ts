@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { loginAsUser, seedOrg, IS_PRODUCTION, HAS_PROD_SECRETS } from './_helpers/auth';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
-const TEST_ENV = process.env.TEST_ENV || 'local';
-const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
 const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
 
 /**
@@ -87,53 +86,17 @@ test.describe('Scan Count Regression - Per QR Code Counts', () => {
 });
 
 test.describe('Dropdown Options Regression', () => {
-  // /onboarding/form-builder is auth-gated in prod and the cookie test-bypass (bb_test_auth=1)
-  // is rejected by middleware in production. No prod entry path until /api/test/login is provisioned on Vercel.
-  test.fixme(/blessbox\.org/i.test(process.env.BASE_URL || '') || process.env.TEST_ENV === 'production', 'form-builder UI not auth-bypassable in prod');
-  test.beforeEach(async ({ page, request }) => {
-    // Seed organization for form builder access
-    let organizationId: string;
-    let contactEmail: string;
+  test.skip(IS_PRODUCTION && !HAS_PROD_SECRETS, 'Requires PROD_TEST_LOGIN_SECRET + PROD_TEST_SEED_SECRET');
 
-    if (IS_PRODUCTION) {
-      if (!PROD_TEST_SEED_SECRET) {
-        test.skip();
-        return;
-      }
-      const seedResp = await request.post(`${BASE_URL}/api/test/seed-prod`, {
-        headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
-        data: { seedKey: `options-test-${Date.now()}` },
-      });
-      const seed = await seedResp.json();
-      organizationId = seed.organizationId;
-      contactEmail = seed.contactEmail;
-    } else {
-      const seedResp = await request.post(`${BASE_URL}/api/test/seed`, {
-        data: { seedKey: `options-test-${Date.now()}` },
-      });
-      const seed = await seedResp.json();
-      organizationId = seed.organizationId;
-      contactEmail = seed.contactEmail;
-    }
-
-    // Set up localStorage and auth
+  test.beforeEach(async ({ page }) => {
+    const seed = await seedOrg(page, `options-test-${Date.now()}`);
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
     await page.goto(BASE_URL);
-    await page.evaluate(
-      ({ organizationId, contactEmail }) => {
-        localStorage.clear();
-        sessionStorage.clear();
-        localStorage.setItem('onboarding_organizationId', organizationId);
-        localStorage.setItem('onboarding_contactEmail', contactEmail);
-        localStorage.setItem('onboarding_emailVerified', 'true');
-      },
-      { organizationId, contactEmail }
-    );
-
-    await page.context().addCookies([
-      { name: 'bb_test_auth', value: '1', url: BASE_URL },
-      { name: 'bb_test_email', value: contactEmail, url: BASE_URL },
-      { name: 'bb_active_org_id', value: organizationId, url: BASE_URL },
-    ]);
+    await page.evaluate(({ organizationId, contactEmail }: { organizationId: string; contactEmail: string }) => {
+      localStorage.setItem('onboarding_organizationId', organizationId);
+      localStorage.setItem('onboarding_contactEmail', contactEmail);
+      localStorage.setItem('onboarding_emailVerified', 'true');
+    }, { organizationId: seed.organizationId, contactEmail: seed.contactEmail });
   });
 
   test('Adding a select field should provide default options', async ({ page }) => {

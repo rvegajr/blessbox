@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsUser, IS_PRODUCTION, HAS_PROD_SEED } from './_helpers/auth';
+import { loginAsUser, IS_PRODUCTION, HAS_PROD_SEED, HAS_PROD_LOGIN } from './_helpers/auth';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
 const PROD_TEST_SEED_SECRET = (process.env.PROD_TEST_SEED_SECRET || '').replace(/\\n/g, '').trim();
