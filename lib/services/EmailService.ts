@@ -98,12 +98,21 @@ export class EmailService {
     const apiKey = getEnv('SENDGRID_API_KEY');
     const fromEmail = getEnv('SENDGRID_FROM_EMAIL');
     const fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
+    // Optional drop-in relay (e.g. https://api.sendgrid.noctusoft.com). If set,
+    // sends are proxied through the relay so they egress from a static IP that
+    // is in the SendGrid API key's IP allowlist. Vercel's serverless egress
+    // would otherwise be blocked.
+    const apiBaseUrl = getEnv('SENDGRID_API_URL');
 
     if (!apiKey || !fromEmail) {
       throw new Error('SendGrid not configured (SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are required)');
     }
 
     sgMail.setApiKey(apiKey);
+    if (apiBaseUrl) {
+      // @sendgrid/mail exposes its underlying Client via sgMail.client.
+      (sgMail as any).client?.setDefaultRequest?.('baseUrl', apiBaseUrl);
+    }
     const from = { email: args.fromEmailOverride || fromEmail, name: fromName };
     const replyTo = args.replyTo || getEnv('EMAIL_REPLY_TO') || undefined;
 

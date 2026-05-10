@@ -2,10 +2,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 const sendgridSetApiKey = vi.fn();
 const sendgridSend = vi.fn();
+const sendgridSetDefaultRequest = vi.fn();
 vi.mock('@sendgrid/mail', () => ({
   default: {
     setApiKey: (...args: any[]) => sendgridSetApiKey(...args),
     send: (...args: any[]) => sendgridSend(...args),
+    client: {
+      setDefaultRequest: (...args: any[]) => sendgridSetDefaultRequest(...args),
+    },
   },
 }));
 
@@ -177,6 +181,52 @@ describe('EmailService', () => {
     expect(transportArgs.auth.pass).toBe('SG.smtp-secret');
     const sendArgs = smtpSendMail.mock.calls[0]?.[0];
     expect(sendArgs.from).toContain('from@example.com');
+  });
+
+  it('routes through Noctusoft relay when SENDGRID_API_URL is set', async () => {
+    // Production scenario: Vercel egress isn't in the SendGrid IP allowlist.
+    // We route through api.sendgrid.noctusoft.com whose static IP IS allowlisted.
+    process.env.SENDGRID_API_KEY = 'SG.real-key';
+    process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
+    process.env.SENDGRID_FROM_NAME = 'BlessBox NoReply';
+    process.env.SENDGRID_API_URL = 'https://api.sendgrid.noctusoft.com';
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+
+    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-relay' } }]);
+
+    const service = new EmailService();
+    const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
+      recipient_name: 'Ada',
+      organization_name: 'Org',
+      event_type: 'test',
+    });
+
+    expect(res.success).toBe(true);
+    expect(sendgridSetApiKey).toHaveBeenCalledWith('SG.real-key');
+    // The crux: SDK's underlying Client must be redirected at the relay.
+    expect(sendgridSetDefaultRequest).toHaveBeenCalledWith('baseUrl', 'https://api.sendgrid.noctusoft.com');
+  });
+
+  it('does NOT call setDefaultRequest when SENDGRID_API_URL is unset (uses SendGrid default)', async () => {
+    process.env.SENDGRID_API_KEY = 'sg-direct';
+    process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
+    delete process.env.SENDGRID_API_URL;
+    delete process.env.SMTP_HOST;
+    delete process.env.SMTP_USER;
+    delete process.env.SMTP_PASS;
+
+    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-direct' } }]);
+
+    const service = new EmailService();
+    await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
+      recipient_name: 'Ada',
+      organization_name: 'Org',
+      event_type: 'test',
+    });
+
+    expect(sendgridSetDefaultRequest).not.toHaveBeenCalled();
   });
 
   it('fails in production if no provider is configured', async () => {
