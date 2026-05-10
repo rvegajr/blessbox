@@ -302,30 +302,36 @@ export class VerificationService implements IVerificationService {
         `;
         const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
-        // Relay path: raw fetch (bypasses SDK Client redirect quirks under Next.js bundling).
-        // SENDGRID_RELAY_KEY authenticates the relay itself for non-trusted IPs.
+        // Relay path: when SENDGRID_API_URL is set, send via the relay using
+        // its simplified payload + X-Api-Key auth. We detect the SGXXX-style
+        // relay (the Vercel-friendly one) by URL: /v1/email/send + X-Api-Key.
+        // The /v3/mail/send drop-in is IP-restricted and only useful from
+        // trusted IPs, so we don't use it from serverless.
         if (apiBaseUrl) {
-          const bearer = getEnv('SENDGRID_RELAY_KEY') || sendGridApiKey;
-          const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
+          const relayKey = getEnv('SENDGRID_RELAY_KEY');
+          if (!relayKey) {
+            throw new Error('SENDGRID_RELAY_KEY is required when SENDGRID_API_URL is set');
+          }
+          const url = apiBaseUrl.includes('/v1/email/send')
+            ? apiBaseUrl
+            : `${apiBaseUrl.replace(/\/$/, '')}/v1/email/send`;
           const res = await fetch(url, {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${bearer}`,
+              'X-Api-Key': relayKey,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              personalizations: [{ to: [{ email }] }],
-              from: { email: fromEmail, name: fromName },
+              to: email,
+              from: fromEmail,
               subject: 'Verify Your BlessBox Email',
-              content: [
-                { type: 'text/plain', value: text },
-                { type: 'text/html', value: html },
-              ],
+              html,
+              text,
             }),
           });
           if (!res.ok) {
             const detail = await res.text().catch(() => '');
-            throw new Error(`${res.status} ${res.statusText}${detail ? `: ${detail}` : ''}`);
+            throw new Error(`${res.status} ${res.statusText}${detail ? `: ${detail.slice(0, 300)}` : ''}`);
           }
           if (getEnv('NODE_ENV') !== 'test') {
             console.log(`✅ SendGrid (relay) email sent to ${email}, status: ${res.status}`);
