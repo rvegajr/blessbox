@@ -108,14 +108,40 @@ export class EmailService {
       throw new Error('SendGrid not configured (SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are required)');
     }
 
-    sgMail.setApiKey(apiKey);
-    if (apiBaseUrl) {
-      // @sendgrid/mail exposes its underlying Client via sgMail.client.
-      (sgMail as any).client?.setDefaultRequest?.('baseUrl', apiBaseUrl);
-    }
     const from = { email: args.fromEmailOverride || fromEmail, name: fromName };
     const replyTo = args.replyTo || getEnv('EMAIL_REPLY_TO') || undefined;
 
+    // When SENDGRID_API_URL is set (e.g. Noctusoft relay), bypass the SDK and
+    // post directly. Next.js + serverless can mangle the SDK's internal Client
+    // override; raw fetch removes that uncertainty and is what the relay docs use.
+    if (apiBaseUrl) {
+      const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: args.to }] }],
+          from,
+          ...(replyTo ? { reply_to: { email: replyTo } } : {}),
+          subject: args.subject,
+          content: [
+            ...(args.text ? [{ type: 'text/plain', value: args.text }] : []),
+            { type: 'text/html', value: args.html },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '');
+        throw new Error(`SendGrid error (${res.status}): ${res.statusText}${detail ? ` | response: ${detail}` : ''}`);
+      }
+      return { provider: 'sendgrid' as const, messageId: res.headers.get('x-message-id') || undefined };
+    }
+
+    // Direct SendGrid path — keep using SDK so we get its retry / type checks.
+    sgMail.setApiKey(apiKey);
     try {
       const [res] = await sgMail.send({
         to: args.to,
@@ -125,18 +151,12 @@ export class EmailService {
         html: args.html,
         text: args.text,
       });
-
       return { provider: 'sendgrid' as const, messageId: (res as any)?.headers?.['x-message-id'] || undefined };
     } catch (e: any) {
-      // SendGrid errors often contain useful response data.
       const statusCode = e?.code || e?.response?.statusCode || e?.response?.status;
       const body = e?.response?.body;
       const details =
-        body && typeof body === 'object'
-          ? JSON.stringify(body)
-          : body
-            ? String(body)
-            : '';
+        body && typeof body === 'object' ? JSON.stringify(body) : body ? String(body) : '';
       const msg = e instanceof Error ? e.message : String(e);
       throw new Error(
         `SendGrid error${statusCode ? ` (${statusCode})` : ''}: ${msg}${details ? ` | response: ${details}` : ''}`

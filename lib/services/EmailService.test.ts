@@ -183,9 +183,11 @@ describe('EmailService', () => {
     expect(sendArgs.from).toContain('from@example.com');
   });
 
-  it('routes through Noctusoft relay when SENDGRID_API_URL is set', async () => {
+  it('routes through Noctusoft relay via raw fetch when SENDGRID_API_URL is set', async () => {
     // Production scenario: Vercel egress isn't in the SendGrid IP allowlist.
-    // We route through api.sendgrid.noctusoft.com whose static IP IS allowlisted.
+    // We POST directly to api.sendgrid.noctusoft.com (a static, allowlisted IP).
+    // Raw fetch bypasses SDK Client.setDefaultRequest() — that doesn't survive
+    // the Next.js / serverless bundle reliably.
     process.env.SENDGRID_API_KEY = 'SG.real-key';
     process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
     process.env.SENDGRID_FROM_NAME = 'BlessBox NoReply';
@@ -194,7 +196,12 @@ describe('EmailService', () => {
     delete process.env.SMTP_USER;
     delete process.env.SMTP_PASS;
 
-    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-relay' } }]);
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 202,
+      headers: { get: (k: string) => (k === 'x-message-id' ? 'm-relay' : null) },
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     const service = new EmailService();
     const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
@@ -204,12 +211,22 @@ describe('EmailService', () => {
     });
 
     expect(res.success).toBe(true);
-    expect(sendgridSetApiKey).toHaveBeenCalledWith('SG.real-key');
-    // The crux: SDK's underlying Client must be redirected at the relay.
-    expect(sendgridSetDefaultRequest).toHaveBeenCalledWith('baseUrl', 'https://api.sendgrid.noctusoft.com');
+    // SDK should NOT have been called — relay path uses raw fetch.
+    expect(sendgridSend).not.toHaveBeenCalled();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(init.headers.Authorization).toBe('Bearer SG.real-key');
+    const body = JSON.parse(init.body);
+    expect(body.from.email).toBe('noreply@blessbox.org');
+    expect(body.from.name).toBe('BlessBox NoReply');
+    expect(body.personalizations[0].to[0].email).toBe('to@example.com');
+
+    vi.unstubAllGlobals();
   });
 
-  it('does NOT call setDefaultRequest when SENDGRID_API_URL is unset (uses SendGrid default)', async () => {
+  it('uses SDK directly when SENDGRID_API_URL is unset', async () => {
     process.env.SENDGRID_API_KEY = 'sg-direct';
     process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
     delete process.env.SENDGRID_API_URL;
@@ -226,7 +243,8 @@ describe('EmailService', () => {
       event_type: 'test',
     });
 
-    expect(sendgridSetDefaultRequest).not.toHaveBeenCalled();
+    expect(sendgridSetApiKey).toHaveBeenCalled();
+    expect(sendgridSend).toHaveBeenCalled();
   });
 
   it('fails in production if no provider is configured', async () => {
