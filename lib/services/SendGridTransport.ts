@@ -40,32 +40,33 @@ export class SendGridTransport implements IEmailTransport {
 
   async sendDirect(message: EmailMessage): Promise<EmailResult> {
     try {
-      // Relay path: raw fetch bypasses SDK quirks under Next.js bundling.
-      // SENDGRID_RELAY_KEY authenticates the relay itself for non-trusted IPs.
+      // Relay path (SGXXX-style): simplified payload + X-Api-Key auth.
       const apiBaseUrl = getEnv('SENDGRID_API_URL');
       if (apiBaseUrl) {
-        const bearer = getEnv('SENDGRID_RELAY_KEY') || this.apiKey;
-        const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
+        const relayKey = getEnv('SENDGRID_RELAY_KEY');
+        if (!relayKey) {
+          return { success: false, error: 'SENDGRID_RELAY_KEY is required when SENDGRID_API_URL is set' };
+        }
+        const url = apiBaseUrl.includes('/v1/email/send')
+          ? apiBaseUrl
+          : `${apiBaseUrl.replace(/\/$/, '')}/v1/email/send`;
         const res = await fetch(url, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${bearer}`,
+            'X-Api-Key': relayKey,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            personalizations: [{ to: [{ email: message.to }] }],
-            from: { email: this.fromEmail, name: this.fromName },
+            to: message.to,
+            from: this.fromEmail,
             subject: message.subject,
-            content: [
-              ...(message.text ? [{ type: 'text/plain', value: message.text }] : []),
-              { type: 'text/html', value: message.html },
-            ],
-            ...(message.attachments ? { attachments: message.attachments } : {}),
+            html: message.html,
+            ...(message.text ? { text: message.text } : {}),
           }),
         });
         if (!res.ok) {
           const detail = await res.text().catch(() => '');
-          return { success: false, error: `${res.status} ${res.statusText}${detail ? `: ${detail}` : ''}` };
+          return { success: false, error: `${res.status} ${res.statusText}${detail ? `: ${detail.slice(0, 300)}` : ''}` };
         }
         return { success: true, messageId: res.headers.get('x-message-id') || undefined };
       }

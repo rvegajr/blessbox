@@ -111,35 +111,36 @@ export class EmailService {
     const from = { email: args.fromEmailOverride || fromEmail, name: fromName };
     const replyTo = args.replyTo || getEnv('EMAIL_REPLY_TO') || undefined;
 
-    // When SENDGRID_API_URL is set (e.g. Noctusoft relay), bypass the SDK and
-    // post directly. Next.js + serverless can mangle the SDK's internal Client
-    // override; raw fetch removes that uncertainty and is what the relay docs use.
-    // SENDGRID_RELAY_KEY (Noctusoft API key, e.g. nsins_sk_...) authenticates
-    // the relay itself when called from non-trusted IPs (e.g. Vercel egress).
-    // Falls back to the SendGrid key for local/trusted-IP runs.
+    // Relay path (SGXXX-style): when SENDGRID_API_URL is set, post to the
+    // simplified relay endpoint using X-Api-Key auth. This is the path the
+    // Noctusoft docs designate for Vercel/serverless. The /v3/mail/send drop-in
+    // is IP-restricted to trusted hosts and not usable from Vercel egress.
     if (apiBaseUrl) {
-      const bearer = getEnv('SENDGRID_RELAY_KEY') || apiKey;
-      const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
+      const relayKey = getEnv('SENDGRID_RELAY_KEY');
+      if (!relayKey) {
+        throw new Error('SENDGRID_RELAY_KEY is required when SENDGRID_API_URL is set');
+      }
+      const url = apiBaseUrl.includes('/v1/email/send')
+        ? apiBaseUrl
+        : `${apiBaseUrl.replace(/\/$/, '')}/v1/email/send`;
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${bearer}`,
+          'X-Api-Key': relayKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          personalizations: [{ to: [{ email: args.to }] }],
-          from,
-          ...(replyTo ? { reply_to: { email: replyTo } } : {}),
+          to: args.to,
+          from: from.email,
           subject: args.subject,
-          content: [
-            ...(args.text ? [{ type: 'text/plain', value: args.text }] : []),
-            { type: 'text/html', value: args.html },
-          ],
+          html: args.html,
+          ...(args.text ? { text: args.text } : {}),
+          ...(replyTo ? { reply_to: replyTo } : {}),
         }),
       });
       if (!res.ok) {
         const detail = await res.text().catch(() => '');
-        throw new Error(`SendGrid error (${res.status}): ${res.statusText}${detail ? ` | response: ${detail}` : ''}`);
+        throw new Error(`SendGrid relay error (${res.status}): ${res.statusText}${detail ? ` | response: ${detail.slice(0, 300)}` : ''}`);
       }
       return { provider: 'sendgrid' as const, messageId: res.headers.get('x-message-id') || undefined };
     }
