@@ -8,13 +8,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { SquarePaymentService } from '@/lib/services/SquarePaymentService';
+import { getEnv } from '@/lib/utils/env';
 
 function isAuthorized(req: NextRequest): boolean {
   if (process.env.NODE_ENV !== 'production') return true;
   
   const auth = req.headers.get('authorization') || '';
   const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length).trim() : '';
-  const diagnosticsSecret = process.env.DIAGNOSTICS_SECRET;
+  const diagnosticsSecret = getEnv('DIAGNOSTICS_SECRET');
   
   return !!diagnosticsSecret && token === diagnosticsSecret;
 }
@@ -38,7 +39,6 @@ export async function GET(req: NextRequest) {
 
   try {
     // 1. Check Environment Variables (with sanitization)
-    const { getEnv } = await import('@/lib/utils/env');
     const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
     const applicationId = getEnv('SQUARE_APPLICATION_ID');
     const locationId = getEnv('SQUARE_LOCATION_ID');

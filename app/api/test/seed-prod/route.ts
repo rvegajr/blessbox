@@ -239,10 +239,10 @@ export async function POST(req: NextRequest) {
           ];
 
     const baseUrl =
-      process.env.PUBLIC_APP_URL ||
-      process.env.NEXTAUTH_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      process.env.BASE_URL ||
+      getEnv('PUBLIC_APP_URL') ||
+      getEnv('NEXTAUTH_URL') ||
+      getEnv('NEXT_PUBLIC_APP_URL') ||
+      getEnv('BASE_URL') ||
       'http://localhost:7777';
     const qrCodes = entryPoints.map((ep: any) => ({
       id: `qr_${ep.slug}`,

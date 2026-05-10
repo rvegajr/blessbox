@@ -4,6 +4,7 @@ import { ClassService } from '@/lib/services/ClassService';
 import { EmailService } from '@/lib/services/EmailService';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { ensureDbReady } from '@/lib/db-ready';
+import { getEnv } from '@/lib/utils/env';
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession();
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
             location: sessionDetails?.location || 'TBD',
             instructor_name: sessionDetails?.instructor_name || 'TBD',
             organization_name: (organization as any).name || 'Organization',
-            confirmation_link: `${process.env.PUBLIC_APP_URL || process.env.NEXTAUTH_URL || ''}/enrollments/${enrollment.id}/confirm`
+            confirmation_link: `${getEnv('PUBLIC_APP_URL') || getEnv('NEXTAUTH_URL')}/enrollments/${enrollment.id}/confirm`
           }
         );
       } catch (e) {

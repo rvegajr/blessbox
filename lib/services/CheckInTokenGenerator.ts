@@ -5,6 +5,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
+import { getEnv } from '../utils/env';
 import type { ICheckInTokenGenerator } from '../interfaces/ICheckInTokenGenerator';
 
 export class CheckInTokenGenerator implements ICheckInTokenGenerator {
@@ -31,11 +32,12 @@ export class CheckInTokenGenerator implements ICheckInTokenGenerator {
 
   private getBaseUrl(): string {
     // Prioritize public URL, then fallback to NEXTAUTH_URL or localhost
+    const vercelUrl = getEnv('NEXT_PUBLIC_VERCEL_URL');
     return (
-      process.env.PUBLIC_APP_URL ||
-      process.env.NEXTAUTH_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:7777')
+      getEnv('PUBLIC_APP_URL') ||
+      getEnv('NEXTAUTH_URL') ||
+      getEnv('NEXT_PUBLIC_APP_URL') ||
+      (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:7777')
     );
   }
 }

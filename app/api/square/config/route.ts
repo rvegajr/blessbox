@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getEnv } from '@/lib/utils/env';
 
 export async function GET(req: NextRequest) {
-  const applicationId = (process.env.SQUARE_APPLICATION_ID || '').trim();
-  const locationId = (process.env.SQUARE_LOCATION_ID || '').trim();
-  const environment = (process.env.SQUARE_ENVIRONMENT || 'sandbox').trim();
+  const applicationId = getEnv('SQUARE_APPLICATION_ID');
+  const locationId = getEnv('SQUARE_LOCATION_ID');
+  const environment = getEnv('SQUARE_ENVIRONMENT', 'sandbox');
 
   if (!applicationId || !locationId) {
     // IMPORTANT: Missing payment configuration is not a server error.

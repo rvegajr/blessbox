@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * Test endpoint to verify magic link URL generation logic
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Replicate the logic from authOptions.ts sendVerificationRequest
-    const baseUrl = process.env.PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'https://www.blessbox.org';
+    const baseUrl = getEnv('PUBLIC_APP_URL') || getEnv('NEXTAUTH_URL') || 'https://www.blessbox.org';
     
     let correctedUrl: string;
     try {
@@ -38,8 +39,8 @@ export async function POST(req: NextRequest) {
       originalUrl,
       correctedUrl,
       baseUrl,
-      nextAuthUrl: process.env.NEXTAUTH_URL || 'NOT SET',
-      publicAppUrl: process.env.PUBLIC_APP_URL || 'NOT SET',
+      nextAuthUrl: getEnv('NEXTAUTH_URL', 'NOT SET'),
+      publicAppUrl: getEnv('PUBLIC_APP_URL', 'NOT SET'),
       email: email || 'not provided',
     });
   } catch (error) {

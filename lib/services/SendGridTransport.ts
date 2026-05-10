@@ -65,7 +65,7 @@ export class SendGridTransport implements IEmailTransport {
       const errorMessage = error instanceof Error ? error.message : 'Unknown SendGrid error';
       
       // Log error for debugging
-      if (process.env.NODE_ENV !== 'test') {
+      if (getEnv("NODE_ENV") !== 'test') {
         console.error('[SendGridTransport] Send failed:', errorMessage);
       }
 
@@ -102,7 +102,7 @@ export class SendGridTransport implements IEmailTransport {
       if (attempt < maxAttempts) {
         const backoffMs = 1000 * attempt; // Linear backoff: 1s, 2s, 3s
         
-        if (process.env.NODE_ENV !== 'test') {
+        if (getEnv("NODE_ENV") !== 'test') {
           console.warn(`[SendGridTransport] Attempt ${attempt} failed, retrying in ${backoffMs}ms...`);
         }
 

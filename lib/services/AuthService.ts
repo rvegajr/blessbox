@@ -12,7 +12,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { VerificationService } from './VerificationService';
 import { MembershipService } from './MembershipService';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
-import type { 
+import { getEnv } from '@/lib/utils/env';
+import type {
   IAuthService, 
   AuthUser, 
   AuthSession 
@@ -29,7 +30,7 @@ export class AuthService implements IAuthService {
   private db = getDbClient();
   
   private getJwtSecret(): Uint8Array {
-    const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
+    const secret = getEnv('NEXTAUTH_SECRET') || getEnv('JWT_SECRET');
     if (!secret) {
       throw new Error('JWT_SECRET or NEXTAUTH_SECRET environment variable is required');
     }
@@ -158,7 +159,7 @@ export class AuthService implements IAuthService {
       const cookieStore = await cookies();
       
       // Check for test auth bypass (non-production only)
-      if (process.env.NODE_ENV !== 'production') {
+      if (getEnv("NODE_ENV") !== 'production') {
         const testAuth = cookieStore.get('bb_test_auth')?.value;
         if (testAuth === '1') {
           return this.getTestSession(cookieStore);
@@ -201,7 +202,7 @@ export class AuthService implements IAuthService {
    * Set session cookie (call from API route response)
    */
   static setSessionCookie(response: Response, session: AuthSession): void {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = getEnv("NODE_ENV") === 'production';
     const maxAge = Math.floor((new Date(session.expires).getTime() - Date.now()) / 1000);
     
     response.headers.append(
@@ -214,7 +215,7 @@ export class AuthService implements IAuthService {
    * Set active organization cookie
    */
   static setActiveOrgCookie(response: Response, organizationId: string): void {
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = getEnv("NODE_ENV") === 'production';
     const maxAge = 30 * 24 * 60 * 60; // 30 days
     
     response.headers.append(

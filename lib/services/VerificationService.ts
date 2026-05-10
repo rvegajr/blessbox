@@ -1,6 +1,7 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
-import type { 
+import { getEnv } from '../utils/env';
+import type {
   IVerificationService,
   VerificationCode,
   VerificationResult,
@@ -74,7 +75,7 @@ export class VerificationService implements IVerificationService {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         await this.sendVerificationEmailDirect(email, code);
-        if (process.env.NODE_ENV !== 'test') {
+        if (getEnv('NODE_ENV') !== 'test') {
           console.log(`✅ Verification email sent successfully to ${email}${attempt > 0 ? ` (after ${attempt} retries)` : ''}`);
         }
         emailSent = true;
@@ -91,9 +92,9 @@ export class VerificationService implements IVerificationService {
     if (!emailSent) {
       console.error('❌ Failed to send verification email after retries:', lastError);
       console.error('Email configuration check:');
-      console.error('  SENDGRID_API_KEY:', process.env.SENDGRID_API_KEY ? 'SET' : 'NOT SET');
-      console.error('  SMTP_HOST:', process.env.SMTP_HOST || 'NOT SET');
-      console.error('  SMTP_USER:', process.env.SMTP_USER ? 'SET' : 'NOT SET');
+      console.error('  SENDGRID_API_KEY:', getEnv('SENDGRID_API_KEY') ? 'SET' : 'NOT SET');
+      console.error('  SMTP_HOST:', getEnv('SMTP_HOST') || 'NOT SET');
+      console.error('  SMTP_USER:', getEnv('SMTP_USER') ? 'SET' : 'NOT SET');
       
       // Delete the code we just created since email failed
       await this.db.execute({
@@ -103,8 +104,8 @@ export class VerificationService implements IVerificationService {
       
       // Return error with helpful message
       const errorMessage = lastError?.message || 'Unknown error';
-      const hasSendGrid = !!process.env.SENDGRID_API_KEY;
-      const hasSMTP = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+      const hasSendGrid = !!getEnv('SENDGRID_API_KEY');
+      const hasSMTP = !!(getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS'));
       
       if (!hasSendGrid && !hasSMTP) {
         return {
@@ -120,7 +121,7 @@ export class VerificationService implements IVerificationService {
     }
 
     // In development/test mode, return the code
-    const isDev = process.env.NODE_ENV !== 'production';
+    const isDev = getEnv('NODE_ENV') !== 'production';
     return {
       success: true,
       message: 'Verification code sent successfully',
@@ -285,17 +286,14 @@ export class VerificationService implements IVerificationService {
   }
 
   private async sendVerificationEmailDirect(email: string, code: string): Promise<void> {
-    // Import env utility
-    const { getEnv } = await import('../utils/env');
-    
-    // Try to use SendGrid if available (with sanitized env vars)
+    // Try to use SendGrid if available (sanitized env vars via getEnv)
     const sendGridApiKey = getEnv('SENDGRID_API_KEY');
     if (sendGridApiKey) {
       try {
         const sgMail = require('@sendgrid/mail');
         sgMail.setApiKey(sendGridApiKey);
 
-        const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.app');
+        const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.org');
         
         const html = `
           <h2>Verify Your BlessBox Email</h2>
@@ -313,7 +311,7 @@ export class VerificationService implements IVerificationService {
           text,
         });
         
-        if (process.env.NODE_ENV !== 'test') {
+        if (getEnv('NODE_ENV') !== 'test') {
           console.log(`✅ SendGrid email sent to ${email}, status: ${result[0]?.statusCode}`);
         }
         return;
@@ -325,17 +323,21 @@ export class VerificationService implements IVerificationService {
     }
 
     // Fallback to Gmail SMTP if SendGrid not available
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const smtpHost = getEnv('SMTP_HOST');
+    const smtpUser = getEnv('SMTP_USER');
+    const smtpPass = getEnv('SMTP_PASS');
+    const smtpPort = getEnv('SMTP_PORT');
+    if (smtpHost && smtpUser && smtpPass) {
       try {
         const nodemailer = require('nodemailer');
-        
+
         const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT) || 587,
-          secure: process.env.SMTP_PORT === '465', // SSL for port 465
+          host: smtpHost,
+          port: Number(smtpPort) || 587,
+          secure: smtpPort === '465', // SSL for port 465
           auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
+            user: smtpUser,
+            pass: smtpPass,
           },
         });
 
@@ -348,14 +350,14 @@ export class VerificationService implements IVerificationService {
         const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
         const info = await transporter.sendMail({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          from: getEnv('SMTP_FROM') || smtpUser,
           to: email,
           subject: 'Verify Your BlessBox Email',
           html,
           text,
         });
         
-        if (process.env.NODE_ENV !== 'test') {
+        if (getEnv("NODE_ENV") !== 'test') {
           console.log(`✅ SMTP email sent to ${email}, messageId: ${info.messageId}`);
         }
         return;
@@ -366,7 +368,7 @@ export class VerificationService implements IVerificationService {
     }
 
     // In development, just log (for testing without email setup)
-    if (process.env.NODE_ENV === 'development') {
+    if (getEnv("NODE_ENV") === 'development') {
       console.log(`📧 [DEV] Verification code for ${email}: ${code}`);
       console.log('⚠️  [DEV] No email service configured - code logged to console only');
       return;

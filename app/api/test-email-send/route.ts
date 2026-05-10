@@ -3,6 +3,7 @@ import { ensureDbReady } from '@/lib/db-ready';
 import { EmailService } from '@/lib/services/EmailService';
 import { getDbClient } from '@/lib/db';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * POST /api/test-email-send
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({} as any));
     const requestedTo = typeof body?.email === 'string' ? body.email.trim() : '';
 
-    const allowed = (process.env.DIAGNOSTICS_TEST_RECIPIENT || '').trim();
+    const allowed = getEnv('DIAGNOSTICS_TEST_RECIPIENT');
     if (!allowed) {
       return NextResponse.json(
         { success: false, error: 'DIAGNOSTICS_TEST_RECIPIENT not configured on server' },
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     await service.ensureDefaultTemplates(orgId);
 
-    const fromEmail = process.env.SENDGRID_FROM_EMAIL || '';
+    const fromEmail = getEnv('SENDGRID_FROM_EMAIL');
     const result = await service.sendEmail(
       orgId,
       to,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CouponService } from '@/lib/coupons';
 import { getDbClient } from '@/lib/db';
 import { ensureDbReady } from '@/lib/db-ready';
+import { getEnv } from '@/lib/utils/env';
 
 /**
  * POST /api/admin/seed-test-coupons
@@ -13,11 +14,7 @@ import { ensureDbReady } from '@/lib/db-ready';
  */
 export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === 'production';
-  const secret = (
-    process.env.SEED_TEST_COUPONS_SECRET ||
-    process.env.PROD_TEST_SEED_SECRET ||
-    ''
-  ).trim();
+  const secret = getEnv('SEED_TEST_COUPONS_SECRET') || getEnv('PROD_TEST_SEED_SECRET');
   const provided = (
     req.headers.get('x-seed-secret') ||
     req.headers.get('x-test-seed-secret') ||

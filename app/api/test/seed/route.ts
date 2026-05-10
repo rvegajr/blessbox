@@ -5,6 +5,7 @@ import { getDbClient, nowIso } from '@/lib/db';
 import { createSubscription } from '@/lib/subscriptions';
 import { CouponService } from '@/lib/coupons';
 import { ClassService } from '@/lib/services/ClassService';
+import { getEnv } from '@/lib/utils/env';
 
 function slugify(input: string): string {
   return input
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
             { label: 'Side Door', slug: 'side-door' },
           ];
 
-    const baseUrl = process.env.PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:7777';
+    const baseUrl = getEnv('PUBLIC_APP_URL') || getEnv('NEXTAUTH_URL') || getEnv('NEXT_PUBLIC_APP_URL') || 'http://localhost:7777';
     const qrCodes = entryPoints.map((ep: any) => ({
       id: `qr_${ep.slug}`,
       // NOTE: RegistrationService.getFormConfig matches QR codes by `label === qrLabel` (URL segment),
