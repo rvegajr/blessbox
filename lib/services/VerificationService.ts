@@ -290,17 +290,10 @@ export class VerificationService implements IVerificationService {
     const sendGridApiKey = getEnv('SENDGRID_API_KEY');
     if (sendGridApiKey) {
       try {
-        const sgMail = require('@sendgrid/mail');
-        sgMail.setApiKey(sendGridApiKey);
-        // Route through Noctusoft relay (or any drop-in) when SENDGRID_API_URL is set.
-        // The relay's static IP is in the SendGrid key's allowlist; Vercel's isn't.
-        const apiBaseUrl = getEnv('SENDGRID_API_URL');
-        if (apiBaseUrl) {
-          (sgMail as any).client?.setDefaultRequest?.('baseUrl', apiBaseUrl);
-        }
-
         const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.org');
-        
+        const fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
+        const apiBaseUrl = getEnv('SENDGRID_API_URL');
+
         const html = `
           <h2>Verify Your BlessBox Email</h2>
           <p>Your verification code is: <strong>${code}</strong></p>
@@ -309,6 +302,38 @@ export class VerificationService implements IVerificationService {
         `;
         const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
 
+        // Relay path: raw fetch (bypasses SDK Client redirect quirks under Next.js bundling).
+        if (apiBaseUrl) {
+          const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${sendGridApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              personalizations: [{ to: [{ email }] }],
+              from: { email: fromEmail, name: fromName },
+              subject: 'Verify Your BlessBox Email',
+              content: [
+                { type: 'text/plain', value: text },
+                { type: 'text/html', value: html },
+              ],
+            }),
+          });
+          if (!res.ok) {
+            const detail = await res.text().catch(() => '');
+            throw new Error(`${res.status} ${res.statusText}${detail ? `: ${detail}` : ''}`);
+          }
+          if (getEnv('NODE_ENV') !== 'test') {
+            console.log(`✅ SendGrid (relay) email sent to ${email}, status: ${res.status}`);
+          }
+          return;
+        }
+
+        // Direct SendGrid path
+        const sgMail = require('@sendgrid/mail');
+        sgMail.setApiKey(sendGridApiKey);
         const result = await sgMail.send({
           to: email,
           from: fromEmail,
@@ -316,7 +341,6 @@ export class VerificationService implements IVerificationService {
           html,
           text,
         });
-        
         if (getEnv('NODE_ENV') !== 'test') {
           console.log(`✅ SendGrid email sent to ${email}, status: ${result[0]?.statusCode}`);
         }

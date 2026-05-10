@@ -40,22 +40,41 @@ export class SendGridTransport implements IEmailTransport {
 
   async sendDirect(message: EmailMessage): Promise<EmailResult> {
     try {
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(this.apiKey);
-      // Drop-in relay support: when SENDGRID_API_URL is set (e.g. the Noctusoft
-      // relay at https://api.sendgrid.noctusoft.com), all sends are proxied
-      // through it so they egress from a static, allowlisted IP.
+      // Relay path: raw fetch bypasses SDK quirks under Next.js bundling.
       const apiBaseUrl = getEnv('SENDGRID_API_URL');
       if (apiBaseUrl) {
-        (sgMail as any).client?.setDefaultRequest?.('baseUrl', apiBaseUrl);
+        const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: message.to }] }],
+            from: { email: this.fromEmail, name: this.fromName },
+            subject: message.subject,
+            content: [
+              ...(message.text ? [{ type: 'text/plain', value: message.text }] : []),
+              { type: 'text/html', value: message.html },
+            ],
+            ...(message.attachments ? { attachments: message.attachments } : {}),
+          }),
+        });
+        if (!res.ok) {
+          const detail = await res.text().catch(() => '');
+          return { success: false, error: `${res.status} ${res.statusText}${detail ? `: ${detail}` : ''}` };
+        }
+        return { success: true, messageId: res.headers.get('x-message-id') || undefined };
       }
+
+      // Direct SendGrid path
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(this.apiKey);
 
       const payload = {
         to: message.to,
-        from: {
-          email: this.fromEmail,
-          name: this.fromName,
-        },
+        from: { email: this.fromEmail, name: this.fromName },
         subject: message.subject,
         html: message.html,
         ...(message.text ? { text: message.text } : {}),
