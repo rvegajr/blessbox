@@ -42,6 +42,13 @@ export class SendGridTransport implements IEmailTransport {
     try {
       const sgMail = require('@sendgrid/mail');
       sgMail.setApiKey(this.apiKey);
+      // Drop-in relay support: when SENDGRID_API_URL is set (e.g. the Noctusoft
+      // relay at https://api.sendgrid.noctusoft.com), all sends are proxied
+      // through it so they egress from a static, allowlisted IP.
+      const apiBaseUrl = getEnv('SENDGRID_API_URL');
+      if (apiBaseUrl) {
+        (sgMail as any).client?.setDefaultRequest?.('baseUrl', apiBaseUrl);
+      }
 
       const payload = {
         to: message.to,

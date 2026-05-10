@@ -292,6 +292,12 @@ export class VerificationService implements IVerificationService {
       try {
         const sgMail = require('@sendgrid/mail');
         sgMail.setApiKey(sendGridApiKey);
+        // Route through Noctusoft relay (or any drop-in) when SENDGRID_API_URL is set.
+        // The relay's static IP is in the SendGrid key's allowlist; Vercel's isn't.
+        const apiBaseUrl = getEnv('SENDGRID_API_URL');
+        if (apiBaseUrl) {
+          (sgMail as any).client?.setDefaultRequest?.('baseUrl', apiBaseUrl);
+        }
 
         const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.org');
         
