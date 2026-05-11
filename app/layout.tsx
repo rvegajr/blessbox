@@ -50,12 +50,10 @@ export default async function RootLayout({
   // Flight payload <script> tags.
   const nonce = (await headers()).get('x-nonce') ?? undefined
   void nonce // available to pass to any <Script nonce={nonce} /> tags
-  // Hard gate: never mount the Traklet dev widget in production, even if
-  // NEXT_PUBLIC_TRAKLET_ENABLED is accidentally set. The PAT lives server-side
-  // in TRAKLET_PAT and is brokered through /api/dev/traklet-proxy.
-  const showTraklet =
-    process.env.NODE_ENV !== 'production' &&
-    process.env.NEXT_PUBLIC_TRAKLET_ENABLED === 'true'
+  // Traklet widget for QA testing. The PAT lives server-side in TRAKLET_PAT
+  // and is brokered through /api/dev/traklet-proxy. Requires explicit opt-in
+  // via NEXT_PUBLIC_TRAKLET_ENABLED to prevent accidental production exposure.
+  const showTraklet = process.env.NEXT_PUBLIC_TRAKLET_ENABLED === 'true'
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} font-sans`}>
