@@ -6,7 +6,6 @@ import './globals.css'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { TutorialSystemLoader } from '@/components/TutorialSystemLoader'
 import { TrakletDevWidget } from '@/components/dev/TrakletDevWidget'
-import { getPublicEnvBoolean } from '@/lib/utils/env'
 
 const geist = Geist({ 
   subsets: ['latin'],
@@ -51,16 +50,7 @@ export default async function RootLayout({
   // Flight payload <script> tags.
   const nonce = (await headers()).get('x-nonce') ?? undefined
   void nonce // available to pass to any <Script nonce={nonce} /> tags
-  // Traklet widget for QA testing. The PAT lives server-side in TRAKLET_PAT
-  // and is brokered through /api/dev/traklet-proxy. Requires explicit opt-in
-  // via NEXT_PUBLIC_TRAKLET_ENABLED to prevent accidental production exposure.
-  // Pass the literal `process.env.NEXT_PUBLIC_*` reference so Next.js inlines
-  // it at build time; the helper sanitizes trailing newlines / quotes that can
-  // sneak in from .env files or Vercel UI paste-ins.
-  const showTraklet = getPublicEnvBoolean(
-    process.env.NEXT_PUBLIC_TRAKLET_ENABLED,
-    'NEXT_PUBLIC_TRAKLET_ENABLED',
-  )
+  const showTraklet = process.env.NEXT_PUBLIC_TRAKLET_ENABLED?.trim() === 'true'
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} font-sans`}>
