@@ -93,3 +93,11 @@ body:
       description: Any other details that might help us fix this?
       placeholder: |
         Example: "This only happens when I'm not logged in" or "It worked yesterday"
+
+  - type: textarea
+    id: jam-recording
+    attributes:
+      label: Jam Recording
+      description: |
+        Record this bug with [Jam](https://jam.dev) — it captures your screen, console logs, and network requests in one click. Paste the link here.
+      placeholder: "📹 https://jam.dev/recordings/..."

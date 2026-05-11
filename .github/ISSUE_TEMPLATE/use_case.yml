@@ -1,0 +1,117 @@
+name: Use Case
+description: Define a user-facing feature or flow that needs to be built or tested
+title: "[Use Case]: "
+labels: ["use-case"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for any feature or user flow — new functionality, a testing spec, or a behaviour that needs to be documented and verified.
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: What does the user want to accomplish? One clear paragraph.
+      placeholder: |
+        Example: "Attendees scan a QR code, land on a branded registration form, fill it in, and submit — no login required."
+    validations:
+      required: true
+
+  - type: textarea
+    id: flow
+    attributes:
+      label: Flow & Routes
+      description: List the pages, API endpoints, and sequence of events involved.
+      placeholder: |
+        - User lands on /register/[orgSlug]/[qrLabel]
+        - Page fetches GET /api/registrations/form-config
+        - User fills form and submits → POST /api/registrations
+        - Redirects to /registration-success?id=...
+    validations:
+      required: true
+
+  - type: textarea
+    id: how-to-test
+    attributes:
+      label: How to Test
+      description: |
+        Step-by-step instructions a tester can follow right now. Include:
+        - Any seed/setup commands
+        - Exact URLs to visit
+        - What to click / fill in
+        - What a passing result looks like
+      placeholder: |
+        **Setup:**
+        ```bash
+        SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \
+          -H 'Content-Type: application/json' \
+          -d '{"seedKey":"my-test"}')
+        echo $SEED | jq '{orgSlug, contactEmail}'
+        ```
+
+        **Steps:**
+        1. Open http://localhost:7777/register/<orgSlug>/main-entrance (incognito)
+        2. Fill in First Name, Last Name, Email
+        3. Click Submit
+        4. ✅ Redirected to /registration-success with a check-in QR code
+
+        **Edge cases:**
+        - Submit with required field empty → expect validation error
+        - Submit to unknown orgSlug → expect "Form unavailable" page
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Checkboxes that must all be ticked before this issue can be closed.
+      placeholder: |
+        - [ ] Form loads within 2 seconds on mobile
+        - [ ] Required field validation runs before submit
+        - [ ] Successful submit redirects to /registration-success
+        - [ ] Works without login or cookies
+      value: |
+        - [ ]
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: input
+    id: primary-route
+    attributes:
+      label: Primary Route(s)
+      description: The main URL(s) this use case lives at.
+      placeholder: "/register/[orgSlug]/[qrLabel], /api/registrations"
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the app does this belong to?
+      options:
+        - Auth & Login
+        - Onboarding
+        - Public Registration
+        - Check-In
+        - Dashboard
+        - QR Codes
+        - Registrations
+        - Classes & Participants
+        - Subscriptions & Payments
+        - Admin
+        - System / Ops
+        - Marketing / Landing
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: jam-recording
+    attributes:
+      label: Bug Recording
+      description: |
+        Found a bug while testing this? Record it with [Jam](https://jam.dev) — it captures your screen, console logs, and network requests automatically. Paste the link here.
+      placeholder: "📹 https://jam.dev/recordings/..."
