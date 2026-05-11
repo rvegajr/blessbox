@@ -35,7 +35,9 @@ const nextConfig = {
   },
   // Default port configuration
   env: {
-    PORT: '7777'
+    PORT: '7777',
+    // Traklet QA widget (set at build time, overridable via NEXT_PUBLIC_TRAKLET_ENABLED env var)
+    NEXT_PUBLIC_TRAKLET_ENABLED: process.env.NEXT_PUBLIC_TRAKLET_ENABLED || 'false'
   },
   // Exclude old Astro pages directory from Next.js build
   pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
