@@ -1,39 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { seedOrg, IS_PRODUCTION, HAS_PROD_SEED } from './_helpers/auth';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:7777';
-const TEST_ENV = process.env.TEST_ENV || 'local';
-const IS_PRODUCTION = TEST_ENV === 'production' || /blessbox\.org/i.test(BASE_URL);
-
-const PROD_TEST_SEED_SECRET = process.env.PROD_TEST_SEED_SECRET || '';
-const HAS_PROD_SEED = !!PROD_TEST_SEED_SECRET;
-
-async function seedOrg(request: any, seedKey: string) {
-  if (IS_PRODUCTION) {
-    if (!HAS_PROD_SEED) throw new Error('Production seeding requires PROD_TEST_SEED_SECRET');
-    const resp = await request.post(`${BASE_URL}/api/test/seed-prod`, {
-      headers: { 'x-qa-seed-token': PROD_TEST_SEED_SECRET },
-      data: { seedKey },
-    });
-    expect(resp.ok()).toBeTruthy();
-    const seed = await resp.json();
-    expect(seed.success).toBe(true);
-    return seed;
-  }
-
-  const resp = await request.post(`${BASE_URL}/api/test/seed`, { data: { seedKey } });
-  expect(resp.ok()).toBeTruthy();
-  const seed = await resp.json();
-  expect(seed.success).toBe(true);
-  return seed;
-}
 
 test.describe('Public registration flow (seeded)', () => {
-  test('User can load dynamic form and submit registration', async ({ page, request }) => {
-    // Seed
-    const seed = await seedOrg(request, `reg-${Date.now()}`);
+  test('User can load dynamic form and submit registration', async ({ page }) => {
+    test.skip(IS_PRODUCTION && !HAS_PROD_SEED, 'Requires PROD_TEST_SEED_SECRET');
+
+    // Seed using shared helper — normalizes PROD_TEST_SEED_SECRET to avoid literal \n mismatch
+    const seed = await seedOrg(page, `reg-${Date.now()}`);
 
     const orgSlug = seed.orgSlug;
-    const qrLabel = 'main-entrance';
+    const qrLabel = seed.qrCodes?.[0]?.label || 'main-entrance';
 
     await page.goto(`${BASE_URL}/register/${orgSlug}/${qrLabel}`);
     await page.waitForLoadState('networkidle');
