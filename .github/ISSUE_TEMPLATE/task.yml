@@ -1,0 +1,72 @@
+name: Task
+description: A technical task, chore, or improvement that isn't a bug or a new feature
+title: "[Task]: "
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for technical work — refactoring, infrastructure, tooling, documentation, or anything that isn't a bug fix or new user-facing feature.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs to be done?
+      description: Clear description of the work. Include the why if it isn't obvious.
+      placeholder: |
+        Example: "Migrate the registration export endpoint from CSV-only to support both CSV and PDF. PDF is needed because churches print attendance sheets and CSV doesn't format well for print."
+    validations:
+      required: true
+
+  - type: textarea
+    id: how-to-verify
+    attributes:
+      label: How to Verify
+      description: How will you know this task is done correctly?
+      placeholder: |
+        - [ ] Running `npm run build` produces no TypeScript errors
+        - [ ] GET /api/registrations/export?format=pdf returns a valid PDF
+        - [ ] GET /api/registrations/export?format=csv still works as before
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Auth & Login
+        - Onboarding
+        - Public Registration
+        - Check-In
+        - Dashboard
+        - QR Codes
+        - Registrations
+        - Classes & Participants
+        - Subscriptions & Payments
+        - Admin
+        - System / Ops
+        - Testing / QA
+        - Tooling / CI
+        - Documentation
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low — nice to have
+        - Medium — needed soon
+        - High — blocking something
+        - Critical — blocking release
+      default: 1
+
+  - type: textarea
+    id: jam-recording
+    attributes:
+      label: Bug Recording
+      description: If this task was triggered by a recorded bug, paste the Jam link here.
+      placeholder: "📹 https://jam.dev/recordings/..."
