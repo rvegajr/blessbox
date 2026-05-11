@@ -135,3 +135,20 @@ export async function seedOrg(page: Page, seedKey: string): Promise<any> {
   expect(data.success).toBe(true);
   return data;
 }
+
+/**
+ * Log in as super-admin using password authentication.
+ * Works in both dev and production (requires SUPERADMIN_EMAIL + SUPERADMIN_PASSWORD or SUPERADMIN_PASSWORD_HASH).
+ * Uses /admin-login page and /api/auth/admin-login endpoint.
+ */
+export async function loginAsSuperAdminWithPassword(
+  page: Page,
+  email: string,
+  password: string
+): Promise<void> {
+  await page.goto(`${BASE_URL}/admin-login`);
+  await page.getByTestId('input-admin-email').fill(email);
+  await page.getByTestId('input-admin-password').fill(password);
+  await page.getByTestId('btn-submit-admin-login').click();
+  await page.waitForURL(`${BASE_URL}/admin`, { timeout: 5000 });
+}
