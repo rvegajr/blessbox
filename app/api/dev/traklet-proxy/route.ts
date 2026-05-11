@@ -2,28 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/utils/env';
 
 /**
- * Dev-only proxy for the Traklet widget.
+ * Proxy for the Traklet widget (QA testing tool).
  *
  * The Traklet GitHub adapter is configured client-side with `baseUrl` pointing
  * to this route. We strip the placeholder Authorization header sent by the
  * widget and re-attach the server-side `TRAKLET_PAT` before forwarding to
  * `https://api.github.com`. The PAT is therefore never exposed to the browser.
  *
- * Hard-gated to non-production: even if `TRAKLET_PAT` is accidentally set in
- * a production environment this handler returns 404.
+ * Available in production when NEXT_PUBLIC_TRAKLET_ENABLED and TRAKLET_PAT are
+ * both explicitly set, enabling QA testing on live production site.
  */
 
 const GITHUB_API = 'https://api.github.com';
 
-function isDev(): boolean {
-  return process.env.NODE_ENV !== 'production';
-}
-
 async function handle(request: NextRequest, method: string): Promise<Response> {
-  if (!isDev()) {
-    return new NextResponse('Not Found', { status: 404 });
-  }
-
   const token = getEnv('TRAKLET_PAT');
   if (!token) {
     return NextResponse.json(
