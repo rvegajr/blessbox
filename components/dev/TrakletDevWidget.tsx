@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { getPublicEnvBoolean } from '@/lib/utils/env';
 
 /**
  * Traklet QA testing widget with top-right positioning.
@@ -7,6 +8,10 @@ import { useEffect, useRef, useState } from 'react';
  * The GitHub PAT is NEVER exposed to the browser. Instead, we point the
  * Traklet GitHub adapter at our server-side proxy (`/api/dev/traklet-proxy`)
  * which attaches the real `TRAKLET_PAT` before forwarding to api.github.com.
+ *
+ * Env-var read is routed through `getPublicEnvBoolean` so trailing newlines
+ * or surrounding quotes from .env files / Vercel UI pastes don't break the
+ * boolean comparison silently. Mismatches are logged via `[env]` warnings.
  */
 export function TrakletDevWidget() {
   const instanceRef = useRef<{ destroy: () => void } | null>(null);
@@ -14,8 +19,15 @@ export function TrakletDevWidget() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Pass the literal `process.env.NEXT_PUBLIC_*` so Next.js inlines it at
+  // build time; the helper takes care of sanitization at runtime.
+  const enabled = getPublicEnvBoolean(
+    process.env.NEXT_PUBLIC_TRAKLET_ENABLED,
+    'NEXT_PUBLIC_TRAKLET_ENABLED',
+  );
+
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_TRAKLET_ENABLED !== 'true' || initRef.current) {
+    if (!enabled || initRef.current) {
       setIsLoading(false);
       return;
     }
@@ -65,10 +77,9 @@ export function TrakletDevWidget() {
       instanceRef.current = null;
       initRef.current = false;
     };
-  }, []);
+  }, [enabled]);
 
-  // Show visual indicator that Traklet is enabled
-  if (process.env.NEXT_PUBLIC_TRAKLET_ENABLED === 'true') {
+  if (enabled) {
     return (
       <div
         style={{
