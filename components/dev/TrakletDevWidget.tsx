@@ -2,27 +2,22 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Traklet QA testing widget with top-right positioning.
+ * Traklet QA testing widget (v0.1.7) with top-right positioning.
  * GitHub PAT is proxied server-side via /api/dev/traklet-proxy.
+ * Renders nothing while loading — Traklet mounts its own UI once ready.
  */
 export function TrakletDevWidget() {
   const instanceRef = useRef<{ destroy: () => void } | null>(null);
   const initRef = useRef(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const enabled = process.env.NEXT_PUBLIC_TRAKLET_ENABLED?.trim() === 'true';
 
   useEffect(() => {
-    if (!enabled || initRef.current) {
-      setIsLoading(false);
-      return;
-    }
+    if (!enabled || initRef.current) return;
     initRef.current = true;
 
-    // Resolve an absolute baseUrl (Traklet's zod schema requires .url()).
-    const origin =
-      typeof window !== 'undefined' ? window.location.origin : '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const proxyBaseUrl = `${origin}/api/dev/traklet-proxy`;
 
     (async () => {
@@ -30,16 +25,14 @@ export function TrakletDevWidget() {
         const { Traklet } = await import('traklet');
         instanceRef.current = await Traklet.init({
           adapter: 'github',
-          // Token is required by Traklet's validator but never sent to GitHub:
-          // the proxy strips this Authorization header and substitutes the
-          // server-side TRAKLET_PAT.
+          // Token required by Traklet schema but never sent to GitHub —
+          // the proxy strips this header and substitutes the server-side TRAKLET_PAT.
           token: 'proxy',
           baseUrl: proxyBaseUrl,
           projects: [{ id: 'rvegajr/blessbox', name: 'BlessBox' }],
         });
-        setIsLoading(false);
-        
-        // Position Traklet widget in top-right corner
+
+        // Pin Traklet's self-mounted widget to the top-right corner.
         if (typeof document !== 'undefined') {
           const style = document.createElement('style');
           style.textContent = `
@@ -55,7 +48,6 @@ export function TrakletDevWidget() {
       } catch (err) {
         console.error('[Traklet] Failed to load:', err);
         setError(err instanceof Error ? err.message : 'Failed to load');
-        setIsLoading(false);
       }
     })();
 
@@ -66,45 +58,25 @@ export function TrakletDevWidget() {
     };
   }, [enabled]);
 
-  if (enabled) {
+  // While loading: render nothing visible — Traklet mounts its own widget once ready.
+  // Only surface an error if something actually broke (dev console also gets it).
+  if (enabled && error) {
     return (
       <div
         style={{
           position: 'fixed',
-          top: '20px',
+          bottom: '20px',
           right: '20px',
           zIndex: 9998,
-          pointerEvents: 'none',
+          padding: '8px 12px',
+          background: '#ef4444',
+          color: 'white',
+          borderRadius: '6px',
+          fontSize: '12px',
+          fontWeight: 500,
         }}
       >
-        {isLoading && (
-          <div
-            style={{
-              padding: '8px 12px',
-              background: '#3b82f6',
-              color: 'white',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: 500,
-            }}
-          >
-            Loading QA Tools...
-          </div>
-        )}
-        {error && (
-          <div
-            style={{
-              padding: '8px 12px',
-              background: '#ef4444',
-              color: 'white',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: 500,
-            }}
-          >
-            QA Tools: {error}
-          </div>
-        )}
+        Traklet failed to load: {error}
       </div>
     );
   }
