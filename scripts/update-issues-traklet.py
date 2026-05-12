@@ -31,14 +31,14 @@ ISSUES = {
 
 ```bash
 # Dev server must be running
-npm run dev  # http://localhost:7777
+npm run dev  # https://www.blessbox.org
 ```
 
 - No seed required — use any email address
 - In dev mode the verification code is printed to the server console (no real email sent)
 - For production testing: use a real deliverable email address''',
             steps=[
-                'Go to http://localhost:7777/login',
+                'Go to https://www.blessbox.org/login',
                 'Enter any email address (e.g. `qa@example.com`)',
                 'Click **Send Code**',
                 'In dev mode: copy the 6-digit code from the server console output',
@@ -46,7 +46,7 @@ npm run dev  # http://localhost:7777
                 'Observe the redirect destination',
                 '**Edge case — wrong code:** Enter an incorrect code 5 times and observe the lockout response',
                 '**Edge case — expired code:** Wait 10+ minutes then submit the valid code and observe the expiry error',
-                '**API smoke test (no browser):**\n```bash\ncurl -s -X POST http://localhost:7777/api/auth/send-code \\\n  -H \'Content-Type: application/json\' \\\n  -d \'{"email":"qa@example.com"}\' | jq .\n```',
+                '**API smoke test (no browser):**\n```bash\ncurl -s -X POST https://www.blessbox.org/api/auth/send-code \\\n  -H \'Content-Type: application/json\' \\\n  -d \'{"email":"qa@example.com"}\' | jq .\n```',
             ],
             expected=[
                 'Code delivered within 30 seconds (or shown in console in dev)',
@@ -65,13 +65,13 @@ npm run dev  # http://localhost:7777
 
 ```bash
 # Seed a fresh user with no org
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"onboard-test"}')
 echo $SEED | jq '{orgSlug, contactEmail}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Test auth cookie: `bb_test_auth=1; bb_test_email=<contactEmail>`
 - Or log in with a fresh email that has no organization''',
             steps=[
@@ -101,22 +101,22 @@ echo $SEED | jq '{orgSlug, contactEmail}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"form-builder-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard/form-builder''',
+- Navigate to: https://www.blessbox.org/dashboard/form-builder''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/form-builder',
+                'Log in and navigate to https://www.blessbox.org/dashboard/form-builder',
                 'Click **Add Field** and add a Text field with label "T-Shirt Size"',
                 'Click **Add Field** again and add a Dropdown field with options: S, M, L, XL',
                 'Drag the Dropdown field above the Text field to reorder',
                 'Click **Save**',
-                'Navigate to the public registration page: http://localhost:7777/register/<orgSlug>/<qrLabel>',
+                'Navigate to the public registration page: https://www.blessbox.org/register/<orgSlug>/<qrLabel>',
                 'Verify the custom fields appear on the registration form',
                 '**Edge case:** Delete one custom field, save, and verify it no longer appears on the public form',
                 '**Edge case:** Add a Required field and verify the public form enforces it',
@@ -138,17 +138,17 @@ echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"qr-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, qrCodes}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard/qr-codes''',
+- Navigate to: https://www.blessbox.org/dashboard/qr-codes''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/qr-codes',
+                'Log in and navigate to https://www.blessbox.org/dashboard/qr-codes',
                 'Click **Create QR Code** and enter label "main-entrance"',
                 'Click **Save** and verify the new QR appears in the list',
                 'Click the QR code image to enlarge / download it',
@@ -173,18 +173,18 @@ echo $SEED | jq '{orgSlug, contactEmail, qrCodes}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"reg-flow-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, qrCodes}'
 # Use qrCodes[0].label for <qrLabel>
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - **No auth cookies needed** — this is a public page
-- URL pattern: http://localhost:7777/register/<orgSlug>/<qrLabel>''',
+- URL pattern: https://www.blessbox.org/register/<orgSlug>/<qrLabel>''',
             steps=[
-                'Open http://localhost:7777/register/<orgSlug>/<qrLabel> in an incognito window (no cookies)',
+                'Open https://www.blessbox.org/register/<orgSlug>/<qrLabel> in an incognito window (no cookies)',
                 'Verify the registration form loads with the org\'s branding and custom fields',
                 'Fill in First Name: "Playwright", Last Name: "User", Email: unique test email',
                 'Fill in any custom fields shown',
@@ -211,17 +211,17 @@ echo $SEED | jq '{orgSlug, contactEmail, qrCodes}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"success-page-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, qrCodes}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Complete a registration via /register/<orgSlug>/<qrLabel> first
 - Or navigate directly to /registration-success?token=<token> if you have a token''',
             steps=[
-                'Complete a registration at http://localhost:7777/register/<orgSlug>/<qrLabel>',
+                'Complete a registration at https://www.blessbox.org/register/<orgSlug>/<qrLabel>',
                 'Observe the redirect to /registration-success',
                 'Verify a personalized check-in QR code is displayed on the page',
                 'Verify the QR encodes a /check-in/<token> URL',
@@ -245,17 +245,17 @@ echo $SEED | jq '{orgSlug, contactEmail, qrCodes}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"checkin-staff-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard/check-in''',
+- Navigate to: https://www.blessbox.org/dashboard/check-in''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/check-in',
+                'Log in and navigate to https://www.blessbox.org/dashboard/check-in',
                 'Verify the registrant list loads with at least one attendee from the seed',
                 'Use the search box to search for "Playwright" — verify filtered results',
                 'Click on a registrant row to open their detail view',
@@ -280,22 +280,22 @@ echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"token-checkin-test"}')
 echo $SEED | jq '{orgSlug, contactEmail}'
 # Then complete a registration to get a check-in token
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Complete a registration at /register/<orgSlug>/<qrLabel> to obtain a token
 - Token is embedded in the QR shown on the success page''',
             steps=[
-                'Complete a registration at http://localhost:7777/register/<orgSlug>/<qrLabel>',
+                'Complete a registration at https://www.blessbox.org/register/<orgSlug>/<qrLabel>',
                 'On the success page, note the /check-in/<token> URL from the QR code',
-                'Open http://localhost:7777/check-in/<token> in a new incognito tab',
+                'Open https://www.blessbox.org/check-in/<token> in a new incognito tab',
                 'Verify the page shows a check-in confirmation with the attendee\'s name',
-                'Check the staff dashboard (http://localhost:7777/dashboard/check-in) and verify the attendee is now marked as checked in',
+                'Check the staff dashboard (https://www.blessbox.org/dashboard/check-in) and verify the attendee is now marked as checked in',
                 '**Edge case:** Open the same /check-in/<token> URL a second time and verify it handles the duplicate gracefully',
                 '**Edge case:** Navigate to /check-in/invalid-token and verify a graceful error page',
             ],
@@ -314,17 +314,17 @@ echo $SEED | jq '{orgSlug, contactEmail}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"dashboard-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard''',
+- Navigate to: https://www.blessbox.org/dashboard''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard',
+                'Log in and navigate to https://www.blessbox.org/dashboard',
                 'Verify the overview cards load: total registrations, check-ins, QR codes, etc.',
                 'Verify recent activity feed shows the seeded registration',
                 'Click a stat card (e.g. "Registrations") and verify it navigates to the detail view',
@@ -346,17 +346,17 @@ echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"reg-mgmt-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard/registrations''',
+- Navigate to: https://www.blessbox.org/dashboard/registrations''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/registrations',
+                'Log in and navigate to https://www.blessbox.org/dashboard/registrations',
                 'Verify the registrations table loads with the seeded attendee',
                 'Click the seeded attendee row to open the detail view',
                 'Verify all fields (name, email, custom fields, check-in status) are shown',
@@ -382,21 +382,21 @@ echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 
 ```bash
 # Create two orgs with the same email
-SEED1=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED1=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"multi-org-1"}')
-SEED2=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED2=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"multi-org-2","contactEmail":"'$(echo $SEED1 | jq -r .contactEmail)'"}')
 echo $SEED1 | jq '{orgSlug, contactEmail}'
 echo $SEED2 | jq '{orgSlug}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail from SEED1>`''',
             steps=[
                 'Log in as a user belonging to two organizations',
-                'Navigate to http://localhost:7777/dashboard',
+                'Navigate to https://www.blessbox.org/dashboard',
                 'Locate the org switcher (top nav or sidebar) and verify both orgs are listed',
                 'Click the second organization name to switch',
                 'Verify the dashboard data changes to reflect org 2\'s registrations',
@@ -418,18 +418,18 @@ echo $SEED2 | jq '{orgSlug}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"subscription-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
 - Stripe test mode must be configured (STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY)
 - Test card: 4242 4242 4242 4242, any future expiry, any CVC''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/subscription',
+                'Log in and navigate to https://www.blessbox.org/dashboard/subscription',
                 'Verify the current plan is shown (free/trial)',
                 'Click **Upgrade** or **Choose Plan**',
                 'Select a paid plan and click **Checkout**',
@@ -455,14 +455,14 @@ echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"coupon-checkout-test"}')
 echo $SEED | jq '{orgSlug, contactEmail}'
 # Note the coupon code returned or create one via admin panel first
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
 - A valid coupon code must exist (create via /dashboard/coupons or seed)''',
             steps=[
@@ -490,17 +490,17 @@ echo $SEED | jq '{orgSlug, contactEmail}'
             objective='A super-admin user can access the admin panel, view system-wide statistics across all organizations, and manage individual organizations (view, suspend, delete).',
             prerequisites='''## Prerequisites
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Super-admin account required — check `.env.local` for `SUPER_ADMIN_EMAIL` or set `bb_test_auth=1; bb_test_email=<super-admin-email>`
 - At least 2 organizations must exist (run seed twice with different keys)
 
 ```bash
-curl -s -X POST http://localhost:7777/api/test/seed -H 'Content-Type: application/json' -d '{"seedKey":"sa-org-1"}' | jq .orgSlug
-curl -s -X POST http://localhost:7777/api/test/seed -H 'Content-Type: application/json' -d '{"seedKey":"sa-org-2"}' | jq .orgSlug
+curl -s -X POST https://www.blessbox.org/api/test/seed -H 'Content-Type: application/json' -d '{"seedKey":"sa-org-1"}' | jq .orgSlug
+curl -s -X POST https://www.blessbox.org/api/test/seed -H 'Content-Type: application/json' -d '{"seedKey":"sa-org-2"}' | jq .orgSlug
 ```''',
             steps=[
                 'Log in as a super-admin user',
-                'Navigate to http://localhost:7777/admin (or /dashboard/admin)',
+                'Navigate to https://www.blessbox.org/admin (or /dashboard/admin)',
                 'Verify system-wide stats are shown: total orgs, total registrations, total users',
                 'Click into an individual organization to view its details',
                 'Verify org detail shows registration count, plan, and admin users',
@@ -521,17 +521,17 @@ curl -s -X POST http://localhost:7777/api/test/seed -H 'Content-Type: applicatio
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"coupon-admin-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard/coupons''',
+- Navigate to: https://www.blessbox.org/dashboard/coupons''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/coupons',
+                'Log in and navigate to https://www.blessbox.org/dashboard/coupons',
                 'Click **Create Coupon**',
                 'Fill in: Code "SAVE20", Type "Percentage", Amount "20", Max Uses "100"',
                 'Set expiry date to 30 days from today and click **Save**',
@@ -558,17 +558,17 @@ echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
             prerequisites='''## Prerequisites
 
 ```bash
-SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \\
+SEED=$(curl -s -X POST https://www.blessbox.org/api/test/seed \\
   -H 'Content-Type: application/json' \\
   -d '{"seedKey":"classes-test"}')
 echo $SEED | jq '{orgSlug, contactEmail, classId, organizationId}'
 ```
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
-- Navigate to: http://localhost:7777/dashboard/classes''',
+- Navigate to: https://www.blessbox.org/dashboard/classes''',
             steps=[
-                'Log in and navigate to http://localhost:7777/dashboard/classes',
+                'Log in and navigate to https://www.blessbox.org/dashboard/classes',
                 'Verify the seeded class appears in the list',
                 'Click the class to open its detail/enrollment view',
                 'Verify the participant list shows seeded enrollments',
@@ -594,16 +594,16 @@ echo $SEED | jq '{orgSlug, contactEmail, classId, organizationId}'
             objective='The system exposes a health endpoint and an admin can view a diagnostics page showing service status, environment config, and recent error counts.',
             prerequisites='''## Prerequisites
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Set cookies: `bb_test_auth=1; bb_test_email=<admin-email>` (super-admin preferred)
 
 ```bash
 # Quick API health check
-curl -s http://localhost:7777/api/health | jq .
+curl -s https://www.blessbox.org/api/health | jq .
 ```''',
             steps=[
-                'Run: `curl -s http://localhost:7777/api/health | jq .` and verify `{"status":"ok"}` (or similar)',
-                'Log in as admin and navigate to http://localhost:7777/dashboard/diagnostics (if available)',
+                'Run: `curl -s https://www.blessbox.org/api/health | jq .` and verify `{"status":"ok"}` (or similar)',
+                'Log in as admin and navigate to https://www.blessbox.org/dashboard/diagnostics (if available)',
                 'Verify service statuses are shown: database, email, storage',
                 'Verify environment indicators show expected values (region, node version, etc.)',
                 '**Edge case:** Check the health endpoint response time is under 500ms',
@@ -626,15 +626,15 @@ curl -s http://localhost:7777/api/health | jq .
 
 - `NEXT_PUBLIC_TRAKLET_ENABLED=true` must be set in `.env.local`
 - `TRAKLET_PAT` must be set (GitHub PAT with repo read/write access)
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - Optional: Install [Jam.dev browser extension](https://jam.dev) for recording
 
 ```bash
 # Verify the proxy endpoint is working
-curl -s http://localhost:7777/api/dev/traklet-proxy/repos/rvegajr/blessbox/issues | jq '.[0].title'
+curl -s https://www.blessbox.org/api/dev/traklet-proxy/repos/rvegajr/blessbox/issues | jq '.[0].title'
 ```''',
             steps=[
-                'Navigate to http://localhost:7777/dashboard',
+                'Navigate to https://www.blessbox.org/dashboard',
                 'Verify the Traklet QA widget appears in the top-right corner of the screen',
                 'Click the widget icon to open it',
                 'Verify the issue list loads and shows BlessBox use-case issues',
@@ -660,11 +660,11 @@ curl -s http://localhost:7777/api/dev/traklet-proxy/repos/rvegajr/blessbox/issue
             objective='An unauthenticated visitor lands on blessbox.org, reads the product value proposition, clicks a CTA, and is taken to the signup/login flow.',
             prerequisites='''## Prerequisites
 
-- Dev server running: `npm run dev` (http://localhost:7777)
+- Dev server running: `npm run dev` (https://www.blessbox.org)
 - **No auth cookies** — test in incognito mode
 - Production check: https://www.blessbox.org''',
             steps=[
-                'Open http://localhost:7777 in an incognito window (no cookies)',
+                'Open https://www.blessbox.org in an incognito window (no cookies)',
                 'Verify the landing page loads with hero section and product description',
                 'Scroll through the page and verify all sections render (features, pricing, CTA)',
                 'Click the primary CTA button (e.g. "Get Started" or "Sign Up Free")',
