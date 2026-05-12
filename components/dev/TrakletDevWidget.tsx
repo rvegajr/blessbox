@@ -2,9 +2,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Traklet QA testing widget (v0.1.7) with top-right positioning.
+ * Traklet QA testing widget (v0.1.7) — top-right, silent load.
  * GitHub PAT is proxied server-side via /api/dev/traklet-proxy.
- * Renders nothing while loading — Traklet mounts its own UI once ready.
+ * Renders nothing while loading; Traklet mounts its own UI once ready.
  */
 export function TrakletDevWidget() {
   const instanceRef = useRef<{ destroy: () => void } | null>(null);
@@ -30,21 +30,8 @@ export function TrakletDevWidget() {
           token: 'proxy',
           baseUrl: proxyBaseUrl,
           projects: [{ id: 'rvegajr/blessbox', name: 'BlessBox' }],
+          position: 'top-right',
         });
-
-        // Pin Traklet's self-mounted widget to the top-right corner.
-        if (typeof document !== 'undefined') {
-          const style = document.createElement('style');
-          style.textContent = `
-            [data-traklet-root] {
-              position: fixed !important;
-              top: 20px !important;
-              right: 20px !important;
-              z-index: 9999 !important;
-            }
-          `;
-          document.head.appendChild(style);
-        }
       } catch (err) {
         console.error('[Traklet] Failed to load:', err);
         setError(err instanceof Error ? err.message : 'Failed to load');
@@ -58,8 +45,7 @@ export function TrakletDevWidget() {
     };
   }, [enabled]);
 
-  // While loading: render nothing visible — Traklet mounts its own widget once ready.
-  // Only surface an error if something actually broke (dev console also gets it).
+  // Only surface an error if init threw — bottom-right so it doesn't overlap the widget.
   if (enabled && error) {
     return (
       <div

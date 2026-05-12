@@ -1,117 +1,118 @@
-name: Use Case
-description: Define a user-facing feature or flow that needs to be built or tested
+name: Use Case / Test Case
+description: Define a user-facing feature or flow — Traklet will parse the sections for guided testing
 title: "[Use Case]: "
 labels: ["use-case"]
 body:
   - type: markdown
     attributes:
       value: |
-        Use this template for any feature or user flow — new functionality, a testing spec, or a behaviour that needs to be documented and verified.
+        This template produces a **Traklet-structured** issue body. The hidden markers let the Traklet widget present each section as a guided tester checklist. Fill in every section — Traklet uses all of them.
 
   - type: textarea
-    id: use-case
+    id: objective
     attributes:
-      label: Use Case
-      description: What does the user want to accomplish? One clear paragraph.
-      placeholder: |
-        Example: "Attendees scan a QR code, land on a branded registration form, fill it in, and submit — no login required."
+      label: Objective
+      description: What does this test case verify? One clear sentence.
+      placeholder: "Attendees can scan a QR code, fill in the registration form, and receive a check-in QR on the success page — no login required."
+      value: |
+        <span style="display:none">{traklet:section:objective}</span>
+        ## Objective
+        _Describe what this test case verifies._
+        <span style="display:none">{/traklet:section:objective}</span>
     validations:
       required: true
 
   - type: textarea
-    id: flow
+    id: prerequisites
     attributes:
-      label: Flow & Routes
-      description: List the pages, API endpoints, and sequence of events involved.
-      placeholder: |
-        - User lands on /register/[orgSlug]/[qrLabel]
-        - Page fetches GET /api/registrations/form-config
-        - User fills form and submits → POST /api/registrations
-        - Redirects to /registration-success?id=...
-    validations:
-      required: true
+      label: Prerequisites
+      description: What needs to be set up before testing? Include seed commands.
+      value: |
+        <span style="display:none">{traklet:section:prerequisites}</span>
+        ## Prerequisites
 
-  - type: textarea
-    id: how-to-test
-    attributes:
-      label: How to Test
-      description: |
-        Step-by-step instructions a tester can follow right now. Include:
-        - Any seed/setup commands
-        - Exact URLs to visit
-        - What to click / fill in
-        - What a passing result looks like
-      placeholder: |
-        **Setup:**
         ```bash
+        # Seed a test org (creates org, QR codes, and a sample registration)
         SEED=$(curl -s -X POST http://localhost:7777/api/test/seed \
           -H 'Content-Type: application/json' \
           -d '{"seedKey":"my-test"}')
-        echo $SEED | jq '{orgSlug, contactEmail}'
+        echo $SEED | jq '{orgSlug, contactEmail, organizationId}'
         ```
 
-        **Steps:**
-        1. Open http://localhost:7777/register/<orgSlug>/main-entrance (incognito)
-        2. Fill in First Name, Last Name, Email
-        3. Click Submit
-        4. ✅ Redirected to /registration-success with a check-in QR code
-
-        **Edge cases:**
-        - Submit with required field empty → expect validation error
-        - Submit to unknown orgSlug → expect "Form unavailable" page
+        - Dev server running: `npm run dev` (http://localhost:7777)
+        - Test auth cookies: `bb_test_auth=1; bb_test_email=<contactEmail>`
+        <span style="display:none">{/traklet:section:prerequisites}</span>
     validations:
       required: true
 
   - type: textarea
-    id: acceptance-criteria
+    id: steps
     attributes:
-      label: Acceptance Criteria
-      description: Checkboxes that must all be ticked before this issue can be closed.
-      placeholder: |
-        - [ ] Form loads within 2 seconds on mobile
-        - [ ] Required field validation runs before submit
-        - [ ] Successful submit redirects to /registration-success
-        - [ ] Works without login or cookies
+      label: Steps
+      description: Exact numbered steps a tester follows. Include URLs and what to click.
       value: |
-        - [ ]
-        - [ ]
-        - [ ]
-    validations:
-      required: true
+        <span style="display:none">{traklet:section:steps}</span>
+        ## Steps
 
-  - type: input
-    id: primary-route
-    attributes:
-      label: Primary Route(s)
-      description: The main URL(s) this use case lives at.
-      placeholder: "/register/[orgSlug]/[qrLabel], /api/registrations"
-
-  - type: dropdown
-    id: area
-    attributes:
-      label: Area
-      description: Which part of the app does this belong to?
-      options:
-        - Auth & Login
-        - Onboarding
-        - Public Registration
-        - Check-In
-        - Dashboard
-        - QR Codes
-        - Registrations
-        - Classes & Participants
-        - Subscriptions & Payments
-        - Admin
-        - System / Ops
-        - Marketing / Landing
-      default: 0
+        1. _Step 1_
+        2. _Step 2_
+        3. _Step 3_
+        <span style="display:none">{/traklet:section:steps}</span>
     validations:
       required: true
 
   - type: textarea
-    id: jam-recording
+    id: expected-result
     attributes:
-      label: Bug Recording
-      description: |
-        Found a bug while testing this? Record it with [Jam](https://jam.dev) — it captures your screen, console logs, and network requests automatically. Paste the link here.
-      placeholder: "📹 https://jam.dev/recordings/..."
+      label: Expected Result
+      description: What should happen when the test passes?
+      value: |
+        <span style="display:none">{traklet:section:expected-result}</span>
+        ## Expected Result
+
+        - ✅ _Expected outcome 1_
+        - ✅ _Expected outcome 2_
+        <span style="display:none">{/traklet:section:expected-result}</span>
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-result
+    attributes:
+      label: Actual Result
+      description: Fill this in when you run the test.
+      value: |
+        <span style="display:none">{traklet:section:actual-result}</span>
+        ## Actual Result
+        _Not yet tested._
+        <span style="display:none">{/traklet:section:actual-result}</span>
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Paste a Jam.dev recording link or drag-drop a screenshot here after testing.
+      value: |
+        <span style="display:none">{traklet:section:evidence}</span>
+        ## Evidence
+        _No recordings or screenshots attached yet._
+
+        > **Tip:** Use [Jam.dev](https://jam.dev) to record your testing session, then paste the link here.
+        <span style="display:none">{/traklet:section:evidence}</span>
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Any additional context — related issues, known limitations, environment quirks.
+      value: |
+        <span style="display:none">{traklet:section:diagnostics}</span>
+        ## Diagnostics
+        _Diagnostics will be auto-attached when submitting results via Traklet._
+        <span style="display:none">{/traklet:section:diagnostics}</span>
+
+        <span style="display:none">{traklet:section:notes}</span>
+        ## Notes
+        _Routes involved:_
+        _Area:_
+        <span style="display:none">{/traklet:section:notes}</span>
