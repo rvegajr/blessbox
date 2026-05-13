@@ -24,13 +24,13 @@ export async function GET(
   try {
     const db = getDbClient();
 
-    // Fetch registration by check-in token
+    // Fetch registration by check-in token, including form field definitions for label display
     const result = await db.execute({
       sql: `
-        SELECT 
+        SELECT
           r.id, r.registration_data, r.registered_at, r.check_in_token,
           r.checked_in_at, r.checked_in_by, r.token_status,
-          qr.name as qr_set_name,
+          qr.name as qr_set_name, qr.form_fields,
           o.name as organization_name, o.event_name
         FROM registrations r
         JOIN qr_code_sets qr ON r.qr_code_set_id = qr.id
@@ -60,12 +60,20 @@ export async function GET(
       tokenStatus: row.token_status,
     };
 
+    let formFields: any[] | undefined;
+    try {
+      formFields = row.form_fields ? JSON.parse(row.form_fields) : undefined;
+    } catch {
+      formFields = undefined;
+    }
+
     return NextResponse.json({
       success: true,
       registration,
       organizationName: row.organization_name,
       eventName: row.event_name,
-      qrSetName: row.qr_set_name
+      qrSetName: row.qr_set_name,
+      formFields,
     });
 
   } catch (error) {

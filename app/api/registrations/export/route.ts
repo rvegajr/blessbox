@@ -3,6 +3,8 @@ import { getServerSession } from '@/lib/auth-helper';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { RegistrationService } from '@/lib/services/RegistrationService';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { getDbClient } from '@/lib/db';
+import { parseRegistrationData, type FormField } from '@/lib/utils/registration-field-parser';
 
 const registrationService = new RegistrationService();
 
@@ -61,8 +63,24 @@ export async function GET(request: NextRequest) {
     // Org is always derived from the session — never trust client-supplied orgId.
     const registrations = await registrationService.listRegistrations(organization.id, {});
 
+    // Fetch form field definitions for this org so exports use custom labels, not field IDs.
+    let formFields: FormField[] | undefined;
+    try {
+      const db = getDbClient();
+      const qrSetResult = await db.execute({
+        sql: `SELECT form_fields FROM qr_code_sets WHERE organization_id = ? AND is_active = 1 LIMIT 1`,
+        args: [organization.id],
+      });
+      if (qrSetResult.rows.length > 0) {
+        const raw = (qrSetResult.rows[0] as any).form_fields;
+        formFields = raw ? JSON.parse(raw) : undefined;
+      }
+    } catch {
+      // Fall through — export will still work with ID-based names as fallback
+    }
+
     if (format === 'csv') {
-      return generateCSV(registrations, timezone);
+      return generateCSV(registrations, timezone, formFields);
     }
     return await generatePDF(registrations, timezone);
   } catch (error) {
@@ -74,7 +92,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function generateCSV(registrations: any[], timezone: string): NextResponse {
+function generateCSV(registrations: any[], timezone: string, formFields?: FormField[]): NextResponse {
   if (registrations.length === 0) {
     return new NextResponse(UTF8_BOM + 'No registrations to export', {
       status: 200,
@@ -85,9 +103,6 @@ function generateCSV(registrations: any[], timezone: string): NextResponse {
     });
   }
 
-  const firstReg = registrations[0];
-  const firstFormData = JSON.parse(firstReg.registrationData);
-
   const standardFields = [
     'Registration ID',
     'QR Code ID',
@@ -96,11 +111,26 @@ function generateCSV(registrations: any[], timezone: string): NextResponse {
     'Checked In',
     'Checked In At',
   ];
-  const dynamicFieldKeys = Object.keys(firstFormData);
-  const dynamicFields = dynamicFieldKeys.map((key) =>
-    key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')
-  );
-  const headers = [...standardFields, ...dynamicFields];
+
+  // Build dynamic column headers from form field definitions (custom labels) when available.
+  // Fall back to camelCase-split field ID names if no form config is present.
+  let dynamicHeaders: string[];
+  let getRowDynamicValues: (formData: Record<string, any>) => any[];
+
+  if (formFields && formFields.length > 0) {
+    dynamicHeaders = formFields.map((f) => f.label);
+    getRowDynamicValues = (formData) => formFields.map((f) => formData[f.id] ?? '');
+  } else {
+    // Derive column order from the first registration's keys
+    const firstFormData = JSON.parse(registrations[0].registrationData);
+    const dynamicFieldKeys = Object.keys(firstFormData);
+    dynamicHeaders = dynamicFieldKeys.map(
+      (key) => key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')
+    );
+    getRowDynamicValues = (formData) => dynamicFieldKeys.map((key) => formData[key]);
+  }
+
+  const headers = [...standardFields, ...dynamicHeaders];
 
   const rows = registrations.map((reg) => {
     const formData = JSON.parse(reg.registrationData);
@@ -114,7 +144,7 @@ function generateCSV(registrations: any[], timezone: string): NextResponse {
         ? new Date(reg.checkedInAt).toLocaleString('en-US', { timeZone: timezone })
         : '',
     ];
-    const dynamicValues = dynamicFieldKeys.map((key) => formData[key]);
+    const dynamicValues = getRowDynamicValues(formData);
     return [...standardValues, ...dynamicValues].map(csvEscape);
   });
 

@@ -2,19 +2,21 @@ import { getDbClient, ensureSubscriptionSchema, nowIso } from './db';
 import type { Session } from 'next-auth';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
 
-export type PlanType = 'free' | 'standard' | 'enterprise';
+export type PlanType = 'free' | 'standard' | 'enterprise' | 'single-org';
 export type BillingCycle = 'monthly' | 'yearly';
 
 export const planPricingCents: Record<PlanType, number> = {
   free: 0,
   standard: 1900,
   enterprise: 9900,
+  'single-org': 999,
 };
 
 export const planRegistrationLimits: Record<PlanType, number> = {
   free: 100,
   standard: 5000,
   enterprise: 50000,
+  'single-org': 1000,
 };
 
 export async function getOrganizationByEmail(email: string): Promise<{ id: string; contact_email: string } | null> {

@@ -18,7 +18,7 @@ import {
 export type { PlanType, BillingCycle };
 export { planPricingCents, planRegistrationLimits };
 
-export const VALID_PLANS: PlanType[] = ['free', 'standard', 'enterprise'];
+export const VALID_PLANS: PlanType[] = ['free', 'standard', 'enterprise', 'single-org'];
 
 export interface PlanDescriptor {
   key: PlanType;
@@ -54,6 +54,16 @@ export const PLANS: PlanDescriptor[] = [
     features: [
       `Up to ${planRegistrationLimits.enterprise.toLocaleString()} registrations`,
       'Priority support',
+    ],
+  },
+  {
+    key: 'single-org',
+    name: 'Single Org Plan',
+    priceMonthly: planPricingCents['single-org'] / 100,
+    priceMonthlyCents: planPricingCents['single-org'],
+    features: [
+      `Up to ${planRegistrationLimits['single-org'].toLocaleString()} registrations`,
+      'Email support',
     ],
   },
 ];

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { getDbClient } from '@/lib/db';
+import { extractName } from '@/lib/utils/registration-field-parser';
 
 // GET /api/dashboard/recent-activity - Get recent activity feed
 export async function GET(request: NextRequest) {
@@ -27,20 +28,21 @@ export async function GET(request: NextRequest) {
 
     const db = getDbClient();
 
-    // Get recent registrations
+    // Get recent registrations, including form field definitions for label resolution
     const recentRegistrations = await db.execute({
       sql: `
-        SELECT 
+        SELECT
           r.id,
           r.qr_code_id,
           r.registration_data,
           r.registered_at,
           r.checked_in_at,
+          qcs.form_fields,
           qr.label as qr_label
         FROM registrations r
         JOIN qr_code_sets qcs ON r.qr_code_set_id = qcs.id
         LEFT JOIN (
-          SELECT 
+          SELECT
             json_extract(je.value, '$.id') as qr_id,
             json_extract(je.value, '$.label') as label
           FROM qr_code_sets qcs2, json_each(qcs2.qr_codes) je
@@ -55,12 +57,19 @@ export async function GET(request: NextRequest) {
 
     const activities = recentRegistrations.rows.map((row: any) => {
       const formData = JSON.parse(row.registration_data || '{}');
+      let formFields: any[] | undefined;
+      try {
+        formFields = row.form_fields ? JSON.parse(row.form_fields) : undefined;
+      } catch {
+        formFields = undefined;
+      }
+      const registrantName = extractName(formData, formFields) || 'Anonymous';
       return {
         type: 'registration',
         id: row.id,
         timestamp: row.registered_at,
         data: {
-          registrantName: formData.name || formData.Name || formData.fullName || 'Anonymous',
+          registrantName,
           registrantEmail: formData.email || formData.Email || formData.emailAddress || null,
           qrCodeLabel: row.qr_label,
           checkedIn: row.checked_in_at !== null

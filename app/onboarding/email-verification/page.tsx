@@ -116,6 +116,7 @@ export default function EmailVerificationPage() {
         contactCity: window.localStorage.getItem('onboarding_contactCity') || '',
         contactState: window.localStorage.getItem('onboarding_contactState') || '',
         contactZip: window.localStorage.getItem('onboarding_contactZip') || '',
+        timezone: window.localStorage.getItem('onboarding_timezone') || 'America/Los_Angeles',
       };
 
       const orgResponse = await fetch('/api/onboarding/create-organization', {

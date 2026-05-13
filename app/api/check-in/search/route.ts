@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     // Add status filter
     if (filter === 'pending') {
-      sql += ` AND (r.checked_in_at IS NULL OR r.token_status != 'used')`;
+      sql += ` AND (r.checked_in_at IS NULL AND r.token_status != 'used')`;
     } else if (filter === 'checked-in') {
       sql += ` AND r.checked_in_at IS NOT NULL AND r.token_status = 'used'`;
     }

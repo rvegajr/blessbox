@@ -31,11 +31,16 @@ export function LoginClient({ nextPath }: { nextPath: string }) {
         orgNames: organizations?.map(o => o.name)
       });
       
+      // New user with no organization yet — send them through onboarding
+      if (organizations && organizations.length === 0) {
+        console.log('[Login] No orgs found -> redirecting to onboarding');
+        router.push('/onboarding/organization-setup');
+      }
       // If user has multiple organizations but none selected, redirect to org selection
-      if (organizations && organizations.length > 1 && !activeOrganizationId) {
+      else if (organizations && organizations.length > 1 && !activeOrganizationId) {
         console.log('[Login] Multiple orgs, no active org -> redirecting to select-organization');
         router.push(`/select-organization?next=${encodeURIComponent(nextPath)}`);
-      } 
+      }
       // If user has exactly ONE organization, auto-select it if not already selected
       else if (organizations && organizations.length === 1 && !activeOrganizationId) {
         console.log('[Login] Single org, auto-selecting:', organizations[0].name);
