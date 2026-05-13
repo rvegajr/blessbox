@@ -26,6 +26,7 @@ const CreateOrgSchema = z.object({
   contactState: z.string().trim().max(100).optional(),
   contactZip: z.string().trim().max(20).optional(),
   customDomain: z.string().trim().max(253).optional(),
+  timezone: z.string().trim().max(100).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
       contactState,
       contactZip,
       customDomain,
+      timezone,
     } = parsed.data;
 
     const normalizedEmail = normalizeEmail(contactEmail) || contactEmail;
@@ -59,6 +61,7 @@ export async function POST(request: NextRequest) {
       contactState,
       contactZip,
       customDomain,
+      timezone,
     });
 
     return NextResponse.json(

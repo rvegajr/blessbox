@@ -28,8 +28,8 @@ vi.mock('@/lib/subscriptions', () => ({
     id: 'org_123',
     name: 'Test Org',
   }),
-  planPricingCents: { free: 0, standard: 1900, enterprise: 9900 },
-  planRegistrationLimits: { free: 100, standard: 5000, enterprise: 50000 },
+  planPricingCents: { free: 0, standard: 1900, enterprise: 9900, 'single-org': 999 },
+  planRegistrationLimits: { free: 100, standard: 5000, enterprise: 50000, 'single-org': 1000 },
   PlanType: { FREE: 'free', STANDARD: 'standard', ENTERPRISE: 'enterprise' },
 }));
 

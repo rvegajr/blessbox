@@ -173,22 +173,19 @@ export default function DashboardPage() {
                   </div>
                 </Link>
                 
-                {/* Create Class link hidden for MVP - feature not ready */}
-                {/*
                 <Link
-                  href="/classes/new"
-                  data-testid="link-create-class"
-                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"
-                  aria-label="Create new class"
+                  href="/dashboard/form-builder"
+                  data-testid="link-form-builder"
+                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-purple-300 transition-colors"
+                  aria-label="Edit registration form"
                 >
-                  <div className="text-2xl mr-3">➕</div>
+                  <div className="text-2xl mr-3">📝</div>
                   <div>
-                    <div className="font-medium text-gray-900">Create Class</div>
-                    <div className="text-sm text-gray-600">Add new</div>
+                    <div className="font-medium text-gray-900">Registration Form</div>
+                    <div className="text-sm text-gray-600">Edit fields</div>
                   </div>
                 </Link>
-                */}
-                
+
                 <Link
                   href="/pricing"
                   data-testid="link-upgrade-plan"

@@ -47,18 +47,22 @@ export class RegistrationService implements IRegistrationService {
     const needle = (qrLabelOrSlug || '').trim();
     if (!needle) return null;
 
+    // Only match against active QR codes — deleted codes (isActive: false) must not
+    // resolve to a registration form (they should 404 so users know the link is gone).
+    const activeCodes = qrCodes.filter((qr: any) => qr?.isActive !== false);
+
     // Prefer matching the stable URL segment (slug) if present.
-    const bySlug = qrCodes.find((qr: any) => typeof qr?.slug === 'string' && qr.slug === needle);
+    const bySlug = activeCodes.find((qr: any) => typeof qr?.slug === 'string' && qr.slug === needle);
     if (bySlug) return bySlug;
 
     // Backward compatibility: many rows store the URL segment in `label`.
-    const byLabelExact = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label === needle);
+    const byLabelExact = activeCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label === needle);
     if (byLabelExact) return byLabelExact;
 
     // Backward compatibility: some older QR code rows stored a *human label* (e.g. "Main Entrance")
     // while the URL segment was a slugified version (e.g. "main-entrance"). If slug is missing,
     // match against slugified(label).
-    const byLabelSlugified = qrCodes.find((qr: any) => {
+    const byLabelSlugified = activeCodes.find((qr: any) => {
       if (typeof qr?.slug === 'string' && qr.slug.trim()) return false; // already checked slug path
       if (typeof qr?.label !== 'string') return false;
       return this.slugify(qr.label) === this.slugify(needle);
@@ -67,7 +71,7 @@ export class RegistrationService implements IRegistrationService {
 
     // Last resort: case-insensitive label compare.
     const lower = needle.toLowerCase();
-    const byLabelCi = qrCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label.toLowerCase() === lower);
+    const byLabelCi = activeCodes.find((qr: any) => typeof qr?.label === 'string' && qr.label.toLowerCase() === lower);
     return byLabelCi || null;
   }
 

@@ -21,6 +21,7 @@ function CheckoutContent() {
   const [squareConfig, setSquareConfig] = useState<SquareConfig | null>(null);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
   const rawPlan = (params.get('plan') || 'standard').toLowerCase();
 
   // Initialize email from session or URL params
@@ -34,15 +35,16 @@ function CheckoutContent() {
       }
     }
   }, [user, params]);
-  const plan = (['free', 'standard', 'enterprise'] as const).includes(rawPlan as any)
-    ? (rawPlan as 'free' | 'standard' | 'enterprise')
+  const plan = (['free', 'standard', 'enterprise', 'single-org'] as const).includes(rawPlan as any)
+    ? (rawPlan as 'free' | 'standard' | 'enterprise' | 'single-org')
     : 'standard';
 
   // Plan pricing (in cents)
   const planPricing = {
     free: 0,
-    standard: 1900, // $19.00
-    enterprise: 9900, // $99.00
+    standard: 1900,    // $19.00
+    enterprise: 9900,  // $99.00
+    'single-org': 999, // $9.99
   };
 
   const baseAmountCents = planPricing[plan] ?? planPricing.standard;
@@ -137,6 +139,39 @@ function CheckoutContent() {
     }
     setEmailError(null);
     return true;
+  };
+
+  const handleNoctusoftCheckout = async () => {
+    if (!validateEmailInput(email)) return;
+    setRedirecting(true);
+    setStatus('Redirecting to Square...');
+    try {
+      const res = await fetch('/api/payment/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planType: plan,
+          billingCycle: 'monthly',
+          email: email.trim(),
+          ...(couponApplied ? { couponCode: couponApplied.code } : {}),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        setStatus(`Error: ${data?.error || 'Failed to start checkout'}`);
+        setRedirecting(false);
+        return;
+      }
+      // 100%-off coupon path — subscription created server-side, no redirect needed
+      if (data.redirect) {
+        router.replace(data.redirect);
+        return;
+      }
+      window.location.href = data.checkoutUrl;
+    } catch {
+      setStatus('Network error. Please try again.');
+      setRedirecting(false);
+    }
   };
 
   const completeTestCheckout = async () => {
@@ -289,7 +324,7 @@ function CheckoutContent() {
           </div>
 
           {/* Payment */}
-          <div data-testid="section-payment" data-loading={false}>
+          <div data-testid="section-payment" data-loading={redirecting}>
             {amountCents === 0 ? (
               <button
                 type="button"
@@ -299,6 +334,17 @@ function CheckoutContent() {
                 aria-label="Complete checkout"
               >
                 Complete Checkout
+              </button>
+            ) : plan === 'single-org' ? (
+              <button
+                type="button"
+                data-testid="btn-subscribe-square"
+                onClick={handleNoctusoftCheckout}
+                disabled={redirecting}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Subscribe with Square"
+              >
+                {redirecting ? 'Redirecting to Square...' : 'Subscribe with Square'}
               </button>
             ) : squareConfig ? (
               <SquarePaymentForm

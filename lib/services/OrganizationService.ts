@@ -37,8 +37,8 @@ export class OrganizationService implements IOrganizationService {
           id, name, event_name, custom_domain,
           contact_email, contact_phone, contact_address,
           contact_city, contact_state, contact_zip,
-          email_verified, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          timezone, email_verified, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       args: [
         id,
@@ -51,6 +51,7 @@ export class OrganizationService implements IOrganizationService {
         data.contactCity || null,
         data.contactState || null,
         data.contactZip || null,
+        data.timezone || 'America/Los_Angeles',
         0, // email_verified = false
         now,
         now,

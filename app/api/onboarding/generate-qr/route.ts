@@ -194,14 +194,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Track existing slugs to avoid duplicates
+    // Track existing slugs AND human-readable labels to avoid duplicates
     const existingSlugs = new Set(existingQrCodes.map((qr: any) => qr.slug));
+    const existingDescriptions = new Set(
+      existingQrCodes.map((qr: any) => (qr.description || qr.label || '').toLowerCase().trim())
+    );
 
     for (const entryPoint of entryPoints) {
-      // Skip if slug already exists
+      // Reject duplicate slug
       if (existingSlugs.has(entryPoint.slug)) {
-        console.log(`Skipping duplicate QR code with slug: ${entryPoint.slug}`);
-        continue;
+        return NextResponse.json(
+          { success: false, error: `A QR code with the label "${entryPoint.label}" already exists. Please use a different label.` },
+          { status: 409 }
+        );
+      }
+      // Reject duplicate human-readable label (case-insensitive)
+      const labelKey = entryPoint.label.toLowerCase().trim();
+      if (existingDescriptions.has(labelKey)) {
+        return NextResponse.json(
+          { success: false, error: `A QR code with the label "${entryPoint.label}" already exists. Please use a different label.` },
+          { status: 409 }
+        );
       }
 
       const qrCodeId = uuidv4();

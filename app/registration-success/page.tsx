@@ -21,6 +21,7 @@ function RegistrationSuccessContent() {
   const [error, setError] = useState<string | null>(null);
   const [registration, setRegistration] = useState<RegistrationData | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
+  const [checkInUrl, setCheckInUrl] = useState<string>('');
   const [emailSent, setEmailSent] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
 
@@ -58,6 +59,7 @@ function RegistrationSuccessContent() {
 
         // Generate QR code from check-in token
         const checkInUrl = `${window.location.origin}/check-in/${reg.checkInToken}`;
+        setCheckInUrl(checkInUrl);
         const qrDataUrl = await QRCode.toDataURL(checkInUrl, {
           errorCorrectionLevel: 'M',
           margin: 2,
@@ -190,15 +192,30 @@ function RegistrationSuccessContent() {
             
             <div className="bg-white rounded-xl p-6 mb-4 text-center">
               {qrCodeDataUrl && (
-                <img 
-                  src={qrCodeDataUrl} 
-                  alt="Check-in QR Code" 
+                <img
+                  src={qrCodeDataUrl}
+                  alt="Check-in QR Code"
                   className="mx-auto mb-4"
                   data-testid="img-checkin-qr"
                   style={{ width: '300px', height: '300px' }}
                 />
               )}
-              
+
+              {checkInUrl && (
+                <div className="mt-2 mb-4">
+                  <p className="text-xs text-gray-500 mb-1">Or use this link directly:</p>
+                  <a
+                    href={checkInUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-indigo-600 hover:text-indigo-800 underline break-all font-mono"
+                    data-testid="link-checkin-url"
+                  >
+                    {checkInUrl}
+                  </a>
+                </div>
+              )}
+
               <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mt-4">
                 <p className="text-sm font-semibold text-yellow-900 mb-2">
                   ⚠️ IMPORTANT: Save this QR code!

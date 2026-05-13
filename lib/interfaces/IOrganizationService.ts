@@ -27,6 +27,7 @@ export interface OrganizationCreate {
   contactCity?: string;
   contactState?: string;
   contactZip?: string;
+  timezone?: string;
 }
 
 export interface OrganizationUpdate {

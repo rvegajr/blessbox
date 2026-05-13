@@ -82,8 +82,9 @@ export interface IPlanUpgrade {
  */
 export const PLAN_HIERARCHY: Record<PlanType, number> = {
   free: 0,
-  standard: 1,
-  enterprise: 2
+  'single-org': 1,
+  standard: 2,
+  enterprise: 3,
 };
 
 /**
@@ -91,6 +92,7 @@ export const PLAN_HIERARCHY: Record<PlanType, number> = {
  */
 export const PLAN_NAMES: Record<PlanType, string> = {
   free: 'Free',
+  'single-org': 'Single Org',
   standard: 'Standard',
-  enterprise: 'Enterprise'
+  enterprise: 'Enterprise',
 };

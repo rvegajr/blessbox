@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { parseRegistrationData, type FormField } from '@/lib/utils/registration-field-parser';
 
 interface RegistrationDetails {
   id: string;
@@ -12,6 +13,7 @@ interface RegistrationDetails {
   tokenStatus: string;
   organizationName?: string;
   eventName?: string;
+  formFields?: FormField[];
 }
 
 export default function CheckInPage({ params }: { params: Promise<{ token: string }> }) {
@@ -49,7 +51,8 @@ export default function CheckInPage({ params }: { params: Promise<{ token: strin
           checkedInBy: reg.checkedInBy,
           tokenStatus: reg.tokenStatus || 'active',
           organizationName: data.organizationName,
-          eventName: data.eventName
+          eventName: data.eventName,
+          formFields: data.formFields,
         });
 
         setLoading(false);
@@ -169,9 +172,8 @@ export default function CheckInPage({ params }: { params: Promise<{ token: strin
     );
   }
 
-  const registrantName = registration.registrationData.name || 
-                         registration.registrationData.firstName || 
-                         'Guest';
+  const parsed = parseRegistrationData(registration.registrationData, registration.formFields);
+  const registrantName = parsed.name || 'Guest';
   const isAlreadyCheckedIn = !!registration.checkedInAt;
 
   return (
@@ -210,13 +212,16 @@ export default function CheckInPage({ params }: { params: Promise<{ token: strin
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Registrant Details</h2>
             
             <div className="space-y-3">
-              {Object.entries(registration.registrationData).map(([key, value]) => (
-                <div key={key} className="flex justify-between border-b border-gray-200 pb-2">
+              {(parsed.fields.length > 0 ? parsed.fields : Object.entries(registration.registrationData).map(([key, value]) => ({
+                label: key.replace(/([A-Z])/g, ' $1').trim(),
+                value: String(value),
+              }))).map((field) => (
+                <div key={field.label} className="flex justify-between border-b border-gray-200 pb-2">
                   <span className="text-gray-600 capitalize font-medium">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                    {field.label}:
                   </span>
                   <span className="text-gray-900 font-semibold">
-                    {String(value)}
+                    {field.value}
                   </span>
                 </div>
               ))}

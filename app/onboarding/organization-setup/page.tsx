@@ -15,6 +15,7 @@ import { onboardingSession } from '@/lib/services/OnboardingSessionService';
 interface OrganizationFormData {
   name: string;
   eventName: string;
+  timezone: string;
   contactEmail: string;
   contactPhone: string;
   contactAddress: string;
@@ -23,6 +24,27 @@ interface OrganizationFormData {
   contactZip: string;
 }
 
+const COMMON_TIMEZONES = [
+  { value: 'America/New_York',    label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago',     label: 'Central Time (CT)' },
+  { value: 'America/Denver',      label: 'Mountain Time (MT)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage',   label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu',    label: 'Hawaii Time (HT)' },
+  { value: 'America/Phoenix',     label: 'Arizona (no DST)' },
+  { value: 'America/Toronto',     label: 'Toronto / Eastern Canada' },
+  { value: 'America/Vancouver',   label: 'Vancouver / Pacific Canada' },
+  { value: 'America/Mexico_City', label: 'Mexico City' },
+  { value: 'America/Sao_Paulo',   label: 'São Paulo / Brazil' },
+  { value: 'Europe/London',       label: 'London / GMT' },
+  { value: 'Europe/Paris',        label: 'Paris / Central Europe' },
+  { value: 'Asia/Manila',         label: 'Manila / Philippines' },
+  { value: 'Asia/Singapore',      label: 'Singapore' },
+  { value: 'Asia/Tokyo',          label: 'Tokyo / Japan' },
+  { value: 'Australia/Sydney',    label: 'Sydney / Australia' },
+  { value: 'UTC',                 label: 'UTC' },
+];
+
 export default function OrganizationSetupPage() {
   const router = useRouter();
   
@@ -30,6 +52,7 @@ export default function OrganizationSetupPage() {
   const [formData, setFormData] = useState<OrganizationFormData>({
     name: '',
     eventName: '',
+    timezone: 'America/Los_Angeles',
     contactEmail: '',
     contactPhone: '',
     contactAddress: '',
@@ -93,6 +116,7 @@ export default function OrganizationSetupPage() {
         window.localStorage.setItem('onboarding_orgName', formData.name);
         window.localStorage.setItem('onboarding_contactEmail', formData.contactEmail);
         window.localStorage.setItem('onboarding_eventName', formData.eventName || '');
+        window.localStorage.setItem('onboarding_timezone', formData.timezone || 'America/Los_Angeles');
         window.localStorage.setItem('onboarding_contactPhone', formData.contactPhone || '');
         window.localStorage.setItem('onboarding_contactAddress', formData.contactAddress || '');
         window.localStorage.setItem('onboarding_contactCity', formData.contactCity || '');
@@ -163,6 +187,26 @@ export default function OrganizationSetupPage() {
           autoComplete="off"
           aria-label="Event name"
         />
+      </div>
+
+      <div>
+        <label htmlFor="timezone" className="block text-sm font-medium text-gray-700 mb-2">
+          Timezone
+        </label>
+        <select
+          id="timezone"
+          name="timezone"
+          data-testid="select-timezone"
+          value={formData.timezone}
+          onChange={(e) => handleInputChange('timezone', e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+          aria-label="Organization timezone"
+        >
+          {COMMON_TIMEZONES.map((tz) => (
+            <option key={tz.value} value={tz.value}>{tz.label}</option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-gray-500">Used for reporting and event scheduling.</p>
       </div>
 
       <div>
