@@ -98,15 +98,16 @@ export async function POST(req: NextRequest) {
     return json({ success: true, redirect: '/dashboard', subscription: sub }, 200);
   }
 
-  // Build return URL — Square will redirect here after the customer pays
+  // Build redirect URL — Square will redirect here after the customer pays
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blessbox.org';
-  const returnUrl = `${appUrl}/checkout/success?plan=${encodeURIComponent(planType)}`;
+  const redirectUrl = `${appUrl}/checkout/success?plan=${encodeURIComponent(planType)}`;
 
   try {
     const { checkoutUrl } = await createNoctusoftCheckoutSession({
       plan: planType,
+      userId: org.id,
       email,
-      returnUrl,
+      redirectUrl,
     });
     return json({ success: true, checkoutUrl }, 200);
   } catch (err: any) {

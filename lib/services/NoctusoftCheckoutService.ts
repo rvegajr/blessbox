@@ -9,6 +9,9 @@
  * Proxy docs: https://docs.api.noctusoft.com
  * Routing headers: X-Test-Store, X-Square-Env
  * Auth: NOCTUSOFT_DEPLOY_KEY env var (Bearer token)
+ *
+ * POST /checkout body: { userId, email, plan, redirectUrl, idempotencyKey }
+ * Response:           { url, orderId }
  */
 
 const IS_PRODUCTION = process.env.SQUARE_ENVIRONMENT === 'production';
@@ -20,13 +23,15 @@ const PROXY_BASE = IS_PRODUCTION
 const SQUARE_ENV = IS_PRODUCTION ? 'production' : 'sandbox';
 
 export interface NoctusoftCheckoutParams {
-  plan: string;      // catalog plan identifier, e.g. "single-org"
-  email: string;     // customer email
-  returnUrl: string; // Square redirects here after payment
+  plan: string;       // catalog plan identifier, e.g. "single-org"
+  userId: string;     // org or user ID — used for idempotent customer creation
+  email: string;      // customer email
+  redirectUrl: string; // Square redirects here after payment
 }
 
 export interface NoctusoftCheckoutResult {
   checkoutUrl: string;
+  orderId: string;
 }
 
 export async function createNoctusoftCheckoutSession(
@@ -43,13 +48,18 @@ export async function createNoctusoftCheckoutSession(
     headers['Authorization'] = `Bearer ${deployKey}`;
   }
 
-  const res = await fetch(`${PROXY_BASE}/v2/checkout`, {
+  // Idempotency key scoped to org + plan so retries don't double-charge
+  const idempotencyKey = `blessbox-checkout-${params.userId}-${params.plan}-${Date.now()}`;
+
+  const res = await fetch(`${PROXY_BASE}/checkout`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
-      plan: params.plan,
+      userId: params.userId,
       email: params.email,
-      returnUrl: params.returnUrl,
+      plan: params.plan,
+      redirectUrl: params.redirectUrl,
+      idempotencyKey,
     }),
   });
 
@@ -59,8 +69,8 @@ export async function createNoctusoftCheckoutSession(
   }
 
   const data = await res.json();
-  if (!data?.checkoutUrl) {
-    throw new Error('Noctusoft returned no checkoutUrl');
+  if (!data?.url) {
+    throw new Error(`Noctusoft returned no checkout URL: ${JSON.stringify(data)}`);
   }
-  return { checkoutUrl: data.checkoutUrl };
+  return { checkoutUrl: data.url, orderId: data.orderId };
 }
