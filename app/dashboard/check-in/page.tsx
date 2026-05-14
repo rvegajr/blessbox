@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 
@@ -32,7 +32,7 @@ type CheckInMode = 'scanner' | 'search' | 'list';
 export default function CheckInDashboard() {
   const router = useRouter();
   const { status } = useAuth();
-  
+
   const [mode, setMode] = useState<CheckInMode>('list');
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +40,57 @@ export default function CheckInDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'checked-in'>('pending');
   const [manualToken, setManualToken] = useState('');
+
+  // Scanner state
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerRef = useRef<any>(null);
+  const [scannerError, setScannerError] = useState<string | null>(null);
+  const [scannerActive, setScannerActive] = useState(false);
+  const [lastScan, setLastScan] = useState<string | null>(null);
+
+  const stopScanner = useCallback(() => {
+    if (scannerRef.current) {
+      scannerRef.current.reset();
+      scannerRef.current = null;
+    }
+    setScannerActive(false);
+  }, []);
+
+  const startScanner = useCallback(async () => {
+    setScannerError(null);
+    setLastScan(null);
+    if (!videoRef.current) return;
+    try {
+      const { BrowserQRCodeReader } = await import('@zxing/browser');
+      const reader = new BrowserQRCodeReader();
+      scannerRef.current = reader;
+      setScannerActive(true);
+      await reader.decodeFromVideoDevice(undefined, videoRef.current, (result, err) => {
+        if (result) {
+          const text = result.getText();
+          // Extract token from check-in URL or use raw value
+          const match = text.match(/\/check-in\/([a-zA-Z0-9_-]+)/);
+          const token = match ? match[1] : text;
+          setLastScan(token);
+          stopScanner();
+          router.push(`/check-in/${token}`);
+        }
+      });
+    } catch (e: any) {
+      setScannerError(e?.message?.includes('Permission')
+        ? 'Camera permission denied. Please allow camera access and try again.'
+        : 'Could not start camera. Try manual token entry below.');
+      setScannerActive(false);
+    }
+  }, [router, stopScanner]);
+
+  // Stop scanner when leaving scanner mode
+  useEffect(() => {
+    if (mode !== 'scanner') stopScanner();
+  }, [mode, stopScanner]);
+
+  // Cleanup on unmount
+  useEffect(() => () => stopScanner(), [stopScanner]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -160,25 +211,81 @@ export default function CheckInDashboard() {
         <div className="bg-white rounded-lg shadow-sm p-6">
           {mode === 'scanner' && (
             <div data-testid="mode-scanner-content">
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📸</div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">QR Code Scanner</h2>
-                <p className="text-gray-600 mb-8">Scan the QR code shown on attendee's phone</p>
-                
-                {/* QR Scanner Component will go here */}
-                <div className="max-w-md mx-auto bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-12">
-                  <p className="text-gray-500 mb-4">Camera scanner coming soon</p>
-                  <p className="text-sm text-gray-400">For now, use manual token entry below</p>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">QR Code Scanner</h2>
+                <p className="text-gray-600 mb-6">Point the camera at an attendee's check-in QR code</p>
+
+                {/* Camera viewfinder */}
+                <div className="max-w-md mx-auto mb-6">
+                  <div className="relative bg-black rounded-xl overflow-hidden aspect-square">
+                    <video
+                      ref={videoRef}
+                      className="w-full h-full object-cover"
+                      data-testid="scanner-video"
+                    />
+                    {/* Targeting overlay */}
+                    {scannerActive && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-56 h-56 border-4 border-white rounded-lg opacity-70">
+                          <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-400 rounded-tl" />
+                          <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-400 rounded-tr" />
+                          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-400 rounded-bl" />
+                          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-400 rounded-br" />
+                        </div>
+                      </div>
+                    )}
+                    {!scannerActive && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                        <div className="text-center text-white">
+                          <div className="text-5xl mb-3">📸</div>
+                          <p className="text-sm text-gray-300">Camera off</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {scannerError && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600" data-testid="scanner-error">
+                      {scannerError}
+                    </div>
+                  )}
+                  {lastScan && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                      ✅ Scanned — redirecting...
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex gap-3 justify-center">
+                    {!scannerActive ? (
+                      <button
+                        onClick={startScanner}
+                        className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                        data-testid="btn-start-scanner"
+                      >
+                        Start Camera
+                      </button>
+                    ) : (
+                      <button
+                        onClick={stopScanner}
+                        className="px-8 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium transition-colors"
+                        data-testid="btn-stop-scanner"
+                      >
+                        Stop Camera
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Manual Token Entry Fallback */}
-                <div className="max-w-md mx-auto mt-8">
+                <div className="max-w-md mx-auto border-t pt-6">
+                  <p className="text-sm text-gray-500 mb-3">Or enter the token manually</p>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={manualToken}
                       onChange={(e) => setManualToken(e.target.value)}
-                      placeholder="Enter check-in token manually"
+                      onKeyDown={(e) => e.key === 'Enter' && handleManualTokenLookup()}
+                      placeholder="Enter check-in token"
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       data-testid="input-manual-token"
                     />
@@ -191,9 +298,6 @@ export default function CheckInDashboard() {
                       Lookup
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Paste the token from the attendee's QR code URL
-                  </p>
                 </div>
               </div>
             </div>
