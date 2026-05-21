@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
 import { FormBuilderWizard } from '@/components/onboarding/FormBuilderWizard';
 import type { FormBuilderData, FormField } from '@/components/OnboardingWizard.interface';
+import { FormPreviewModal } from '@/components/forms/FormPreviewModal';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,6 +123,12 @@ export default function DashboardFormBuilderPage() {
         onChange={handleFormChange}
         onPreview={() => setShowPreview(true)}
         isLoading={saving}
+      />
+
+      <FormPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        formData={formData}
       />
     </div>
   );

@@ -70,3 +70,4 @@ body:
       label: Bug Recording
       description: If this task was triggered by a recorded bug, paste the Jam link here.
       placeholder: "📹 https://jam.dev/recordings/..."
+

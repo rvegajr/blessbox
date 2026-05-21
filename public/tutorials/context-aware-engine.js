@@ -139,6 +139,20 @@ export class ContextAwareTutorials {
         }
     }
     /**
+     * Return a JSON-serializable snapshot of a DOM element.
+     */
+    describeElement(el) {
+        if (!el || typeof el !== 'object' || !el.tagName) return el;
+        return {
+            tagName: el.tagName,
+            id: el.id || undefined,
+            className: (typeof el.className === 'string' ? el.className : '') || undefined,
+            textContent: (el.textContent || '').slice(0, 80).trim() || undefined,
+            type: el.type || undefined,
+            name: el.name || undefined,
+        };
+    }
+    /**
      * Attach event listeners for user actions
      */
     attachEventListeners() {
@@ -146,11 +160,11 @@ export class ContextAwareTutorials {
             return;
         // Listen for clicks
         document.addEventListener('click', (e) => {
-            this.trackEvent('click', e.target);
+            this.trackEvent('click', this.describeElement(e.target));
         });
         // Listen for form submissions
         document.addEventListener('submit', (e) => {
-            this.trackEvent('submit', e.target);
+            this.trackEvent('submit', this.describeElement(e.target));
         });
         // Listen for custom app events
         document.addEventListener('appEvent', (e) => {

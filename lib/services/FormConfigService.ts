@@ -43,8 +43,9 @@ export class FormConfigService implements IFormConfigService {
     await this.db.execute({
       sql: `
         INSERT INTO qr_code_sets (
-          id, organization_id, name, language, form_fields, qr_codes, is_active, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          id, organization_id, name, language, form_fields, qr_codes, is_active,
+          event_type, description, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       args: [
         id,
@@ -52,8 +53,10 @@ export class FormConfigService implements IFormConfigService {
         data.name,
         data.language || 'en',
         JSON.stringify(data.formFields),
-        JSON.stringify([]), // Empty QR codes initially
-        1, // is_active
+        JSON.stringify([]),
+        1,
+        data.eventType ?? null,
+        data.description ?? null,
         now,
         now,
       ]
@@ -128,6 +131,14 @@ export class FormConfigService implements IFormConfigService {
     if (updates.formFields !== undefined) {
       updateFields.push('form_fields = ?');
       updateValues.push(JSON.stringify(updates.formFields));
+    }
+    if (updates.eventType !== undefined) {
+      updateFields.push('event_type = ?');
+      updateValues.push(updates.eventType);
+    }
+    if (updates.description !== undefined) {
+      updateFields.push('description = ?');
+      updateValues.push(updates.description);
     }
 
     if (updateFields.length === 0) {
@@ -260,6 +271,8 @@ export class FormConfigService implements IFormConfigService {
       name: row.name,
       language: row.language || 'en',
       formFields: JSON.parse(row.form_fields || '[]'),
+      eventType: row.event_type ?? null,
+      description: row.description ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };

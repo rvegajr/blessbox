@@ -418,16 +418,16 @@ export default function QRCodesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                QR Code Set
+                Event
               </label>
               <select
                 data-testid="dropdown-qr-set"
                 value={selectedSet}
                 onChange={e => setSelectedSet(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                aria-label="Filter by QR code set"
+                aria-label="Filter by event"
               >
-                <option value="all">All Sets</option>
+                <option value="all">All Events</option>
                 {qrCodeSets.map(set => (
                   <option key={set.id} value={set.id}>{set.name}</option>
                 ))}

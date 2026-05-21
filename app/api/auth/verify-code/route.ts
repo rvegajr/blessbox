@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AuthService } from '@/lib/services/AuthService';
+import { MembershipService } from '@/lib/services/MembershipService';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
@@ -25,6 +26,7 @@ import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 export const runtime = 'nodejs';
 
 const authService = new AuthService();
+const membershipService = new MembershipService();
 
 const VerifyCodeSchema = z.object({
   email: z.string().email(),
@@ -78,14 +80,31 @@ export async function POST(request: NextRequest) {
       maxAge,
     });
 
-    // Set active organization cookie if provided
-    if (organizationId) {
-      response.cookies.set('bb_active_org_id', organizationId, {
+    // Handle active organization cookie
+    if (organizationId && result.session.user.id) {
+      // P0 Fix: Verify membership exists before setting cookie (defense in depth)
+      const isMember = await membershipService.isMember(
+        result.session.user.id, 
+        organizationId
+      );
+      
+      if (isMember) {
+        response.cookies.set('bb_active_org_id', organizationId, {
+          path: '/',
+          httpOnly: true,
+          sameSite: 'lax',
+          secure: isProd,
+          maxAge: 30 * 24 * 60 * 60, // 30 days
+        });
+      }
+    } else {
+      // P0 Fix: Clear old org cookie if no organizationId provided (select-org flow)
+      response.cookies.set('bb_active_org_id', '', {
         path: '/',
         httpOnly: true,
         sameSite: 'lax',
         secure: isProd,
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+        maxAge: 0,
       });
     }
 

@@ -5,28 +5,9 @@ import { RegistrationService } from '@/lib/services/RegistrationService';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { getDbClient } from '@/lib/db';
 import { parseRegistrationData, type FormField } from '@/lib/utils/registration-field-parser';
+import { buildCsv } from '@/lib/services/RegistrationsCsvBuilder';
 
 const registrationService = new RegistrationService();
-
-// UTF-8 BOM so Excel on Windows renders non-ASCII correctly.
-const UTF8_BOM = '﻿';
-
-/**
- * Escape a CSV cell, including defending against spreadsheet formula injection.
- * Cells beginning with `=`, `+`, `-`, `@`, tab, or carriage return are prefixed
- * with a single quote so Excel/Sheets/Numbers do not evaluate them.
- */
-function csvEscape(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  let s = String(value);
-  if (s.length > 0 && /^[=+\-@\t\r]/.test(s)) {
-    s = `'${s}`;
-  }
-  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
-    return `"${s.replace(/"/g, '""')}"`;
-  }
-  return s;
-}
 
 // GET /api/registrations/export?format=csv|pdf - Export registrations for the
 // caller's active organization. The previous `orgId` query param is now ignored
@@ -61,7 +42,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Org is always derived from the session — never trust client-supplied orgId.
-    const registrations = await registrationService.listRegistrations(organization.id, {});
+    const deliveryStatus = searchParams.get('deliveryStatus') || undefined;
+    const registrations = await registrationService.listRegistrations(organization.id, {
+      ...(deliveryStatus ? { deliveryStatus } : {}),
+    });
 
     // Fetch form field definitions for this org so exports use custom labels, not field IDs.
     let formFields: FormField[] | undefined;
@@ -93,64 +77,7 @@ export async function GET(request: NextRequest) {
 }
 
 function generateCSV(registrations: any[], timezone: string, formFields?: FormField[]): NextResponse {
-  if (registrations.length === 0) {
-    return new NextResponse(UTF8_BOM + 'No registrations to export', {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="registrations-${Date.now()}.csv"`,
-      },
-    });
-  }
-
-  const standardFields = [
-    'Registration ID',
-    'QR Code ID',
-    'Registered At',
-    'Status',
-    'Checked In',
-    'Checked In At',
-  ];
-
-  // Build dynamic column headers from form field definitions (custom labels) when available.
-  // Fall back to camelCase-split field ID names if no form config is present.
-  let dynamicHeaders: string[];
-  let getRowDynamicValues: (formData: Record<string, any>) => any[];
-
-  if (formFields && formFields.length > 0) {
-    dynamicHeaders = formFields.map((f) => f.label);
-    getRowDynamicValues = (formData) => formFields.map((f) => formData[f.id] ?? '');
-  } else {
-    // Derive column order from the first registration's keys
-    const firstFormData = JSON.parse(registrations[0].registrationData);
-    const dynamicFieldKeys = Object.keys(firstFormData);
-    dynamicHeaders = dynamicFieldKeys.map(
-      (key) => key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')
-    );
-    getRowDynamicValues = (formData) => dynamicFieldKeys.map((key) => formData[key]);
-  }
-
-  const headers = [...standardFields, ...dynamicHeaders];
-
-  const rows = registrations.map((reg) => {
-    const formData = JSON.parse(reg.registrationData);
-    const standardValues = [
-      reg.id,
-      reg.qrCodeId,
-      new Date(reg.registeredAt).toLocaleString('en-US', { timeZone: timezone }),
-      reg.deliveryStatus,
-      reg.checkedInAt ? 'Yes' : 'No',
-      reg.checkedInAt
-        ? new Date(reg.checkedInAt).toLocaleString('en-US', { timeZone: timezone })
-        : '',
-    ];
-    const dynamicValues = getRowDynamicValues(formData);
-    return [...standardValues, ...dynamicValues].map(csvEscape);
-  });
-
-  const csv =
-    UTF8_BOM +
-    [headers.map(csvEscape).join(','), ...rows.map((row) => row.join(','))].join('\n');
+  const csv = buildCsv({ registrations, formFields, timezone });
 
   return new NextResponse(csv, {
     status: 200,

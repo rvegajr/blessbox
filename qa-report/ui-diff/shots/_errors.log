@@ -329,3 +329,513 @@ dashboard desktop:
   console: Failed to load resource: the server responded with a status of 401 ()
 report-bug desktop:
   console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+dev login mobile: nav page.goto: Test ended.
+Call log:
+[2m  - navigating to "https://bless-box-git-develop-rvegajrs-projects.vercel.app/login", waiting until "networkidle"[22m
+
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+select-org mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard mobile:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+report-bug mobile:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+login desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+register-orgslug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+  console: Failed to load resource: the server responded with a status of 404 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+select-org desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+dashboard desktop:
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+  console: Failed to load resource: the server responded with a status of 401 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()
+report-bug desktop:
+  console: Failed to load resource: the server responded with a status of 404 ()

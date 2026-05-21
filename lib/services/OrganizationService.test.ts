@@ -158,4 +158,71 @@ describe('OrganizationService', () => {
   it('checkEmailUniqueness always returns true (multi-org per email)', async () => {
     await expect(service.checkEmailUniqueness('existing@example.com')).resolves.toBe(true);
   });
+
+  it('createOrganization stores timezone when provided', async () => {
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] }) // insert
+      .mockResolvedValueOnce({
+        rows: [{
+          id: 'org-tz',
+          name: 'TZ Org',
+          event_name: null,
+          custom_domain: null,
+          contact_email: 'tz@example.com',
+          contact_phone: null,
+          contact_address: null,
+          contact_city: null,
+          contact_state: null,
+          contact_zip: null,
+          timezone: 'America/New_York',
+          email_verified: 0,
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z',
+        }],
+      });
+
+    const org = await service.createOrganization({
+      name: 'TZ Org',
+      contactEmail: 'tz@example.com',
+      timezone: 'America/New_York',
+    });
+
+    expect(org.timezone).toBe('America/New_York');
+    // Verify timezone was passed in the INSERT args
+    const insertCall = mockDb.execute.mock.calls[0][0];
+    expect(insertCall.sql).toContain('timezone');
+    expect(insertCall.args).toContain('America/New_York');
+  });
+
+  it('createOrganization defaults timezone to America/Los_Angeles', async () => {
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] }) // insert
+      .mockResolvedValueOnce({
+        rows: [{
+          id: 'org-def',
+          name: 'Default TZ Org',
+          event_name: null,
+          custom_domain: null,
+          contact_email: 'def@example.com',
+          contact_phone: null,
+          contact_address: null,
+          contact_city: null,
+          contact_state: null,
+          contact_zip: null,
+          timezone: 'America/Los_Angeles',
+          email_verified: 0,
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: '2025-01-01T00:00:00Z',
+        }],
+      });
+
+    const org = await service.createOrganization({
+      name: 'Default TZ Org',
+      contactEmail: 'def@example.com',
+    });
+
+    expect(org.timezone).toBe('America/Los_Angeles');
+    const insertCall = mockDb.execute.mock.calls[0][0];
+    expect(insertCall.args).toContain('America/Los_Angeles');
+  });
 });

@@ -21,6 +21,7 @@ export const organizations = sqliteTable('organizations', {
   contactZip: text('contact_zip'),
   passwordHash: text('password_hash'),
   lastLoginAt: text('last_login_at'),
+  timezone: text('timezone').default('America/Los_Angeles'),
   emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -61,7 +62,7 @@ export const memberships = sqliteTable('memberships', {
   userOrgUnique: uniqueIndex('memberships_user_org_unique').on(t.userId, t.organizationId),
 }));
 
-// QR Code Sets
+// QR Code Sets (a.k.a. "Events" in user-facing UI)
 export const qrCodeSets = sqliteTable('qr_code_sets', {
   id: text('id').primaryKey(),
   organizationId: text('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
@@ -71,6 +72,10 @@ export const qrCodeSets = sqliteTable('qr_code_sets', {
   qrCodes: text('qr_codes').notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
   scanCount: integer('scan_count').default(0).notNull(),
+  // Event type taxonomy (food_distribution | seminar | volunteer | custom).
+  // Nullable for backwards compatibility with rows created before this column existed.
+  eventType: text('event_type'),
+  description: text('description'),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (t) => ({

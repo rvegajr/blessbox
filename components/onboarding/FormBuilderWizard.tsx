@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import type { FormBuilderProps, FormField } from '@/components/OnboardingWizard.interface';
+import { FormOptionsSerializer } from '@/lib/services/FormOptionsSerializer';
 
 export function FormBuilderWizard({
   data,
@@ -14,6 +15,8 @@ export function FormBuilderWizard({
   const [fields, setFields] = useState<FormField[]>(data.fields || []);
   const [title, setTitle] = useState(data.title || 'Registration Form');
   const [description, setDescription] = useState(data.description || '');
+  
+  const serializer = useMemo(() => new FormOptionsSerializer(), []);
   
   // Use ref to store onChange to avoid infinite loops
   const onChangeRef = useRef(onChange);
@@ -219,21 +222,12 @@ export function FormBuilderWizard({
                           </label>
                           <textarea
                             data-testid={`input-select-options-${field.id}`}
-                            value={field.options?.join('\n') || ''}
+                            value={serializer.serialize(field.options || [])}
                             onChange={(e) => {
-                              // Preserve all input during typing - don't trim yet
-                              // Only filter completely empty lines (all whitespace)
-                              const lines = e.target.value.split('\n');
-                              const options = lines.filter(o => o.trim() !== '');
-                              updateField(field.id, { options });
+                              updateField(field.id, { options: serializer.parseInProgress(e.target.value) });
                             }}
                             onBlur={(e) => {
-                              // Trim whitespace when user finishes editing (clicks away)
-                              const options = e.target.value
-                                .split('\n')
-                                .map(o => o.trim())
-                                .filter(o => o !== '');
-                              updateField(field.id, { options });
+                              updateField(field.id, { options: serializer.parseFinal(e.target.value) });
                             }}
                             onKeyDown={(e) => {
                               // Prevent spacebar from triggering navigation when typing in textarea

@@ -44,8 +44,8 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
 
     if (!formData.code.trim()) {
       newErrors.code = 'Coupon code is required';
-    } else if (!/^[A-Z0-9]+$/.test(formData.code)) {
-      newErrors.code = 'Coupon code must contain only uppercase letters and numbers';
+    } else if (!/^[A-Za-z0-9_-]+$/.test(formData.code)) {
+      newErrors.code = 'Coupon code can only contain letters, numbers, hyphens, and underscores';
     }
 
     if (formData.discountValue <= 0) {
@@ -93,14 +93,24 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...formData,
-          code: formData.code.toUpperCase()
-        })
+        body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Surface validation errors per field
+        if (errorData.code === 'VALIDATION_ERROR' && errorData.details) {
+          const fieldErrors: Record<string, string> = {};
+          for (const detail of errorData.details) {
+            const field = detail.path[0];
+            fieldErrors[field] = detail.message;
+          }
+          setErrors(fieldErrors);
+          return;
+        }
+
+        // Surface general error with code
         throw new Error(errorData.error || 'Failed to save coupon');
       }
 
@@ -127,7 +137,7 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
 
   return (
     <div className={className}>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" data-testid="form-coupon">
         {/* Coupon Code */}
         <div>
           <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-1">
@@ -136,6 +146,7 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
           <input
             type="text"
             id="code"
+            data-testid="input-coupon-code"
             value={formData.code}
             onChange={(e) => handleChange('code', e.target.value)}
             onKeyDown={(e) => {
@@ -149,8 +160,8 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
             placeholder="WELCOME25"
             disabled={!!coupon}
           />
-          {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code}</p>}
-          <p className="mt-1 text-xs text-gray-500">Uppercase letters and numbers only</p>
+          {errors.code && <p className="mt-1 text-sm text-red-600" data-testid="error-coupon-code">{errors.code}</p>}
+          <p className="mt-1 text-xs text-gray-500">Letters, numbers, hyphens, and underscores allowed</p>
         </div>
 
         {/* Description */}
@@ -304,7 +315,7 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
 
         {/* Error Message */}
         {errors.submit && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700" data-testid="error-submit">
             {errors.submit}
           </div>
         )}
@@ -321,6 +332,8 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
           <button
             type="submit"
             disabled={submitting}
+            data-testid="btn-submit-coupon"
+            data-loading={submitting}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {submitting ? 'Saving...' : coupon ? 'Update Coupon' : 'Create Coupon'}

@@ -96,8 +96,10 @@ function RegistrationForm({ orgSlug, qrLabel, sketId }: { orgSlug: string; qrLab
         throw new Error(data.error || 'Failed to submit registration');
       }
       
-      // Redirect to success page with QR code display
-      if (data.registration?.id) {
+      // Redirect to success page with check-in token (public, no auth needed)
+      if (data.registration?.checkInToken) {
+        window.location.href = `/registration-success?token=${data.registration.checkInToken}`;
+      } else if (data.registration?.id) {
         window.location.href = `/registration-success?id=${data.registration.id}`;
       } else {
       setSubmitted(true);

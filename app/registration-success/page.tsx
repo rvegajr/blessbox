@@ -15,8 +15,9 @@ interface RegistrationData {
 
 function RegistrationSuccessContent() {
   const searchParams = useSearchParams();
+  const tokenParam = searchParams.get('token');
   const registrationId = searchParams.get('id');
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [registration, setRegistration] = useState<RegistrationData | null>(null);
@@ -26,24 +27,45 @@ function RegistrationSuccessContent() {
   const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
-    if (!registrationId) {
-      setError('No registration ID provided');
+    if (!tokenParam && !registrationId) {
+      setError('No registration token provided');
       setLoading(false);
       return;
     }
 
     async function loadRegistration() {
       try {
-        // Fetch registration details
-        const response = await fetch(`/api/registrations/${registrationId}`);
-        const data = await response.json();
+        let reg: any;
+        let orgName: string | undefined;
+        let evtName: string | undefined;
 
-        if (!response.ok || !data.registration) {
-          throw new Error(data.error || 'Registration not found');
+        if (tokenParam) {
+          // Public endpoint — no auth required (works in incognito)
+          const response = await fetch(`/api/registrations/by-token/${tokenParam}`);
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Registration not found');
+          }
+          reg = {
+            id: data.registration.id,
+            checkInToken: data.registration.checkInToken,
+            registrationData: data.registration.registrationData,
+            registeredAt: data.registration.registeredAt,
+          };
+          orgName = data.organizationName;
+          evtName = data.eventName;
+        } else {
+          // Authenticated fallback — fetch by ID
+          const response = await fetch(`/api/registrations/${registrationId}`);
+          const data = await response.json();
+          if (!response.ok || !data.registration) {
+            throw new Error(data.error || 'Registration not found');
+          }
+          reg = data.registration;
+          orgName = data.organizationName;
+          evtName = data.eventName;
         }
 
-        const reg = data.registration;
-        
         if (!reg.checkInToken) {
           throw new Error('Check-in token not available for this registration');
         }
@@ -51,10 +73,10 @@ function RegistrationSuccessContent() {
         setRegistration({
           id: reg.id,
           checkInToken: reg.checkInToken,
-          registrationData: JSON.parse(reg.registrationData || '{}'),
+          registrationData: typeof reg.registrationData === 'string' ? JSON.parse(reg.registrationData) : reg.registrationData,
           registeredAt: reg.registeredAt,
-          organizationName: data.organizationName,
-          eventName: data.eventName
+          organizationName: orgName,
+          eventName: evtName,
         });
 
         // Generate QR code from check-in token
@@ -80,7 +102,7 @@ function RegistrationSuccessContent() {
     }
 
     loadRegistration();
-  }, [registrationId]);
+  }, [tokenParam, registrationId]);
 
   const handleEmailQRCode = async () => {
     if (!registration) return;

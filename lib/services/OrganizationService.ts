@@ -281,6 +281,7 @@ export class OrganizationService implements IOrganizationService {
       contactCity: row.contact_city || undefined,
       contactState: row.contact_state || undefined,
       contactZip: row.contact_zip || undefined,
+      timezone: row.timezone || 'America/Los_Angeles',
       emailVerified: Boolean(row.email_verified),
       createdAt: row.created_at,
       updatedAt: row.updated_at,

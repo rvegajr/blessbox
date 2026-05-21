@@ -36,8 +36,8 @@ export function DashboardHeader() {
   const handleSwitchOrg = async (orgId: string) => {
     setOrgMenuOpen(false);
     await setActiveOrganization(orgId);
-    await refresh();
-    router.push('/dashboard');
+    // Full page reload to bypass Next.js client cache and use updated cookie
+    window.location.href = '/dashboard';
   };
 
   return (

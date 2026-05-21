@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
+import { RegistrationRoleService } from '@/lib/services/RegistrationRoleService';
 
 interface Registration {
   id: string;
@@ -22,17 +23,27 @@ interface Registration {
   tokenStatus?: string;
 }
 
+interface Event {
+  id: string;
+  name: string;
+  eventType: string | null;
+}
+
 export default function RegistrationsPage() {
   const { user, status: sessionStatus } = useAuth();
   const router = useRouter();
   const { ready, activeOrganizationId } = useRequireActiveOrganization();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     deliveryStatus: '',
-    search: ''
+    search: '',
+    eventId: '',
   });
+  const roleService = useMemo(() => new RegistrationRoleService(), []);
 
   // Handle unauthenticated state - redirect to login
   useEffect(() => {
@@ -62,34 +73,43 @@ export default function RegistrationsPage() {
       return;
     }
     
-    const fetchRegistrations = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/registrations?organizationId=${organizationId}`);
-        const result = await response.json();
+        const [registrationsResponse, eventsResponse] = await Promise.all([
+          fetch(`/api/registrations?organizationId=${organizationId}`),
+          fetch(`/api/events?organizationId=${organizationId}`),
+        ]);
         
-        if (result.success) {
-          setRegistrations(result.data || []);
-          if (result.data && result.data.length === 0) {
+        const registrationsResult = await registrationsResponse.json();
+        if (registrationsResult.success) {
+          setRegistrations(registrationsResult.data || []);
+          if (registrationsResult.data && registrationsResult.data.length === 0) {
             console.log(`No registrations found for organization ${organizationId}`);
           }
         } else {
-          console.error('Failed to load registrations:', result.error);
-          setError(result.error || 'Failed to load registrations');
+          console.error('Failed to load registrations:', registrationsResult.error);
+          setError(registrationsResult.error || 'Failed to load registrations');
+        }
+        
+        const eventsResult = await eventsResponse.json();
+        if (eventsResult.events) {
+          setEvents(eventsResult.events);
         }
       } catch (err) {
-        console.error('Error fetching registrations:', err);
-        setError('Failed to load registrations');
+        console.error('Error fetching data:', err);
+        setError('Failed to load data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRegistrations();
+    fetchData();
   }, [activeOrganizationId, ready, user, sessionStatus]);
 
   const filteredRegistrations = registrations.filter(reg => {
     const data = JSON.parse(reg.registrationData);
     const matchesStatus = !filters.deliveryStatus || reg.deliveryStatus === filters.deliveryStatus;
+    const matchesEvent = !filters.eventId || reg.qrCodeSetId === filters.eventId;
     
     // Search through all registration data fields (handles both field IDs and semantic keys)
     const matchesSearch = !filters.search || Object.values(data).some(value => {
@@ -99,7 +119,7 @@ export default function RegistrationsPage() {
       return false;
     });
     
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesSearch && matchesEvent;
   });
 
   const getStatusBadge = (status: string) => {
@@ -163,18 +183,11 @@ export default function RegistrationsPage() {
               data-testid="btn-export-csv"
               onClick={async () => {
                 try {
+                  setExportError(null);
                   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                  const response = await fetch('/api/export/registrations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      format: 'csv',
-                      timezone,
-                      filters: {
-                        deliveryStatus: filters.deliveryStatus || undefined,
-                      },
-                    }),
-                  });
+                  const params = new URLSearchParams({ format: 'csv', timezone });
+                  if (filters.deliveryStatus) params.set('deliveryStatus', filters.deliveryStatus);
+                  const response = await fetch(`/api/registrations/export?${params}`);
 
                   if (response.ok) {
                     const blob = await response.blob();
@@ -187,10 +200,14 @@ export default function RegistrationsPage() {
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                   } else {
-                    alert('Failed to export registrations');
+                    const msg = await response.text().catch(() => 'Unknown error');
+                    setExportError(`Export failed (${response.status}): ${msg}`);
+                    console.error('CSV export failed:', response.status, msg);
                   }
                 } catch (err) {
-                  alert('Error exporting registrations');
+                  const msg = err instanceof Error ? err.message : 'Unknown error';
+                  setExportError(`Export error: ${msg}`);
+                  console.error('CSV export error:', err);
                 }
               }}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
@@ -203,18 +220,11 @@ export default function RegistrationsPage() {
               data-testid="btn-export-pdf"
               onClick={async () => {
                 try {
+                  setExportError(null);
                   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                  const response = await fetch('/api/export/registrations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      format: 'pdf',
-                      timezone,
-                      filters: {
-                        deliveryStatus: filters.deliveryStatus || undefined,
-                      },
-                    }),
-                  });
+                  const params = new URLSearchParams({ format: 'pdf', timezone });
+                  if (filters.deliveryStatus) params.set('deliveryStatus', filters.deliveryStatus);
+                  const response = await fetch(`/api/registrations/export?${params}`);
 
                   if (response.ok) {
                     const blob = await response.blob();
@@ -227,10 +237,14 @@ export default function RegistrationsPage() {
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                   } else {
-                    alert('Failed to export registrations');
+                    const msg = await response.text().catch(() => 'Unknown error');
+                    setExportError(`Export failed (${response.status}): ${msg}`);
+                    console.error('PDF export failed:', response.status, msg);
                   }
                 } catch (err) {
-                  alert('Error exporting registrations');
+                  const msg = err instanceof Error ? err.message : 'Unknown error';
+                  setExportError(`Export error: ${msg}`);
+                  console.error('PDF export error:', err);
                 }
               }}
               className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center space-x-2"
@@ -241,9 +255,29 @@ export default function RegistrationsPage() {
           </div>
         </div>
 
+        {/* Export Error */}
+        {exportError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6" role="alert">
+            <div className="flex items-start">
+              <span className="text-red-600 mr-2">⚠️</span>
+              <div>
+                <p className="text-red-800 font-medium">Export Failed</p>
+                <p className="text-red-700 text-sm mt-1">{exportError}</p>
+              </div>
+              <button
+                onClick={() => setExportError(null)}
+                className="ml-auto text-red-600 hover:text-red-800"
+                aria-label="Dismiss error"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Search
@@ -257,6 +291,25 @@ export default function RegistrationsPage() {
                 className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 aria-label="Search registrations"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event
+              </label>
+              <select
+                data-testid="select-event-filter"
+                value={filters.eventId}
+                onChange={e => setFilters({...filters, eventId: e.target.value})}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Filter by event"
+              >
+                <option value="">All Events</option>
+                {events.map(event => (
+                  <option key={event.id} value={event.id}>
+                    {event.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -278,7 +331,7 @@ export default function RegistrationsPage() {
             <div className="flex items-end">
               <button
                 data-testid="btn-clear-registration-filters"
-                onClick={() => setFilters({ deliveryStatus: '', search: '' })}
+                onClick={() => setFilters({ deliveryStatus: '', search: '', eventId: '' })}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
                 aria-label="Clear filters"
               >
@@ -346,9 +399,9 @@ export default function RegistrationsPage() {
                   : 'Registrations will appear here once people start registering.'
                 }
               </p>
-              {filters.search || filters.deliveryStatus ? (
+              {filters.search || filters.deliveryStatus || filters.eventId ? (
                 <button
-                  onClick={() => setFilters({ deliveryStatus: '', search: '' })}
+                  onClick={() => setFilters({ deliveryStatus: '', search: '', eventId: '' })}
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Clear filters
@@ -375,6 +428,9 @@ export default function RegistrationsPage() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       QR Code
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
@@ -437,6 +493,22 @@ export default function RegistrationsPage() {
                           <div className="text-sm text-gray-500">
                             {reg.qrCodeId}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {(() => {
+                            const role = roleService.extractRole(data);
+                            if (!role) {
+                              return <span className="text-xs text-gray-400">—</span>;
+                            }
+                            return (
+                              <span
+                                className="px-2 py-0.5 rounded-md text-xs font-medium border bg-gray-100 text-gray-800 border-gray-200"
+                                data-testid={`role-${reg.id}`}
+                              >
+                                {role}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span 

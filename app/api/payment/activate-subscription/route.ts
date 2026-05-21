@@ -8,13 +8,15 @@ import {
   type PlanType,
   type BillingCycle,
 } from '@/lib/subscriptions';
-import { isValidPlan } from '@/lib/pricing/plans';
+import { isValidPlan, getPlanPriceCents } from '@/lib/pricing/plans';
 import { parseBody } from '@/lib/api/validate';
+import { PlanUpgrade } from '@/lib/services/PlanUpgrade';
 
 const Schema = z.object({
   planType: z.string().min(1).optional().default('single-org'),
   billingCycle: z.enum(['monthly', 'yearly', 'annual']).optional(),
   amountCents: z.number().int().min(0).optional(),
+  orderId: z.string().optional(), // Square order ID from Noctusoft checkout
 });
 
 /**
@@ -52,20 +54,43 @@ export async function POST(req: NextRequest) {
     return json({ success: false, error: 'Organization selection required' }, 409);
   }
 
-  // Idempotency check — don't double-activate
+  // P0 Fix: Check for existing subscription and execute upgrade if needed
   const existing = await getActiveSubscription(org.id);
+  const amountCents = body.amountCents ?? getPlanPriceCents(planType, billingCycle);
+
   if (existing) {
-    return json({ success: true, subscription: existing, alreadyActive: true }, 200);
+    // Existing subscription — execute upgrade (or re-provision same plan idempotently)
+    const existingPlan = existing.plan_type as PlanType;
+    
+    if (existingPlan === planType) {
+      // Same plan, idempotent — return existing
+      return json({ success: true, subscription: existing, alreadyActive: true }, 200);
+    }
+    
+    // Different plan — execute upgrade
+    const planUpgrade = new PlanUpgrade();
+    const upgradeResult = await planUpgrade.executeUpgrade(org.id, planType);
+    
+    if (!upgradeResult.success) {
+      return json({ 
+        success: false, 
+        error: upgradeResult.error || 'Upgrade failed' 
+      }, 400);
+    }
+    
+    // Fetch updated subscription
+    const updated = await getActiveSubscription(org.id);
+    return json({ success: true, subscription: updated, upgraded: true }, 200);
   }
 
-  const amountCents = body.amountCents ?? 999; // default $9.99 for single-org
-
+  // No existing subscription — create new one
   const sub = await createSubscription({
     organizationId: org.id,
     planType,
     billingCycle,
     currency: 'USD',
     amountCents,
+    externalSubscriptionId: body.orderId,
   });
 
   return json({ success: true, subscription: sub }, 201);

@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from '@/lib/auth-helper';
-import { createSubscription, resolveOrganizationForSession } from '@/lib/subscriptions';
+import { createSubscription, resolveOrganizationForSession, getActiveSubscription } from '@/lib/subscriptions';
 import { SquarePaymentService } from '@/lib/services/SquarePaymentService';
 import { getPlanPriceCents, isValidPlan, type PlanType, type BillingCycle } from '@/lib/pricing/plans';
 import { CouponService } from '@/lib/coupons';
+import { PlanUpgrade } from '@/lib/services/PlanUpgrade';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { getEnv, getEnvBoolean } from '@/lib/utils/env';
@@ -173,6 +174,47 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // P0 Fix: Check for existing subscription and execute upgrade if needed
+  const existing = await getActiveSubscription(org.id);
+  
+  if (existing) {
+    // Existing subscription — execute upgrade (or re-provision same plan)
+    const existingPlan = existing.plan_type as PlanType;
+    
+    if (existingPlan === planType) {
+      // Same plan, idempotent — return existing
+      return json({
+        success: true,
+        subscription: existing,
+        chargedAmountCents: amountCents,
+        alreadyActive: true,
+        ...(paymentToken && { transactionId: 'square-tx-' + Date.now() }),
+      }, 200);
+    }
+    
+    // Different plan — execute upgrade
+    const planUpgrade = new PlanUpgrade();
+    const upgradeResult = await planUpgrade.executeUpgrade(org.id, planType);
+    
+    if (!upgradeResult.success) {
+      return json({ 
+        success: false, 
+        error: upgradeResult.error || 'Upgrade failed' 
+      }, 400);
+    }
+    
+    // Fetch updated subscription
+    const updated = await getActiveSubscription(org.id);
+    return json({
+      success: true,
+      subscription: updated,
+      chargedAmountCents: amountCents,
+      upgraded: true,
+      ...(paymentToken && { transactionId: 'square-tx-' + Date.now() }),
+    }, 200);
+  }
+
+  // No existing subscription — create new one
   const sub = await createSubscription({
     organizationId: org.id,
     planType,
