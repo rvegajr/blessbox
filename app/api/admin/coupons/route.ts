@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { CouponService } from '@/lib/coupons';
 import { isSuperAdminEmail } from '@/lib/auth';
+import { createCouponSchema } from '@/lib/validation/coupon.schema';
+import { ZodError } from 'zod';
 
 /**
  * GET /api/admin/coupons
@@ -39,9 +41,11 @@ export async function GET(request: NextRequest) {
       return {
         id: c.id,
         code: c.code,
-        description: '', // not stored in CouponService schema
+        description: c.description || '',
         discountType: c.discountType,
         discountValue: c.discountValue,
+        minAmount: c.minAmount ?? null,
+        maxDiscount: c.maxDiscount ?? null,
         isActive: !!c.active,
         expiresAt: c.expiresAt || null,
         createdAt: c.createdAt,
@@ -96,55 +100,49 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/admin/coupons
- * Create a new coupon
+ * Create a new coupon with Zod validation
  */
 export async function POST(request: NextRequest) {
   try {
     // Check authentication and admin role
     const session = await getServerSession();
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        error: 'Not authenticated',
+        code: 'UNAUTHORIZED' 
+      }, { status: 401 });
     }
     if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ 
+        error: 'Not authorized to create coupons. Super admin access required.',
+        code: 'FORBIDDEN' 
+      }, { status: 403 });
     }
 
     const couponService = new CouponService();
     const body = await request.json();
-    const {
-      code,
-      discountType,
-      discountValue,
-      maxUses,
-      maxRedemptions,
-      expiresAt,
-      applicablePlans,
-      isActive,
-    } = body;
 
-    // Validate required fields
-    if (!code || !discountType || !discountValue) {
-      return NextResponse.json(
-        { error: 'Missing required fields: code, discountType, discountValue' },
-        { status: 400 }
-      );
-    }
+    // Validate with Zod schema
+    const validatedData = createCouponSchema.parse(body);
 
     // Create coupon using CouponService
     const newCoupon = await couponService.createCoupon({
-      code,
-      discountType,
-      discountValue,
+      code: validatedData.code,
+      description: validatedData.description,
+      discountType: validatedData.discountType,
+      discountValue: validatedData.discountValue,
       currency: 'USD',
-      maxUses: maxRedemptions ?? maxUses,
-      expiresAt,
-      applicablePlans,
+      minAmount: validatedData.minAmount,
+      maxDiscount: validatedData.maxDiscount,
+      maxUses: validatedData.maxRedemptions,
+      expiresAt: validatedData.expiresAt || undefined,
+      applicablePlans: validatedData.applicablePlans || undefined,
       createdBy: session.user.email
     });
 
     // Optionally mark inactive
-    if (isActive === false) {
-      await couponService.updateCoupon(newCoupon.id, { active: false } as any);
+    if (validatedData.isActive === false) {
+      await couponService.updateCoupon(newCoupon.id, { active: false });
     }
 
     return NextResponse.json({
@@ -152,9 +150,11 @@ export async function POST(request: NextRequest) {
       coupon: {
         id: newCoupon.id,
         code: newCoupon.code,
-        description: '',
+        description: newCoupon.description || '',
         discountType: newCoupon.discountType,
         discountValue: newCoupon.discountValue,
+        minAmount: newCoupon.minAmount ?? null,
+        maxDiscount: newCoupon.maxDiscount ?? null,
         isActive: !!newCoupon.active,
         expiresAt: newCoupon.expiresAt || null,
         createdAt: newCoupon.createdAt,
@@ -163,9 +163,47 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Create coupon error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create coupon' },
-      { status: 500 }
-    );
+
+    // Surface Zod validation errors
+    if (error instanceof ZodError) {
+      return NextResponse.json({
+        error: 'Validation error',
+        code: 'VALIDATION_ERROR',
+        details: error.errors.map(e => ({
+          path: e.path,
+          message: e.message
+        }))
+      }, { status: 400 });
+    }
+
+    // Surface database constraint errors (e.g., duplicate code)
+    if (error instanceof Error) {
+      if (error.message.includes('UNIQUE constraint failed') || 
+          error.message.includes('already exists')) {
+        return NextResponse.json({
+          error: 'Coupon code already exists',
+          code: 'DUPLICATE_CODE'
+        }, { status: 409 });
+      }
+
+      if (error.message.includes('CHECK constraint failed')) {
+        return NextResponse.json({
+          error: 'Invalid coupon data: ' + error.message,
+          code: 'VALIDATION_ERROR'
+        }, { status: 400 });
+      }
+
+      // Surface other known errors
+      return NextResponse.json({
+        error: error.message,
+        code: 'SERVER_ERROR'
+      }, { status: 500 });
+    }
+
+    // Generic fallback
+    return NextResponse.json({
+      error: 'Failed to create coupon',
+      code: 'INTERNAL_ERROR'
+    }, { status: 500 });
   }
 }

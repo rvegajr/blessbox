@@ -8,7 +8,7 @@ import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { createNoctusoftCheckoutSession } from '@/lib/services/NoctusoftCheckoutService';
 
-const NOCTUSOFT_PLANS = new Set<PlanType>(['single-org']);
+const NOCTUSOFT_PLANS = new Set<PlanType>(['single-org', 'standard', 'enterprise']);
 
 const Schema = z.object({
   planType: z.string().min(1),
@@ -100,16 +100,27 @@ export async function POST(req: NextRequest) {
 
   // Build redirect URL — Square will redirect here after the customer pays
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://blessbox.org';
-  const redirectUrl = `${appUrl}/checkout/success?plan=${encodeURIComponent(planType)}`;
+  const successParams = new URLSearchParams({
+    plan: planType,
+    cycle: billingCycle,
+    amount: String(amountCents),
+  });
+  const redirectUrl = `${appUrl}/checkout/success?${successParams}`;
 
   try {
-    const { checkoutUrl } = await createNoctusoftCheckoutSession({
+    // P0 Fix: Pass stable sessionId for idempotency
+    // Use user ID as session identifier to prevent duplicate charges on retry
+    const sessionId = session.user?.id || 'anonymous';
+    
+    const { checkoutUrl, orderId } = await createNoctusoftCheckoutSession({
       plan: planType,
       userId: org.id,
       email,
       redirectUrl,
+      sessionId,
     });
-    return json({ success: true, checkoutUrl }, 200);
+    // Return orderId to client — stored in sessionStorage before redirect to Square
+    return json({ success: true, checkoutUrl, orderId }, 200);
   } catch (err: any) {
     console.error('[create-checkout-session] Noctusoft error:', err);
     return json({ success: false, error: 'Failed to create checkout session', message: err?.message }, 502);

@@ -23,8 +23,24 @@ interface Registration {
   tokenStatus: string;
   checkedInAt?: string;
   checkedInBy?: string;
-  qrCodeLabel: string;
+  qrCodeSetName: string;
+  /** Phase 2: normalized role from registration_data; null when not provided. */
+  role?: string | null;
   registrationData: any;
+}
+
+/** Tailwind classes per known role for visual differentiation. Falls back gracefully. */
+function roleBadgeClass(role: string): string {
+  const map: Record<string, string> = {
+    volunteer: 'bg-purple-100 text-purple-800 border-purple-200',
+    coordinator: 'bg-purple-100 text-purple-800 border-purple-200',
+    attendee: 'bg-blue-100 text-blue-800 border-blue-200',
+    recipient: 'bg-blue-100 text-blue-800 border-blue-200',
+    organizer: 'bg-amber-100 text-amber-800 border-amber-200',
+    speaker: 'bg-amber-100 text-amber-800 border-amber-200',
+    staff: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  };
+  return map[role] || 'bg-gray-100 text-gray-800 border-gray-200';
 }
 
 type CheckInMode = 'scanner' | 'search' | 'list';
@@ -38,7 +54,8 @@ export default function CheckInDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'pending' | 'checked-in'>('pending');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'checked-in'>('all');
+  const [roleFilter, setRoleFilter] = useState<string>('');
   const [manualToken, setManualToken] = useState('');
 
   // Scanner state
@@ -103,7 +120,7 @@ export default function CheckInDashboard() {
   useEffect(() => {
     if (status !== 'authenticated') return;
     loadRegistrations();
-  }, [status, searchQuery, filter]);
+  }, [status, searchQuery, filter, roleFilter]);
 
   const loadRegistrations = async () => {
     setLoading(true);
@@ -113,8 +130,9 @@ export default function CheckInDashboard() {
       const params = new URLSearchParams({
         q: searchQuery,
         filter,
-        limit: '100'
+        limit: '100',
       });
+      if (roleFilter) params.set('role', roleFilter);
 
       const response = await fetch(`/api/check-in/search?${params}`);
       const data = await response.json();
@@ -348,11 +366,43 @@ export default function CheckInDashboard() {
 
           {mode === 'list' && (
             <div data-testid="mode-list-content">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-3 mb-6">
                 <h2 className="text-xl font-bold text-gray-900">All Registrations</h2>
-                
-                {/* Filter Tabs */}
-                <div className="flex gap-2">
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Role filter (Phase 2) — only visible when at least one role is observed */}
+                  {(() => {
+                    const observed = Array.from(
+                      new Set(
+                        registrations
+                          .map((r) => (r.role || '').trim().toLowerCase())
+                          .filter((r) => r.length > 0)
+                      )
+                    ).sort();
+                    // Always include the active filter even if no rows match it currently,
+                    // so the user can clear/change without flicker.
+                    if (roleFilter && !observed.includes(roleFilter)) observed.push(roleFilter);
+                    if (observed.length === 0) return null;
+                    return (
+                      <select
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        data-testid="filter-role"
+                        aria-label="Filter by role"
+                      >
+                        <option value="">All roles</option>
+                        {observed.map((r) => (
+                          <option key={r} value={r} data-testid={`option-role-${r}`}>
+                            {r.charAt(0).toUpperCase() + r.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    );
+                  })()}
+
+                  {/* Filter Tabs */}
+                  <div className="flex gap-2">
                   <button
                     onClick={() => setFilter('pending')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -386,6 +436,7 @@ export default function CheckInDashboard() {
                   >
                     All
                   </button>
+                  </div>
                 </div>
               </div>
 
@@ -471,7 +522,7 @@ function RegistrationCard({
     >
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <h3 className="text-lg font-bold text-gray-900">{registration.name}</h3>
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -483,6 +534,15 @@ function RegistrationCard({
             >
               {statusText}
             </span>
+            {registration.role && (
+              <span
+                className={`px-2 py-0.5 rounded-md text-xs font-medium border ${roleBadgeClass(registration.role)}`}
+                data-testid={`role-badge-${registration.id}`}
+                aria-label={`Role: ${registration.role}`}
+              >
+                {registration.role}
+              </span>
+            )}
           </div>
           
           <div className="space-y-1 text-sm text-gray-600">

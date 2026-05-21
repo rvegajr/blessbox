@@ -31,6 +31,10 @@ export interface QRCodeSet {
   language: string;
   isActive: boolean;
   scanCount: number;
+  /** Event-type taxonomy (food_distribution | seminar | volunteer | custom). Optional for legacy rows. */
+  eventType?: string | null;
+  /** Optional human-friendly event description, surfaced on listing screens. */
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,7 +88,15 @@ export interface IQRCodeService {
   // Get QR code set by ID
   getQRCodeSet(id: string): Promise<QRCodeSet | null>;
   
-  // Update QR code set (name, active status)
-  updateQRCodeSet(id: string, updates: { name?: string; isActive?: boolean }): Promise<QRCodeSet>;
+  // Update QR code set (name, active status, event metadata)
+  updateQRCodeSet(
+    id: string,
+    updates: {
+      name?: string;
+      isActive?: boolean;
+      eventType?: string | null;
+      description?: string | null;
+    }
+  ): Promise<QRCodeSet>;
 }
 

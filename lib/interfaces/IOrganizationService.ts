@@ -12,6 +12,7 @@ export interface Organization {
   contactCity?: string;
   contactState?: string;
   contactZip?: string;
+  timezone?: string;
   emailVerified: boolean;
   createdAt: string;
   updatedAt: string;
@@ -39,6 +40,7 @@ export interface OrganizationUpdate {
   contactCity?: string;
   contactState?: string;
   contactZip?: string;
+  timezone?: string;
 }
 
 export interface EmailVerificationResult {

@@ -10,12 +10,17 @@ import { z } from 'zod';
 import { getServerSession } from '@/lib/auth-helper';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { getDbClient } from '@/lib/db';
+import { RegistrationRoleService } from '@/lib/services/RegistrationRoleService';
 
 const SearchQuerySchema = z.object({
   q: z.string().max(200).optional().default(''),
   filter: z.enum(['all', 'pending', 'checked-in']).optional().default('all'),
   limit: z.coerce.number().int().min(1).max(500).optional().default(50),
+  // Phase 2: optional role filter (case-insensitive). Empty/omitted = no filter.
+  role: z.string().max(32).optional().default(''),
 });
+
+const roleService = new RegistrationRoleService();
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,6 +48,7 @@ export async function GET(request: NextRequest) {
       q: searchParams.get('q') ?? undefined,
       filter: searchParams.get('filter') ?? undefined,
       limit: searchParams.get('limit') ?? undefined,
+      role: searchParams.get('role') ?? undefined,
     });
     if (!qsParse.success) {
       return NextResponse.json(
@@ -50,7 +56,7 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    const { q: query, filter, limit } = qsParse.data;
+    const { q: query, filter, limit, role: roleFilter } = qsParse.data;
 
     const db = getDbClient();
 
@@ -64,7 +70,7 @@ export async function GET(request: NextRequest) {
         r.token_status,
         r.checked_in_at,
         r.checked_in_by,
-        qcs.label as qr_code_label
+        qcs.name as qr_code_set_name
       FROM registrations r
       LEFT JOIN qr_code_sets qcs ON r.qr_code_set_id = qcs.id
       WHERE qcs.organization_id = ?
@@ -97,7 +103,7 @@ export async function GET(request: NextRequest) {
     const result = await db.execute({ sql, args });
 
     // Parse registration data and extract key fields
-    const registrations = result.rows.map((row: any) => {
+    const allRegistrations = result.rows.map((row: any) => {
       const data = JSON.parse(row.registration_data || '{}');
       return {
         id: row.id,
@@ -109,17 +115,26 @@ export async function GET(request: NextRequest) {
         tokenStatus: row.token_status,
         checkedInAt: row.checked_in_at,
         checkedInBy: row.checked_in_by,
-        qrCodeLabel: row.qr_code_label,
-        registrationData: data
+        qrCodeSetName: row.qr_code_set_name,
+        // Phase 2: surface normalized role for badges/filters; null when missing.
+        role: roleService.extractRole(data),
+        registrationData: data,
       };
     });
+
+    // Apply role filter at the JSON layer (not pushed down to SQL because role
+    // lives inside the registration_data blob).
+    const registrations = roleFilter
+      ? allRegistrations.filter((r) => roleService.matchesRole(r, roleFilter))
+      : allRegistrations;
 
     return NextResponse.json({
       success: true,
       registrations,
       total: registrations.length,
       filter,
-      query
+      role: roleFilter || null,
+      query,
     });
 
   } catch (error) {

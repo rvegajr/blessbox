@@ -13,17 +13,23 @@ export interface CouponValidationResult {
 
 export interface CouponCreate {
   code: string;
+  description?: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   currency?: string;
-  maxUses?: number;
-  expiresAt?: string;
-  applicablePlans?: string[];
+  minAmount?: number | null;
+  maxDiscount?: number | null;
+  maxUses?: number | null;
+  expiresAt?: string | null;
+  applicablePlans?: string[] | null;
   createdBy: string;
 }
 
 export interface CouponUpdate {
+  description?: string;
   discountValue?: number;
+  minAmount?: number | null;
+  maxDiscount?: number | null;
   maxUses?: number;
   expiresAt?: string;
   applicablePlans?: string[];
@@ -33,9 +39,12 @@ export interface CouponUpdate {
 export interface Coupon {
   id: string;
   code: string;
+  description?: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   currency: string;
+  minAmount?: number | null;
+  maxDiscount?: number | null;
   active: boolean;
   maxUses?: number;
   currentUses: number;

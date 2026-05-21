@@ -101,3 +101,4 @@ body:
       description: |
         Record this bug with [Jam](https://jam.dev) — it captures your screen, console logs, and network requests in one click. Paste the link here.
       placeholder: "📹 https://jam.dev/recordings/..."
+

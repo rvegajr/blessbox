@@ -10,6 +10,7 @@
 import { useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { AuthContext, type AuthState, type AuthContextValue, type Organization } from '@/lib/hooks/useAuth';
 import type { AuthUser } from '@/lib/interfaces/IAuthService';
+import { clearOnboardingStorage } from '@/lib/utils/clear-onboarding-storage';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -122,6 +123,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { success: false, error: data.error || 'Verification failed' };
       }
 
+      // P0 Fix: Clear onboarding localStorage on successful login
+      clearOnboardingStorage();
+
       // Update state with new session
       setState(prev => ({
         ...prev,
@@ -146,6 +150,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       console.error('Logout error:', error);
     }
+    
+    // P0 Fix: Clear onboarding localStorage on logout
+    clearOnboardingStorage();
     
     setState({ user: null, status: 'unauthenticated', expires: null, organizations: [], activeOrganizationId: null });
   }, []);

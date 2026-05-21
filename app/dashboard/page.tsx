@@ -146,6 +146,19 @@ export default function DashboardPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
+                  href="/dashboard/events"
+                  data-testid="link-view-events"
+                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-green-300 transition-colors"
+                  aria-label="Manage events"
+                >
+                  <div className="text-2xl mr-3">📅</div>
+                  <div>
+                    <div className="font-medium text-gray-900">Events</div>
+                    <div className="text-sm text-gray-600">Manage all</div>
+                  </div>
+                </Link>
+
+                <Link
                   href="/dashboard/registrations"
                   data-testid="link-view-registrations"
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-blue-300 transition-colors"

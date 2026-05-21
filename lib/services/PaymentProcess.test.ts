@@ -20,6 +20,9 @@ vi.mock('@/lib/subscriptions', () => ({
     plan_type: 'enterprise',
     status: 'active',
   }),
+  // P0 added: route now reads any existing subscription before deciding to upgrade vs create.
+  // Default to "no existing subscription" so the existing test paths fall through to createSubscription.
+  getActiveSubscription: vi.fn().mockResolvedValue(null),
   getOrCreateOrganizationForEmail: vi.fn().mockResolvedValue({
     id: 'org_123',
     name: 'Test Org',

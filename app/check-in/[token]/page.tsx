@@ -212,8 +212,8 @@ export default function CheckInPage({ params }: { params: Promise<{ token: strin
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Registrant Details</h2>
             
             <div className="space-y-3">
-              {(parsed.fields.length > 0 ? parsed.fields : Object.entries(registration.registrationData).map(([key, value]) => ({
-                label: key.replace(/([A-Z])/g, ' $1').trim(),
+              {(parsed.fields.length > 0 ? parsed.fields : Object.entries(registration.registrationData).map(([key, value], i) => ({
+                label: /^Field_\d+$/.test(key) ? `Field ${i + 1}` : key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
                 value: String(value),
               }))).map((field) => (
                 <div key={field.label} className="flex justify-between border-b border-gray-200 pb-2">

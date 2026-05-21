@@ -7,6 +7,9 @@ function CheckoutSuccessContent() {
   const router = useRouter();
   const params = useSearchParams();
   const planType = params.get('plan') || 'single-org';
+  const billingCycle = params.get('cycle') || 'monthly';
+  const amountCents = params.get('amount') ? parseInt(params.get('amount')!) : undefined;
+  const orderId = (typeof window !== 'undefined' && sessionStorage.getItem('bb_checkout_orderId')) || undefined;
 
   const [state, setState] = useState<'activating' | 'success' | 'error'>('activating');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -19,7 +22,7 @@ function CheckoutSuccessContent() {
         const res = await fetch('/api/payment/activate-subscription', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ planType }),
+          body: JSON.stringify({ planType, billingCycle, amountCents, orderId }),
         });
         const data = await res.json().catch(() => ({}));
 

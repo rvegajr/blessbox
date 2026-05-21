@@ -288,10 +288,29 @@ describe('ContextAwareTutorials - Context-Aware System', () => {
         type: 'userAction',
         detail: expect.objectContaining({
           type: 'click',
-          data: button,
+          data: expect.objectContaining({ tagName: 'BUTTON' }),
           timestamp: expect.any(Number)
         })
       }));
+    });
+
+    it('should produce JSON-serializable action records from click events', () => {
+      const contextTutorials = new ContextAwareTutorials();
+      contextTutorials.init();
+
+      const element = createTestElement('<button id="export-csv" class="btn-primary">Export CSV</button>');
+      const button = element.querySelector('button')!;
+
+      button.click();
+
+      // The action should have been stored in localStorage without throwing
+      const actions = JSON.parse(localStorage.getItem('blessbox_user_actions') || '[]');
+      const clickAction = actions.find((a: any) => a.type === 'click' && a.data?.id === 'export-csv');
+      expect(clickAction).toBeDefined();
+      expect(clickAction.data.tagName).toBe('BUTTON');
+      expect(clickAction.data.id).toBe('export-csv');
+      // Must be fully serializable (no circular refs)
+      expect(() => JSON.stringify(clickAction)).not.toThrow();
     });
 
     it('should track form submission events', () => {

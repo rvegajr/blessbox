@@ -27,6 +27,7 @@ export interface NoctusoftCheckoutParams {
   userId: string;     // org or user ID — used for idempotent customer creation
   email: string;      // customer email
   redirectUrl: string; // Square redirects here after payment
+  sessionId?: string;  // P0 Fix: Optional session ID for stable idempotency key
 }
 
 export interface NoctusoftCheckoutResult {
@@ -48,8 +49,10 @@ export async function createNoctusoftCheckoutSession(
     headers['Authorization'] = `Bearer ${deployKey}`;
   }
 
-  // Idempotency key scoped to org + plan so retries don't double-charge
-  const idempotencyKey = `blessbox-checkout-${params.userId}-${params.plan}-${Date.now()}`;
+  // P0 Fix: Stable idempotency key per (org, plan, session) — no timestamp
+  // If sessionId is not provided, use a hash of userId+plan for backwards compat
+  const sessionPart = params.sessionId || `default-${params.userId}`;
+  const idempotencyKey = `blessbox-checkout-${params.userId}-${params.plan}-${sessionPart}`;
 
   const res = await fetch(`${PROXY_BASE}/checkout`, {
     method: 'POST',

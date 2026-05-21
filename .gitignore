@@ -162,3 +162,4 @@ playwright-report/
 
 # Local DB backups
 backups/
+.env.vercel.production

@@ -167,6 +167,10 @@ function CheckoutContent() {
         router.replace(data.redirect);
         return;
       }
+      // Store orderId for the success page to link with the subscription
+      if (data.orderId) {
+        sessionStorage.setItem('bb_checkout_orderId', data.orderId);
+      }
       window.location.href = data.checkoutUrl;
     } catch {
       setStatus('Network error. Please try again.');
@@ -335,7 +339,7 @@ function CheckoutContent() {
               >
                 Complete Checkout
               </button>
-            ) : plan === 'single-org' ? (
+            ) : (
               <button
                 type="button"
                 data-testid="btn-subscribe-square"
@@ -346,20 +350,8 @@ function CheckoutContent() {
               >
                 {redirecting ? 'Redirecting to Square...' : 'Subscribe with Square'}
               </button>
-            ) : squareConfig ? (
-              <SquarePaymentForm
-                amount={amountCents}
-                currency="USD"
-                planType={(plan as any) || 'standard'}
-                billingCycle="monthly"
-                onPaymentSuccess={handlePaymentSuccess}
-                onPaymentError={handlePaymentError}
-                applicationId={squareConfig.applicationId}
-                locationId={squareConfig.locationId}
-                environment={squareConfig.environment as 'sandbox' | 'production'}
-                email={email}
-              />
-            ) : (
+            )}
+            {false && (
             <div className="space-y-4">
               <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information (Test Checkout)</h3>

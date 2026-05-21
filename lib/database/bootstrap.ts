@@ -94,6 +94,7 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
       contact_zip TEXT,
       password_hash TEXT,
       last_login_at TEXT,
+      timezone TEXT DEFAULT 'America/Los_Angeles',
       email_verified INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
@@ -132,7 +133,7 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
       FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
     );`,
 
-    // qr_code_sets
+    // qr_code_sets (a.k.a. "events" in user-facing UI)
     `CREATE TABLE IF NOT EXISTS qr_code_sets (
       id TEXT PRIMARY KEY,
       organization_id TEXT NOT NULL,
@@ -142,6 +143,8 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
       qr_codes TEXT NOT NULL,
       is_active INTEGER NOT NULL DEFAULT 1,
       scan_count INTEGER NOT NULL DEFAULT 0,
+      event_type TEXT,
+      description TEXT,
       created_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       updated_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
       FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
@@ -452,6 +455,14 @@ export async function ensureLibsqlSchema(config?: { url?: string; authToken?: st
   await tryExec(`ALTER TABLE users ADD COLUMN name TEXT;`);
   await tryExec(`ALTER TABLE users ADD COLUMN image TEXT;`);
   await tryExec(`ALTER TABLE users ADD COLUMN email_verified_at TEXT;`);
+
+  // Ensure organizations has timezone column (added for onboarding timezone selector)
+  await tryExec(`ALTER TABLE organizations ADD COLUMN timezone TEXT DEFAULT 'America/Los_Angeles';`);
+
+  // Ensure qr_code_sets (a.k.a. "events") has event_type + description columns.
+  // Both nullable for backwards compatibility with pre-existing rows.
+  await tryExec(`ALTER TABLE qr_code_sets ADD COLUMN event_type TEXT;`);
+  await tryExec(`ALTER TABLE qr_code_sets ADD COLUMN description TEXT;`);
 
   // Normalize identity emails (case-insensitive): users.email must be lowercase unique.
   // If duplicates exist that only differ by case, fail fast with a clear error.

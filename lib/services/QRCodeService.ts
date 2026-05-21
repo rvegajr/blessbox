@@ -6,9 +6,26 @@ import type {
   QRCodeUpdate,
   QRCodeAnalytics,
 } from '../interfaces/IQRCodeService';
+import { QRCodeJsonMapper } from './QRCodeJsonMapper';
+
+function mapRowToQRCodeSet(row: any): QRCodeSet {
+  return {
+    id: row.id,
+    organizationId: row.organization_id,
+    name: row.name,
+    language: row.language,
+    isActive: row.is_active === 1,
+    scanCount: row.scan_count || 0,
+    eventType: row.event_type ?? null,
+    description: row.description ?? null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 export class QRCodeService implements IQRCodeService {
   private db = getDbClient();
+  private mapper = new QRCodeJsonMapper();
 
   async listQRCodes(organizationId: string): Promise<QRCode[]> {
     // Get all QR code sets for this organization
@@ -47,22 +64,19 @@ export class QRCodeService implements IQRCodeService {
 
         const registrationCount = (regCountResult.rows[0] as any)?.count || 0;
 
-        allQRCodes.push({
-          id: qrCodeData.id,
-          qrCodeSetId: qrSetId,
-          label: qrCodeData.label,
-          slug: qrCodeData.slug || qrCodeData.label.toLowerCase().replace(/\s+/g, '-'),
-          url: qrCodeData.url,
-          dataUrl: qrCodeData.dataUrl || '',
-          description: qrCodeData.description || undefined,
-          isActive: true, // QR codes inherit active status from set
-          // Fix: Use per-QR-code registration count, not set-level scan_count
-          // Each QR code should show its own scan count based on registrations
-          scanCount: registrationCount,
-          registrationCount,
-          createdAt: qrCodeData.createdAt || qrSetRow.created_at,
-          updatedAt: qrSetRow.updated_at,
-        });
+        allQRCodes.push(
+          this.mapper.mapJsonToQRCode(
+            qrCodeData,
+            {
+              id: qrSetId,
+              isActive: qrSetRow.is_active === 1,
+              scanCount: registrationCount,
+              createdAt: qrSetRow.created_at,
+              updatedAt: qrSetRow.updated_at,
+            },
+            registrationCount
+          )
+        );
       }
     }
 
@@ -100,20 +114,19 @@ export class QRCodeService implements IQRCodeService {
 
       const registrationCount = (regCountResult.rows[0] as any)?.count || 0;
 
-      qrCodes.push({
-        id: qrCodeData.id,
-        qrCodeSetId,
-        label: qrCodeData.label,
-        slug: qrCodeData.slug || qrCodeData.label.toLowerCase().replace(/\s+/g, '-'),
-        url: qrCodeData.url,
-        dataUrl: qrCodeData.dataUrl || '',
-        description: qrCodeData.description || undefined,
-        isActive: qrCodeData.isActive !== undefined ? qrCodeData.isActive : (qrSet.is_active === 1),
-        scanCount: qrSet.scan_count || 0,
-        registrationCount,
-        createdAt: qrCodeData.createdAt || qrSet.created_at,
-        updatedAt: qrSet.updated_at,
-      });
+      qrCodes.push(
+        this.mapper.mapJsonToQRCode(
+          qrCodeData,
+          {
+            id: qrCodeSetId,
+            isActive: qrSet.is_active === 1,
+            scanCount: qrSet.scan_count || 0,
+            createdAt: qrSet.created_at,
+            updatedAt: qrSet.updated_at,
+          },
+          registrationCount
+        )
+      );
     }
 
     return qrCodes;
@@ -253,7 +266,8 @@ export class QRCodeService implements IQRCodeService {
   async getQRCodeSets(organizationId: string): Promise<QRCodeSet[]> {
     const result = await this.db.execute({
       sql: `
-        SELECT id, organization_id, name, language, is_active, scan_count, created_at, updated_at
+        SELECT id, organization_id, name, language, is_active, scan_count,
+               event_type, description, created_at, updated_at
         FROM qr_code_sets
         WHERE organization_id = ?
         ORDER BY created_at DESC
@@ -261,22 +275,14 @@ export class QRCodeService implements IQRCodeService {
       args: [organizationId],
     });
 
-    return result.rows.map((row: any) => ({
-      id: row.id,
-      organizationId: row.organization_id,
-      name: row.name,
-      language: row.language,
-      isActive: row.is_active === 1,
-      scanCount: row.scan_count || 0,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    }));
+    return result.rows.map((row: any) => mapRowToQRCodeSet(row));
   }
 
   async getQRCodeSet(id: string): Promise<QRCodeSet | null> {
     const result = await this.db.execute({
       sql: `
-        SELECT id, organization_id, name, language, is_active, scan_count, created_at, updated_at
+        SELECT id, organization_id, name, language, is_active, scan_count,
+               event_type, description, created_at, updated_at
         FROM qr_code_sets
         WHERE id = ?
       `,
@@ -287,22 +293,17 @@ export class QRCodeService implements IQRCodeService {
       return null;
     }
 
-    const row = result.rows[0] as any;
-    return {
-      id: row.id,
-      organizationId: row.organization_id,
-      name: row.name,
-      language: row.language,
-      isActive: row.is_active === 1,
-      scanCount: row.scan_count || 0,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return mapRowToQRCodeSet(result.rows[0] as any);
   }
 
   async updateQRCodeSet(
     id: string,
-    updates: { name?: string; isActive?: boolean }
+    updates: {
+      name?: string;
+      isActive?: boolean;
+      eventType?: string | null;
+      description?: string | null;
+    }
   ): Promise<QRCodeSet> {
     // Get current QR code set
     const current = await this.getQRCodeSet(id);
@@ -321,6 +322,16 @@ export class QRCodeService implements IQRCodeService {
     if (updates.isActive !== undefined) {
       setClause.push('is_active = ?');
       args.push(updates.isActive ? 1 : 0);
+    }
+
+    if (updates.eventType !== undefined) {
+      setClause.push('event_type = ?');
+      args.push(updates.eventType);
+    }
+
+    if (updates.description !== undefined) {
+      setClause.push('description = ?');
+      args.push(updates.description);
     }
 
     if (setClause.length === 0) {

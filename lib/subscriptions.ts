@@ -143,6 +143,7 @@ export async function createSubscription(params: {
   billingCycle?: BillingCycle;
   currency?: string;
   amountCents?: number;
+  externalSubscriptionId?: string;
 }): Promise<any> {
   const { organizationId, planType, billingCycle = 'monthly', currency = 'USD' } = params;
   const client = getDbClient();
@@ -161,8 +162,8 @@ export async function createSubscription(params: {
     sql: `INSERT INTO subscription_plans (
       id, organization_id, plan_type, status, registration_limit, current_registration_count,
       billing_cycle, amount, currency, current_period_start, current_period_end,
-      start_date, end_date, created_at, updated_at
-    ) VALUES (?, ?, ?, 'active', ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      start_date, end_date, external_subscription_id, created_at, updated_at
+    ) VALUES (?, ?, ?, 'active', ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       organizationId,
@@ -175,6 +176,7 @@ export async function createSubscription(params: {
       end,
       start,
       end,
+      params.externalSubscriptionId || null,
       start,
       start,
     ],

@@ -24,6 +24,10 @@ export interface FormConfig {
   name: string;
   language: string;
   formFields: FormField[];
+  /** Event-type taxonomy (food_distribution | seminar | volunteer | custom). Optional for legacy configs. */
+  eventType?: string | null;
+  /** Optional human-friendly event description. */
+  description?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,12 +37,16 @@ export interface FormConfigCreate {
   name: string;
   language?: string;
   formFields: FormField[];
+  eventType?: string | null;
+  description?: string | null;
 }
 
 export interface FormConfigUpdate {
   name?: string;
   language?: string;
   formFields?: FormField[];
+  eventType?: string | null;
+  description?: string | null;
 }
 
 export interface FormConfigValidationResult {

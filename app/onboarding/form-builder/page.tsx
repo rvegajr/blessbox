@@ -1,147 +1,45 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { FormBuilderWizard } from '@/components/onboarding/FormBuilderWizard';
 import type { FormBuilderData, FormField } from '@/components/OnboardingWizard.interface';
 import { onboardingSession } from '@/lib/services/OnboardingSessionService';
+import { EventTypeService } from '@/lib/services/EventTypeService';
+import type { EventType } from '@/lib/interfaces/IEventTypeService';
+import { FormPreviewModal } from '@/components/forms/FormPreviewModal';
+
+const ONBOARDING_EVENT_TYPE_KEY = 'onboarding_eventType';
+
+const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  food_distribution: 'Food Distribution',
+  seminar: 'Seminar Registration',
+  volunteer: 'Volunteer Sign-up',
+  custom: 'Custom Event',
+};
+
+/**
+ * Convert template fields from IFormConfigService.FormField to the local
+ * onboarding FormField (which is a subset; no 'number'/'date' types and no 'order').
+ */
+function templateToOnboardingFields(
+  templateFields: { id: string; type: string; label: string; placeholder?: string; required: boolean }[]
+): FormField[] {
+  // Local onboarding type is narrower; coerce 'number'/'date' to 'text' so the field is still useful.
+  const supported = new Set(['text', 'email', 'phone', 'select', 'textarea', 'checkbox']);
+  return templateFields.map((f) => ({
+    id: f.id,
+    type: (supported.has(f.type) ? f.type : 'text') as FormField['type'],
+    label: f.label,
+    placeholder: f.placeholder,
+    required: f.required,
+  }));
+}
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
-
-// Form Preview Modal Component
-function FormPreviewModal({ 
-  isOpen, 
-  onClose, 
-  formData 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  formData: FormBuilderData;
-}) {
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-      data-testid="form-preview-modal"
-      onClick={(e) => {
-        // Click outside the modal closes it
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900">Form Preview</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close preview"
-            data-testid="form-preview-close"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor" />
-            </svg>
-          </button>
-        </div>
-        <div className="p-6">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-lg">
-            <h1 className="text-2xl font-bold">{formData.title || 'Registration Form'}</h1>
-            {formData.description && (
-              <p className="mt-2 text-blue-100">{formData.description}</p>
-            )}
-          </div>
-          <div className="border border-t-0 border-gray-200 rounded-b-lg p-6 space-y-4">
-            {formData.fields.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                No fields added yet. Add fields from the sidebar to see them here.
-              </p>
-            ) : (
-              formData.fields.map((field) => (
-                <div key={field.id} className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    {field.label || `Untitled ${field.type} field`}
-                    {field.required && <span className="text-red-500 ml-1">*</span>}
-                  </label>
-                  {field.type === 'text' && (
-                    <input
-                      type="text"
-                      placeholder={field.placeholder}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                    />
-                  )}
-                  {field.type === 'email' && (
-                    <input
-                      type="email"
-                      placeholder={field.placeholder}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                    />
-                  )}
-                  {field.type === 'phone' && (
-                    <input
-                      type="tel"
-                      placeholder={field.placeholder}
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                    />
-                  )}
-                  {field.type === 'textarea' && (
-                    <textarea
-                      placeholder={field.placeholder}
-                      disabled
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                    />
-                  )}
-                  {field.type === 'select' && (
-                    <select
-                      disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                    >
-                      <option value="">Select an option...</option>
-                      {field.options?.map((option, i) => (
-                        <option key={i} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  )}
-                  {field.type === 'checkbox' && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        disabled
-                        className="w-4 h-4 border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-gray-600">{field.placeholder || 'Check this box'}</span>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-            {formData.fields.length > 0 && (
-              <div className="pt-4 border-t">
-                <button
-                  disabled
-                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium opacity-75 cursor-not-allowed"
-                >
-                  Submit Registration
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
-          <p className="text-sm text-gray-500 text-center">
-            This is a preview of how your form will appear to users.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function FormBuilderPage() {
   const router = useRouter();
@@ -183,6 +81,13 @@ export default function FormBuilderPage() {
   const [saved, setSaved] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const eventTypeService = useMemo(() => new EventTypeService(), []);
+  const [eventType, setEventType] = useState<EventType>(() => {
+    if (typeof window === 'undefined') return 'custom';
+    const stored = window.localStorage.getItem(ONBOARDING_EVENT_TYPE_KEY);
+    const validValues: EventType[] = ['food_distribution', 'seminar', 'volunteer', 'custom'];
+    return validValues.includes(stored as EventType) ? (stored as EventType) : 'custom';
+  });
 
   // Require auth for onboarding steps
   useEffect(() => {
@@ -212,6 +117,31 @@ export default function FormBuilderPage() {
     }
   }, []);
 
+  const handleEventTypeChange = useCallback(
+    (next: EventType) => {
+      setEventType(next);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(ONBOARDING_EVENT_TYPE_KEY, next);
+      }
+      // Pre-populate fields from template ONLY if current form is empty.
+      // Never overwrite organizer's in-progress work.
+      setFormData((prev) => {
+        if (prev.fields.length > 0) return prev;
+        const tpl = eventTypeService.getTemplate(next);
+        const nextData: FormBuilderData = {
+          ...prev,
+          title: prev.title || tpl.defaultName,
+          fields: templateToOnboardingFields(tpl.formFields),
+        };
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('onboarding_formData', JSON.stringify(nextData));
+        }
+        return nextData;
+      });
+    },
+    [eventTypeService]
+  );
+
   const handleSave = async () => {
     if (!organizationId) return;
 
@@ -228,6 +158,9 @@ export default function FormBuilderPage() {
             order: idx,
           })),
           language: 'en',
+          name: formData.title || 'Registration Form',
+          eventType,
+          description: formData.description ?? null,
         }),
       });
 
@@ -260,12 +193,43 @@ export default function FormBuilderPage() {
   };
 
   const formBuilder = (
-    <FormBuilderWizard
-      data={formData}
-      onChange={handleFormChange}
-      onPreview={handlePreview}
-      isLoading={loading}
-    />
+    <div className="space-y-4">
+      <div
+        className="bg-white rounded-lg p-4 border border-gray-200"
+        data-testid="event-type-selector"
+      >
+        <label
+          htmlFor="event-type"
+          className="block text-sm font-medium text-gray-900 mb-1"
+        >
+          Event Type
+        </label>
+        <p className="text-xs text-gray-500 mb-2">
+          Pick a template — we&apos;ll pre-fill the form fields below. You can always
+          customize them.
+        </p>
+        <select
+          id="event-type"
+          data-testid="select-event-type"
+          value={eventType}
+          onChange={(e) => handleEventTypeChange(e.target.value as EventType)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          aria-label="Event type"
+        >
+          {eventTypeService.listEventTypes().map((t) => (
+            <option key={t} value={t} data-testid={`option-event-type-${t}`}>
+              {EVENT_TYPE_LABELS[t]}
+            </option>
+          ))}
+        </select>
+      </div>
+      <FormBuilderWizard
+        data={formData}
+        onChange={handleFormChange}
+        onPreview={handlePreview}
+        isLoading={loading}
+      />
+    </div>
   );
 
   const steps = [

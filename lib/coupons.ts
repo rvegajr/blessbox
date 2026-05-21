@@ -13,9 +13,12 @@ export class CouponService implements ICouponService {
       CREATE TABLE IF NOT EXISTS coupons (
         id TEXT PRIMARY KEY,
         code TEXT UNIQUE NOT NULL,
+        description TEXT,
         discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
         discount_value REAL NOT NULL CHECK (discount_value > 0),
         currency TEXT DEFAULT 'USD' NOT NULL,
+        min_amount INTEGER,
+        max_discount INTEGER,
         active INTEGER DEFAULT 1 NOT NULL,
         max_uses INTEGER,
         current_uses INTEGER DEFAULT 0 NOT NULL,
@@ -161,15 +164,19 @@ export class CouponService implements ICouponService {
 
     await this.db.execute({
       sql: `INSERT INTO coupons (
-        id, code, discount_type, discount_value, currency, active, max_uses,
-        current_uses, expires_at, applicable_plans, created_at, created_by, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        id, code, description, discount_type, discount_value, currency, min_amount, 
+        max_discount, active, max_uses, current_uses, expires_at, applicable_plans, 
+        created_at, created_by, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         id,
         coupon.code.toUpperCase().trim(),
+        coupon.description || null,
         coupon.discountType,
         coupon.discountValue,
         coupon.currency || 'USD',
+        coupon.minAmount ?? null,
+        coupon.maxDiscount ?? null,
         1, // active
         coupon.maxUses || null,
         0, // current_uses
@@ -214,9 +221,21 @@ export class CouponService implements ICouponService {
     const setClause = [];
     const args = [];
 
+    if (updates.description !== undefined) {
+      setClause.push('description = ?');
+      args.push(updates.description);
+    }
     if (updates.discountValue !== undefined) {
       setClause.push('discount_value = ?');
       args.push(updates.discountValue);
+    }
+    if (updates.minAmount !== undefined) {
+      setClause.push('min_amount = ?');
+      args.push(updates.minAmount);
+    }
+    if (updates.maxDiscount !== undefined) {
+      setClause.push('max_discount = ?');
+      args.push(updates.maxDiscount);
     }
     if (updates.maxUses !== undefined) {
       setClause.push('max_uses = ?');
@@ -338,9 +357,12 @@ export class CouponService implements ICouponService {
     return {
       id: row.id,
       code: row.code,
+      description: row.description || undefined,
       discountType: row.discount_type,
       discountValue: row.discount_value,
       currency: row.currency,
+      minAmount: row.min_amount ?? undefined,
+      maxDiscount: row.max_discount ?? undefined,
       active: row.active === 1,
       maxUses: row.max_uses,
       currentUses: row.current_uses,
