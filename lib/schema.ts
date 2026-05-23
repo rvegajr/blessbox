@@ -266,9 +266,12 @@ export const usageAlerts = sqliteTable('usage_alerts', {
 export const coupons = sqliteTable('coupons', {
   id: text('id').primaryKey(),
   code: text('code').notNull().unique(),
+  description: text('description'),
   discountType: text('discount_type').notNull(),
   discountValue: real('discount_value').notNull(),
   currency: text('currency').default('USD').notNull(),
+  minAmount: integer('min_amount'),
+  maxDiscount: integer('max_discount'),
   active: integer('active').default(1).notNull(),
   maxUses: integer('max_uses'),
   currentUses: integer('current_uses').default(0).notNull(),

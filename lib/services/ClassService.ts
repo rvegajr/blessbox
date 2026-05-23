@@ -1,5 +1,8 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
+import type { IClassReader, ClassRecord } from '../interfaces/IClassService';
+import type { IParticipantReader, ParticipantRecord } from '../interfaces/IParticipantService';
+import type { IEnrollmentReader, EnrollmentRecord } from '../interfaces/IEnrollmentService';
 
 export interface Class {
   id: string;
@@ -55,7 +58,20 @@ export interface Enrollment {
   updated_at: string;
 }
 
-export class ClassService {
+/**
+ * ClassService — existing implementation of class/session/participant/enrollment
+ * data access. Declares conformance to the segregated Reader interfaces so that
+ * (a) consumers can depend on the narrowest interface they need, and
+ * (b) the compiler proves the new interfaces are NOT a parallel re-implementation
+ *     of methods that already exist here.
+ *
+ * Writer-side conformance (full IClassService / IParticipantService /
+ * IEnrollmentService) is the GREEN-phase target — current gaps (Aracela #30):
+ *   • IParticipantWriter.update/delete  → not implemented yet
+ *   • IEnrollmentWriter.enrollWithCapacity returning structured EnrollmentResult
+ *     → wraps the existing throw-based enrollParticipantWithCapacity
+ */
+export class ClassService implements IClassReader, IParticipantReader, IEnrollmentReader {
   private db = getDbClient();
 
   // Class Management
@@ -72,22 +88,22 @@ export class ClassService {
     return this.getClass(id) as Promise<Class>;
   }
 
-  async getClass(id: string): Promise<Class | null> {
+  async getClass(id: string): Promise<ClassRecord | null> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM classes WHERE id = ?',
       args: [id]
     });
 
-    return result.rows[0] as unknown as Class || null;
+    return (result.rows[0] as unknown as ClassRecord) || null;
   }
 
-  async getClassesByOrganization(organizationId: string): Promise<Class[]> {
+  async getClassesByOrganization(organizationId: string): Promise<ClassRecord[]> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM classes WHERE organization_id = ? ORDER BY created_at DESC',
       args: [organizationId]
     });
 
-    return result.rows as unknown as Class[];
+    return result.rows as unknown as ClassRecord[];
   }
 
   async updateClass(id: string, updates: Partial<Omit<Class, 'id' | 'created_at' | 'updated_at'>>): Promise<Class> {
@@ -180,22 +196,37 @@ export class ClassService {
     return this.getParticipant(id) as Promise<Participant>;
   }
 
-  async getParticipant(id: string): Promise<Participant | null> {
+  async getParticipant(id: string): Promise<ParticipantRecord | null> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM participants WHERE id = ?',
       args: [id]
     });
 
-    return result.rows[0] as unknown as Participant || null;
+    return (result.rows[0] as unknown as ParticipantRecord) || null;
   }
 
-  async getParticipantsByOrganization(organizationId: string): Promise<Participant[]> {
+  async getParticipantsByOrganization(organizationId: string): Promise<ParticipantRecord[]> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM participants WHERE organization_id = ? ORDER BY created_at DESC',
       args: [organizationId]
     });
 
-    return result.rows as unknown as Participant[];
+    return result.rows as unknown as ParticipantRecord[];
+  }
+
+  /**
+   * Find a participant by email within an organization (case-insensitive).
+   * Required by IParticipantReader for duplicate-prevention before enrollment.
+   */
+  async findParticipantByEmail(
+    organizationId: string,
+    email: string
+  ): Promise<ParticipantRecord | null> {
+    const result = await this.db.execute({
+      sql: 'SELECT * FROM participants WHERE organization_id = ? AND LOWER(email) = LOWER(?) LIMIT 1',
+      args: [organizationId, email]
+    });
+    return (result.rows[0] as unknown as ParticipantRecord) || null;
   }
 
   // Enrollment Management
@@ -258,21 +289,21 @@ export class ClassService {
     return affected === 1 ? { id } : null;
   }
 
-  async getEnrollmentByParticipant(classId: string, participantId: string): Promise<Enrollment | null> {
+  async getEnrollmentByParticipant(classId: string, participantId: string): Promise<EnrollmentRecord | null> {
     const result = await this.db.execute({
       sql: `SELECT * FROM enrollments WHERE class_id = ? AND participant_id = ? LIMIT 1`,
       args: [classId, participantId]
     });
-    return (result.rows[0] as unknown as Enrollment) || null;
+    return (result.rows[0] as unknown as EnrollmentRecord) || null;
   }
 
-  async getEnrollment(id: string): Promise<Enrollment | null> {
+  async getEnrollment(id: string): Promise<EnrollmentRecord | null> {
     const result = await this.db.execute({
       sql: 'SELECT * FROM enrollments WHERE id = ?',
       args: [id]
     });
 
-    return result.rows[0] as unknown as Enrollment || null;
+    return (result.rows[0] as unknown as EnrollmentRecord) || null;
   }
 
   /**
@@ -299,7 +330,7 @@ export class ClassService {
     });
   }
 
-  async getEnrollmentsByClass(classId: string): Promise<Enrollment[]> {
+  async getEnrollmentsByClass(classId: string): Promise<EnrollmentRecord[]> {
     const result = await this.db.execute({
       sql: `SELECT e.*, p.first_name, p.last_name, p.email 
             FROM enrollments e 
@@ -309,7 +340,7 @@ export class ClassService {
       args: [classId]
     });
 
-    return result.rows as unknown as Enrollment[];
+    return result.rows as unknown as EnrollmentRecord[];
   }
 
   async updateEnrollmentStatus(id: string, status: Enrollment['enrollment_status']): Promise<Enrollment> {

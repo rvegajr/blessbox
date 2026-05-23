@@ -65,6 +65,15 @@ export async function POST(req: NextRequest) {
     const classService = new ClassService();
     const emailService = new EmailService();
 
+    // Validate participant exists
+    const participant = await classService.getParticipant(participant_id);
+    if (!participant) {
+      return NextResponse.json({ error: 'Participant not found' }, { status: 404 });
+    }
+    if ((participant as any).organization_id !== organization.id) {
+      return NextResponse.json({ error: 'Participant belongs to different organization' }, { status: 403 });
+    }
+
     const classDetails = await classService.getClass(class_id);
     if (!classDetails) {
       return NextResponse.json({ error: 'Class not found' }, { status: 404 });
@@ -120,8 +129,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create enrollment' }, { status: 500 });
     }
 
-    // Get participant and class details for email
-    const participant = await classService.getParticipant(participant_id);
+    // Get session details for email (participant already fetched above)
     const sessionDetails = session_id ? await classService.getSession(session_id) : null;
 
     if (participant && classDetails) {

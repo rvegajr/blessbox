@@ -146,6 +146,7 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
           <input
             type="text"
             id="code"
+            name="code"
             data-testid="input-coupon-code"
             value={formData.code}
             onChange={(e) => handleChange('code', e.target.value)}
@@ -167,10 +168,12 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
         {/* Description */}
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
+            Description (optional)
           </label>
           <textarea
             id="description"
+            name="description"
+            data-testid="input-description"
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
             rows={3}
@@ -186,6 +189,8 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
           </label>
           <select
             id="discountType"
+            name="discountType"
+            data-testid="select-discount-type"
             value={formData.discountType}
             onChange={(e) => handleChange('discountType', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -204,6 +209,8 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
           <input
             type="number"
             id="discountValue"
+            name="discountValue"
+            data-testid="input-discount-value"
             value={formData.discountValue || ''}
             onChange={(e) => handleChange('discountValue', parseFloat(e.target.value) || 0)}
             min="0"
@@ -215,7 +222,7 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
             placeholder={formData.discountType === 'percentage' ? '25' : '2500'}
           />
           {errors.discountValue && (
-            <p className="mt-1 text-sm text-red-600">{errors.discountValue}</p>
+            <p className="mt-1 text-sm text-red-600" data-testid="error-discount-value">{errors.discountValue}</p>
           )}
           {formData.discountType === 'fixed' && (
             <p className="mt-1 text-xs text-gray-500">Enter amount in cents (e.g., 2500 = $25.00)</p>
@@ -245,22 +252,27 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
         {formData.discountType === 'percentage' && (
           <div>
             <label htmlFor="maxDiscount" className="block text-sm font-medium text-gray-700 mb-1">
-              Maximum Discount (cents, optional)
+              Maximum Discount (cents) - <span className="text-gray-600 font-normal">Optional</span>
             </label>
             <input
               type="number"
               id="maxDiscount"
+              name="maxDiscount"
+              data-testid="input-max-discount"
               value={formData.maxDiscount || ''}
               onChange={(e) => handleChange('maxDiscount', e.target.value ? parseInt(e.target.value) : undefined)}
               min="0"
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.maxDiscount ? 'border-red-300' : 'border-gray-300'
               }`}
-              placeholder="Optional"
+              placeholder="No limit"
             />
             {errors.maxDiscount && (
-              <p className="mt-1 text-sm text-red-600">{errors.maxDiscount}</p>
+              <p className="mt-1 text-sm text-red-600" data-testid="error-max-discount">{errors.maxDiscount}</p>
             )}
+            <p className="mt-1 text-xs text-gray-500">
+              Leave blank for unlimited discount. Example: 5000 = $50.00 max discount
+            </p>
           </div>
         )}
 
@@ -272,6 +284,8 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
           <input
             type="number"
             id="maxRedemptions"
+            name="maxRedemptions"
+            data-testid="input-max-redemptions"
             value={formData.maxRedemptions || ''}
             onChange={(e) => handleChange('maxRedemptions', e.target.value ? parseInt(e.target.value) : undefined)}
             min="0"
@@ -281,7 +295,7 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
             placeholder="Unlimited"
           />
           {errors.maxRedemptions && (
-            <p className="mt-1 text-sm text-red-600">{errors.maxRedemptions}</p>
+            <p className="mt-1 text-sm text-red-600" data-testid="error-max-redemptions">{errors.maxRedemptions}</p>
           )}
         </div>
 
@@ -289,14 +303,21 @@ export function CouponForm({ coupon, onSuccess, onCancel, className = '' }: Coup
         <div>
           <label htmlFor="expiresAt" className="block text-sm font-medium text-gray-700 mb-1">
             Expires At (optional)
+            <span className="text-gray-500 text-xs ml-2 font-normal">YYYY-MM-DD HH:MM (local time)</span>
           </label>
           <input
             type="datetime-local"
             id="expiresAt"
+            name="expiresAt"
+            data-testid="input-expires-at"
             value={formData.expiresAt ? new Date(formData.expiresAt).toISOString().slice(0, 16) : ''}
             onChange={(e) => handleChange('expiresAt', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="2026-12-31T23:59"
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Leave blank for no expiration. The date and time are separate - change each independently.
+          </p>
         </div>
 
         {/* Is Active */}

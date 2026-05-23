@@ -71,6 +71,7 @@ export default function ClassDetailsPage() {
     participant_id: '',
     session_id: '',
   });
+  const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -144,6 +145,25 @@ export default function ClassDetailsPage() {
     }
   };
 
+  const handleRemoveEnrollment = async (enrollmentId: string) => {
+    if (!confirm('Remove this enrollment?')) return;
+    setRemoving(enrollmentId);
+    try {
+      const res = await fetch(`/api/enrollments/${enrollmentId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to remove enrollment');
+      }
+      await loadAll();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to remove enrollment');
+    } finally {
+      setRemoving(null);
+    }
+  };
+
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -180,12 +200,21 @@ export default function ClassDetailsPage() {
             <h1 className="text-3xl font-bold text-gray-900 mt-2">{cls.name}</h1>
             {cls.description && <p className="text-gray-600 mt-2">{cls.description}</p>}
           </div>
-          <Link
-            href={`/classes/${classId}/sessions`}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
-          >
-            Manage Sessions
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/classes/${classId}/edit`}
+              data-testid="btn-edit-class"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Edit Class
+            </Link>
+            <Link
+              href={`/classes/${classId}/sessions`}
+              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+            >
+              Manage Sessions
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -270,6 +299,7 @@ export default function ClassDetailsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participant</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled At</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -282,6 +312,17 @@ export default function ClassDetailsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{e.enrollment_status}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {e.enrolled_at ? new Date(e.enrolled_at).toLocaleString() : '—'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          data-testid={`btn-remove-enrollment-${e.id}`}
+                          onClick={() => handleRemoveEnrollment(e.id)}
+                          disabled={removing === e.id}
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          aria-label={`Remove enrollment for ${e.first_name} ${e.last_name}`}
+                        >
+                          {removing === e.id ? 'Removing...' : 'Remove'}
+                        </button>
                       </td>
                     </tr>
                   ))}

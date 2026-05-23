@@ -419,7 +419,7 @@ export default function AdminPage() {
               <p className="text-gray-500 text-center py-8">No organizations found</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200" data-testid="table-organizations">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
@@ -428,11 +428,12 @@ export default function AdminPage() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">QR Codes</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Verified</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {orgs.map(org => (
-                      <tr key={org.id}>
+                      <tr key={org.id} data-testid={`row-org-${org.id}`}>
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">{org.name}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{org.contact_email}</td>
                         <td className="px-4 py-3 text-sm text-gray-500">{org.registrationCount}</td>
@@ -448,6 +449,15 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-500">
                           {new Date(org.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <Link
+                            href={`/admin/organizations/${org.id}`}
+                            data-testid={`link-view-org-${org.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                          >
+                            👁️ View Details
+                          </Link>
                         </td>
                       </tr>
                     ))}

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/lib/hooks/useAuth';
 import Link from 'next/link';
 import { useRequireActiveOrganization } from '@/components/organization/useRequireActiveOrganization';
+import { parseRegistrationData, type FormField } from '@/lib/utils/registration-field-parser';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -31,6 +32,7 @@ export default function RegistrationDetailsPage() {
   const { data: session } = useSession();
   const { ready } = useRequireActiveOrganization();
   const [registration, setRegistration] = useState<Registration | null>(null);
+  const [formFields, setFormFields] = useState<FormField[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkingIn, setCheckingIn] = useState(false);
@@ -52,6 +54,7 @@ export default function RegistrationDetailsPage() {
       const reg = result?.data || result?.registration;
       if (result.success && reg) {
         setRegistration(reg);
+        setFormFields(result.formFields || []);
       } else {
         setError(result.error || 'Registration not found');
       }
@@ -245,20 +248,23 @@ export default function RegistrationDetailsPage() {
         </div>
 
         {/* Registration Data */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6" data-testid="registration-info">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Registration Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Object.entries(formData).map(([key, value]) => (
-              <div key={key}>
-                <p className="text-sm text-gray-600 capitalize mb-1">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </p>
-                <p className="text-base font-medium text-gray-900">
-                  {String(value || '-')}
-                </p>
-              </div>
-            ))}
+            {(() => {
+              const parsed = parseRegistrationData(formData, formFields);
+              return parsed.fields.map((field) => (
+                <div key={field.label}>
+                  <p className="text-sm text-gray-600 mb-1">
+                    {field.label}
+                  </p>
+                  <p className="text-base font-medium text-gray-900">
+                    {field.value || '-'}
+                  </p>
+                </div>
+              ));
+            })()}
           </div>
         </div>
 

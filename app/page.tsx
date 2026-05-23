@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/hooks/useAuth';
+import Link from 'next/link';
 
 // Force dynamic rendering for client-side interactivity
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
+  const { user, status } = useAuth();
 
   useEffect(() => {
     // Initialize AOS
@@ -25,6 +28,24 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <main>
+        {/* Logged-in user dashboard shortcut */}
+        {status === 'authenticated' && user && (
+          <div className="bg-blue-600 text-white py-2">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+              <p className="text-sm">
+                Welcome back, <span className="font-medium">{user.name || user.email}</span>!
+              </p>
+              <Link
+                href="/dashboard"
+                data-testid="link-dashboard"
+                className="px-4 py-1 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium text-sm"
+              >
+                Go to Dashboard
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <section id="welcome-section" className="py-12" data-tutorial-target="welcome-section">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

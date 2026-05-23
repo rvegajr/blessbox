@@ -193,6 +193,42 @@ export class RegistrationService implements IRegistrationService {
       throw new Error('QR code not found');
     }
 
+    // Idempotency check: Prevent duplicate registrations within 60 seconds
+    // Check for existing registration with same email + qr_code_id in last 60 seconds
+    const email = formData.email || formData.Email || formData.emailAddress;
+    if (email) {
+      const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString();
+      const duplicateCheck = await this.db.execute({
+        sql: `
+          SELECT id, check_in_token, registered_at 
+          FROM registrations 
+          WHERE qr_code_id = ? 
+            AND json_extract(registration_data, '$.email') = ?
+            AND registered_at >= ?
+          LIMIT 1
+        `,
+        args: [matchingQR.id, email, sixtySecondsAgo]
+      });
+      
+      if (duplicateCheck.rows.length > 0) {
+        // Return existing registration instead of creating duplicate
+        const existing = duplicateCheck.rows[0] as any;
+        return {
+          id: existing.id,
+          qrCodeSetId: formConfig.id,
+          qrCodeId: matchingQR.id,
+          registrationData: JSON.stringify(formData),
+          ipAddress: metadata?.ipAddress,
+          userAgent: metadata?.userAgent,
+          referrer: metadata?.referrer,
+          deliveryStatus: 'pending',
+          registeredAt: existing.registered_at,
+          checkInToken: existing.check_in_token,
+          tokenStatus: 'active'
+        };
+      }
+    }
+
     const registrationId = uuidv4();
     const now = new Date().toISOString();
 
@@ -453,6 +489,35 @@ export class RegistrationService implements IRegistrationService {
       checkedInBy: row.checked_in_by,
       tokenStatus: row.token_status
     };
+  }
+
+  /**
+   * Resolve the form_fields definition for a registration's QR code set so the
+   * UI can render human-readable labels (Cluster A — Issue #20/21/24).
+   *
+   * Returns `null` if the qr_code_set has no form_fields, or `undefined` if
+   * the JSON is malformed. Kept on the service so the route handler stays
+   * thin and existing route tests that mock RegistrationService still work.
+   */
+  async getFormFieldsForRegistration(registrationId: string): Promise<unknown[] | null | undefined> {
+    const result = await this.db.execute({
+      sql: `SELECT qcs.form_fields
+            FROM registrations r
+            JOIN qr_code_sets qcs ON r.qr_code_set_id = qcs.id
+            WHERE r.id = ?
+            LIMIT 1`,
+      args: [registrationId]
+    });
+
+    if (result.rows.length === 0) return null;
+    const raw = (result.rows[0] as any).form_fields;
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   async updateRegistration(
