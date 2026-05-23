@@ -79,7 +79,19 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, registration });
+    // Form fields for human-readable labels (Cluster A). Service-level lookup
+    // keeps the route thin and lets RegistrationService mocks work without
+    // also having to mock the DB client.
+    let formFields: unknown[] | null | undefined;
+    if (typeof (registrationService as any).getFormFieldsForRegistration === 'function') {
+      formFields = await (registrationService as any).getFormFieldsForRegistration(id);
+    }
+
+    return NextResponse.json({
+      success: true,
+      registration,
+      formFields,
+    });
   } catch (error) {
     console.error('Get registration error:', error);
     return NextResponse.json(

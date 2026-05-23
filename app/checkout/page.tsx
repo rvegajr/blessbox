@@ -195,6 +195,7 @@ function CheckoutContent() {
           currency: 'USD',
           amount: amountCents,
           email: email.trim(),
+          ...(couponApplied ? { couponCode: couponApplied.code } : {}),
           ...(amountCents > 0 ? { paymentToken: 'test-token' } : {}),
         }),
       });

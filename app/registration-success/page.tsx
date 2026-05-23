@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { parseRegistrationData, type FormField } from '@/lib/utils/registration-field-parser';
 
 interface RegistrationData {
   id: string;
@@ -11,6 +12,7 @@ interface RegistrationData {
   registeredAt: string;
   organizationName?: string;
   eventName?: string;
+  formFields?: FormField[];
 }
 
 function RegistrationSuccessContent() {
@@ -51,6 +53,7 @@ function RegistrationSuccessContent() {
             checkInToken: data.registration.checkInToken,
             registrationData: data.registration.registrationData,
             registeredAt: data.registration.registeredAt,
+            formFields: data.formFields,
           };
           orgName = data.organizationName;
           evtName = data.eventName;
@@ -77,6 +80,7 @@ function RegistrationSuccessContent() {
           registeredAt: reg.registeredAt,
           organizationName: orgName,
           eventName: evtName,
+          formFields: reg.formFields || [],
         });
 
         // Generate QR code from check-in token
@@ -274,15 +278,18 @@ function RegistrationSuccessContent() {
           </div>
 
           {/* Registration Details */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-6">
+          <div className="bg-gray-50 rounded-xl p-6 mb-6" data-testid="registration-details">
             <h3 className="font-semibold text-gray-900 mb-3">Your Registration Details</h3>
             <div className="space-y-2 text-sm">
-              {Object.entries(registration.registrationData).map(([key, value]) => (
-                <div key={key} className="flex justify-between">
-                  <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                  <span className="text-gray-900 font-medium">{String(value)}</span>
-                </div>
-              ))}
+              {(() => {
+                const parsed = parseRegistrationData(registration.registrationData, registration.formFields);
+                return parsed.fields.map((field) => (
+                  <div key={field.label} className="flex justify-between">
+                    <span className="text-gray-600">{field.label}:</span>
+                    <span className="text-gray-900 font-medium">{field.value}</span>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
 

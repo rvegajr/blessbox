@@ -29,30 +29,24 @@ export async function GET(request: NextRequest) {
     const db = getDbClient();
 
     // Get recent registrations, including form field definitions for label resolution
+    // NOTE: We query qr_codes JSON in application layer to avoid Cartesian product from json_each
     const recentRegistrations = await db.execute({
       sql: `
-        SELECT
+        SELECT DISTINCT
           r.id,
           r.qr_code_id,
           r.registration_data,
           r.registered_at,
           r.checked_in_at,
           qcs.form_fields,
-          qr.label as qr_label
+          qcs.qr_codes
         FROM registrations r
         JOIN qr_code_sets qcs ON r.qr_code_set_id = qcs.id
-        LEFT JOIN (
-          SELECT
-            json_extract(je.value, '$.id') as qr_id,
-            json_extract(je.value, '$.label') as label
-          FROM qr_code_sets qcs2, json_each(qcs2.qr_codes) je
-          WHERE qcs2.organization_id = ?
-        ) qr ON r.qr_code_id = qr.qr_id
         WHERE qcs.organization_id = ?
         ORDER BY r.registered_at DESC
         LIMIT ?
       `,
-      args: [organization.id, organization.id, limit]
+      args: [organization.id, limit]
     });
 
     const activities = recentRegistrations.rows.map((row: any) => {
@@ -64,6 +58,19 @@ export async function GET(request: NextRequest) {
         formFields = undefined;
       }
       const registrantName = extractName(formData, formFields) || 'Anonymous';
+      
+      // Extract QR code label from qr_codes JSON array (avoid Cartesian product)
+      let qrCodeLabel = row.qr_code_id;
+      try {
+        const qrCodes = row.qr_codes ? JSON.parse(row.qr_codes) : [];
+        const matchingCode = qrCodes.find((qr: any) => qr.id === row.qr_code_id);
+        if (matchingCode?.label) {
+          qrCodeLabel = matchingCode.label;
+        }
+      } catch {
+        // Fall back to qr_code_id if parsing fails
+      }
+      
       return {
         type: 'registration',
         id: row.id,
@@ -71,7 +78,7 @@ export async function GET(request: NextRequest) {
         data: {
           registrantName,
           registrantEmail: formData.email || formData.Email || formData.emailAddress || null,
-          qrCodeLabel: row.qr_label,
+          qrCodeLabel,
           checkedIn: row.checked_in_at !== null
         }
       };

@@ -11,6 +11,7 @@ import { getServerSession } from '@/lib/auth-helper';
 import { resolveOrganizationForSession } from '@/lib/subscriptions';
 import { getDbClient } from '@/lib/db';
 import { RegistrationRoleService } from '@/lib/services/RegistrationRoleService';
+import { extractName, extractEmail, extractPhone, type FormField } from '@/lib/utils/registration-field-parser';
 
 const SearchQuerySchema = z.object({
   q: z.string().max(200).optional().default(''),
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     const db = getDbClient();
 
-    // Build search query
+    // Build search query - include form_fields for label mapping
     let sql = `
       SELECT 
         r.id,
@@ -70,7 +71,8 @@ export async function GET(request: NextRequest) {
         r.token_status,
         r.checked_in_at,
         r.checked_in_by,
-        qcs.name as qr_code_set_name
+        qcs.name as qr_code_set_name,
+        qcs.form_fields
       FROM registrations r
       LEFT JOIN qr_code_sets qcs ON r.qr_code_set_id = qcs.id
       WHERE qcs.organization_id = ?
@@ -102,14 +104,28 @@ export async function GET(request: NextRequest) {
 
     const result = await db.execute({ sql, args });
 
-    // Parse registration data and extract key fields
+    // Parse registration data and extract key fields using field parser
     const allRegistrations = result.rows.map((row: any) => {
       const data = JSON.parse(row.registration_data || '{}');
+      
+      // Parse form fields for label mapping
+      let formFields: FormField[] | undefined;
+      try {
+        formFields = row.form_fields ? JSON.parse(row.form_fields) : undefined;
+      } catch {
+        formFields = undefined;
+      }
+      
+      // Use registration-field-parser for intelligent name/email/phone extraction
+      const name = extractName(data, formFields);
+      const email = extractEmail(data, formFields);
+      const phone = extractPhone(data, formFields);
+      
       return {
         id: row.id,
-        name: data.name || data.Name || data.fullName || 'Unknown',
-        email: data.email || data.Email || data.emailAddress || '',
-        phone: data.phone || data.Phone || data.phoneNumber || '',
+        name,
+        email,
+        phone,
         registeredAt: row.registered_at,
         checkInToken: row.check_in_token,
         tokenStatus: row.token_status,
