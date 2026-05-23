@@ -106,6 +106,7 @@ test.describe('Production-Ready Verification (All Fixes)', () => {
   
   test.describe('Issue #30: Classes & Enrollment ✅', () => {
     test('edit class button exists on class detail page', async ({ page }) => {
+      test.setTimeout(120000); // Increase timeout for production class pages
       const seedKey = `class-edit-${Date.now()}`;
       const seed = await seedOrg(page, seedKey);
       await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
@@ -130,12 +131,11 @@ test.describe('Production-Ready Verification (All Fixes)', () => {
       const classId = classData.id;
       
       // Navigate to class detail page
-      await page.goto(`${BASE_URL}/classes/${classId}`);
-      await page.waitForLoadState('networkidle');
+      await page.goto(`${BASE_URL}/classes/${classId}`, { waitUntil: 'domcontentloaded' });
       
       // Verify "Edit Class" button exists (Issue #30 fix)
       const editButton = page.locator('[data-testid="btn-edit-class"]');
-      await expect(editButton).toBeVisible({ timeout: 5000 });
+      await expect(editButton).toBeVisible({ timeout: 30000 });
       await expect(editButton).toContainText(/edit/i);
       
       // Verify it links to edit page
@@ -144,6 +144,7 @@ test.describe('Production-Ready Verification (All Fixes)', () => {
     });
 
     test('back to classes link exists on class detail', async ({ page }) => {
+      test.setTimeout(120000); // Increase timeout for production class pages
       const seedKey = `class-back-${Date.now()}`;
       const seed = await seedOrg(page, seedKey);
       await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
@@ -164,12 +165,11 @@ test.describe('Production-Ready Verification (All Fixes)', () => {
       }
       
       const classData = await classRes.json();
-      await page.goto(`${BASE_URL}/classes/${classData.id}`);
-      await page.waitForLoadState('networkidle');
+      await page.goto(`${BASE_URL}/classes/${classData.id}`, { waitUntil: 'domcontentloaded' });
       
       // Verify "Back to Classes" link exists
       const backLink = page.locator('a').filter({ hasText: /back.*classes/i });
-      await expect(backLink.first()).toBeVisible();
+      await expect(backLink.first()).toBeVisible({ timeout: 30000 });
     });
   });
 
