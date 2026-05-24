@@ -5,6 +5,7 @@ import { createSubscription, resolveOrganizationForSession, getActiveSubscriptio
 import { SquarePaymentService } from '@/lib/services/SquarePaymentService';
 import { getPlanPriceCents, isValidPlan, type PlanType, type BillingCycle } from '@/lib/pricing/plans';
 import { CouponService } from '@/lib/coupons';
+import { CouponUsageEnforcer } from '@/lib/services/CouponUsageEnforcer';
 import { PlanUpgrade } from '@/lib/services/PlanUpgrade';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
@@ -100,6 +101,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Re-validate coupon server-side. NEVER trust client-discounted amount.
+  // Issue #27: also enforce per-org redemption uniqueness so a 100% coupon
+  // can't be reused by the same org to upgrade for free repeatedly.
+  const originalAmountCents = amountCents;
+  let discountAppliedCents = 0;
+  const usageEnforcer = new CouponUsageEnforcer();
   if (couponCode) {
     try {
       const couponService = new CouponService();
@@ -107,7 +113,16 @@ export async function POST(req: NextRequest) {
       if (!validation.valid) {
         return json({ success: false, error: validation.error || 'Invalid coupon' }, 400);
       }
-      amountCents = await couponService.applyCoupon(couponCode, amountCents, planType);
+
+      // Per-org eligibility gate (Issue #27): block re-redemption.
+      const eligibility = await usageEnforcer.assertEligible(couponCode, org.id);
+      if (!eligibility.eligible) {
+        return json({ success: false, error: eligibility.reason || 'Coupon not eligible' }, 400);
+      }
+
+      const newAmount = await couponService.applyCoupon(couponCode, amountCents, planType);
+      discountAppliedCents = amountCents - newAmount;
+      amountCents = newAmount;
     } catch (e: any) {
       return json({ success: false, error: e?.message || 'Coupon application failed' }, 400);
     }
@@ -205,6 +220,24 @@ export async function POST(req: NextRequest) {
     
     // Fetch updated subscription
     const updated = await getActiveSubscription(org.id);
+
+    // Issue #27: record coupon redemption AFTER successful upgrade so
+    // current_uses bumps and the same org cannot redeem this coupon again.
+    if (couponCode && updated) {
+      try {
+        await usageEnforcer.recordRedemption({
+          code: couponCode,
+          userId: session.user.id || session.user.email,
+          organizationId: org.id,
+          subscriptionId: updated.id,
+          originalAmountCents,
+          discountAppliedCents,
+        });
+      } catch (recErr) {
+        console.error('[PAYMENT] Failed to record coupon redemption:', recErr);
+      }
+    }
+
     return json({
       success: true,
       subscription: updated,
@@ -222,6 +255,22 @@ export async function POST(req: NextRequest) {
     currency,
     amountCents,
   });
+
+  // Issue #27: record coupon redemption for fresh subscription path too.
+  if (couponCode) {
+    try {
+      await usageEnforcer.recordRedemption({
+        code: couponCode,
+        userId: session.user.id || session.user.email,
+        organizationId: org.id,
+        subscriptionId: sub.id,
+        originalAmountCents,
+        discountAppliedCents,
+      });
+    } catch (recErr) {
+      console.error('[PAYMENT] Failed to record coupon redemption:', recErr);
+    }
+  }
 
   return json({
     success: true,

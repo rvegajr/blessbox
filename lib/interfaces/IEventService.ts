@@ -15,7 +15,12 @@ import type { QRCode } from './IQRCodeService';
 export interface Event {
   id: string;
   organizationId: string;
+  /** Form / registration form name (from qr_code_sets.name). Was historically
+   *  exposed to the UI as the "event name", which is wrong — see Issue #24. */
   name: string;
+  /** Real organization-level event name (from organizations.event_name).
+   *  Falls back to `name` when the org didn't supply one. */
+  eventName: string;
   eventType: EventType | null;
   description: string | null;
   formConfigId: string;

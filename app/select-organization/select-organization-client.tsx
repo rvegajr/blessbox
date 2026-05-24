@@ -134,7 +134,7 @@ export default function SelectOrganizationClient() {
             <button
               type="button"
               data-testid="btn-add-organization"
-              onClick={() => router.push('/onboarding/organization-setup')}
+              onClick={() => router.push('/onboarding/organization-setup?fresh=1')}
               className="text-sm text-blue-600 hover:text-blue-800"
               aria-label="Register another organization"
             >

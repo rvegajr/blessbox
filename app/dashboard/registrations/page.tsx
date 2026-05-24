@@ -26,6 +26,8 @@ interface Registration {
 interface Event {
   id: string;
   name: string;
+  /** Issue #24: organization-level event name (preferred display label). */
+  eventName?: string;
   eventType: string | null;
 }
 
@@ -38,10 +40,17 @@ export default function RegistrationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    deliveryStatus: string;
+    search: string;
+    eventId: string;
+    /** Issue #24: filter by check-in state. '' = all, 'in' = checked in, 'out' = not checked in. */
+    checkedIn: '' | 'in' | 'out';
+  }>({
     deliveryStatus: '',
     search: '',
     eventId: '',
+    checkedIn: '',
   });
   const roleService = useMemo(() => new RegistrationRoleService(), []);
 
@@ -110,7 +119,15 @@ export default function RegistrationsPage() {
     const data = JSON.parse(reg.registrationData);
     const matchesStatus = !filters.deliveryStatus || reg.deliveryStatus === filters.deliveryStatus;
     const matchesEvent = !filters.eventId || reg.qrCodeSetId === filters.eventId;
-    
+
+    // Issue #24: checked-in filter
+    let matchesCheckedIn = true;
+    if (filters.checkedIn === 'in') {
+      matchesCheckedIn = !!reg.checkedInAt;
+    } else if (filters.checkedIn === 'out') {
+      matchesCheckedIn = !reg.checkedInAt;
+    }
+
     // Search through all registration data fields (handles both field IDs and semantic keys)
     const matchesSearch = !filters.search || Object.values(data).some(value => {
       if (typeof value === 'string') {
@@ -119,7 +136,7 @@ export default function RegistrationsPage() {
       return false;
     });
     
-    return matchesStatus && matchesSearch && matchesEvent;
+    return matchesStatus && matchesSearch && matchesEvent && matchesCheckedIn;
   });
 
   const getStatusBadge = (status: string) => {
@@ -277,7 +294,7 @@ export default function RegistrationsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Search
@@ -306,7 +323,7 @@ export default function RegistrationsPage() {
                 <option value="">All Events</option>
                 {events.map(event => (
                   <option key={event.id} value={event.id}>
-                    {event.name}
+                    {event.eventName || event.name}
                   </option>
                 ))}
               </select>
@@ -328,10 +345,26 @@ export default function RegistrationsPage() {
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-in
+              </label>
+              <select
+                data-testid="dropdown-checked-in-filter"
+                value={filters.checkedIn}
+                onChange={e => setFilters({...filters, checkedIn: e.target.value as '' | 'in' | 'out'})}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                aria-label="Filter by check-in state"
+              >
+                <option value="">All</option>
+                <option value="in">Checked In</option>
+                <option value="out">Not Checked In</option>
+              </select>
+            </div>
             <div className="flex items-end">
               <button
                 data-testid="btn-clear-registration-filters"
-                onClick={() => setFilters({ deliveryStatus: '', search: '', eventId: '' })}
+                onClick={() => setFilters({ deliveryStatus: '', search: '', eventId: '', checkedIn: '' })}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
                 aria-label="Clear filters"
               >
@@ -399,9 +432,9 @@ export default function RegistrationsPage() {
                   : 'Registrations will appear here once people start registering.'
                 }
               </p>
-              {filters.search || filters.deliveryStatus || filters.eventId ? (
+              {filters.search || filters.deliveryStatus || filters.eventId || filters.checkedIn ? (
                 <button
-                  onClick={() => setFilters({ deliveryStatus: '', search: '', eventId: '' })}
+                  onClick={() => setFilters({ deliveryStatus: '', search: '', eventId: '', checkedIn: '' })}
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Clear filters
@@ -555,6 +588,82 @@ export default function RegistrationsPage() {
                                 ✓ Checked In
                               </span>
                             )}
+
+                            {/* Issue #24: delivery-status action buttons */}
+                            {reg.deliveryStatus === 'pending' && (
+                              <button
+                                type="button"
+                                data-testid={`btn-resend-${reg.id}`}
+                                onClick={async () => {
+                                  try {
+                                    const r = await fetch('/api/registrations/send-qr', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ registrationId: reg.id }),
+                                    });
+                                    if (r.ok) window.location.reload();
+                                    else alert('Resend failed');
+                                  } catch {
+                                    alert('Resend error');
+                                  }
+                                }}
+                                className="text-blue-600 hover:text-blue-900 font-medium"
+                                aria-label={`Resend confirmation for ${reg.id}`}
+                                title="Resend confirmation email"
+                              >
+                                ↻ Resend
+                              </button>
+                            )}
+                            {reg.deliveryStatus !== 'cancelled' && (
+                              <button
+                                type="button"
+                                data-testid={`btn-cancel-${reg.id}`}
+                                onClick={async () => {
+                                  if (!confirm('Cancel this registration?')) return;
+                                  try {
+                                    const r = await fetch(`/api/registrations/${reg.id}`, {
+                                      method: 'PUT',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ deliveryStatus: 'cancelled' }),
+                                    });
+                                    if (r.ok) window.location.reload();
+                                    else alert('Cancel failed');
+                                  } catch {
+                                    alert('Cancel error');
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-900 font-medium"
+                                aria-label={`Cancel registration ${reg.id}`}
+                                title="Cancel registration"
+                              >
+                                ✕ Cancel
+                              </button>
+                            )}
+                            {reg.deliveryStatus === 'cancelled' && (
+                              <button
+                                type="button"
+                                data-testid={`btn-restore-${reg.id}`}
+                                onClick={async () => {
+                                  try {
+                                    const r = await fetch(`/api/registrations/${reg.id}`, {
+                                      method: 'PUT',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ deliveryStatus: 'pending' }),
+                                    });
+                                    if (r.ok) window.location.reload();
+                                    else alert('Restore failed');
+                                  } catch {
+                                    alert('Restore error');
+                                  }
+                                }}
+                                className="text-amber-600 hover:text-amber-900 font-medium"
+                                aria-label={`Restore registration ${reg.id}`}
+                                title="Restore cancelled registration"
+                              >
+                                ↺ Restore
+                              </button>
+                            )}
+
                             <Link
                               href={`/dashboard/registrations/${reg.id}`}
                               data-testid={`link-view-registration-${reg.id}`}

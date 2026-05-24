@@ -4,11 +4,18 @@ import { getServerSession } from '@/lib/auth-helper';
 import { createSubscription, resolveOrganizationForSession } from '@/lib/subscriptions';
 import { getPlanPriceCents, isValidPlan, type PlanType, type BillingCycle } from '@/lib/pricing/plans';
 import { CouponService } from '@/lib/coupons';
+import { CouponUsageEnforcer } from '@/lib/services/CouponUsageEnforcer';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { createNoctusoftCheckoutSession } from '@/lib/services/NoctusoftCheckoutService';
 
-const NOCTUSOFT_PLANS = new Set<PlanType>(['single-org', 'standard', 'enterprise']);
+// Issue #26: Noctusoft proxy currently only has `single-org` configured in
+// its Square catalog. Other plans return 422 "No plan variation configured".
+// We restrict the catalog path to plans that actually have variations and
+// surface a helpful error for the rest so the client can offer a fallback.
+const NOCTUSOFT_CATALOG_PLANS = new Set<PlanType>(['single-org']);
+// Plans that are valid in the system but cannot use catalog checkout yet.
+const NON_CATALOG_PAID_PLANS = new Set<PlanType>(['standard', 'enterprise']);
 
 const Schema = z.object({
   planType: z.string().min(1),
@@ -50,7 +57,19 @@ export async function POST(req: NextRequest) {
   }
   const planType = planTypeRaw as PlanType;
 
-  if (!NOCTUSOFT_PLANS.has(planType)) {
+  // Issue #26: only `single-org` is currently configured in the Noctusoft
+  // Square catalog. For other paid plans (standard, enterprise) we return
+  // 409 with a clear message and a `fallback: 'contact-support'` flag so
+  // the client can render a helpful CTA instead of a confusing 502.
+  if (!NOCTUSOFT_CATALOG_PLANS.has(planType)) {
+    if (NON_CATALOG_PAID_PLANS.has(planType)) {
+      return json({
+        success: false,
+        error: 'Catalog checkout not yet available for this plan',
+        message: `The ${planType} plan is not yet wired into our hosted Square catalog. Please apply a coupon, choose the Single-Org plan, or contact support@blessbox.org to upgrade.`,
+        fallback: 'contact-support',
+      }, 409);
+    }
     return json({ success: false, error: `Plan "${planType}" does not use catalog checkout` }, 400);
   }
 
@@ -72,7 +91,10 @@ export async function POST(req: NextRequest) {
     return json({ success: false, error: 'Invalid plan pricing' }, 400);
   }
 
-  // Re-validate coupon server-side
+  // Re-validate coupon server-side + enforce per-org redemption (Issue #27).
+  const originalAmountCents = amountCents;
+  let discountAppliedCents = 0;
+  const usageEnforcer = new CouponUsageEnforcer();
   if (couponCode) {
     try {
       const couponService = new CouponService();
@@ -80,13 +102,22 @@ export async function POST(req: NextRequest) {
       if (!validation.valid) {
         return json({ success: false, error: validation.error || 'Invalid coupon' }, 400);
       }
-      amountCents = await couponService.applyCoupon(couponCode, amountCents, planType);
+
+      const eligibility = await usageEnforcer.assertEligible(couponCode, org.id);
+      if (!eligibility.eligible) {
+        return json({ success: false, error: eligibility.reason || 'Coupon not eligible' }, 400);
+      }
+
+      const newAmount = await couponService.applyCoupon(couponCode, amountCents, planType);
+      discountAppliedCents = amountCents - newAmount;
+      amountCents = newAmount;
     } catch (e: any) {
       return json({ success: false, error: e?.message || 'Coupon application failed' }, 400);
     }
   }
 
-  // 100%-off coupon: create subscription directly, no Square redirect
+  // 100%-off coupon: create subscription directly, no Square redirect.
+  // Issue #27: also record redemption so the same org can't reuse the coupon.
   if (amountCents <= 0) {
     const sub = await createSubscription({
       organizationId: org.id,
@@ -95,6 +126,20 @@ export async function POST(req: NextRequest) {
       currency: 'USD',
       amountCents: 0,
     });
+    if (couponCode) {
+      try {
+        await usageEnforcer.recordRedemption({
+          code: couponCode,
+          userId: session.user.id || session.user.email,
+          organizationId: org.id,
+          subscriptionId: sub.id,
+          originalAmountCents,
+          discountAppliedCents,
+        });
+      } catch (recErr) {
+        console.error('[create-checkout-session] Failed to record coupon redemption:', recErr);
+      }
+    }
     return json({ success: true, redirect: '/dashboard', subscription: sub }, 200);
   }
 

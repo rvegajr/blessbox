@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AuthService } from '@/lib/services/AuthService';
 import { MembershipService } from '@/lib/services/MembershipService';
+import { OrganizationLoginTracker } from '@/lib/services/OrganizationLoginTracker';
 import { normalizeEmail } from '@/lib/utils/normalize-email';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
@@ -27,6 +28,7 @@ export const runtime = 'nodejs';
 
 const authService = new AuthService();
 const membershipService = new MembershipService();
+const loginTracker = new OrganizationLoginTracker();
 
 const VerifyCodeSchema = z.object({
   email: z.string().email(),
@@ -97,6 +99,13 @@ export async function POST(request: NextRequest) {
           maxAge: 30 * 24 * 60 * 60, // 30 days
         });
       }
+
+      // Issue #28: bump last_login_at for the org the user is logging into.
+      try {
+        await loginTracker.recordLogin(result.session.user.id, organizationId);
+      } catch (err) {
+        console.error('[verify-code] failed to record org login:', err);
+      }
     } else {
       // P0 Fix: Clear old org cookie if no organizationId provided (select-org flow)
       response.cookies.set('bb_active_org_id', '', {
@@ -106,6 +115,16 @@ export async function POST(request: NextRequest) {
         secure: isProd,
         maxAge: 0,
       });
+
+      // Issue #28: still bump last_login_at across every membership so the
+      // admin "View Details" page reflects this login even before org pick.
+      if (result.session.user.id) {
+        try {
+          await loginTracker.recordLogin(result.session.user.id);
+        } catch (err) {
+          console.error('[verify-code] failed to record multi-org login:', err);
+        }
+      }
     }
 
     return response;
