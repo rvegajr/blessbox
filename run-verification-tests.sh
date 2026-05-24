@@ -19,6 +19,7 @@ if [ "$ENVIRONMENT" = "local" ]; then
   BASE_URL=http://localhost:7777 npx playwright test \
     production-ready-verification-with-seed.spec.ts \
     issue-17-form-builder-repeat.spec.ts \
+    issues-23-24-26-27-28-aracela-batch.spec.ts \
     --reporter=list \
     --workers=1
 
@@ -43,6 +44,7 @@ elif [ "$ENVIRONMENT" = "production" ]; then
   TEST_ENV=production BASE_URL=https://www.blessbox.org npx playwright test \
     production-ready-verification-with-seed.spec.ts \
     issue-17-form-builder-repeat.spec.ts \
+    issues-23-24-26-27-28-aracela-batch.spec.ts \
     --reporter=list \
     --workers=1
 
@@ -66,4 +68,9 @@ echo "  ✅ Issue #33: Landing page dashboard shortcut"
 echo "  ✅ Issue #30: Classes edit button + back link"
 echo "  ✅ Issue #34: Export CSV functionality"
 echo "  ✅ Issue #17: Form builder reactivity + Event Name input"
+echo "  ✅ Issue #23: Onboarding storage cleared on +Add Org (?fresh=1)"
+echo "  ✅ Issue #24: Event name source + checked-in filter + status actions + PDF columns"
+echo "  ✅ Issue #26: Catalog gate returns helpful 409 for non-catalog plans"
+echo "  ✅ Issue #27: CRITICAL coupon bypass closed (per-org redemption uniqueness)"
+echo "  ✅ Issue #28: OrganizationLoginTracker writes last_login_at on login"
 echo ""

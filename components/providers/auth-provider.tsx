@@ -134,11 +134,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
         expires: data.expires || null,
       }));
 
+      // Issue #23 Bug B: also refresh `organizations` + `activeOrganizationId`
+      // so the dashboard header reflects the org we just created/selected
+      // instead of falling back to `organizations[0]` (the previous active org).
+      try {
+        await refresh();
+      } catch {
+        // refresh failure shouldn't fail the verify call — caller already has session.
+      }
+
       return { success: true };
     } catch (error) {
       return { success: false, error: 'Network error' };
     }
-  }, []);
+  }, [refresh]);
 
   // Logout
   const logout = useCallback(async () => {

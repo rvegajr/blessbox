@@ -8,9 +8,10 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { onboardingSession } from '@/lib/services/OnboardingSessionService';
+import { clearOnboardingStorage } from '@/lib/utils/clear-onboarding-storage';
 
 interface OrganizationFormData {
   name: string;
@@ -47,6 +48,8 @@ const COMMON_TIMEZONES = [
 
 export default function OrganizationSetupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isFreshFlow = searchParams?.get('fresh') === '1';
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [formData, setFormData] = useState<OrganizationFormData>({
@@ -64,9 +67,21 @@ export default function OrganizationSetupPage() {
   const [loading, setLoading] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
 
+  // Issue #23 Bug A: when an authenticated user is creating ANOTHER org via
+  // the "Register another organization" button (fresh=1), wipe any onboarding
+  // localStorage from a prior org so the form doesn't pre-fill (or worse,
+  // re-submit) the previous org's name / email.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!isFreshFlow) return;
+    clearOnboardingStorage();
+    setOrganizationId(null);
+  }, [isFreshFlow]);
+
   // Load any saved form data from localStorage (resume support)
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (isFreshFlow) return; // skip resume in fresh add-org flow
     
     const savedName = window.localStorage.getItem('onboarding_orgName');
     const savedEmail = window.localStorage.getItem('onboarding_contactEmail');
@@ -83,7 +98,7 @@ export default function OrganizationSetupPage() {
         contactEmail: savedEmail || prev.contactEmail,
       }));
     }
-  }, []);
+  }, [isFreshFlow]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof OrganizationFormData, string>> = {};

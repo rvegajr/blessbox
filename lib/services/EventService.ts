@@ -7,6 +7,7 @@ import type {
 import type { IQRCodeService } from '../interfaces/IQRCodeService';
 import type { IFormConfigService } from '../interfaces/IFormConfigService';
 import type { IEventTypeService } from '../interfaces/IEventTypeService';
+import { getDbClient } from '../db';
 
 /**
  * EventService - Composition layer over QRCodeService and FormConfigService.
@@ -28,9 +29,30 @@ export class EventService implements IEventService {
     private eventTypeService: IEventTypeService
   ) {}
 
+  /**
+   * Issue #24: resolve the real organization "event name" (from
+   * `organizations.event_name`) so the dashboard event filter does not
+   * show the form/registration title (which is `qr_code_sets.name`).
+   */
+  private async getOrgEventName(organizationId: string): Promise<string | null> {
+    try {
+      const db = getDbClient();
+      const result = await db.execute({
+        sql: `SELECT event_name FROM organizations WHERE id = ? LIMIT 1`,
+        args: [organizationId],
+      });
+      const row = (result.rows as any[])[0];
+      const value = row?.event_name;
+      return typeof value === 'string' && value.trim().length > 0 ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
   async listEvents(organizationId: string): Promise<Event[]> {
     const qrCodeSets = await this.qrCodeService.getQRCodeSets(organizationId);
-    
+    const orgEventName = await this.getOrgEventName(organizationId);
+
     const events: Event[] = [];
     for (const qrCodeSet of qrCodeSets) {
       const qrCodes = await this.qrCodeService.getQRCodesBySet(qrCodeSet.id);
@@ -45,6 +67,7 @@ export class EventService implements IEventService {
         id: qrCodeSet.id,
         organizationId: qrCodeSet.organizationId,
         name: qrCodeSet.name,
+        eventName: orgEventName ?? qrCodeSet.name,
         eventType: qrCodeSet.eventType as any,
         description: qrCodeSet.description ?? null,
         formConfigId: qrCodeSet.id, // Form config ID === QR code set ID
@@ -66,6 +89,7 @@ export class EventService implements IEventService {
     }
 
     const qrCodes = await this.qrCodeService.getQRCodesBySet(id);
+    const orgEventName = await this.getOrgEventName(qrCodeSet.organizationId);
     
     // Aggregate registration counts from all QR codes
     const registrationCount = qrCodes.reduce(
@@ -77,6 +101,7 @@ export class EventService implements IEventService {
       id: qrCodeSet.id,
       organizationId: qrCodeSet.organizationId,
       name: qrCodeSet.name,
+      eventName: orgEventName ?? qrCodeSet.name,
       eventType: qrCodeSet.eventType as any,
       description: qrCodeSet.description ?? null,
       formConfigId: qrCodeSet.id,
@@ -119,10 +144,13 @@ export class EventService implements IEventService {
 
     const qrCodes = await this.qrCodeService.getQRCodesBySet(formConfig.id);
 
+    const orgEventName = await this.getOrgEventName(qrCodeSet.organizationId);
+
     return {
       id: qrCodeSet.id,
       organizationId: qrCodeSet.organizationId,
       name: qrCodeSet.name,
+      eventName: orgEventName ?? qrCodeSet.name,
       eventType: qrCodeSet.eventType as any,
       description: qrCodeSet.description ?? null,
       formConfigId: formConfig.id,
@@ -149,10 +177,13 @@ export class EventService implements IEventService {
       0
     );
 
+    const orgEventName = await this.getOrgEventName(updatedSet.organizationId);
+
     return {
       id: updatedSet.id,
       organizationId: updatedSet.organizationId,
       name: updatedSet.name,
+      eventName: orgEventName ?? updatedSet.name,
       eventType: updatedSet.eventType as any,
       description: updatedSet.description ?? null,
       formConfigId: updatedSet.id,

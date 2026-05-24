@@ -113,8 +113,28 @@ async function generatePDF(registrations: any[], timezone: string): Promise<Next
   });
   y -= 30;
 
+  // Issue #24: previous widths [80,100,150,100,100] caused QR Code (full UUID,
+  // ~36 chars at 8pt ≈ 145px) to overflow into the Registered column. Solution:
+  //   - widen QR Code so it fits the truncated label
+  //   - shorten ID column (we only print 8 chars)
+  //   - keep Registered wide enough for "MM/DD/YYYY HH:MM AM"
+  // Truncating qrCodeId at 8 chars + "…" keeps the row a single line.
   const headers = ['ID', 'QR Code', 'Registered', 'Status', 'Checked In'];
-  const colWidths = [80, 100, 150, 100, 100];
+  const colWidths = [60, 90, 170, 95, 90]; // sums to 505 — fits with margins of 36
+  const truncate = (value: string, max: number): string =>
+    value.length <= max ? value : `${value.substring(0, max)}…`;
+  const drawRow = (
+    target: typeof page,
+    rowY: number,
+    cells: [string, string, string, string, string]
+  ) => {
+    let cx = margin;
+    cells.forEach((cell, i) => {
+      target.drawText(cell, { x: cx, y: rowY, size: 8, font });
+      cx += colWidths[i];
+    });
+  };
+
   let x = margin;
   headers.forEach((header, i) => {
     page.drawText(header, { x, y, size: 10, font: boldFont, color: rgb(0, 0, 0) });
@@ -142,19 +162,13 @@ async function generatePDF(registrations: any[], timezone: string): Promise<Next
       y -= 10;
     }
 
-    x = margin;
-    page.drawText(reg.id.substring(0, 8), { x, y, size: 8, font });
-    x += colWidths[0];
-    page.drawText(reg.qrCodeId || '-', { x, y, size: 8, font });
-    x += colWidths[1];
-    page.drawText(
+    drawRow(page, y, [
+      truncate(reg.id, 8),
+      truncate(reg.qrCodeId || '-', 8),
       new Date(reg.registeredAt).toLocaleString('en-US', { timeZone: timezone, dateStyle: 'short', timeStyle: 'short' }),
-      { x, y, size: 8, font }
-    );
-    x += colWidths[2];
-    page.drawText(reg.deliveryStatus, { x, y, size: 8, font });
-    x += colWidths[3];
-    page.drawText(reg.checkedInAt ? 'Yes' : 'No', { x, y, size: 8, font });
+      reg.deliveryStatus,
+      reg.checkedInAt ? 'Yes' : 'No',
+    ]);
     y -= lineHeight;
   }
 
