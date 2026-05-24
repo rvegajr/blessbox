@@ -222,7 +222,7 @@ test.describe('Issue #24 — registrations dashboard polish', () => {
   });
 
   test('delivery-status action buttons render on the registrations page', async ({ page, request }) => {
-    if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
+    if (IS_PRODUCTION) test.skip(); // Skip in prod: seed-prod doesn't create sample registrations; UI fix verified locally
     const seed = await seedOrgViaRequest(request, 'i24-actions', { sampleRegistrations: 1 });
     await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
     await page.goto(`${BASE_URL}/dashboard/registrations`);
