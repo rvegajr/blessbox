@@ -53,15 +53,13 @@ test.describe('Form Builder Regression (navigation/preview/persistence)', () => 
     
     // Click Next button
     await page.getByTestId('btn-next').click();
-    
-    // Wait for either navigation or error message
-    await Promise.race([
-      page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 30000 }),
-      page.waitForSelector('[role="alert"], .error, [data-testid*="error"]', { timeout: 5000 }).then(async () => {
-        const errorText = await page.textContent('body');
-        throw new Error(`Save failed with error: ${errorText?.substring(0, 200)}`);
-      }),
-    ]);
+
+    // Wait for navigation. The previous version raced against any element
+    // with role="alert", which the Traklet dev widget (showing a benign
+    // GitHub 401 banner) trips on every page — a false positive. Just wait
+    // for the URL change; Playwright's own timeout will surface real save
+    // failures.
+    await page.waitForURL(/\/onboarding\/qr-configuration/, { timeout: 30000 });
 
     // Navigate back to form builder and ensure the field is still present (persistence regression)
     await page.goto(`${BASE_URL}/onboarding/form-builder`);

@@ -15,12 +15,40 @@ export function FormBuilderWizard({
   const [fields, setFields] = useState<FormField[]>(data.fields || []);
   const [title, setTitle] = useState(data.title || 'Registration Form');
   const [description, setDescription] = useState(data.description || '');
-  
+
   const serializer = useMemo(() => new FormOptionsSerializer(), []);
-  
+
   // Use ref to store onChange to avoid infinite loops
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+
+  // Sync from props when the parent updates data externally
+  // (e.g. event-type change applies a new template, or the parent's
+  // dedicated Event Name input edits the title). We compare by value —
+  // not by reference — so the parent's notify→setFormData round-trip
+  // doesn't kick off an infinite render loop.
+  const propsFieldsKey = JSON.stringify(data.fields || []);
+  const stateFieldsKey = JSON.stringify(fields);
+  useEffect(() => {
+    if (propsFieldsKey !== stateFieldsKey) {
+      setFields(data.fields || []);
+    }
+    // We intentionally use the JSON key to detect real value changes,
+    // not just reference changes from a parent render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propsFieldsKey]);
+
+  useEffect(() => {
+    const next = data.title || 'Registration Form';
+    if (next !== title) setTitle(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.title]);
+
+  useEffect(() => {
+    const next = data.description || '';
+    if (next !== description) setDescription(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.description]);
 
   // Notify parent of changes without including onChange in dependencies
   useEffect(() => {

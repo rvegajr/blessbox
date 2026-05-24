@@ -18,6 +18,7 @@ if [ "$ENVIRONMENT" = "local" ]; then
   
   BASE_URL=http://localhost:7777 npx playwright test \
     production-ready-verification-with-seed.spec.ts \
+    issue-17-form-builder-repeat.spec.ts \
     --reporter=list \
     --workers=1
 
@@ -41,6 +42,7 @@ elif [ "$ENVIRONMENT" = "production" ]; then
   
   TEST_ENV=production BASE_URL=https://www.blessbox.org npx playwright test \
     production-ready-verification-with-seed.spec.ts \
+    issue-17-form-builder-repeat.spec.ts \
     --reporter=list \
     --workers=1
 
@@ -63,4 +65,5 @@ echo "  ✅ Issue #31: Health & Diagnostics endpoints"
 echo "  ✅ Issue #33: Landing page dashboard shortcut"
 echo "  ✅ Issue #30: Classes edit button + back link"
 echo "  ✅ Issue #34: Export CSV functionality"
+echo "  ✅ Issue #17: Form builder reactivity + Event Name input"
 echo ""
