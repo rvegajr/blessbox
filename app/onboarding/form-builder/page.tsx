@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { FormBuilderWizard } from '@/components/onboarding/FormBuilderWizard';
-import type { FormBuilderData, FormField } from '@/components/OnboardingWizard.interface';
+import type { FormBuilderData } from '@/components/OnboardingWizard.interface';
 import { onboardingSession } from '@/lib/services/OnboardingSessionService';
 import { EventTypeService } from '@/lib/services/EventTypeService';
+import { EventTypeFormApplier } from '@/lib/services/EventTypeFormApplier';
 import type { EventType } from '@/lib/interfaces/IEventTypeService';
 import { FormPreviewModal } from '@/components/forms/FormPreviewModal';
 
@@ -19,24 +20,6 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   volunteer: 'Volunteer Sign-up',
   custom: 'Custom Event',
 };
-
-/**
- * Convert template fields from IFormConfigService.FormField to the local
- * onboarding FormField (which is a subset; no 'number'/'date' types and no 'order').
- */
-function templateToOnboardingFields(
-  templateFields: { id: string; type: string; label: string; placeholder?: string; required: boolean }[]
-): FormField[] {
-  // Local onboarding type is narrower; coerce 'number'/'date' to 'text' so the field is still useful.
-  const supported = new Set(['text', 'email', 'phone', 'select', 'textarea', 'checkbox']);
-  return templateFields.map((f) => ({
-    id: f.id,
-    type: (supported.has(f.type) ? f.type : 'text') as FormField['type'],
-    label: f.label,
-    placeholder: f.placeholder,
-    required: f.required,
-  }));
-}
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -82,6 +65,10 @@ export default function FormBuilderPage() {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const eventTypeService = useMemo(() => new EventTypeService(), []);
+  const formApplier = useMemo(
+    () => new EventTypeFormApplier(eventTypeService),
+    [eventTypeService]
+  );
   const [eventType, setEventType] = useState<EventType>(() => {
     if (typeof window === 'undefined') return 'custom';
     const stored = window.localStorage.getItem(ONBOARDING_EVENT_TYPE_KEY);
@@ -119,28 +106,40 @@ export default function FormBuilderPage() {
 
   const handleEventTypeChange = useCallback(
     (next: EventType) => {
+      const prev: EventType | null =
+        typeof window !== 'undefined'
+          ? ((window.localStorage.getItem(ONBOARDING_EVENT_TYPE_KEY) as EventType | null) ?? null)
+          : null;
       setEventType(next);
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(ONBOARDING_EVENT_TYPE_KEY, next);
       }
-      // Pre-populate fields from template ONLY if current form is empty.
-      // Never overwrite organizer's in-progress work.
-      setFormData((prev) => {
-        if (prev.fields.length > 0) return prev;
-        const tpl = eventTypeService.getTemplate(next);
-        const nextData: FormBuilderData = {
-          ...prev,
-          title: prev.title || tpl.defaultName,
-          fields: templateToOnboardingFields(tpl.formFields),
-        };
+      // Delegate decision to EventTypeFormApplier (ISP service):
+      //   - swaps fields when current ones are pristine (Bug #1 fix)
+      //   - replaces legacy "Registration Form" / previous template name
+      //     with the new template default (Bug #2 fix)
+      //   - preserves the user's typed-in event name + customized fields
+      setFormData((current) => {
+        const nextData = formApplier.applyTemplate(current, prev, next);
         if (typeof window !== 'undefined') {
           window.localStorage.setItem('onboarding_formData', JSON.stringify(nextData));
         }
         return nextData;
       });
     },
-    [eventTypeService]
+    [formApplier]
   );
+
+  const handleEventNameChange = useCallback((name: string) => {
+    setFormData((current) => {
+      const nextData: FormBuilderData = { ...current, title: name };
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('onboarding_formData', JSON.stringify(nextData));
+      }
+      return nextData;
+    });
+    setSaved(false);
+  }, []);
 
   const handleSave = async () => {
     if (!organizationId) return;
@@ -195,33 +194,58 @@ export default function FormBuilderPage() {
   const formBuilder = (
     <div className="space-y-4">
       <div
-        className="bg-white rounded-lg p-4 border border-gray-200"
+        className="bg-white rounded-lg p-4 border border-gray-200 space-y-4"
         data-testid="event-type-selector"
       >
-        <label
-          htmlFor="event-type"
-          className="block text-sm font-medium text-gray-900 mb-1"
-        >
-          Event Type
-        </label>
-        <p className="text-xs text-gray-500 mb-2">
-          Pick a template — we&apos;ll pre-fill the form fields below. You can always
-          customize them.
-        </p>
-        <select
-          id="event-type"
-          data-testid="select-event-type"
-          value={eventType}
-          onChange={(e) => handleEventTypeChange(e.target.value as EventType)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          aria-label="Event type"
-        >
-          {eventTypeService.listEventTypes().map((t) => (
-            <option key={t} value={t} data-testid={`option-event-type-${t}`}>
-              {EVENT_TYPE_LABELS[t]}
-            </option>
-          ))}
-        </select>
+        <div>
+          <label
+            htmlFor="event-type"
+            className="block text-sm font-medium text-gray-900 mb-1"
+          >
+            Event Type
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            Pick a template — we&apos;ll pre-fill the form fields below. You can always
+            customize them.
+          </p>
+          <select
+            id="event-type"
+            data-testid="select-event-type"
+            value={eventType}
+            onChange={(e) => handleEventTypeChange(e.target.value as EventType)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            aria-label="Event type"
+          >
+            {eventTypeService.listEventTypes().map((t) => (
+              <option key={t} value={t} data-testid={`option-event-type-${t}`}>
+                {EVENT_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            htmlFor="event-name"
+            className="block text-sm font-medium text-gray-900 mb-1"
+          >
+            Event Name
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            This is the name organizers and attendees will see — it appears on
+            the dashboard, in event filters, and in confirmation emails.
+          </p>
+          <input
+            id="event-name"
+            data-testid="input-event-name"
+            type="text"
+            value={formData.title}
+            onChange={(e) => handleEventNameChange(e.target.value)}
+            placeholder="e.g. Saturday Morning Food Bank — Q4"
+            aria-label="Event name shown on the dashboard"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
       </div>
       <FormBuilderWizard
         data={formData}

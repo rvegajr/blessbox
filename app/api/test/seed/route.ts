@@ -69,6 +69,26 @@ export async function POST(request: NextRequest) {
       ],
     });
 
+    // Seed a user + membership for the dev bb_test_auth bypass session
+    // (AuthService.getTestSession returns user.id='test-user'). Without
+    // these rows, any org-scoped POST that calls MembershipService.isMember
+    // returns 403 Forbidden in dev — making the form-builder save endpoint
+    // unreachable from Playwright. This block is dev-only via the
+    // NODE_ENV check at the top of this route.
+    const TEST_USER_ID = 'test-user';
+    await db.execute({
+      sql: `INSERT INTO users (id, email, created_at, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET updated_at = excluded.updated_at`,
+      args: [TEST_USER_ID, contactEmail, now, now],
+    });
+    await db.execute({
+      sql: `INSERT INTO memberships (id, user_id, organization_id, role, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id, organization_id) DO UPDATE SET updated_at = excluded.updated_at`,
+      args: [uuidv4(), TEST_USER_ID, orgId, 'admin', now, now],
+    });
+
     // Ensure test coupons exist (used by QA guide + checkout tests)
     await couponService.ensureSchema();
     const ensureCoupon = async (spec: {
