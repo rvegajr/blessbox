@@ -54,11 +54,13 @@ async function seedOrgViaRequest(
 }
 
 test.describe('Issue #27 — coupon redemption cannot bypass payment forever', () => {
-  test('FREE100 cannot be redeemed twice by the same organization', async ({ request }) => {
+  test('FREE100 cannot be redeemed twice by the same organization', async ({ page, request }) => {
     if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
 
     const seed = await seedOrgViaRequest(request, 'i27-batch-1');
-    const cookies = `bb_test_auth=1; bb_test_email=${seed.contactEmail}; bb_test_org_id=${seed.organizationId}`;
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
+    const state = await page.context().storageState();
+    const cookies = state.cookies.map(c => `${c.name}=${c.value}`).join('; ');
 
     const first = await request.post(`${BASE_URL}/api/payment/process`, {
       headers: { 'Content-Type': 'application/json', Cookie: cookies },
@@ -88,10 +90,12 @@ test.describe('Issue #27 — coupon redemption cannot bypass payment forever', (
     expect(String(body.error)).toMatch(/already been used by your organization/i);
   });
 
-  test('FREE100 still works for a different organization', async ({ request }) => {
+  test('FREE100 still works for a different organization', async ({ page, request }) => {
     if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
     const seed = await seedOrgViaRequest(request, 'i27-batch-other');
-    const cookies = `bb_test_auth=1; bb_test_email=${seed.contactEmail}; bb_test_org_id=${seed.organizationId}`;
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
+    const state = await page.context().storageState();
+    const cookies = state.cookies.map(c => `${c.name}=${c.value}`).join('; ');
     const res = await request.post(`${BASE_URL}/api/payment/process`, {
       headers: { 'Content-Type': 'application/json', Cookie: cookies },
       data: { planType: 'enterprise', billingCycle: 'monthly', currency: 'USD', couponCode: 'FREE100' },
@@ -105,10 +109,12 @@ test.describe('Issue #27 — coupon redemption cannot bypass payment forever', (
 });
 
 test.describe('Issue #26 — non-catalog plans return a useful checkout error', () => {
-  test('Subscribe with Square for `standard` returns 409 with a clear message', async ({ request }) => {
+  test('Subscribe with Square for `standard` returns 409 with a clear message', async ({ page, request }) => {
     if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
     const seed = await seedOrgViaRequest(request, 'i26-batch');
-    const cookies = `bb_test_auth=1; bb_test_email=${seed.contactEmail}; bb_test_org_id=${seed.organizationId}`;
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
+    const state = await page.context().storageState();
+    const cookies = state.cookies.map(c => `${c.name}=${c.value}`).join('; ');
     const res = await request.post(`${BASE_URL}/api/payment/create-checkout-session`, {
       headers: { 'Content-Type': 'application/json', Cookie: cookies },
       data: { planType: 'standard', billingCycle: 'monthly', email: seed.contactEmail },
@@ -120,10 +126,12 @@ test.describe('Issue #26 — non-catalog plans return a useful checkout error', 
     expect(body.fallback).toBe('contact-support');
   });
 
-  test('Subscribe with Square for `enterprise` returns the same helpful 409', async ({ request }) => {
+  test('Subscribe with Square for `enterprise` returns the same helpful 409', async ({ page, request }) => {
     if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
     const seed = await seedOrgViaRequest(request, 'i26-batch-ent');
-    const cookies = `bb_test_auth=1; bb_test_email=${seed.contactEmail}; bb_test_org_id=${seed.organizationId}`;
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
+    const state = await page.context().storageState();
+    const cookies = state.cookies.map(c => `${c.name}=${c.value}`).join('; ');
     const res = await request.post(`${BASE_URL}/api/payment/create-checkout-session`, {
       headers: { 'Content-Type': 'application/json', Cookie: cookies },
       data: { planType: 'enterprise', billingCycle: 'monthly', email: seed.contactEmail },
@@ -179,10 +187,12 @@ test.describe('Issue #24 — registrations dashboard polish', () => {
     await expect(filter.locator('option', { hasText: 'Not Checked In' }).first()).toBeAttached();
   });
 
-  test('event filter prefers organization event_name over qr_code_set name', async ({ request }) => {
+  test('event filter prefers organization event_name over qr_code_set name', async ({ page, request }) => {
     if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
     const seed = await seedOrgViaRequest(request, 'i24-event-name', { eventName: 'Aracela Conference 2026' });
-    const cookies = `bb_test_auth=1; bb_test_email=${seed.contactEmail}; bb_test_org_id=${seed.organizationId}`;
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
+    const state = await page.context().storageState();
+    const cookies = state.cookies.map(c => `${c.name}=${c.value}`).join('; ');
     const res = await request.get(`${BASE_URL}/api/events?organizationId=${seed.organizationId}`, {
       headers: { Cookie: cookies },
     });
@@ -196,10 +206,12 @@ test.describe('Issue #24 — registrations dashboard polish', () => {
     }
   });
 
-  test('PDF export downloads and returns a valid PDF (Issue #24 layout fix)', async ({ request }) => {
+  test('PDF export downloads and returns a valid PDF (Issue #24 layout fix)', async ({ page, request }) => {
     if (IS_PRODUCTION && !HAS_PROD_SECRETS) test.skip();
     const seed = await seedOrgViaRequest(request, 'i24-pdf');
-    const cookies = `bb_test_auth=1; bb_test_email=${seed.contactEmail}; bb_test_org_id=${seed.organizationId}`;
+    await loginAsUser(page, seed.contactEmail, { organizationId: seed.organizationId });
+    const state = await page.context().storageState();
+    const cookies = state.cookies.map(c => `${c.name}=${c.value}`).join('; ');
     const res = await request.get(`${BASE_URL}/api/registrations/export?format=pdf`, {
       headers: { Cookie: cookies },
     });
