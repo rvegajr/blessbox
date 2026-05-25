@@ -1,0 +1,9 @@
+# Files listed here stay on disk and remain openable on demand, but are kept
+# OUT of Cursor's ambient AI index. See traklet/JAM_TO_RESOLUTION_PIPELINE.md §17.
+#
+# Prefer this over .cursorignore: .cursorignore would block agents even when you
+# WANT their help scaffolding from a template. .cursorindexingignore keeps the
+# templates invisible-by-default but available-on-request.
+
+# Tier-B inert pipeline templates — reference data, not instructions.
+pipeline/templates/
