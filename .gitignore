@@ -163,3 +163,12 @@ playwright-report/
 # Local DB backups
 backups/
 .env.vercel.production
+
+# Cursor MCP config — contains a Jam PAT, keep local only (never commit)
+.cursor/mcp.json
+
+# MCP secret-hygiene: the tracked .claude/mcp.json is secret-free (uses ${JAM_PAT}).
+# These guard against accidental literal-token MCP variants ever being committed.
+.mcp.json
+.mcp.local.json
+.claude/mcp.local.json
