@@ -1,0 +1,186 @@
+# LIVE WORKFLOW — promoted from pipeline/templates/jam-pipeline.yml (edit the template, then re-promote).
+# Design + runbook: traklet/JAM_TO_RESOLUTION_PIPELINE.md.
+#
+# Phase 2 = stages 0–3: ingest → extract → author spec + Traklet case → RED gate + classify.
+# Opens a DRAFT PR and stops at a human gate (red / green-triage / spec-broken).
+# It does NOT edit application code (Phase 3) and never merges (a human does).
+#
+# ─ VERIFY ON FIRST RUN (version-dependent bits flagged by research) ──────────────
+#  • action pin @v1 — re-check for a patch tag.
+#  • HTTP MCP config (`type: http` + Bearer header via --mcp-config) — confirm in logs.
+#  • --allowedTools MCP naming `mcp__jam__<tool>` — confirm tools are permitted.
+#  • the action may try to commit on issue triggers; we instruct "do not commit" and
+#    commit in a controlled step. If it double-commits, drop our git step.
+#  • model id current as of 2026-05; tune cost/quality as needed.
+# ─────────────────────────────────────────────────────────────────────────────────
+
+name: Jam → Resolution (Phase 2 · author spec + RED gate)
+
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: jam-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write        # create branch, commit spec
+  pull-requests: write   # open the draft PR
+  issues: write          # transition labels, comment
+
+jobs:
+  author-and-classify:
+    # Gate: fire only when `jam:state/queued` was just added, the issue is a `jam`,
+    # and it is not on hold.
+    if: >
+      github.event.label.name == 'jam:state/queued' &&
+      contains(toJSON(github.event.issue.labels.*.name), 'jam') &&
+      !contains(toJSON(github.event.issue.labels.*.name), 'jam:control/hold')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse Jam URL + ids from the issue body
+        id: jam
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          URL=$(printf '%s' "$ISSUE_BODY" | grep -oE 'https://jam\.dev/[a-zA-Z0-9/_-]+' | head -1 || true)
+          if [ -z "$URL" ]; then
+            echo "::error::No Jam URL found in issue body (expected a https://jam.dev/... link)."
+            exit 1
+          fi
+          JAM_ID=$(printf '%s' "$URL" | grep -oiE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -1 || basename "$URL")
+          SHORT=$(printf '%s' "$JAM_ID" | cut -c1-8)
+          {
+            echo "url=$URL"
+            echo "id=$JAM_ID"
+            echo "short=$SHORT"
+            echo "branch=jam/$SHORT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: State → extracting (+ idempotency label)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
+            --remove-label "jam:state/queued" \
+            --add-label "jam:state/extracting" \
+            --add-label "jam:meta/id-${{ steps.jam.outputs.short }}" || true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Build Jam MCP config (secret injected at runtime, never committed)
+        run: |
+          mkdir -p /tmp/mcp
+          cat > /tmp/mcp/jam.json <<'EOF'
+          { "mcpServers": { "jam": {
+              "type": "http",
+              "url": "https://mcp.jam.dev/mcp",
+              "headers": { "Authorization": "Bearer __JAM_PAT__" }
+          } } }
+          EOF
+          sed -i "s|__JAM_PAT__|${{ secrets.JAM_PAT }}|" /tmp/mcp/jam.json
+
+      - name: Author spec + Traklet case, run RED gate (Claude Code)
+        uses: anthropics/claude-code-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Use the `jam-to-playwright` skill in this repo
+            (.claude/skills/jam-to-playwright/SKILL.md) on this recording:
+              ${{ steps.jam.outputs.url }}
+
+            Follow the skill exactly. In particular:
+            1. Read the recording via the Jam MCP tools (getDetails, getUserEvents,
+               getNetworkRequests filtered to 4xx then 5xx, getConsoleLogs error, getMetadata).
+            2. Author tests/e2e/<slug>.spec.ts mirroring
+               tests/e2e/issues-23-24-26-27-28-aracela-batch.spec.ts.
+               Grep-verify every data-testid before using it. Never invent selectors.
+            3. Author .traklet/test-cases/TC-NNN.md (next free id after TC-040; flat file;
+               sections objective/prerequisites/steps/expected/evidence/diagnostics/notes).
+            4. Run `npx playwright test --list <spec>` to confirm it compiles.
+            5. RED GATE — run the spec against the CURRENT code and classify:
+                 RED   = it fails AND the failing assertion is tied to a real 4xx/5xx or console error
+                 GREEN = it passes / all requests 2xx, no error signal (a VALID outcome — do NOT
+                         force a failure; this means works-as-designed or the bug wasn't captured)
+                 ERROR = selectors/helpers do not resolve
+
+            Do NOT edit application code. Do NOT commit. Do NOT open a PR.
+            Finally, WRITE a results file `pipeline/.jam-result.json` containing exactly:
+              { "verdict": "red|green|error", "slug": "<spec-slug>", "tc": "TC-NNN",
+                "summary": "<one-paragraph network/console summary + RED/GREEN reasoning>" }
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 30
+            --mcp-config /tmp/mcp/jam.json
+            --allowedTools "Read,Write,Edit,Grep,Glob,Bash(npx playwright *),Bash(git status),Bash(git diff *),mcp__jam__getDetails,mcp__jam__getUserEvents,mcp__jam__getNetworkRequests,mcp__jam__getConsoleLogs,mcp__jam__getMetadata"
+
+      - name: Read verdict (robust default if missing)
+        id: verdict
+        run: |
+          if [ -f pipeline/.jam-result.json ]; then
+            V=$(jq -r '.verdict // "error"' pipeline/.jam-result.json)
+            S=$(jq -r '.slug // "unknown"' pipeline/.jam-result.json)
+            T=$(jq -r '.tc // ""' pipeline/.jam-result.json)
+          else
+            V=error; S=unknown; T=""
+            echo "::warning::No pipeline/.jam-result.json produced; defaulting to spec-broken."
+          fi
+          { echo "verdict=$V"; echo "slug=$S"; echo "tc=$T"; } >> "$GITHUB_OUTPUT"
+          rm -f pipeline/.jam-result.json   # never commit the scratch file
+
+      - name: Commit spec to a branch + open draft PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "jam-pipeline[bot]"
+          git config user.email "jam-pipeline@users.noreply.github.com"
+          git checkout -b "${{ steps.jam.outputs.branch }}"
+          # The spec is the committable artifact. .traklet/ is gitignored — the TC syncs
+          # to its own GitHub issue via `npx traklet sync` (added in Phase 4), not the PR.
+          git add tests/e2e/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "::warning::No spec file to commit — see verdict (${{ steps.verdict.outputs.verdict }})."
+          else
+            git commit --no-verify -m "test(jam): spec from ${{ steps.jam.outputs.url }} (refs #${{ github.event.issue.number }})"
+            git push -u origin "${{ steps.jam.outputs.branch }}"
+            gh pr create --draft --base development \
+              --title "Jam #${{ github.event.issue.number }}: ${{ steps.verdict.outputs.slug }} [${{ steps.verdict.outputs.verdict }}]" \
+              --body "$(printf 'Auto-generated from %s\n\nVerdict: **%s** · Traklet %s\n\nReview the spec and the RED/GREEN reasoning before merging. This PR is a DRAFT; a human approves the merge. Refs #%s.' \
+                       "${{ steps.jam.outputs.url }}" "${{ steps.verdict.outputs.verdict }}" "${{ steps.verdict.outputs.tc }}" "${{ github.event.issue.number }}")" || true
+          fi
+
+      - name: Transition issue label by verdict + comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          N=${{ github.event.issue.number }}
+          gh issue edit $N --repo ${{ github.repository }} --remove-label "jam:state/extracting" || true
+          case "${{ steps.verdict.outputs.verdict }}" in
+            red)   gh issue edit $N --add-label "jam:state/red" --add-label "jam:verdict/bug" --add-label "bug" ;;
+            green) gh issue edit $N --add-label "jam:state/green-triage" --add-label "jam:verdict/works-as-designed" ;;
+            *)     gh issue edit $N --add-label "jam:state/spec-broken" ;;
+          esac
+          gh issue comment $N --body "**Jam pipeline (Phase 2) → \`${{ steps.verdict.outputs.verdict }}\`**. Draft PR opened with the spec (Traklet ${{ steps.verdict.outputs.tc }}). Next: red → human fixes (Phase 3 will automate); green-triage → human decides; spec-broken → comment \`/jam regenerate\`."
+
+      - name: On failure → needs-human
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
+            --remove-label "jam:state/extracting" --remove-label "jam:state/queued" \
+            --add-label "jam:state/needs-human" || true
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "⚠️ Jam pipeline failed before producing a verdict — see the Actions run log. Labeled \`jam:state/needs-human\`."
