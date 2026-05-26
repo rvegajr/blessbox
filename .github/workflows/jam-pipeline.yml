@@ -28,6 +28,7 @@ permissions:
   contents: write        # create branch, commit spec
   pull-requests: write   # open the draft PR
   issues: write          # transition labels, comment
+  id-token: write        # OIDC token required by anthropics/claude-code-action@v1
 
 jobs:
   author-and-classify:
