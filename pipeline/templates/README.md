@@ -16,7 +16,8 @@ on demand and write the live artifact to its real home (e.g. `.github/workflows/
 | --- | --- | --- |
 | `jam-pipeline.yml` | 2 | `.github/workflows/jam-pipeline.yml` (author + RED gate) |
 | `jam-fix.yml` | 3 | `.github/workflows/jam-fix.yml` (autonomous fix agent) |
-| `jam-webhook-route.ts` | 4 | `app/api/jam/webhook/route.ts` |
+| `jam-webhook-route.ts` | 4 | `app/api/jam/webhook/route.ts` (auto-file issues from Jam) |
+| `jam-resolve.yml` | 4 | `.github/workflows/jam-resolve.yml` (mark solved on merge) |
 
 ## Banner convention for every file added here
 
