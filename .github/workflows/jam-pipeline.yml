@@ -171,7 +171,7 @@ jobs:
           if git cat-file -e "HEAD:$SPEC" 2>/dev/null && [ -n "$(git rev-list origin/main..HEAD 2>/dev/null)" ]; then
             git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
             git push -u origin "${{ steps.jam.outputs.branch }}" --force-with-lease
-            gh pr create --draft --base main \
+            gh pr create --draft --base uat \
               --title "Jam #${{ github.event.issue.number }}: ${{ steps.verdict.outputs.slug }} [${{ steps.verdict.outputs.verdict }}]" \
               --body "$(printf 'Auto-generated from %s\n\nVerdict: **%s** · Traklet %s\n\nReview the spec and the RED/GREEN reasoning before merging. This PR is a DRAFT; a human approves the merge. Refs #%s.' \
                        "${{ steps.jam.outputs.url }}" "${{ steps.verdict.outputs.verdict }}" "${{ steps.verdict.outputs.tc }}" "${{ github.event.issue.number }}")" || true
