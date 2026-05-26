@@ -1,4 +1,4 @@
-# ⚠️ TEMPLATE / RUNBOOK — Activating the Jam→Resolution pipeline (Phase 2)
+# ⚠️ TEMPLATE / RUNBOOK — Activating the Jam→Resolution pipeline (Phases 2–3)
 
 Promotes the inert templates in this directory into a **live** GitHub Actions
 workflow. Nothing here runs until a human completes these steps. Full design:
@@ -64,6 +64,33 @@ git commit -m "ci: activate Jam pipeline (Phase 2, stages 0-3)"
 - `jam:control/regenerate` — discard and re-author from the recording.
 
 ## 5 · Deliberately NOT in Phase 2
-- Editing application code (Phase 3 — behind the RED gate + `jam:control/approve-fix`).
+- Editing application code → that's **Phase 3** (§6 below), gated + reviewed.
 - Auto-trigger from Jam webhooks (Phase 4 — Phase 2 is issue-label triggered).
 - Merging — a human always approves the PR.
+
+---
+
+## 6 · Phase 3 — autonomous fix agent (`jam-fix.yml`) — review carefully: it edits production code
+
+Makes a confirmed-RED spec pass by editing `app/**`+`lib/**`, verifies on a **preview**
+deploy of the fixed code, and opens the PR for **human merge**. It never edits tests
+(anti-cheat enforced), never merges, and caps at 3 attempts.
+
+**Before promoting (in addition to §1 prerequisites):**
+- **Confirm the verify environment.** The fix is checked on a Vercel **preview**
+  (`npx vercel deploy`), NOT prod. Confirm previews inherit `PROD_TEST_LOGIN_SECRET` /
+  `PROD_TEST_SEED_SECRET` and expose `/api/test/login` + `/api/test/seed-prod` — or
+  switch the verify step to a started local server (`TEST_ENV=local`, `BASE_URL=http://localhost:7777`).
+- Read the agent contract + anti-cheat in `jam-fix.yml` (app/lib only; spec immutable; cap 3).
+
+**Promote:**
+```bash
+cp pipeline/templates/jam-fix.yml .github/workflows/jam-fix.yml
+git add .github/workflows/jam-fix.yml && git commit -m "ci: activate Jam fix agent (Phase 3)"
+```
+
+**Drive it:** on a `jam:state/red` issue, a human adds **`jam:control/approve-fix`** (one-shot),
+or pre-set **`jam:control/auto`** on trusted issues for hands-off. Flow:
+`red → fixing → (preview-verified) → ready-for-review` with the fix pushed to the jam branch;
+a human reviews + merges. Failure / cheat / regression / cap → `needs-human`, **nothing pushed to main**.
+Kill switch: `jam:control/hold`.
