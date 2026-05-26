@@ -99,6 +99,11 @@ jobs:
         uses: anthropics/claude-code-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # RED gate runs the authored spec against PRODUCTION (seeded test orgs):
+          TEST_ENV: production
+          BASE_URL: https://www.blessbox.org
+          PROD_TEST_LOGIN_SECRET: ${{ secrets.PROD_TEST_LOGIN_SECRET }}
+          PROD_TEST_SEED_SECRET: ${{ secrets.PROD_TEST_SEED_SECRET }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
@@ -115,16 +120,20 @@ jobs:
             3. Author .traklet/test-cases/TC-NNN.md (next free id after TC-040; flat file;
                sections objective/prerequisites/steps/expected/evidence/diagnostics/notes).
             4. Run `npx playwright test --list <spec>` to confirm it compiles.
-            5. RED GATE — run the spec against the CURRENT code and classify:
-                 RED   = it fails AND the failing assertion is tied to a real 4xx/5xx or console error
-                 GREEN = it passes / all requests 2xx, no error signal (a VALID outcome — do NOT
-                         force a failure; this means works-as-designed or the bug wasn't captured)
-                 ERROR = selectors/helpers do not resolve
+            5. RED GATE — actually RUN the spec against PRODUCTION. The env is already set
+               (TEST_ENV=production, BASE_URL=https://www.blessbox.org, plus prod test secrets so
+               loginAsUser/seedOrgViaRequest work): run `npx playwright test tests/e2e/<slug>.spec.ts`.
+               Classify from the ACTUAL run result:
+                 GREEN = the spec PASSES → behavior is correct (works-as-designed / already fixed)
+                 RED   = the spec FAILS *and* the Jam showed a real 4xx/5xx or console error
+                         (failure is corroborated → a genuine bug reproduced)
+                 ERROR = the spec FAILS with NO corroborating Jam signal, or cannot run
+                         (selectors/helpers/timeout). NEVER force a passing run into a failure.
 
             Do NOT edit application code. Do NOT commit. Do NOT open a PR.
             Finally, WRITE a results file `pipeline/.jam-result.json` containing exactly:
               { "verdict": "red|green|error", "slug": "<spec-slug>", "tc": "TC-NNN",
-                "summary": "<one-paragraph network/console summary + RED/GREEN reasoning>" }
+                "summary": "<one paragraph: the actual pass/fail + the Jam network/console evidence>" }
           claude_args: |
             --model claude-sonnet-4-6
             --max-turns 30
