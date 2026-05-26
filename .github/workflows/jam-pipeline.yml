@@ -158,20 +158,25 @@ jobs:
         run: |
           git config user.name  "jam-pipeline[bot]"
           git config user.email "jam-pipeline@users.noreply.github.com"
-          git checkout -b "${{ steps.jam.outputs.branch }}"
-          # The spec is the committable artifact. .traklet/ is gitignored — the TC syncs
-          # to its own GitHub issue via `npx traklet sync` (added in Phase 4), not the PR.
+          # The claude-code-action may leave the spec uncommitted OR commit it itself.
+          # Branch from the post-action HEAD (carrying any action commit), then commit
+          # anything still staged. .traklet/ is gitignored — the TC syncs to its own
+          # issue via `npx traklet sync` (Phase 4), not the PR.
+          git checkout -B "${{ steps.jam.outputs.branch }}"
           git add tests/e2e/ 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "::warning::No spec file to commit — see verdict (${{ steps.verdict.outputs.verdict }})."
-          else
-            git commit --no-verify -m "test(jam): spec from ${{ steps.jam.outputs.url }} (refs #${{ github.event.issue.number }})"
+          git diff --cached --quiet || git commit --no-verify \
+            -m "test(jam): spec from ${{ steps.jam.outputs.url }} (refs #${{ github.event.issue.number }})"
+          git fetch -q origin main
+          SPEC="tests/e2e/${{ steps.verdict.outputs.slug }}.spec.ts"
+          if git cat-file -e "HEAD:$SPEC" 2>/dev/null && [ -n "$(git rev-list origin/main..HEAD 2>/dev/null)" ]; then
             git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
-            git push -u origin "${{ steps.jam.outputs.branch }}"
+            git push -u origin "${{ steps.jam.outputs.branch }}" --force-with-lease
             gh pr create --draft --base main \
               --title "Jam #${{ github.event.issue.number }}: ${{ steps.verdict.outputs.slug }} [${{ steps.verdict.outputs.verdict }}]" \
               --body "$(printf 'Auto-generated from %s\n\nVerdict: **%s** · Traklet %s\n\nReview the spec and the RED/GREEN reasoning before merging. This PR is a DRAFT; a human approves the merge. Refs #%s.' \
                        "${{ steps.jam.outputs.url }}" "${{ steps.verdict.outputs.verdict }}" "${{ steps.verdict.outputs.tc }}" "${{ github.event.issue.number }}")" || true
+          else
+            echo "::warning::No spec committed for slug '${{ steps.verdict.outputs.slug }}' (verdict ${{ steps.verdict.outputs.verdict }}); skipping PR."
           fi
 
       - name: Transition issue label by verdict + comment
