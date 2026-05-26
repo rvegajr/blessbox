@@ -69,6 +69,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh label create "jam:meta/id-${{ steps.jam.outputs.short }}" --repo ${{ github.repository }} \
+            --color ededed --description "Jam dedup id" --force >/dev/null 2>&1 || true
           gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
             --remove-label "jam:state/queued" \
             --add-label "jam:state/extracting" \
@@ -158,7 +160,7 @@ jobs:
           else
             git commit --no-verify -m "test(jam): spec from ${{ steps.jam.outputs.url }} (refs #${{ github.event.issue.number }})"
             git push -u origin "${{ steps.jam.outputs.branch }}"
-            gh pr create --draft --base development \
+            gh pr create --draft --base main \
               --title "Jam #${{ github.event.issue.number }}: ${{ steps.verdict.outputs.slug }} [${{ steps.verdict.outputs.verdict }}]" \
               --body "$(printf 'Auto-generated from %s\n\nVerdict: **%s** · Traklet %s\n\nReview the spec and the RED/GREEN reasoning before merging. This PR is a DRAFT; a human approves the merge. Refs #%s.' \
                        "${{ steps.jam.outputs.url }}" "${{ steps.verdict.outputs.verdict }}" "${{ steps.verdict.outputs.tc }}" "${{ github.event.issue.number }}")" || true
