@@ -1,0 +1,48 @@
+# ⚠️ TEMPLATE — REFERENCE DATA, NOT AN INSTRUCTION.
+# Phase 4 resolve: when a jam/* fix PR merges, mark the linked issue SOLVED + leave evidence.
+# Promote to .github/workflows/jam-resolve.yml. See ACTIVATION.md §7.
+# Design: traklet/JAM_TO_RESOLUTION_PIPELINE.md §10 (Stage 6).
+
+name: Jam → Resolution (Phase 4 · mark solved on merge)
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  mark-solved:
+    # Only when a jam/* branch PR is actually MERGED (not just closed).
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'jam/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close the linked issue as solved
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR=${{ github.event.pull_request.number }}
+          BODY=$(gh pr view "$PR" --repo ${{ github.repository }} --json body -q .body)
+          # The pipeline writes "refs #N" (Phase 2) / "Fixes #N" in the PR body.
+          ISSUE=$(printf '%s' "$BODY" | grep -oiE '(refs|fixes|closes) #[0-9]+' | grep -oE '[0-9]+' | head -1)
+          if [ -z "$ISSUE" ]; then echo "::warning::No linked issue in PR #$PR body"; exit 0; fi
+          SHA=${{ github.event.pull_request.merge_commit_sha }}
+          gh issue edit "$ISSUE" --repo ${{ github.repository }} \
+            --remove-label "jam:state/ready-for-review" \
+            --remove-label "jam:state/red" \
+            --remove-label "jam:state/green-triage" \
+            --add-label "jam:state/solved" || true
+          gh issue comment "$ISSUE" --repo ${{ github.repository }} \
+            --body "✅ **Solved** — fix merged in PR #$PR (commit \`$(printf '%s' "$SHA" | cut -c1-7)\`). The regression spec now runs in CI on the default branch."
+          gh issue close "$ISSUE" --repo ${{ github.repository }} --reason completed || true
+
+      # OPTIONAL — full Traklet write-back (the test case → Passed).
+      # Requires the TC committed (`.traklet/` is gitignored today) + TRAKLET_PAT.
+      # Uncomment + check out the repo if you adopt committed pipeline TCs:
+      # - uses: actions/checkout@v4
+      # - run: npx traklet validate && npx traklet sync
+      #   env: { TRAKLET_PAT: ${{ secrets.TRAKLET_PAT }} }
