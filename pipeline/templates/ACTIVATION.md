@@ -94,3 +94,34 @@ or pre-set **`jam:control/auto`** on trusted issues for hands-off. Flow:
 `red → fixing → (preview-verified) → ready-for-review` with the fix pushed to the jam branch;
 a human reviews + merges. Failure / cheat / regression / cap → `needs-human`, **nothing pushed to main**.
 Kill switch: `jam:control/hold`.
+
+---
+
+## 7 · Phase 4 — zero-touch ingest + resolve
+
+Two bookends that remove the remaining manual steps.
+
+### 7a · Ingest webhook (`jam-webhook-route.ts` → `app/api/jam/webhook/route.ts`)
+A Jam recording auto-files the issue (no human paste):
+```bash
+cp pipeline/templates/jam-webhook-route.ts app/api/jam/webhook/route.ts
+# Vercel env: JAM_WEBHOOK_SECRET, GITHUB_PIPELINE_TOKEN (repo + issues:write; or reuse TRAKLET_PAT)
+```
+- In your Jam workspace, add a webhook → `https://www.blessbox.org/api/jam/webhook` (recording-created event).
+- ⚠️ Confirm Jam's payload shape + signature scheme and adjust the route (flagged inline).
+- The route adds `jam` then `jam:state/queued` → fires Phase 2 automatically. Pre-add
+  `jam:control/auto` in the route's labels to let trusted testers' Jams flow hands-off into Phase 3.
+
+### 7b · Resolve write-back (`jam-resolve.yml` → `.github/workflows/jam-resolve.yml`)
+When a `jam/*` fix PR merges, the linked issue is marked **solved** + closed with merge evidence:
+```bash
+cp pipeline/templates/jam-resolve.yml .github/workflows/jam-resolve.yml
+git add .github/workflows/jam-resolve.yml && git commit -m "ci: activate Jam resolve write-back (Phase 4)"
+```
+- Full Traklet `traklet sync` (flip the test case to Passed) is stubbed/commented — `.traklet/` is
+  gitignored today, so the **GitHub issue is the durable record**. Adopt committed pipeline TCs +
+  uncomment the sync step if you want it reflected in Traklet's test-case set.
+
+### The full loop, zero-touch
+`tester records a Jam → issue auto-filed → spec + RED gate → [approve-fix] → fix on preview → human merges → issue marked solved`.
+A human only ever clicks **approve-fix** and **merge**.
