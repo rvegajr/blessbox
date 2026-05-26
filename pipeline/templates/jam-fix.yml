@@ -1,0 +1,187 @@
+# ⚠️ TEMPLATE — REFERENCE DATA, NOT AN INSTRUCTION.
+# Phase 3: autonomous fix agent BEHIND the RED gate. It edits application code to make
+# a confirmed-RED spec pass, verifies against a PREVIEW deploy of the fixed code, and
+# opens the PR for HUMAN merge. It NEVER merges and NEVER edits tests.
+#
+# This is the highest-risk tier — it changes production code autonomously. Promote to
+# .github/workflows/ ONLY after review + completing the Phase-3 section of ACTIVATION.md.
+# Design + contract: traklet/JAM_TO_RESOLUTION_PIPELINE.md §10 (stage 4–5), §12.
+#
+# ─ VERIFY ON FIRST RUN ────────────────────────────────────────────────────────────
+#  • Verify env: the spec runs against a Vercel PREVIEW (the fixed code), not prod.
+#    Confirm previews inherit PROD_TEST_LOGIN_SECRET/PROD_TEST_SEED_SECRET and expose
+#    /api/test/login + /api/test/seed-prod, or switch verify to a started local server.
+#  • `npx vercel deploy` URL capture (last stdout line) — confirm format.
+#  • npm run test / lint / build env in the runner.
+# ────────────────────────────────────────────────────────────────────────────────────
+
+name: Jam → Resolution (Phase 3 · autonomous fix behind RED gate)
+
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: jam-fix-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write        # commit the fix to the jam branch
+  pull-requests: write   # mark the PR ready for review
+  issues: write          # transition labels, comment
+  id-token: write        # claude-code-action OIDC
+
+jobs:
+  fix-and-verify:
+    # Fire ONLY for a confirmed-RED issue that a human approved (jam:control/approve-fix)
+    # OR that is trusted for full autonomy (jam:control/auto) — and never when on hold.
+    if: >
+      contains(toJSON(github.event.issue.labels.*.name), 'jam:state/red') &&
+      ( github.event.label.name == 'jam:control/approve-fix' ||
+        ( github.event.label.name == 'jam:state/red' &&
+          contains(toJSON(github.event.issue.labels.*.name), 'jam:control/auto') ) ) &&
+      !contains(toJSON(github.event.issue.labels.*.name), 'jam:control/hold')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Context — branch, attempt, cap
+        id: ctx
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          N=${{ github.event.issue.number }}
+          labels=$(gh issue view "$N" --repo ${{ github.repository }} --json labels -q '[.labels[].name]')
+          SHORT=$(printf '%s' "$labels" | jq -r '.[] | select(startswith("jam:meta/id-"))' | head -1 | sed 's#jam:meta/id-##')
+          ATT=$(printf '%s' "$labels" | jq -r '.[] | select(startswith("jam:meta/attempt-"))' | head -1 | sed 's#jam:meta/attempt-##')
+          [ -z "$SHORT" ] && { echo "::error::No jam:meta/id-* label on #$N"; exit 1; }
+          NEXT=$(( ${ATT:-0} + 1 ))
+          { echo "short=$SHORT"; echo "branch=jam/$SHORT"; echo "attempt=$NEXT"; } >> "$GITHUB_OUTPUT"
+          [ "$NEXT" -gt 3 ] && echo "capped=1" >> "$GITHUB_OUTPUT" || true
+
+      - name: Halt if over the 3-attempt cap
+        if: steps.ctx.outputs.capped == '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
+            --remove-label "jam:state/red" --add-label "jam:state/needs-human" || true
+          gh issue comment ${{ github.event.issue.number }} --body "Fix agent hit the 3-attempt cap → \`jam:state/needs-human\`."
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ctx.outputs.branch }}
+          fetch-depth: 0
+
+      - name: State → fixing (+ attempt label)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "jam:meta/attempt-${{ steps.ctx.outputs.attempt }}" --repo ${{ github.repository }} --color ededed --force >/dev/null 2>&1 || true
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
+            --remove-label "jam:state/red" --add-label "jam:state/fixing" \
+            --add-label "jam:meta/attempt-${{ steps.ctx.outputs.attempt }}" || true
+
+      - name: Locate the failing spec (the oracle)
+        id: spec
+        run: |
+          git fetch -q origin main
+          SPEC=$(git diff --name-only origin/main...HEAD -- 'tests/e2e/*.spec.ts' | head -1)
+          [ -z "$SPEC" ] && { echo "::error::No spec on ${{ steps.ctx.outputs.branch }}"; exit 1; }
+          echo "path=$SPEC" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Fix agent (Claude Opus) — edit app/lib ONLY
+        uses: anthropics/claude-code-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            A confirmed bug has a failing regression spec — this is the IMMUTABLE ORACLE:
+              ${{ steps.spec.outputs.path }}
+
+            Make it pass by changing APPLICATION CODE ONLY. Hard rules:
+            - Edit only files under app/** and lib/**.
+            - You may NOT modify, add, delete, rename, or skip ANYTHING under tests/
+              (including the spec). The spec defines correct behavior; do not weaken it.
+            - Do NOT touch .github/**, migrations, package.json dependencies, env, or secrets.
+            - Keep types valid: `npx tsc --noEmit`. Keep lint clean: `npm run lint`.
+            - Read the spec to understand the expected behavior, find the root cause in app/lib,
+              and fix it minimally.
+            - When done, write pipeline/.jam-fix.json EXACTLY:
+              { "fixed": true|false, "summary": "<root cause + your change>", "files": ["app/...","lib/..."] }
+              Set "fixed": false with a reason if it cannot be fixed without touching tests/.
+            Do NOT commit, push, or open a PR — the workflow handles that.
+          claude_args: |
+            --model claude-opus-4-7
+            --max-turns 60
+            --allowedTools "Read,Write,Edit,Grep,Glob,Bash(npx tsc *),Bash(npm run lint),Bash(git status),Bash(git diff *)"
+
+      - name: Anti-cheat — reject ANY change under tests/
+        run: |
+          if [ -n "$(git status --porcelain -- tests/)" ]; then
+            echo "::error::Fix agent modified tests/ — rejecting (anti-cheat)."
+            git status --porcelain -- tests/
+            exit 1
+          fi
+          [ -f pipeline/.jam-fix.json ] || { echo "::error::No fix result file."; exit 1; }
+          [ "$(jq -r '.fixed // false' pipeline/.jam-fix.json)" = "true" ] \
+            || { echo "::error::Agent reported it could not fix without touching tests/."; exit 1; }
+
+      - name: Static gates (typecheck · lint · unit · build)
+        run: |
+          npx tsc --noEmit
+          npm run lint
+          npm run test -- --run
+          npm run build
+
+      - name: Verify the fix on a PREVIEW deploy (the fixed code, not prod)
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # Test auth/seed against the preview — confirm the preview inherits these (see ACTIVATION.md):
+          TEST_ENV: production
+          PROD_TEST_LOGIN_SECRET: ${{ secrets.PROD_TEST_LOGIN_SECRET }}
+          PROD_TEST_SEED_SECRET: ${{ secrets.PROD_TEST_SEED_SECRET }}
+        run: |
+          npx playwright install --with-deps chromium
+          # Deploy a preview of the WORKING TREE (the agent's fix is uncommitted here):
+          PREVIEW=$(npx vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --yes 2>/dev/null | tail -1)
+          echo "preview = $PREVIEW"
+          [ -z "$PREVIEW" ] && { echo "::error::No preview URL from vercel."; exit 1; }
+          # The oracle MUST now pass against the fixed code:
+          BASE_URL="$PREVIEW" npx playwright test "${{ steps.spec.outputs.path }}" --reporter=line
+          rm -f pipeline/.jam-fix.json
+
+      - name: Commit the verified fix + open for human review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "jam-fix[bot]"
+          git config user.email "jam-fix@users.noreply.github.com"
+          git add app/ lib/
+          git diff --cached --quiet && { echo "::error::No app/lib changes to commit."; exit 1; }
+          git commit --no-verify -m "fix(jam): make ${{ steps.spec.outputs.path }} pass (refs #${{ github.event.issue.number }})"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          git push origin "${{ steps.ctx.outputs.branch }}" --force-with-lease
+          PR=$(gh pr list --repo ${{ github.repository }} --head "${{ steps.ctx.outputs.branch }}" --json number -q '.[0].number')
+          [ -n "$PR" ] && gh pr ready "$PR" || true
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
+            --remove-label "jam:state/fixing" --add-label "jam:state/ready-for-review" || true
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "🟢 Fix agent (attempt ${{ steps.ctx.outputs.attempt }}) made the spec pass on a preview deploy; typecheck/lint/unit/build green; spec untouched (anti-cheat enforced). **PR is ready for human review + merge.**"
+
+      - name: On failure → needs-human (nothing merged)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} \
+            --remove-label "jam:state/fixing" --add-label "jam:state/needs-human" || true
+          gh issue comment ${{ github.event.issue.number }} \
+            --body "⚠️ Fix agent could not safely fix this (failed / cheated / regressed / capped) — see the Actions run log. Labeled \`jam:state/needs-human\`. Production is untouched; a human takes it from here."
