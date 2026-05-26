@@ -14,8 +14,8 @@ on demand and write the live artifact to its real home (e.g. `.github/workflows/
 
 | File | Phase | Becomes |
 | --- | --- | --- |
-| `jam-pipeline.yml` | 2 | `.github/workflows/jam-pipeline.yml` |
-| `fix-agent-prompt.md` | 3 | injected into the stage-4 fix agent |
+| `jam-pipeline.yml` | 2 | `.github/workflows/jam-pipeline.yml` (author + RED gate) |
+| `jam-fix.yml` | 3 | `.github/workflows/jam-fix.yml` (autonomous fix agent) |
 | `jam-webhook-route.ts` | 4 | `app/api/jam/webhook/route.ts` |
 
 ## Banner convention for every file added here
