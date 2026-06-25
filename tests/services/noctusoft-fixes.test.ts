@@ -3,6 +3,7 @@
  * TDD approach
  */
 import { describe, it, expect } from 'vitest';
+import { verifyNoctusoftWebhook } from '@/lib/security/webhookSignature';
 
 describe('Noctusoft P0 Fixes', () => {
   describe('Stable idempotency key', () => {
@@ -95,6 +96,6 @@ function generateIdempotencyKey(orgId: string, plan: string, sessionId: string):
 }
 
 async function verifyNoctusoftHMAC(payload: any, signature: string, secret: string): Promise<boolean> {
-  // This will be implemented in webhook handler
-  return true; // Placeholder
+  // Delegates to the real fail-closed helper (lib/security/webhookSignature).
+  return verifyNoctusoftWebhook({ rawBody: JSON.stringify(payload), signature, secret }).ok;
 }
