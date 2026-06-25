@@ -4,6 +4,7 @@ import { RegistrationService, RegistrationLimitError } from '@/lib/services/Regi
 import { parseODataQuery } from '@/lib/utils/odataParser';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
+import { withAuthAndOrg } from '@/lib/api/withAuth';
 
 const registrationService = new RegistrationService();
 
@@ -82,18 +83,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/registrations?organizationId=xxx&$filter=...&$orderby=... - List registrations
-export async function GET(request: NextRequest) {
+// GET /api/registrations?$filter=...&$orderby=... - List registrations for the
+// caller's active organization. The org is derived from the session — a client
+// organizationId is ignored (previously this was an UNAUTHENTICATED PII dump).
+export const GET = withAuthAndOrg(async (request, { organization }) => {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const organizationId = searchParams.get('organizationId');
-    
-    if (!organizationId) {
-      return NextResponse.json(
-        { success: false, error: 'organizationId query parameter is required' },
-        { status: 400 }
-      );
-    }
+    const organizationId = organization.id;
 
     // Parse OData query parameters
     const odataQuery = parseODataQuery(searchParams);
@@ -172,4 +168,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
