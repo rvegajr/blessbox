@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7d529222-35d3-4286-93af-831dafb539fe",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "cc8f961e-6a87-4a69-902c-3211cf309d17",
+  "prevId": "7d529222-35d3-4286-93af-831dafb539fe",
   "tables": {
     "class_sessions": {
       "name": "class_sessions",
@@ -467,6 +467,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "discount_type": {
           "name": "discount_type",
           "type": "text",
@@ -488,6 +495,20 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'USD'"
+        },
+        "min_amount": {
+          "name": "min_amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "max_discount": {
+          "name": "max_discount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "active": {
           "name": "active",

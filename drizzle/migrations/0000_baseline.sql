@@ -185,6 +185,7 @@ CREATE TABLE `organizations` (
 	`contact_zip` text,
 	`password_hash` text,
 	`last_login_at` text,
+	`timezone` text DEFAULT 'America/Los_Angeles',
 	`email_verified` integer DEFAULT false NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -244,6 +245,8 @@ CREATE TABLE `qr_code_sets` (
 	`qr_codes` text NOT NULL,
 	`is_active` integer DEFAULT true NOT NULL,
 	`scan_count` integer DEFAULT 0 NOT NULL,
+	`event_type` text,
+	`description` text,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`organization_id`) REFERENCES `organizations`(`id`) ON UPDATE no action ON DELETE cascade
