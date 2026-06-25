@@ -78,3 +78,39 @@ jobs:
           exit 1
         fi
         echo "No high/critical vulnerabilities."
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browser
+      run: npx playwright install --with-deps chromium
+
+    # The dev server boots from this env; specs self-seed via /api/test/seed
+    # (non-prod). Traklet disabled so its dev overlay can't intercept clicks.
+    - name: Run smoke tests
+      run: npm run test:smoke:ci
+      env:
+        JWT_SECRET: ci-smoke-jwt-secret-do-not-use-in-prod-0123456789
+        NEXTAUTH_SECRET: ci-smoke-jwt-secret-do-not-use-in-prod-0123456789
+        NEXT_PUBLIC_APP_URL: http://localhost:7777
+        PUBLIC_APP_URL: http://localhost:7777
+
+    - name: Upload Playwright report
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 7
