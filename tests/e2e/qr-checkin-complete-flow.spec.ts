@@ -14,6 +14,7 @@
  */
 
 import { test, expect, type SeededOrg } from './fixtures';
+import { HAS_PROD_SECRETS } from './_helpers/auth';
 
 const BASE_URL = (process.env.BASE_URL || 'http://localhost:7777').replace(/\/$/, '');
 const IS_PRODUCTION =
@@ -36,10 +37,11 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('2. Attendee scans REGISTRATION QR → Fills form → Submits', async ({ page, seededOrg }) => {
-    // Known bug: public registration-form POST does not redirect to /registration-success in
-    // prod — it 401s or stays on the form. Tracked as a product gap (not a test infra issue).
-    // When this is fixed, remove this skip and let the serial chain tests below run in prod.
-    test.skip(IS_PRODUCTION, 'Known product bug: registration form submit 401s in prod — fix the route auth-gating then remove this skip');
+    // NOTE: the old "401 in prod" claim was disproven — POST /api/registrations is
+    // public and functional in prod (direct probe returns a correct 404 for a missing
+    // form, not 401; the register page loads 200). The flow simply needs prod secrets
+    // to seed a registerable org, so it now runs in the prod e2e job when those are set.
+    test.skip(IS_PRODUCTION && !HAS_PROD_SECRETS, 'Requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET to seed a registerable org in prod');
     await page.goto(seededOrg.registrationUrl);
     await page.waitForLoadState('domcontentloaded');
 
@@ -74,7 +76,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('3. Success page displays CHECK-IN QR code', async ({ page }) => {
-    test.skip(IS_PRODUCTION || !registrationId, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #2 producing a registrationId');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !registrationId, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #2 producing a registrationId');
     await page.goto(`${BASE_URL}/registration-success?id=${registrationId}`);
     await page.waitForLoadState('domcontentloaded');
 
@@ -93,7 +95,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('4. Fetch check-in token from database', async ({ authedRequest }) => {
-    test.skip(IS_PRODUCTION || !registrationId, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #2 producing a registrationId');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !registrationId, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #2 producing a registrationId');
     // /api/registrations/[id] is auth-gated; use authedRequest with the seeded owner cookie.
     const response = await authedRequest.get(`/api/registrations/${registrationId}`);
     expect(response.ok()).toBeTruthy();
@@ -107,7 +109,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('5. Worker scans CHECK-IN QR → Opens check-in interface', async ({ authedPage }) => {
-    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4 producing a checkInUrl');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !checkInUrl, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #4 producing a checkInUrl');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const checkInHeading = authedPage.locator('h1:has-text("Check-In"), h1:has-text("Check In")');
@@ -117,7 +119,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('6. Worker clicks "Check In" button → Attendee is checked in', async ({ authedPage }) => {
-    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4 producing a checkInUrl');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !checkInUrl, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #4 producing a checkInUrl');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const checkInBtn = authedPage
@@ -134,7 +136,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('7. Verify check-in recorded in database', async ({ authedRequest }) => {
-    test.skip(IS_PRODUCTION || !registrationId, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #2/#6');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !registrationId, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #2/#6');
     const response = await authedRequest.get(`/api/registrations/${registrationId}`);
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
@@ -144,7 +146,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('8. Verify QR code cannot be used again (prevent double check-in)', async ({ authedPage }) => {
-    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !checkInUrl, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #4');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const alreadyCheckedIn = authedPage.locator('text=/already checked in/i, h1:has-text("Already")');
@@ -157,7 +159,7 @@ test.describe('QR Check-In Complete Workflow', () => {
   });
 
   test('9. Test undo check-in functionality', async ({ authedPage }) => {
-    test.skip(IS_PRODUCTION || !checkInUrl, IS_PRODUCTION ? 'prod: registration form fails (see test #2)' : 'depends on test #4');
+    test.skip((IS_PRODUCTION && !HAS_PROD_SECRETS) || !checkInUrl, IS_PRODUCTION ? 'prod run requires PROD_TEST_SEED_SECRET + PROD_TEST_LOGIN_SECRET' : 'depends on test #4');
     await authedPage.goto(checkInUrl);
     await authedPage.waitForLoadState('domcontentloaded');
     const undoBtn = authedPage.locator('[data-testid="btn-undo-checkin"]');
