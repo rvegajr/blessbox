@@ -94,8 +94,10 @@ describe('CouponUsageEnforcer', () => {
   });
 
   describe('recordRedemption', () => {
-    it('inserts redemption row + bumps current_uses', async () => {
-      mockDb.execute.mockResolvedValue({ rows: [] });
+    it('atomically claims a usage slot (conditional UPDATE) then inserts the redemption row', async () => {
+      mockDb.execute
+        .mockResolvedValueOnce({ rowsAffected: 1 }) // conditional UPDATE succeeds
+        .mockResolvedValueOnce({ rows: [] });        // INSERT redemption
       const enforcer = new CouponUsageEnforcer();
       await enforcer.recordRedemption({
         code: 'FREE100',
@@ -108,17 +110,35 @@ describe('CouponUsageEnforcer', () => {
 
       expect(mockDb.execute).toHaveBeenCalledTimes(2);
 
-      const insertCall = mockDb.execute.mock.calls[0][0];
+      // The atomic claim must come first and be guarded by max_uses.
+      const updateCall = mockDb.execute.mock.calls[0][0];
+      expect(updateCall.sql).toMatch(/UPDATE coupons.*current_uses = current_uses \+ 1/is);
+      expect(updateCall.sql).toMatch(/current_uses < max_uses/i);
+      expect(updateCall.args).toContain('coupon-uuid');
+
+      const insertCall = mockDb.execute.mock.calls[1][0];
       expect(insertCall.sql).toMatch(/INSERT INTO coupon_redemptions/i);
       expect(insertCall.args).toContain('coupon-uuid');
       expect(insertCall.args).toContain('org-1');
       expect(insertCall.args).toContain('sub-1');
       expect(insertCall.args).toContain(9900);
       expect(insertCall.args).toContain(0);
+    });
 
-      const updateCall = mockDb.execute.mock.calls[1][0];
-      expect(updateCall.sql).toMatch(/UPDATE coupons.*current_uses = current_uses \+ 1/i);
-      expect(updateCall.args).toContain('coupon-uuid');
+    it('throws max-uses and does NOT insert when the claim affects 0 rows', async () => {
+      mockDb.execute.mockResolvedValueOnce({ rowsAffected: 0 }); // limit already reached
+      const enforcer = new CouponUsageEnforcer();
+      await expect(
+        enforcer.recordRedemption({
+          code: 'FREE100',
+          userId: 'u',
+          organizationId: 'o',
+          subscriptionId: 's',
+          originalAmountCents: 100,
+          discountAppliedCents: 0,
+        })
+      ).rejects.toThrow(/maximum uses/i);
+      expect(mockDb.execute).toHaveBeenCalledTimes(1); // no INSERT after a failed claim
     });
 
     it('throws when coupon not found', async () => {
