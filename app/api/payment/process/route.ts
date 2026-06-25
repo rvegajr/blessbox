@@ -139,21 +139,19 @@ export async function POST(req: NextRequest) {
     const forceRealSquare = getEnvBoolean('FORCE_REAL_SQUARE');
     const shouldMockPayment = !forceRealSquare && (
       process.env.NODE_ENV !== 'production' &&
-      (getEnv('TEST_ENV') === 'local' || !getEnv('SQUARE_ACCESS_TOKEN') || !getEnv('SQUARE_APPLICATION_ID'))
+      (getEnv('TEST_ENV') === 'local' || !getEnv('NOCTUSOFT_DEPLOY_KEY'))
     );
 
     try {
       if (!shouldMockPayment) {
-        const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
-        const applicationId = getEnv('SQUARE_APPLICATION_ID');
-        const locationId = getEnv('SQUARE_LOCATION_ID');
-
-        if (!accessToken || !applicationId || !locationId) {
-          console.error('[PAYMENT] Missing Square configuration');
+        // Charges go through the Noctusoft gateway — the only required server
+        // credential is the gateway deploy key (no direct SQUARE_ACCESS_TOKEN).
+        if (!getEnv('NOCTUSOFT_DEPLOY_KEY')) {
+          console.error('[PAYMENT] Missing Noctusoft gateway configuration');
           return json({
             success: false,
             error: 'Payment provider not configured',
-            message: 'Square is not configured on the server.',
+            message: 'The Noctusoft payment gateway is not configured on the server.',
           }, 500);
         }
 

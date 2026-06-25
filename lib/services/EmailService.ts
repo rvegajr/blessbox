@@ -1,8 +1,8 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
-import sgMail from '@sendgrid/mail';
 import nodemailer from 'nodemailer';
 import { getEnv } from '../utils/env';
+import { sendViaGatewayEmail } from './gatewayEmail';
 
 export type EmailTemplateType =
   | 'class_invitation'
@@ -95,75 +95,29 @@ export class EmailService {
     fromEmailOverride?: string;
     replyTo?: string;
   }) {
-    const apiKey = getEnv('SENDGRID_API_KEY');
     const fromEmail = getEnv('SENDGRID_FROM_EMAIL');
     const fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
-    // Optional drop-in relay (e.g. https://api.sendgrid.noctusoft.com). If set,
-    // sends are proxied through the relay so they egress from a static IP that
-    // is in the SendGrid API key's IP allowlist. Vercel's serverless egress
-    // would otherwise be blocked.
-    const apiBaseUrl = getEnv('SENDGRID_API_URL');
-
-    if (!apiKey || !fromEmail) {
-      throw new Error('SendGrid not configured (SENDGRID_API_KEY and SENDGRID_FROM_EMAIL are required)');
+    if (!fromEmail) {
+      throw new Error('Email not configured (SENDGRID_FROM_EMAIL is required)');
     }
 
     const from = { email: args.fromEmailOverride || fromEmail, name: fromName };
     const replyTo = args.replyTo || getEnv('EMAIL_REPLY_TO') || undefined;
 
-    // Relay path: SENDGRID_API_URL points to a SendGrid-compatible drop-in
-    // (e.g. https://api.sendgrid.noctusoft.com). Same /v3/mail/send protocol
-    // and same Bearer auth as api.sendgrid.com — only the host changes. The
-    // relay's egress IP is what's allowlisted at SendGrid, so this lets us
-    // bypass Vercel-egress IP restrictions on the SendGrid key.
-    if (apiBaseUrl) {
-      const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          personalizations: [{ to: [{ email: args.to }] }],
-          from,
-          ...(replyTo ? { reply_to: { email: replyTo } } : {}),
-          subject: args.subject,
-          content: [
-            ...(args.text ? [{ type: 'text/plain', value: args.text }] : []),
-            { type: 'text/html', value: args.html },
-          ],
-        }),
-      });
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(`SendGrid relay error (${res.status}): ${res.statusText}${detail ? ` | response: ${detail.slice(0, 300)}` : ''}`);
-      }
-      return { provider: 'sendgrid' as const, messageId: res.headers.get('x-message-id') || undefined };
+    // All email egresses through the Noctusoft SendGrid relay using the gateway
+    // deploy key — the app holds no direct SENDGRID_API_KEY.
+    const result = await sendViaGatewayEmail({
+      to: args.to,
+      subject: args.subject,
+      html: args.html,
+      text: args.text,
+      from,
+      replyTo,
+    });
+    if (!result.success) {
+      throw new Error(`Email gateway error: ${result.error || 'unknown'}`);
     }
-
-    // Direct SendGrid path — keep using SDK so we get its retry / type checks.
-    sgMail.setApiKey(apiKey);
-    try {
-      const [res] = await sgMail.send({
-        to: args.to,
-        from,
-        ...(replyTo ? { replyTo } : {}),
-        subject: args.subject,
-        html: args.html,
-        text: args.text,
-      });
-      return { provider: 'sendgrid' as const, messageId: (res as any)?.headers?.['x-message-id'] || undefined };
-    } catch (e: any) {
-      const statusCode = e?.code || e?.response?.statusCode || e?.response?.status;
-      const body = e?.response?.body;
-      const details =
-        body && typeof body === 'object' ? JSON.stringify(body) : body ? String(body) : '';
-      const msg = e instanceof Error ? e.message : String(e);
-      throw new Error(
-        `SendGrid error${statusCode ? ` (${statusCode})` : ''}: ${msg}${details ? ` | response: ${details}` : ''}`
-      );
-    }
+    return { provider: 'sendgrid' as const, messageId: result.messageId };
   }
 
   private async sendViaSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
@@ -312,7 +266,7 @@ export class EmailService {
       // Send via configured provider
       let sendResult: { provider: 'sendgrid' | 'smtp'; messageId?: string };
       const replyToFromEnv = getEnv('EMAIL_REPLY_TO') || undefined;
-      if (getEnv('SENDGRID_API_KEY')) {
+      if (getEnv('NOCTUSOFT_DEPLOY_KEY') || getEnv('SENDGRID_API_KEY')) {
         sendResult = await this.sendViaSendGrid({
           to: recipientEmail,
           subject,
@@ -391,7 +345,7 @@ export class EmailService {
     const text = `Sign in to BlessBox: ${args.url}\n\nIf you did not request this email, you can ignore it.`;
     const replyTo = getEnv('EMAIL_REPLY_TO') || undefined;
 
-    if (getEnv('SENDGRID_API_KEY')) {
+    if (getEnv('NOCTUSOFT_DEPLOY_KEY') || getEnv('SENDGRID_API_KEY')) {
       await this.sendViaSendGrid({ to: args.to, subject, html, text, replyTo });
       return;
     }

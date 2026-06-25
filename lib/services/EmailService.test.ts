@@ -28,6 +28,7 @@ describe('EmailService', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   beforeEach(async () => {
@@ -83,15 +84,19 @@ describe('EmailService', () => {
     ({ EmailService } = await import('./EmailService'));
   });
 
-  it('uses SendGrid when SENDGRID_API_KEY is set', async () => {
+  it('sends via the Noctusoft gateway relay when a SendGrid/gateway key is set', async () => {
     process.env.SENDGRID_API_KEY = 'sg-test';
     process.env.SENDGRID_FROM_EMAIL = 'from@example.com';
     process.env.SENDGRID_FROM_NAME = 'Test';
+    delete process.env.NOCTUSOFT_DEPLOY_KEY;
     delete process.env.SMTP_HOST;
     delete process.env.SMTP_USER;
     delete process.env.SMTP_PASS;
 
-    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-1' } }]);
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true, status: 202, headers: { get: (k: string) => (k === 'x-message-id' ? 'm-1' : null) },
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     const service = new EmailService();
     const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
@@ -101,8 +106,11 @@ describe('EmailService', () => {
     });
 
     expect(res.success).toBe(true);
-    expect(sendgridSetApiKey).toHaveBeenCalledWith('sg-test');
-    expect(sendgridSend).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(init.headers.Authorization).toBe('Bearer sg-test');
+    expect(sendgridSend).not.toHaveBeenCalled();
     expect(createTransport).not.toHaveBeenCalled();
   });
 
@@ -135,11 +143,15 @@ describe('EmailService', () => {
     process.env.SENDGRID_API_KEY = 'SG.real-key-value\n';
     process.env.SENDGRID_FROM_EMAIL = '"noreply@blessbox.org"\n';
     process.env.SENDGRID_FROM_NAME = '  BlessBox Support  \r\n';
+    delete process.env.NOCTUSOFT_DEPLOY_KEY;
     delete process.env.SMTP_HOST;
     delete process.env.SMTP_USER;
     delete process.env.SMTP_PASS;
 
-    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-2' } }]);
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true, status: 202, headers: { get: () => 'm-2' },
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     const service = new EmailService();
     const res = await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
@@ -149,10 +161,12 @@ describe('EmailService', () => {
     });
 
     expect(res.success).toBe(true);
-    expect(sendgridSetApiKey).toHaveBeenCalledWith('SG.real-key-value');
-    const sendCall = sendgridSend.mock.calls[0]?.[0];
-    expect(sendCall.from.email).toBe('noreply@blessbox.org');
-    expect(sendCall.from.name).toBe('BlessBox Support');
+    const [, init] = fetchMock.mock.calls[0];
+    // Values are sanitized (newline stripped from key; quotes/whitespace stripped from from-fields).
+    expect(init.headers.Authorization).toBe('Bearer SG.real-key-value');
+    const body = JSON.parse(init.body);
+    expect(body.from.email).toBe('noreply@blessbox.org');
+    expect(body.from.name).toBe('BlessBox Support');
   });
 
   it('tolerates env-var pollution: SMTP credentials with newlines and quotes', async () => {
@@ -226,15 +240,19 @@ describe('EmailService', () => {
     delete process.env.SENDGRID_API_URL;
   });
 
-  it('uses SDK directly when SENDGRID_API_URL is unset', async () => {
+  it('defaults to the gateway relay host when SENDGRID_API_URL is unset', async () => {
     process.env.SENDGRID_API_KEY = 'sg-direct';
     process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
+    delete process.env.NOCTUSOFT_DEPLOY_KEY;
     delete process.env.SENDGRID_API_URL;
     delete process.env.SMTP_HOST;
     delete process.env.SMTP_USER;
     delete process.env.SMTP_PASS;
 
-    sendgridSend.mockResolvedValueOnce([{ headers: { 'x-message-id': 'm-direct' } }]);
+    const fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true, status: 202, headers: { get: () => 'm-direct' },
+    });
+    vi.stubGlobal('fetch', fetchMock);
 
     const service = new EmailService();
     await service.sendEmail('org-1', 'to@example.com', 'admin_notification', {
@@ -243,8 +261,9 @@ describe('EmailService', () => {
       event_type: 'test',
     });
 
-    expect(sendgridSetApiKey).toHaveBeenCalled();
-    expect(sendgridSend).toHaveBeenCalled();
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(sendgridSend).not.toHaveBeenCalled();
   });
 
   it('fails in production if no provider is configured', async () => {
