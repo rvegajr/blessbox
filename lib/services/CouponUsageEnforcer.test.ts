@@ -112,7 +112,7 @@ describe('CouponUsageEnforcer', () => {
 
       // The atomic claim must come first and be guarded by max_uses.
       const updateCall = mockDb.execute.mock.calls[0][0];
-      expect(updateCall.sql).toMatch(/UPDATE coupons.*current_uses = current_uses \+ 1/is);
+      expect(updateCall.sql).toMatch(/UPDATE coupons[\s\S]*current_uses = current_uses \+ 1/i);
       expect(updateCall.sql).toMatch(/current_uses < max_uses/i);
       expect(updateCall.args).toContain('coupon-uuid');
 
