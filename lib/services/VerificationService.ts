@@ -93,22 +93,19 @@ export class VerificationService implements IVerificationService {
     if (!emailSent) {
       console.error('❌ Failed to send verification email after retries:', lastError);
       console.error('Email configuration check:');
-      console.error('  SENDGRID_API_KEY:', getEnv('SENDGRID_API_KEY') ? 'SET' : 'NOT SET');
-      console.error('  SMTP_HOST:', getEnv('SMTP_HOST') || 'NOT SET');
-      console.error('  SMTP_USER:', getEnv('SMTP_USER') ? 'SET' : 'NOT SET');
-      
+      console.error('  NOCTUSOFT_DEPLOY_KEY:', getEnv('NOCTUSOFT_DEPLOY_KEY') ? 'SET' : 'NOT SET');
+
       // Delete the code we just created since email failed
       await this.db.execute({
         sql: `DELETE FROM verification_codes WHERE id = ?`,
         args: [id]
       });
-      
+
       // Return error with helpful message
       const errorMessage = lastError?.message || 'Unknown error';
-      const hasSendGrid = !!(getEnv('NOCTUSOFT_DEPLOY_KEY') || getEnv('SENDGRID_API_KEY'));
-      const hasSMTP = !!(getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS'));
-      
-      if (!hasSendGrid && !hasSMTP) {
+      const hasGateway = !!getEnv('NOCTUSOFT_DEPLOY_KEY');
+
+      if (!hasGateway) {
         return {
           success: false,
           message: 'Email service not configured. Please contact support.'
@@ -287,9 +284,9 @@ export class VerificationService implements IVerificationService {
   }
 
   private async sendVerificationEmailDirect(email: string, code: string): Promise<void> {
-    // Prefer the Noctusoft gateway (deploy key); SENDGRID_API_KEY is only a
-    // transitional fallback. SMTP below is used when no gateway key is present.
-    const gatewayKey = getEnv('NOCTUSOFT_DEPLOY_KEY') || getEnv('SENDGRID_API_KEY');
+    // All email goes through the Noctusoft gateway relay using the deploy key
+    // (the relay holds the real SendGrid key — the app holds no email secret).
+    const gatewayKey = getEnv('NOCTUSOFT_DEPLOY_KEY');
     if (gatewayKey) {
       const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.org');
       const fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
@@ -318,60 +315,15 @@ export class VerificationService implements IVerificationService {
       return;
     }
 
-    // Fallback to Gmail SMTP if SendGrid not available
-    const smtpHost = getEnv('SMTP_HOST');
-    const smtpUser = getEnv('SMTP_USER');
-    const smtpPass = getEnv('SMTP_PASS');
-    const smtpPort = getEnv('SMTP_PORT');
-    if (smtpHost && smtpUser && smtpPass) {
-      try {
-        const nodemailer = require('nodemailer');
-
-        const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: Number(smtpPort) || 587,
-          secure: smtpPort === '465', // SSL for port 465
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-        });
-
-        const html = `
-          <h2>Verify Your BlessBox Email</h2>
-          <p>Your verification code is: <strong>${code}</strong></p>
-          <p>This code will expire in 15 minutes.</p>
-          <p>If you didn't request this code, please ignore this email.</p>
-        `;
-        const text = `Your verification code is: ${code}. This code will expire in 15 minutes.`;
-
-        const info = await transporter.sendMail({
-          from: getEnv('SMTP_FROM') || smtpUser,
-          to: email,
-          subject: 'Verify Your BlessBox Email',
-          html,
-          text,
-        });
-        
-        if (getEnv("NODE_ENV") !== 'test') {
-          console.log(`✅ SMTP email sent to ${email}, messageId: ${info.messageId}`);
-        }
-        return;
-      } catch (smtpError: any) {
-        console.error('❌ SMTP error:', smtpError);
-        throw new Error(`SMTP failed: ${smtpError.message}`);
-      }
-    }
-
-    // In development, just log (for testing without email setup)
+    // In development, just log the code (so flows work without a gateway key).
     if (getEnv("NODE_ENV") === 'development') {
       console.log(`📧 [DEV] Verification code for ${email}: ${code}`);
-      console.log('⚠️  [DEV] No email service configured - code logged to console only');
+      console.log('⚠️  [DEV] No email gateway configured - code logged to console only');
       return;
     }
 
-    // In production, this is an error
-    const errorMsg = 'Email service not configured. Please set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL, or SMTP_HOST, SMTP_USER, and SMTP_PASS in Vercel environment variables.';
+    // In production, this is an error.
+    const errorMsg = 'Email service not configured. Set NOCTUSOFT_DEPLOY_KEY (the Noctusoft gateway handles SendGrid).';
     console.error('❌', errorMsg);
     throw new Error(errorMsg);
   }

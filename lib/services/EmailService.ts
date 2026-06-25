@@ -1,6 +1,5 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
-import nodemailer from 'nodemailer';
 import { getEnv } from '../utils/env';
 import { sendViaGatewayEmail } from './gatewayEmail';
 
@@ -120,67 +119,6 @@ export class EmailService {
     return { provider: 'sendgrid' as const, messageId: result.messageId };
   }
 
-  private async sendViaSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
-    const host = getEnv('SMTP_HOST');
-    const port = Number(getEnv('SMTP_PORT', '587'));
-    const user = getEnv('SMTP_USER');
-    const pass = getEnv('SMTP_PASS');
-    const secure = getEnv('SMTP_SECURE').toLowerCase() === 'true' || port === 465;
-    const fromEmail = getEnv('SMTP_FROM') || user;
-    const fromName = getEnv('SMTP_FROM_NAME', 'BlessBox');
-
-    if (!host || !user || !pass || !fromEmail) {
-      throw new Error('SMTP not configured (SMTP_HOST, SMTP_USER, SMTP_PASS are required)');
-    }
-
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass },
-    });
-
-    const info = await transporter.sendMail({
-      from: `${fromName} <${fromEmail}>`,
-      to: args.to,
-      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
-      subject: args.subject,
-      html: args.html,
-      text: args.text,
-    });
-
-    return { provider: 'smtp' as const, messageId: info.messageId };
-  }
-
-  private async sendViaGmailSmtp(args: { to: string; subject: string; html: string; text?: string; replyTo?: string }) {
-    const user = getEnv('GMAIL_USER');
-    const pass = getEnv('GMAIL_PASS');
-    const fromEmail = getEnv('EMAIL_FROM') || user;
-    const fromName = getEnv('EMAIL_FROM_NAME', 'BlessBox');
-
-    if (!user || !pass || !fromEmail) {
-      throw new Error('Gmail SMTP not configured (GMAIL_USER and GMAIL_PASS are required)');
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user, pass },
-    });
-
-    const info = await transporter.sendMail({
-      from: `${fromName} <${fromEmail}>`,
-      to: args.to,
-      ...(args.replyTo ? { replyTo: args.replyTo } : {}),
-      subject: args.subject,
-      html: args.html,
-      text: args.text,
-    });
-
-    return { provider: 'smtp' as const, messageId: info.messageId };
-  }
-
   // Email Template Management
   async createTemplate(data: Omit<EmailTemplate, 'id' | 'created_at' | 'updated_at'>): Promise<EmailTemplate> {
     const id = uuidv4();
@@ -263,10 +201,11 @@ export class EmailService {
       });
       emailLogId = created.id;
 
-      // Send via configured provider
-      let sendResult: { provider: 'sendgrid' | 'smtp'; messageId?: string };
+      // All email goes through the Noctusoft gateway relay (the relay holds the
+      // real SendGrid key; the app authenticates with NOCTUSOFT_DEPLOY_KEY only).
+      let sendResult: { provider: 'sendgrid'; messageId?: string };
       const replyToFromEnv = getEnv('EMAIL_REPLY_TO') || undefined;
-      if (getEnv('NOCTUSOFT_DEPLOY_KEY') || getEnv('SENDGRID_API_KEY')) {
+      if (getEnv('NOCTUSOFT_DEPLOY_KEY')) {
         sendResult = await this.sendViaSendGrid({
           to: recipientEmail,
           subject,
@@ -275,17 +214,11 @@ export class EmailService {
           replyTo: options?.replyTo || replyToFromEnv,
           fromEmailOverride: options?.fromEmailOverride,
         });
-      } else if (getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS')) {
-        sendResult = await this.sendViaSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo: options?.replyTo || replyToFromEnv });
-      } else if (getEnv('GMAIL_USER') && getEnv('GMAIL_PASS')) {
-        sendResult = await this.sendViaGmailSmtp({ to: recipientEmail, subject, html: htmlContent, text: textContent, replyTo: options?.replyTo || replyToFromEnv });
+      } else if (getEnv('NODE_ENV') !== 'production') {
+        // Dev/test: allow a "no-op" send so the app can still be exercised.
+        sendResult = { provider: 'sendgrid' };
       } else {
-        // In dev/test, allow "no-op" send so the app can still be exercised.
-        if (getEnv('NODE_ENV') !== 'production') {
-          sendResult = { provider: 'smtp' };
-        } else {
-          throw new Error('No email provider configured (set SENDGRID_* or SMTP_*)');
-        }
+        throw new Error('No email provider configured (set NOCTUSOFT_DEPLOY_KEY)');
       }
 
       logMeta.provider = sendResult.provider;
@@ -345,27 +278,17 @@ export class EmailService {
     const text = `Sign in to BlessBox: ${args.url}\n\nIf you did not request this email, you can ignore it.`;
     const replyTo = getEnv('EMAIL_REPLY_TO') || undefined;
 
-    if (getEnv('NOCTUSOFT_DEPLOY_KEY') || getEnv('SENDGRID_API_KEY')) {
+    if (getEnv('NOCTUSOFT_DEPLOY_KEY')) {
       await this.sendViaSendGrid({ to: args.to, subject, html, text, replyTo });
       return;
     }
 
-    if (getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS')) {
-      await this.sendViaSmtp({ to: args.to, subject, html, text, replyTo });
-      return;
-    }
-
-    if (getEnv('GMAIL_USER') && getEnv('GMAIL_PASS')) {
-      await this.sendViaGmailSmtp({ to: args.to, subject, html, text, replyTo });
-      return;
-    }
-
     if (getEnv('NODE_ENV') !== 'production') {
-      // Dev/test: allow flows without email provider configured.
+      // Dev/test: allow flows without an email provider configured.
       return;
     }
 
-    throw new Error('No email provider configured (set SENDGRID_* or SMTP_* or GMAIL_*)');
+    throw new Error('No email provider configured (set NOCTUSOFT_DEPLOY_KEY)');
   }
 
   // Default Templates
