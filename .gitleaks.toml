@@ -18,10 +18,18 @@ regex = '''SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}'''
 keywords = ["SG."]
 
 [allowlist]
-description = "Placeholders and docs that only show masked/example tokens"
+description = "Placeholders, examples, and redaction markers — not real secrets"
 regexes = [
   '''SG\.your[_-]?key''',
   '''SG\.xxxx''',
   '''EAAA\.\.\.''',
   '''\[REDACTED\]''',
+  # Example/placeholder API-key strings used in source + docs (not secrets).
+  '''abc123[-_]def456([-_]ghi789)?''',
+  '''YOUR[_-][A-Z_]+''',
+  '''your[-_]secret[-_]here''',
+  # Redaction markers left by the history purge (git filter-repo).
+  '''\*\*\*(SQUARE_TOKEN|SENDGRID_KEY|JWT)_REDACTED\*\*\*''',
+  # UUID-format example tokens in test fixtures (e.g. check-in tokens) — not secrets.
+  '''[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}''',
 ]
