@@ -5,24 +5,17 @@
  * Single responsibility: Send emails via SendGrid API
  */
 
-import type { 
-  IEmailTransport, 
-  EmailMessage, 
-  EmailResult 
+import type {
+  IEmailTransport,
+  EmailMessage,
+  EmailResult
 } from '../interfaces/IEmailTransport';
 import { getRequiredEnv, getEnv } from '../utils/env';
+import { sendViaGatewayEmail } from './gatewayEmail';
 
 export class SendGridTransport implements IEmailTransport {
-  private _apiKey: string | null = null;
   private _fromEmail: string | null = null;
   private _fromName: string | null = null;
-
-  private get apiKey(): string {
-    if (!this._apiKey) {
-      this._apiKey = getRequiredEnv('SENDGRID_API_KEY', 'SendGrid API key not configured. Set SENDGRID_API_KEY environment variable.');
-    }
-    return this._apiKey;
-  }
 
   private get fromEmail(): string {
     if (!this._fromEmail) {
@@ -39,65 +32,24 @@ export class SendGridTransport implements IEmailTransport {
   }
 
   async sendDirect(message: EmailMessage): Promise<EmailResult> {
+    // All email egresses through the Noctusoft SendGrid relay using the gateway
+    // deploy key — no direct SENDGRID_API_KEY in the app.
     try {
-      // Relay path: SendGrid-compatible drop-in. Same v3 protocol + Bearer auth.
-      const apiBaseUrl = getEnv('SENDGRID_API_URL');
-      if (apiBaseUrl) {
-        const url = `${apiBaseUrl.replace(/\/$/, '')}/v3/mail/send`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            personalizations: [{ to: [{ email: message.to }] }],
-            from: { email: this.fromEmail, name: this.fromName },
-            subject: message.subject,
-            content: [
-              ...(message.text ? [{ type: 'text/plain', value: message.text }] : []),
-              { type: 'text/html', value: message.html },
-            ],
-          }),
-        });
-        if (!res.ok) {
-          const detail = await res.text().catch(() => '');
-          return { success: false, error: `${res.status} ${res.statusText}${detail ? `: ${detail.slice(0, 300)}` : ''}` };
-        }
-        return { success: true, messageId: res.headers.get('x-message-id') || undefined };
-      }
-
-      // Direct SendGrid path
-      const sgMail = require('@sendgrid/mail');
-      sgMail.setApiKey(this.apiKey);
-
-      const payload = {
+      const from = { email: this.fromEmail, name: this.fromName }; // throws if SENDGRID_FROM_EMAIL missing
+      const result = await sendViaGatewayEmail({
         to: message.to,
-        from: { email: this.fromEmail, name: this.fromName },
         subject: message.subject,
         html: message.html,
-        ...(message.text ? { text: message.text } : {}),
-        ...(message.attachments ? { attachments: message.attachments } : {}),
-      };
-
-      const response = await sgMail.send(payload);
-
-      return {
-        success: true,
-        messageId: response[0]?.headers?.['x-message-id'] || undefined,
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown SendGrid error';
-      
-      // Log error for debugging
-      if (getEnv("NODE_ENV") !== 'test') {
-        console.error('[SendGridTransport] Send failed:', errorMessage);
+        text: message.text,
+        from,
+        attachments: message.attachments,
+      });
+      if (!result.success && getEnv('NODE_ENV') !== 'test') {
+        console.error('[SendGridTransport] Send failed:', result.error);
       }
-
-      return {
-        success: false,
-        error: errorMessage,
-      };
+      return result;
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 

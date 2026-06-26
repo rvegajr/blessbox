@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { registrationId, checkInToken, qrCodeDataUrl } = body;
+    const { registrationId, qrCodeDataUrl } = body;
 
     // Validate required fields
-    if (!registrationId || !checkInToken) {
+    if (!registrationId) {
       return NextResponse.json(
-        { success: false, error: 'Registration ID and check-in token are required' },
+        { success: false, error: 'Registration ID is required' },
         { status: 400 }
       );
     }
@@ -51,6 +51,15 @@ export async function POST(request: NextRequest) {
     }
 
     const registration = regResult.rows[0] as any;
+    // Use the registration's REAL check-in token from the DB — never trust a
+    // client-supplied token (prevents emailing a forged/mismatched check-in URL).
+    const checkInToken = registration.check_in_token;
+    if (!checkInToken) {
+      return NextResponse.json(
+        { success: false, error: 'Registration has no check-in token' },
+        { status: 400 }
+      );
+    }
     const registrationData = JSON.parse(registration.registration_data || '{}');
     const recipientEmail = registrationData.email || registrationData.Email || registrationData.emailAddress;
 

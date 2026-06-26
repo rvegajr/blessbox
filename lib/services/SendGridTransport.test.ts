@@ -4,7 +4,7 @@
  * Testing interface contracts and error handling
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SendGridTransport } from './SendGridTransport';
 
 describe('SendGridTransport', () => {
@@ -12,23 +12,27 @@ describe('SendGridTransport', () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-    process.env.SENDGRID_API_KEY = 'test-api-key';
+    process.env.NOCTUSOFT_DEPLOY_KEY = 'test-deploy-key';
     process.env.SENDGRID_FROM_EMAIL = 'test@example.com';
     process.env.SENDGRID_FROM_NAME = 'Test Sender';
+    // Stub the gateway relay so tests never hit the network.
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 202, headers: { 'x-message-id': 'test' } })));
   });
 
   afterEach(() => {
     process.env = originalEnv;
+    vi.unstubAllGlobals();
   });
 
   describe('configuration validation', () => {
-    it('returns error if SENDGRID_API_KEY missing on first send', async () => {
+    it('returns error if no gateway credential is configured', async () => {
+      delete process.env.NOCTUSOFT_DEPLOY_KEY;
       delete process.env.SENDGRID_API_KEY;
 
       const transport = new SendGridTransport();
       const result = await transport.sendDirect({ to: 'a@b.com', subject: 'x', html: '<p>x</p>' });
       expect(result.success).toBe(false);
-      expect(result.error).toContain('SendGrid API key not configured');
+      expect(result.error).toMatch(/gateway not configured|NOCTUSOFT_DEPLOY_KEY/i);
     });
 
     it('returns error if SENDGRID_FROM_EMAIL missing on first send', async () => {

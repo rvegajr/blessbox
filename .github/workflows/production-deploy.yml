@@ -5,6 +5,11 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Never let two production deploys migrate the prod DB at the same time.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
@@ -33,6 +38,17 @@ jobs:
 
     - name: Run build validation
       run: npm run build
+
+    # Apply DB migrations BEFORE deploying new code. The migrator is forward-only
+    # and idempotent: on first run it adopts the existing prod schema (pre-seeds
+    # the baseline) and applies pending migrations (e.g. the coupon-fields fix);
+    # subsequent runs are no-ops. A failure here fails the deploy (no half-migrated
+    # prod serving new code). Requires TURSO_* GitHub Actions secrets.
+    - name: Apply DB migrations (prod Turso)
+      run: npm run db:migrate:deploy
+      env:
+        TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+        TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
     - name: Deploy to Vercel Production
       run: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes

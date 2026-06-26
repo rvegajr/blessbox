@@ -1,0 +1,27 @@
+# gitleaks config for BlessBox — blocks the credential classes that have leaked
+# into committed markdown/scripts before (Square access tokens, SendGrid keys).
+title = "BlessBox secret scan"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "square-access-token"
+description = "Square access token (sandbox or production)"
+regex = '''EAAA[A-Za-z0-9_-]{40,}'''
+keywords = ["EAAA"]
+
+[[rules]]
+id = "sendgrid-api-key"
+description = "SendGrid API key"
+regex = '''SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}'''
+keywords = ["SG."]
+
+[allowlist]
+description = "Placeholders and docs that only show masked/example tokens"
+regexes = [
+  '''SG\.your[_-]?key''',
+  '''SG\.xxxx''',
+  '''EAAA\.\.\.''',
+  '''\[REDACTED\]''',
+]
