@@ -127,9 +127,9 @@ describe('Payment Process API', () => {
 
       // Force the real Square path so we can inspect the amount it would charge.
       vi.stubEnv('NODE_ENV', 'production');
-      process.env.SQUARE_ACCESS_TOKEN = 'test-tok';
-      process.env.SQUARE_APPLICATION_ID = 'test-app';
-      process.env.SQUARE_LOCATION_ID = 'test-loc';
+      // Charges now route through the Noctusoft gateway — the deploy key is the
+      // only required server credential (SquarePaymentService is mocked here).
+      process.env.NOCTUSOFT_DEPLOY_KEY = 'test-deploy-key';
       process.env.FORCE_REAL_SQUARE = 'true';
 
       const mockRequest = {

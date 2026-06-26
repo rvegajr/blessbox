@@ -16,6 +16,13 @@ import { getEnv } from '@/lib/utils/env';
 const GITHUB_API = 'https://api.github.com';
 
 async function handle(request: NextRequest, method: string): Promise<Response> {
+  // Off by default: this route re-attaches the server-side GitHub PAT, so it must
+  // only be reachable when Traklet is explicitly enabled (matches the documented
+  // contract). A 404 hides its existence otherwise.
+  if (getEnv('NEXT_PUBLIC_TRAKLET_ENABLED') !== 'true') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const token = getEnv('TRAKLET_PAT');
   if (!token) {
     return NextResponse.json(

@@ -49,27 +49,30 @@ export async function GET(req: NextRequest) {
 
   const environmentRaw = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
   const environment = environmentRaw === 'production' ? 'production' : 'sandbox';
-  const accessToken = getEnv('SQUARE_ACCESS_TOKEN');
+  const deployKey = getEnv('NOCTUSOFT_DEPLOY_KEY');
   const locationId = getEnv('SQUARE_LOCATION_ID');
 
-  const enabled = !!accessToken;
+  const enabled = !!deployKey;
   if (!enabled) {
     return NextResponse.json({
       success: true,
       ok: false,
       enabled: false,
       environment,
-      missing: { accessToken: true, locationId: !locationId },
-      message: 'Square is not configured (SQUARE_ACCESS_TOKEN missing).',
+      missing: { deployKey: true, locationId: !locationId },
+      message: 'Payment gateway is not configured (NOCTUSOFT_DEPLOY_KEY missing).',
     });
   }
 
-  const host = environment === 'production' ? 'connect.squareup.com' : 'connect.squareupsandbox.com';
+  // Probe Square through the Noctusoft gateway proxy with the deploy key.
+  const host = environment === 'production' ? 'connect.squareup.noctusoft.com' : 'connect.squareupsandbox.noctusoft.com';
   const base = `https://${host}`;
   const headers = {
-    authorization: `Bearer ${accessToken}`,
+    authorization: `Bearer ${deployKey}`,
     'content-type': 'application/json',
     'square-version': '2024-01-18',
+    'x-square-env': environment,
+    'x-test-store': 'blessbox',
   } as Record<string, string>;
 
   const out: any = {
@@ -78,7 +81,7 @@ export async function GET(req: NextRequest) {
     enabled: true,
     environment,
     configured: {
-      hasAccessToken: true,
+      hasDeployKey: true,
       hasLocationId: !!locationId,
     },
     merchant: {

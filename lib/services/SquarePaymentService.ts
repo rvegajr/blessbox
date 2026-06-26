@@ -1,24 +1,29 @@
-import { SquareClient, SquareEnvironment, SquareError } from 'square';
+import { SquareClient, SquareError } from 'square';
 import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
 import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
 import { getRequiredEnv, getEnv } from '../utils/env';
 
 export class SquarePaymentService implements IPaymentProcessor {
   private client: SquareClient;
-  private environment: SquareEnvironment;
+  private envLabel: 'production' | 'sandbox';
 
   constructor() {
-    // Initialize Square client with sanitized env vars
+    // All Square traffic is routed through the Noctusoft gateway (a Square API
+    // drop-in proxy that holds the real Square credentials). The app authenticates
+    // to the gateway with NOCTUSOFT_DEPLOY_KEY only — it never holds a direct
+    // SQUARE_ACCESS_TOKEN. We keep the Square SDK but point its baseUrl at the proxy.
     const env = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
-    this.environment = env === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox;
+    this.envLabel = env === 'production' ? 'production' : 'sandbox';
+    const proxyBase = this.envLabel === 'production'
+      ? 'https://connect.squareup.noctusoft.com'
+      : 'https://connect.squareupsandbox.noctusoft.com';
 
-    // Get access token with automatic sanitization (removes newlines, quotes, whitespace)
-    // Note: Square SDK v43+ uses "token" property, not "accessToken"
-    const token = getRequiredEnv('SQUARE_ACCESS_TOKEN', 'Square is not configured: SQUARE_ACCESS_TOKEN is missing');
-    
+    const deployKey = getRequiredEnv('NOCTUSOFT_DEPLOY_KEY', 'Payment gateway not configured: NOCTUSOFT_DEPLOY_KEY is missing');
+
     this.client = new SquareClient({
-      token,  // SDK v43 changed from "accessToken" to "token"
-      environment: this.environment,
+      baseUrl: proxyBase,
+      token: deployKey,
+      headers: { 'X-Square-Env': this.envLabel, 'X-Test-Store': 'blessbox' },
     });
   }
 
@@ -60,7 +65,7 @@ export class SquarePaymentService implements IPaymentProcessor {
       amount,
       currency,
       customerId,
-      environment: this.environment === SquareEnvironment.Production ? 'production' : 'sandbox',
+      environment: this.envLabel,
     });
 
     try {

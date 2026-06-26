@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
+import { NextResponse } from 'next/server';
+import { withAuthAndOrg, assertOwnership } from '@/lib/api/withAuth';
 import { EventService } from '@/lib/services/EventService';
 import { QRCodeService } from '@/lib/services/QRCodeService';
 import { FormConfigService } from '@/lib/services/FormConfigService';
 import { EventTypeService } from '@/lib/services/EventTypeService';
 import { z } from 'zod';
+
+type Ctx = { params: Promise<{ id: string }> };
 
 const UpdateEventSchema = z.object({
   name: z.string().min(1).max(255).optional(),
@@ -12,144 +14,73 @@ const UpdateEventSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-/**
- * GET /api/events/[id]
- * Get a single event by ID
- */
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { id } = await context.params;
-
-    // Initialize services
-    const qrCodeService = new QRCodeService();
-    const formConfigService = new FormConfigService();
-    const eventTypeService = new EventTypeService();
-    const eventService = new EventService(
-      qrCodeService,
-      formConfigService,
-      eventTypeService
-    );
-
-    const event = await eventService.getEvent(id);
-
-    if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({ event }, { status: 200 });
-  } catch (error) {
-    const { id } = await context.params;
-    console.error(`GET /api/events/${id} error:`, error);
-    return NextResponse.json(
-      { error: 'Failed to get event' },
-      { status: 500 }
-    );
-  }
+function makeEventService(): EventService {
+  return new EventService(new QRCodeService(), new FormConfigService(), new EventTypeService());
 }
 
 /**
- * PATCH /api/events/[id]
- * Update an event's metadata
+ * GET /api/events/[id] — fetch a single event the caller's org owns.
+ * Ownership + existence collapse into a single 404 (no cross-tenant oracle).
  */
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuthAndOrg(async (_request, auth, context) => {
+  const { id } = await (context as Ctx).params;
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const event = await makeEventService().getEvent(id);
+    const guard = await assertOwnership(auth, event?.organizationId ?? null);
+    if (!guard.ok) return guard.response;
+    return NextResponse.json({ event }, { status: 200 });
+  } catch (error) {
+    console.error(`GET /api/events/${id} error:`, error);
+    return NextResponse.json({ error: 'Failed to get event' }, { status: 500 });
+  }
+});
 
-    const { id } = await context.params;
+/**
+ * PATCH /api/events/[id] — update metadata of an event the caller's org owns.
+ */
+export const PATCH = withAuthAndOrg(async (request, auth, context) => {
+  const { id } = await (context as Ctx).params;
+  try {
     const body = await request.json();
     const validation = UpdateEventSchema.safeParse(body);
-
     if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Validation failed', details: validation.error.errors }, { status: 400 });
     }
 
-    const updates = validation.data;
+    const svc = makeEventService();
+    const existing = await svc.getEvent(id);
+    const guard = await assertOwnership(auth, existing?.organizationId ?? null);
+    if (!guard.ok) return guard.response;
 
-    // Initialize services
-    const qrCodeService = new QRCodeService();
-    const formConfigService = new FormConfigService();
-    const eventTypeService = new EventTypeService();
-    const eventService = new EventService(
-      qrCodeService,
-      formConfigService,
-      eventTypeService
-    );
-
-    const event = await eventService.updateEvent(id, updates);
-
+    const event = await svc.updateEvent(id, validation.data);
     return NextResponse.json({ event }, { status: 200 });
   } catch (error) {
-    const { id } = await context.params;
     console.error(`PATCH /api/events/${id} error:`, error);
-    
     if (error instanceof Error && error.message.includes('not found')) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
-
-    return NextResponse.json(
-      { error: 'Failed to update event' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
   }
-}
+});
 
 /**
- * DELETE /api/events/[id]
- * Soft-delete an event (sets isActive to false)
+ * DELETE /api/events/[id] — soft-delete an event the caller's org owns.
  */
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuthAndOrg(async (_request, auth, context) => {
+  const { id } = await (context as Ctx).params;
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const svc = makeEventService();
+    const existing = await svc.getEvent(id);
+    const guard = await assertOwnership(auth, existing?.organizationId ?? null);
+    if (!guard.ok) return guard.response;
 
-    const { id } = await context.params;
-
-    // Initialize services
-    const qrCodeService = new QRCodeService();
-    const formConfigService = new FormConfigService();
-    const eventTypeService = new EventTypeService();
-    const eventService = new EventService(
-      qrCodeService,
-      formConfigService,
-      eventTypeService
-    );
-
-    await eventService.deleteEvent(id);
-
+    await svc.deleteEvent(id);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    const { id } = await context.params;
     console.error(`DELETE /api/events/${id} error:`, error);
-    
     if (error instanceof Error && error.message.includes('not found')) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
-
-    return NextResponse.json(
-      { error: 'Failed to delete event' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
   }
-}
+});

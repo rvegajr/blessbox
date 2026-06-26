@@ -1,16 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
-import { isSuperAdminEmail } from '@/lib/auth';
+import { NextResponse } from 'next/server';
+import { withSuperAdmin } from '@/lib/api/withAuth';
 import { getDbClient } from '@/lib/db';
 
 // GET /api/admin/organizations - Get all organizations (super admin only)
-export async function GET(request: NextRequest) {
+export const GET = withSuperAdmin(async (request) => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email || !isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const db = getDbClient();
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '100');
@@ -69,5 +63,5 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 

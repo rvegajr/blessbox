@@ -1,16 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
-import { isSuperAdminEmail } from '@/lib/auth';
+import { NextResponse } from 'next/server';
+import { withSuperAdmin } from '@/lib/api/withAuth';
 import { getDbClient } from '@/lib/db';
 
 // GET /api/admin/stats - Get system-wide statistics (super admin only)
-export async function GET(request: NextRequest) {
+export const GET = withSuperAdmin(async () => {
   try {
-    const session = await getServerSession();
-    if (!session?.user?.email || !isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const db = getDbClient();
 
     // Get all stats in parallel
@@ -76,5 +70,5 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
