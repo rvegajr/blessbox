@@ -14,13 +14,10 @@
  * Response:           { url, orderId }
  */
 
-const IS_PRODUCTION = process.env.SQUARE_ENVIRONMENT === 'production';
+import { squareEnv, squareGatewayBaseUrl } from '@/lib/services/gatewayConfig';
 
-const PROXY_BASE = IS_PRODUCTION
-  ? 'https://connect.squareup.noctusoft.com'
-  : 'https://connect.squareupsandbox.noctusoft.com';
-
-const SQUARE_ENV = IS_PRODUCTION ? 'production' : 'sandbox';
+const SQUARE_ENV = squareEnv();
+const PROXY_BASE = squareGatewayBaseUrl(SQUARE_ENV);
 
 export interface NoctusoftCheckoutParams {
   plan: string;       // catalog plan identifier, e.g. "single-org"
