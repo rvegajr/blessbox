@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { getEnv } from '@/lib/utils/env';
+import { squareEnv, squareGatewayBaseUrl } from '@/lib/services/gatewayConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,8 +48,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
-  const environmentRaw = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
-  const environment = environmentRaw === 'production' ? 'production' : 'sandbox';
+  const environment = squareEnv();
   const deployKey = getEnv('NOCTUSOFT_DEPLOY_KEY');
   const locationId = getEnv('SQUARE_LOCATION_ID');
 
@@ -65,8 +65,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Probe Square through the Noctusoft gateway proxy with the deploy key.
-  const host = environment === 'production' ? 'connect.squareup.noctusoft.com' : 'connect.squareupsandbox.noctusoft.com';
-  const base = `https://${host}`;
+  const base = squareGatewayBaseUrl(environment);
   const headers = {
     authorization: `Bearer ${deployKey}`,
     'content-type': 'application/json',

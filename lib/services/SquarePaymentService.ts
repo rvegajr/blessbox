@@ -2,6 +2,7 @@ import { SquareClient, SquareError } from 'square';
 import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
 import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
 import { getRequiredEnv, getEnv } from '../utils/env';
+import { squareEnv, squareGatewayBaseUrl } from './gatewayConfig';
 
 export class SquarePaymentService implements IPaymentProcessor {
   private client: SquareClient;
@@ -12,11 +13,8 @@ export class SquarePaymentService implements IPaymentProcessor {
     // drop-in proxy that holds the real Square credentials). The app authenticates
     // to the gateway with NOCTUSOFT_DEPLOY_KEY only — it never holds a direct
     // SQUARE_ACCESS_TOKEN. We keep the Square SDK but point its baseUrl at the proxy.
-    const env = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
-    this.envLabel = env === 'production' ? 'production' : 'sandbox';
-    const proxyBase = this.envLabel === 'production'
-      ? 'https://connect.squareup.noctusoft.com'
-      : 'https://connect.squareupsandbox.noctusoft.com';
+    this.envLabel = squareEnv();
+    const proxyBase = squareGatewayBaseUrl(this.envLabel);
 
     const deployKey = getRequiredEnv('NOCTUSOFT_DEPLOY_KEY', 'Payment gateway not configured: NOCTUSOFT_DEPLOY_KEY is missing');
 
