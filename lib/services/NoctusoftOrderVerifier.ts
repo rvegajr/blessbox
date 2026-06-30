@@ -12,12 +12,10 @@
  * payload. The interface (IOrderVerifier) is unchanged either way.
  */
 import type { IOrderVerifier, VerifiedOrder } from '@/lib/interfaces/IOrderVerifier';
+import { squareEnv, squareGatewayBaseUrl } from '@/lib/services/gatewayConfig';
 
-const IS_PRODUCTION = process.env.SQUARE_ENVIRONMENT === 'production';
-const PROXY_BASE = IS_PRODUCTION
-  ? 'https://connect.squareup.noctusoft.com'
-  : 'https://connect.squareupsandbox.noctusoft.com';
-const SQUARE_ENV = IS_PRODUCTION ? 'production' : 'sandbox';
+const SQUARE_ENV = squareEnv();
+const PROXY_BASE = squareGatewayBaseUrl(SQUARE_ENV);
 
 /** Map a Square order state to our coarse paid/unpaid status. */
 function mapState(state: string | undefined): VerifiedOrder['status'] {

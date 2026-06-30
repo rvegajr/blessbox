@@ -4,6 +4,7 @@
  * authenticates with the gateway deploy key only; it holds NO SENDGRID_API_KEY.
  */
 import { getEnv } from '../utils/env';
+import { sendgridRelayBaseUrl } from './gatewayConfig';
 
 export interface GatewayEmailFrom {
   email: string;
@@ -34,10 +35,8 @@ export interface GatewayEmailResult {
   error?: string;
 }
 
-const DEFAULT_RELAY = 'https://api.sendgrid.noctusoft.com';
-
 export async function sendViaGatewayEmail(msg: GatewayEmailMessage): Promise<GatewayEmailResult> {
-  const base = (getEnv('SENDGRID_API_URL') || DEFAULT_RELAY).replace(/\/$/, '');
+  const base = sendgridRelayBaseUrl();
   // The Noctusoft gateway deploy key is the ONLY email credential — the relay
   // holds the real SendGrid key. The app never holds a SendGrid key itself.
   const key = getEnv('NOCTUSOFT_DEPLOY_KEY');
