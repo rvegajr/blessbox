@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       const orgId = organizationId.trim();
 
       const orgCheck = await db.execute({
-        sql: `SELECT id FROM organizations WHERE id = ? LIMIT 1`,
+        sql: `SELECT id, contact_email FROM organizations WHERE id = ? LIMIT 1`,
         args: [orgId],
       });
 
@@ -88,21 +88,40 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Mark org email as verified (only if it matches this email)
-      await db.execute({
-        sql: `UPDATE organizations SET email_verified = 1, updated_at = ? WHERE id = ? AND contact_email = ?`,
-        args: [now, orgId, normalizedEmail],
-      });
+      // SECURITY: only attach this user (as admin) when the verified email is the
+      // org's registered contact (self-service onboarding) or they're already a
+      // member. A client-supplied org id alone must NEVER grant membership,
+      // otherwise anyone can take over any org by passing its id.
+      const contactEmail = String((orgCheck.rows[0] as any).contact_email || '')
+        .trim()
+        .toLowerCase();
+      let authorized = contactEmail === normalizedEmail;
+      if (!authorized) {
+        const existing = await db.execute({
+          sql: `SELECT id FROM memberships WHERE user_id = ? AND organization_id = ? LIMIT 1`,
+          args: [resolvedUserId, orgId],
+        });
+        authorized = !!(existing.rows && existing.rows.length > 0);
+      }
 
-      await db.execute({
-        sql: `
-          INSERT INTO memberships (id, user_id, organization_id, role, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?)
-          ON CONFLICT(user_id, organization_id) DO UPDATE SET updated_at = excluded.updated_at
-        `,
-        args: [uuidv4(), resolvedUserId, orgId, 'admin', now, now],
-      });
-      membershipCreated = true;
+      if (authorized) {
+        // Mark org email as verified (WHERE clause already re-checks the match)
+        await db.execute({
+          sql: `UPDATE organizations SET email_verified = 1, updated_at = ? WHERE id = ? AND contact_email = ?`,
+          args: [now, orgId, normalizedEmail],
+        });
+
+        await db.execute({
+          sql: `
+            INSERT INTO memberships (id, user_id, organization_id, role, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id, organization_id) DO UPDATE SET updated_at = excluded.updated_at
+          `,
+          args: [uuidv4(), resolvedUserId, orgId, 'admin', now, now],
+        });
+        membershipCreated = true;
+      }
+      // else: verified email is not authorized for this org — do not grant membership.
     }
 
     return NextResponse.json({
