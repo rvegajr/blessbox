@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../utils/env';
@@ -16,13 +17,16 @@ export class VerificationService implements IVerificationService {
   private readonly CODE_LENGTH = 6;
   private readonly CODE_EXPIRY_MINUTES = 15;
   private readonly MAX_ATTEMPTS = 5;
-  private readonly RATE_LIMIT_COUNT = 999999; // DISABLED - was 3 (user request)
+  // Per-email code requests allowed per window. Was disabled (999999); a lenient
+  // cap stops email-bombing / brute-force priming without annoying real users.
+  private readonly RATE_LIMIT_COUNT = 10;
   private readonly RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
-  async generateCode(email: string): Promise<string> {
-    // Generate random 6-digit code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    return code;
+  async generateCode(_email: string): Promise<string> {
+    // Cryptographically-secure 6-digit code. Math.random() is a predictable PRNG
+    // and must never generate a login secret — an attacker sampling the stream
+    // could predict a victim's code and defeat the email-possession factor.
+    return randomInt(0, 1_000_000).toString().padStart(6, '0');
   }
 
   async sendVerificationCode(email: string): Promise<{ success: boolean; message: string; code?: string }> {
