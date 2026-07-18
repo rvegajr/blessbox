@@ -12,10 +12,11 @@ function paidOrder(over: Partial<VerifiedOrder> = {}): VerifiedOrder {
 function makeDeps(over: Record<string, unknown> = {}) {
   const createSubscription = vi.fn(async (p: any) => ({ id: 'sub_new', plan_type: p.planType, external_subscription_id: p.externalSubscriptionId, amount: p.amountCents }));
   const getActiveSubscription = vi.fn(async () => null);
-  const getSubscriptionByExternalId = vi.fn(async () => null);
+  const getConsumedOrder = vi.fn(async () => null);
+  const recordConsumedOrder = vi.fn(async () => {});
   const getPlanPriceCents = vi.fn(() => SINGLE_ORG_PRICE);
   const executeUpgrade = vi.fn(async () => ({ success: true }));
-  return { createSubscription, getActiveSubscription, getSubscriptionByExternalId, getPlanPriceCents, executeUpgrade, ...over } as any;
+  return { createSubscription, getActiveSubscription, getConsumedOrder, recordConsumedOrder, getPlanPriceCents, executeUpgrade, ...over } as any;
 }
 
 const input = { orgId: 'org_1', orderId: 'ord_1', planType: 'single-org' as const, billingCycle: 'monthly' as const };
@@ -57,7 +58,7 @@ describe('SubscriptionProvisioner.provisionFromOrder', () => {
     expect(deps.createSubscription).not.toHaveBeenCalled();
   });
 
-  it('provisions once for a verified PAID order, deriving amount from the order (not the client)', async () => {
+  it('provisions once for a verified PAID order and records the order as consumed', async () => {
     const deps = makeDeps();
     const verifier = new InMemoryOrderVerifier().seed(paidOrder());
     const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
@@ -67,38 +68,72 @@ describe('SubscriptionProvisioner.provisionFromOrder', () => {
     const arg = deps.createSubscription.mock.calls[0][0];
     expect(arg.externalSubscriptionId).toBe('ord_1');
     expect(arg.amountCents).toBe(SINGLE_ORG_PRICE);
+    // Ledger records the consumption so the order can never be reused.
+    expect(deps.recordConsumedOrder).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: 'ord_1', organizationId: 'org_1' }),
+    );
   });
 
-  it('is idempotent when an active subscription for the same plan already exists', async () => {
+  it('is idempotent when an active subscription for the same plan already exists (and records consumption)', async () => {
     const deps = makeDeps({ getActiveSubscription: vi.fn(async () => ({ id: 'sub_x', plan_type: 'single-org' })) });
     const verifier = new InMemoryOrderVerifier().seed(paidOrder());
     const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
     expect(res.ok).toBe(true);
     expect(res.code).toBe('ALREADY_ACTIVE');
     expect(deps.createSubscription).not.toHaveBeenCalled();
+    expect(deps.recordConsumedOrder).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ord_1' }));
   });
 
-  it('REJECTS re-using a paid order for a DIFFERENT org (one order → one org)', async () => {
+  it('REJECTS re-using a paid order for a DIFFERENT org (one order → one org), even via the ledger', async () => {
     const deps = makeDeps({
-      // The order was already consumed by org_OTHER.
-      getSubscriptionByExternalId: vi.fn(async () => ({ id: 'sub_prev', organization_id: 'org_OTHER', plan_type: 'single-org' })),
+      getConsumedOrder: vi.fn(async () => ({ order_id: 'ord_1', organization_id: 'org_OTHER', subscription_id: 'sub_prev' })),
     });
     const verifier = new InMemoryOrderVerifier().seed(paidOrder());
     const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input); // input.orgId = org_1
     expect(res.ok).toBe(false);
     expect(res.code).toBe('ORDER_ALREADY_CONSUMED');
     expect(deps.createSubscription).not.toHaveBeenCalled();
+    expect(deps.executeUpgrade).not.toHaveBeenCalled();
   });
 
-  it('is idempotent when the SAME org re-activates an order it already consumed', async () => {
+  // REGRESSION (re-audit): the upgrade path previously never recorded the order,
+  // so one paid order could upgrade unlimited pre-seeded orgs. Now the ledger
+  // blocks a second org whether it takes the create OR the upgrade path.
+  it('REJECTS re-using a paid order to UPGRADE a different pre-seeded org', async () => {
     const deps = makeDeps({
-      getSubscriptionByExternalId: vi.fn(async () => ({ id: 'sub_prev', organization_id: 'org_1', plan_type: 'single-org' })),
+      // Order already consumed by org_OTHER (recorded on its create/upgrade).
+      getConsumedOrder: vi.fn(async () => ({ order_id: 'ord_1', organization_id: 'org_OTHER', subscription_id: 'sub_prev' })),
+      // Attacker org has a pre-seeded active sub of a different plan (would trigger upgrade).
+      getActiveSubscription: vi.fn(async () => ({ id: 'sub_free', plan_type: 'free' })),
     });
     const verifier = new InMemoryOrderVerifier().seed(paidOrder());
-    const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input); // input.orgId = org_1
+    const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
+    expect(res.ok).toBe(false);
+    expect(res.code).toBe('ORDER_ALREADY_CONSUMED');
+    expect(deps.executeUpgrade).not.toHaveBeenCalled();
+  });
+
+  it('records consumption on the UPGRADE path so the order cannot be reused afterward', async () => {
+    const deps = makeDeps({
+      getActiveSubscription: vi.fn(async () => ({ id: 'sub_free', plan_type: 'free' })),
+    });
+    const verifier = new InMemoryOrderVerifier().seed(paidOrder());
+    const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
     expect(res.ok).toBe(true);
-    expect(res.code).toBe('ALREADY_ACTIVE');
-    expect(res.subscription).toMatchObject({ id: 'sub_prev' });
-    expect(deps.createSubscription).not.toHaveBeenCalled();
+    expect(res.code).toBe('UPGRADED');
+    expect(deps.executeUpgrade).toHaveBeenCalledTimes(1);
+    expect(deps.recordConsumedOrder).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ord_1', organizationId: 'org_1' }));
+  });
+
+  it('treats a ledger PK race (recordConsumedOrder throws) as ORDER_ALREADY_CONSUMED', async () => {
+    const deps = makeDeps({
+      recordConsumedOrder: vi.fn(async () => {
+        throw new Error('UNIQUE constraint failed: consumed_orders.order_id');
+      }),
+    });
+    const verifier = new InMemoryOrderVerifier().seed(paidOrder());
+    const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
+    expect(res.ok).toBe(false);
+    expect(res.code).toBe('ORDER_ALREADY_CONSUMED');
   });
 });

@@ -11,7 +11,8 @@ import type { IOrderVerifier } from '@/lib/interfaces/IOrderVerifier';
 import {
   createSubscription as defaultCreateSubscription,
   getActiveSubscription as defaultGetActiveSubscription,
-  getSubscriptionByExternalId as defaultGetSubscriptionByExternalId,
+  getConsumedOrder as defaultGetConsumedOrder,
+  recordConsumedOrder as defaultRecordConsumedOrder,
   type PlanType,
   type BillingCycle,
 } from '@/lib/subscriptions';
@@ -45,7 +46,8 @@ export interface ProvisionInput {
 export interface ProvisionerDeps {
   createSubscription: typeof defaultCreateSubscription;
   getActiveSubscription: typeof defaultGetActiveSubscription;
-  getSubscriptionByExternalId: typeof defaultGetSubscriptionByExternalId;
+  getConsumedOrder: typeof defaultGetConsumedOrder;
+  recordConsumedOrder: typeof defaultRecordConsumedOrder;
   getPlanPriceCents: typeof defaultGetPlanPriceCents;
   executeUpgrade: (orgId: string, planType: PlanType) => Promise<{ success: boolean; error?: string }>;
 }
@@ -60,7 +62,8 @@ export class SubscriptionProvisioner {
     this.deps = {
       createSubscription: deps?.createSubscription ?? defaultCreateSubscription,
       getActiveSubscription: deps?.getActiveSubscription ?? defaultGetActiveSubscription,
-      getSubscriptionByExternalId: deps?.getSubscriptionByExternalId ?? defaultGetSubscriptionByExternalId,
+      getConsumedOrder: deps?.getConsumedOrder ?? defaultGetConsumedOrder,
+      recordConsumedOrder: deps?.recordConsumedOrder ?? defaultRecordConsumedOrder,
       getPlanPriceCents: deps?.getPlanPriceCents ?? defaultGetPlanPriceCents,
       executeUpgrade: deps?.executeUpgrade ?? ((orgId, planType) => new PlanUpgrade().executeUpgrade(orgId, planType)),
     };
@@ -84,40 +87,60 @@ export class SubscriptionProvisioner {
       return { ok: false, code: 'PLAN_MISMATCH' };
     }
 
-    // One order provisions AT MOST ONE org. If this order was already consumed,
-    // only the original org may (idempotently) re-activate it — any other org is
-    // rejected. This blocks a single paid order from provisioning paid tiers on
-    // arbitrarily many organizations.
-    const consumed = await this.deps.getSubscriptionByExternalId(orderId);
-    if (consumed) {
-      const consumedOrg = (consumed as { organization_id?: string }).organization_id;
-      if (consumedOrg && consumedOrg !== orgId) {
+    // One order provisions AT MOST ONE org, across ALL grant paths (create,
+    // upgrade, same-plan). A consumed-orders ledger keyed by order_id is the
+    // authoritative guard — external_subscription_id alone missed the upgrade
+    // path (PlanUpgrade never wrote it), letting one order upgrade many orgs.
+    const prior = await this.deps.getConsumedOrder(orderId);
+    if (prior) {
+      if (prior.organization_id !== orgId) {
         return { ok: false, code: 'ORDER_ALREADY_CONSUMED' };
       }
-      return { ok: true, code: 'ALREADY_ACTIVE', subscription: consumed };
+      // Same org re-activating the same order — idempotent.
+      const current = await this.deps.getActiveSubscription(orgId);
+      return { ok: true, code: 'ALREADY_ACTIVE', subscription: current ?? undefined };
     }
 
     const existing = await this.deps.getActiveSubscription(orgId);
+    let result: ProvisionResult;
     if (existing) {
       if ((existing as { plan_type?: string }).plan_type === planType) {
-        return { ok: true, code: 'ALREADY_ACTIVE', subscription: existing };
+        result = { ok: true, code: 'ALREADY_ACTIVE', subscription: existing };
+      } else {
+        const up = await this.deps.executeUpgrade(orgId, planType);
+        if (!up.success) {
+          return { ok: false, code: 'UPGRADE_FAILED', error: up.error };
+        }
+        const updated = await this.deps.getActiveSubscription(orgId);
+        result = { ok: true, code: 'UPGRADED', subscription: updated };
       }
-      const up = await this.deps.executeUpgrade(orgId, planType);
-      if (!up.success) {
-        return { ok: false, code: 'UPGRADE_FAILED', error: up.error };
-      }
-      const updated = await this.deps.getActiveSubscription(orgId);
-      return { ok: true, code: 'UPGRADED', subscription: updated };
+    } else {
+      const sub = await this.deps.createSubscription({
+        organizationId: orgId,
+        planType,
+        billingCycle,
+        currency: verified.currency || 'USD',
+        amountCents: verified.amountCents,
+        externalSubscriptionId: orderId,
+      });
+      result = { ok: true, code: 'CREATED', subscription: sub };
     }
 
-    const sub = await this.deps.createSubscription({
-      organizationId: orgId,
-      planType,
-      billingCycle,
-      currency: verified.currency || 'USD',
-      amountCents: verified.amountCents,
-      externalSubscriptionId: orderId,
-    });
-    return { ok: true, code: 'CREATED', subscription: sub };
+    // Record consumption for EVERY successful path so this order can never be
+    // reused by any org. The order_id PRIMARY KEY also closes the concurrent
+    // double-consume race: a second writer throws and we report ALREADY_CONSUMED.
+    try {
+      const subscriptionId = (result.subscription as { id?: string } | undefined)?.id;
+      await this.deps.recordConsumedOrder({
+        orderId,
+        organizationId: orgId,
+        subscriptionId,
+        planType,
+        amountCents: verified.amountCents,
+      });
+    } catch {
+      return { ok: false, code: 'ORDER_ALREADY_CONSUMED' };
+    }
+    return result;
   }
 }
