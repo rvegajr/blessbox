@@ -5,6 +5,17 @@ import dotenv from 'dotenv';
 // Load local env vars (DO NOT hardcode secrets)
 dotenv.config({ path: '.env.local' });
 
+// SECURITY: never run ad-hoc schema DDL against production. Use migrations for
+// prod (scripts/migrate.ts). Explicit override for intentional prod init.
+{
+  const dbUrl = process.env.TURSO_DATABASE_URL || '';
+  const allowProd = ['true', '1', 'yes'].includes((process.env.ALLOW_PROD_DB_SETUP || '').toLowerCase());
+  if (/prod/i.test(dbUrl) && !allowProd) {
+    console.error('[db-safety] Refusing to run schema DDL against a production-looking database (TURSO_DATABASE_URL contains "prod"). Set ALLOW_PROD_DB_SETUP=true to override.');
+    process.exit(1);
+  }
+}
+
 if (!process.env.TURSO_DATABASE_URL) {
   throw new Error('TURSO_DATABASE_URL is not set. Add it to your environment or .env.local');
 }
