@@ -316,6 +316,8 @@ export const couponRedemptions = sqliteTable('coupon_redemptions', {
 }, (t) => ({
   couponIdx: index('idx_redemptions_coupon').on(t.couponId),
   userIdx: index('idx_redemptions_user').on(t.userId),
+  // One redemption per coupon per organization (blocks re-redeeming for free).
+  couponOrgUniq: uniqueIndex('uq_redemptions_coupon_org').on(t.couponId, t.organizationId),
 }));
 
 // Classes
@@ -385,6 +387,8 @@ export const enrollments = sqliteTable('enrollments', {
   classIdx: index('enrollments_class_id_idx').on(t.classId),
   participantIdx: index('enrollments_participant_id_idx').on(t.participantId),
   sessionIdx: index('enrollments_session_id_idx').on(t.sessionId),
+  // A participant can enroll in a class at most once.
+  classParticipantUniq: uniqueIndex('enrollments_class_participant_uniq').on(t.classId, t.participantId),
 }));
 
 // Email templates
