@@ -14,9 +14,10 @@ function makeDeps(over: Record<string, unknown> = {}) {
   const getActiveSubscription = vi.fn(async () => null);
   const getConsumedOrder = vi.fn(async () => null);
   const recordConsumedOrder = vi.fn(async () => {});
+  const deleteConsumedOrder = vi.fn(async () => {});
   const getPlanPriceCents = vi.fn(() => SINGLE_ORG_PRICE);
   const executeUpgrade = vi.fn(async () => ({ success: true }));
-  return { createSubscription, getActiveSubscription, getConsumedOrder, recordConsumedOrder, getPlanPriceCents, executeUpgrade, ...over } as any;
+  return { createSubscription, getActiveSubscription, getConsumedOrder, recordConsumedOrder, deleteConsumedOrder, getPlanPriceCents, executeUpgrade, ...over } as any;
 }
 
 const input = { orgId: 'org_1', orderId: 'ord_1', planType: 'single-org' as const, billingCycle: 'monthly' as const };
@@ -125,15 +126,38 @@ describe('SubscriptionProvisioner.provisionFromOrder', () => {
     expect(deps.recordConsumedOrder).toHaveBeenCalledWith(expect.objectContaining({ orderId: 'ord_1', organizationId: 'org_1' }));
   });
 
-  it('treats a ledger PK race (recordConsumedOrder throws) as ORDER_ALREADY_CONSUMED', async () => {
+  // TOCTOU: the loser of a concurrent reservation race must NOT grant. Because
+  // the ledger row is reserved BEFORE the grant, a PK collision short-circuits
+  // before executeUpgrade/createSubscription — even when the org has an existing
+  // sub that would otherwise be upgraded.
+  it('the loser of a reservation race never grants (no upgrade/create after PK collision)', async () => {
     const deps = makeDeps({
+      getActiveSubscription: vi.fn(async () => ({ id: 'sub_free', plan_type: 'free' })), // would upgrade
       recordConsumedOrder: vi.fn(async () => {
         throw new Error('UNIQUE constraint failed: consumed_orders.order_id');
       }),
+      // Re-check after the collision shows a DIFFERENT org already owns it.
+      getConsumedOrder: vi.fn(async () => null),
     });
     const verifier = new InMemoryOrderVerifier().seed(paidOrder());
     const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
     expect(res.ok).toBe(false);
     expect(res.code).toBe('ORDER_ALREADY_CONSUMED');
+    expect(deps.executeUpgrade).not.toHaveBeenCalled();
+    expect(deps.createSubscription).not.toHaveBeenCalled();
+  });
+
+  it('releases the reservation when the grant (upgrade) fails, so the payer can retry', async () => {
+    const deps = makeDeps({
+      getActiveSubscription: vi.fn(async () => ({ id: 'sub_std', plan_type: 'standard' })),
+      executeUpgrade: vi.fn(async () => ({ success: false, error: 'Cannot downgrade' })),
+    });
+    const verifier = new InMemoryOrderVerifier().seed(paidOrder());
+    const res = await new SubscriptionProvisioner(verifier, deps).provisionFromOrder(input);
+    expect(res.ok).toBe(false);
+    expect(res.code).toBe('UPGRADE_FAILED');
+    // Reservation was taken then released.
+    expect(deps.recordConsumedOrder).toHaveBeenCalledTimes(1);
+    expect(deps.deleteConsumedOrder).toHaveBeenCalledWith('ord_1');
   });
 });
