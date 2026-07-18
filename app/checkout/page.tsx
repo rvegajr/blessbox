@@ -352,45 +352,6 @@ function CheckoutContent() {
                 {redirecting ? 'Redirecting to Square...' : 'Subscribe with Square'}
               </button>
             )}
-            {false && (
-            <div className="space-y-4">
-              <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information (Test Checkout)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                    <input
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      placeholder="4111 1111 1111 1111"
-                      defaultValue="4111 1111 1111 1111"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                    <input className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="123" defaultValue="123" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiry</label>
-                    <input className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="12/25" defaultValue="12/25" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ZIP</label>
-                    <input className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="12345" defaultValue="12345" />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={completeTestCheckout}
-                  className="mt-6 w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Complete Payment
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 text-center">
-                Local/dev checkout uses a mock payment flow when Square isn’t configured.
-              </p>
-            </div>
-            )}
           </div>
 
           <div className="mt-8 text-xs text-gray-500 text-center">
