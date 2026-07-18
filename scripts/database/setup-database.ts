@@ -2,15 +2,24 @@
 // Database setup script for BlessBox (libsql/sqlite via Turso-compatible client)
 import { config } from 'dotenv';
 import { ensureDbReady } from '../../lib/db-ready';
+import { assertNonProductionDatabase } from '../../lib/security/dbSafety';
 
 config({ path: '.env.local' });
 
 async function setupDatabase() {
   const isTest = process.argv.includes('--test');
   if (isTest) {
-    // Use a throwaway local sqlite file for test scaffolding.
-    process.env.TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL || 'file:./.tmp/test-db.sqlite';
-    process.env.TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN || '';
+    // Force a throwaway local sqlite file for test scaffolding — do NOT inherit a
+    // (possibly production) TURSO_DATABASE_URL from .env.local.
+    process.env.TURSO_DATABASE_URL = 'file:./.tmp/test-db.sqlite';
+    process.env.TURSO_AUTH_TOKEN = '';
+  }
+
+  // SECURITY: never scaffold/seed over production data. Explicit override for the
+  // rare case of intentionally initializing a fresh prod DB.
+  const allowProd = ['true', '1', 'yes'].includes((process.env.ALLOW_PROD_DB_SETUP || '').toLowerCase());
+  if (!allowProd) {
+    assertNonProductionDatabase('database setup');
   }
 
   console.log('🚀 Setting up BlessBox database...\n');
