@@ -13,6 +13,7 @@ import {
   getActiveSubscription as defaultGetActiveSubscription,
   getConsumedOrder as defaultGetConsumedOrder,
   recordConsumedOrder as defaultRecordConsumedOrder,
+  deleteConsumedOrder as defaultDeleteConsumedOrder,
   type PlanType,
   type BillingCycle,
 } from '@/lib/subscriptions';
@@ -48,6 +49,7 @@ export interface ProvisionerDeps {
   getActiveSubscription: typeof defaultGetActiveSubscription;
   getConsumedOrder: typeof defaultGetConsumedOrder;
   recordConsumedOrder: typeof defaultRecordConsumedOrder;
+  deleteConsumedOrder: typeof defaultDeleteConsumedOrder;
   getPlanPriceCents: typeof defaultGetPlanPriceCents;
   executeUpgrade: (orgId: string, planType: PlanType) => Promise<{ success: boolean; error?: string }>;
 }
@@ -64,6 +66,7 @@ export class SubscriptionProvisioner {
       getActiveSubscription: deps?.getActiveSubscription ?? defaultGetActiveSubscription,
       getConsumedOrder: deps?.getConsumedOrder ?? defaultGetConsumedOrder,
       recordConsumedOrder: deps?.recordConsumedOrder ?? defaultRecordConsumedOrder,
+      deleteConsumedOrder: deps?.deleteConsumedOrder ?? defaultDeleteConsumedOrder,
       getPlanPriceCents: deps?.getPlanPriceCents ?? defaultGetPlanPriceCents,
       executeUpgrade: deps?.executeUpgrade ?? ((orgId, planType) => new PlanUpgrade().executeUpgrade(orgId, planType)),
     };
@@ -101,20 +104,41 @@ export class SubscriptionProvisioner {
       return { ok: true, code: 'ALREADY_ACTIVE', subscription: current ?? undefined };
     }
 
-    const existing = await this.deps.getActiveSubscription(orgId);
-    let result: ProvisionResult;
-    if (existing) {
-      if ((existing as { plan_type?: string }).plan_type === planType) {
-        result = { ok: true, code: 'ALREADY_ACTIVE', subscription: existing };
-      } else {
+    // RESERVE the order BEFORE granting. The order_id PRIMARY KEY makes this the
+    // atomic gate that closes the concurrent TOCTOU: two racing requests both read
+    // null above, but only one INSERT wins — the loser never reaches the grant.
+    try {
+      await this.deps.recordConsumedOrder({
+        orderId,
+        organizationId: orgId,
+        planType,
+        amountCents: verified.amountCents,
+      });
+    } catch {
+      // Lost the race (or a duplicate): whoever reserved it first owns the order.
+      const now = await this.deps.getConsumedOrder(orderId);
+      if (now && now.organization_id === orgId) {
+        const current = await this.deps.getActiveSubscription(orgId);
+        return { ok: true, code: 'ALREADY_ACTIVE', subscription: current ?? undefined };
+      }
+      return { ok: false, code: 'ORDER_ALREADY_CONSUMED' };
+    }
+
+    // We own the reservation — grant. Release it on ANY failure so the payer can retry.
+    try {
+      const existing = await this.deps.getActiveSubscription(orgId);
+      if (existing) {
+        if ((existing as { plan_type?: string }).plan_type === planType) {
+          return { ok: true, code: 'ALREADY_ACTIVE', subscription: existing };
+        }
         const up = await this.deps.executeUpgrade(orgId, planType);
         if (!up.success) {
+          await this.releaseReservation(orderId);
           return { ok: false, code: 'UPGRADE_FAILED', error: up.error };
         }
         const updated = await this.deps.getActiveSubscription(orgId);
-        result = { ok: true, code: 'UPGRADED', subscription: updated };
+        return { ok: true, code: 'UPGRADED', subscription: updated };
       }
-    } else {
       const sub = await this.deps.createSubscription({
         organizationId: orgId,
         planType,
@@ -123,24 +147,18 @@ export class SubscriptionProvisioner {
         amountCents: verified.amountCents,
         externalSubscriptionId: orderId,
       });
-      result = { ok: true, code: 'CREATED', subscription: sub };
+      return { ok: true, code: 'CREATED', subscription: sub };
+    } catch (err) {
+      await this.releaseReservation(orderId);
+      throw err;
     }
+  }
 
-    // Record consumption for EVERY successful path so this order can never be
-    // reused by any org. The order_id PRIMARY KEY also closes the concurrent
-    // double-consume race: a second writer throws and we report ALREADY_CONSUMED.
+  private async releaseReservation(orderId: string): Promise<void> {
     try {
-      const subscriptionId = (result.subscription as { id?: string } | undefined)?.id;
-      await this.deps.recordConsumedOrder({
-        orderId,
-        organizationId: orgId,
-        subscriptionId,
-        planType,
-        amountCents: verified.amountCents,
-      });
+      await this.deps.deleteConsumedOrder(orderId);
     } catch {
-      return { ok: false, code: 'ORDER_ALREADY_CONSUMED' };
+      // Best-effort release; a stuck reservation only ever blocks reuse (fail-safe).
     }
-    return result;
   }
 }

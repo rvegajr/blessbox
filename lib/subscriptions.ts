@@ -201,6 +201,13 @@ export async function recordConsumedOrder(params: {
   });
 }
 
+/** Release a reservation when the grant that followed it failed, so the payer can retry. */
+export async function deleteConsumedOrder(orderId: string): Promise<void> {
+  if (!orderId) return;
+  const client = getDbClient();
+  await client.execute({ sql: `DELETE FROM consumed_orders WHERE order_id = ?`, args: [orderId] });
+}
+
 export async function createSubscription(params: {
   organizationId: string;
   planType: PlanType;
