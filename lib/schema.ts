@@ -158,6 +158,10 @@ export const subscriptionPlans = sqliteTable('subscription_plans', {
   planTypeIdx: index('subscription_plans_plan_type_idx').on(t.planType),
   orgIdx2: index('subscription_plans_org_idx').on(t.organizationId),
   statusIdx: index('subscription_plans_status_idx').on(t.status),
+  // One external order/payment id → at most one subscription (partial: NULLs allowed).
+  externalSubIdUniq: uniqueIndex('subscription_plans_external_subscription_id_uniq')
+    .on(t.externalSubscriptionId)
+    .where(sql`${t.externalSubscriptionId} IS NOT NULL`),
 }));
 
 // Payment transactions

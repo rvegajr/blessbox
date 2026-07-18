@@ -10,6 +10,7 @@ import { PlanUpgrade } from '@/lib/services/PlanUpgrade';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { getEnv, getEnvBoolean } from '@/lib/utils/env';
+import { createHash } from 'crypto';
 
 // NOTE: We deliberately do NOT include `amount` in the schema — pricing is
 // always derived server-side from `planType` + `billingCycle`. Including it
@@ -23,6 +24,10 @@ const PaymentProcessSchema = z.object({
   paymentToken: z.string().min(1).optional(),
   nonce: z.string().min(1).optional(),
   couponCode: z.string().max(50).optional(),
+  // Optional client-generated stable id for one checkout attempt. Lets a retry
+  // (double-click, re-tokenization) resolve to the SAME Square idempotency key
+  // so the customer is never charged twice.
+  purchaseNonce: z.string().min(1).max(100).optional(),
 });
 
 /**
@@ -131,6 +136,17 @@ export async function POST(req: NextRequest) {
   // Free plans skip Square entirely.
   const isFree = amountCents <= 0 || planType === 'free';
 
+  // Stable idempotency key for this charge intent. Derived from a client-supplied
+  // purchaseNonce when present, else the single-use payment token — so a retry of
+  // the SAME intended charge maps to the SAME Square idempotency key and cannot
+  // double-charge. Real Square payment id (below) is persisted for reconciliation
+  // and, via the UNIQUE external_subscription_id index, blocks a double grant.
+  const idemSeed = body.purchaseNonce?.trim() || paymentToken || '';
+  const chargeIdempotencyKey = idemSeed
+    ? createHash('sha256').update(`${org.id}|${planType}|${billingCycle}|${idemSeed}`).digest('hex')
+    : undefined;
+  let squarePaymentId: string | undefined;
+
   if (!isFree) {
     if (!paymentToken) {
       return json({ success: false, error: 'paymentToken required for paid plan' }, 400);
@@ -161,6 +177,7 @@ export async function POST(req: NextRequest) {
           amountCents,
           currency || 'USD',
           org.id,
+          chargeIdempotencyKey,
         );
 
         if (!paymentResult.success) {
@@ -174,6 +191,10 @@ export async function POST(req: NextRequest) {
             payment: paymentResult,
           }, isAuthError ? 500 : 400);
         }
+
+        // Persist the real Square payment id for reconciliation + duplicate-grant
+        // protection (UNIQUE external_subscription_id).
+        squarePaymentId = paymentResult.paymentId || (paymentResult as { squarePaymentId?: string }).squarePaymentId;
       } else {
         console.log(`[PAYMENT] [mock-payment] org=${org.id}, plan=${planType}, amount=${amountCents} ${currency}`);
       }
@@ -201,7 +222,7 @@ export async function POST(req: NextRequest) {
         subscription: existing,
         chargedAmountCents: amountCents,
         alreadyActive: true,
-        ...(paymentToken && { transactionId: 'square-tx-' + Date.now() }),
+        ...(paymentToken && { transactionId: squarePaymentId ?? 'square-tx-' + Date.now() }),
       }, 200);
     }
     
@@ -241,7 +262,7 @@ export async function POST(req: NextRequest) {
       subscription: updated,
       chargedAmountCents: amountCents,
       upgraded: true,
-      ...(paymentToken && { transactionId: 'square-tx-' + Date.now() }),
+      ...(paymentToken && { transactionId: squarePaymentId ?? 'square-tx-' + Date.now() }),
     }, 200);
   }
 
@@ -252,6 +273,7 @@ export async function POST(req: NextRequest) {
     billingCycle,
     currency,
     amountCents,
+    externalSubscriptionId: squarePaymentId,
   });
 
   // Issue #27: record coupon redemption for fresh subscription path too.

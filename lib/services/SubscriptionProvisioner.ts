@@ -11,6 +11,7 @@ import type { IOrderVerifier } from '@/lib/interfaces/IOrderVerifier';
 import {
   createSubscription as defaultCreateSubscription,
   getActiveSubscription as defaultGetActiveSubscription,
+  getSubscriptionByExternalId as defaultGetSubscriptionByExternalId,
   type PlanType,
   type BillingCycle,
 } from '@/lib/subscriptions';
@@ -22,6 +23,7 @@ export type ProvisionCode =
   | 'UPGRADED'
   | 'ALREADY_ACTIVE'
   | 'ORDER_NOT_PAID'
+  | 'ORDER_ALREADY_CONSUMED'
   | 'AMOUNT_MISMATCH'
   | 'PLAN_MISMATCH'
   | 'UPGRADE_FAILED';
@@ -43,6 +45,7 @@ export interface ProvisionInput {
 export interface ProvisionerDeps {
   createSubscription: typeof defaultCreateSubscription;
   getActiveSubscription: typeof defaultGetActiveSubscription;
+  getSubscriptionByExternalId: typeof defaultGetSubscriptionByExternalId;
   getPlanPriceCents: typeof defaultGetPlanPriceCents;
   executeUpgrade: (orgId: string, planType: PlanType) => Promise<{ success: boolean; error?: string }>;
 }
@@ -57,6 +60,7 @@ export class SubscriptionProvisioner {
     this.deps = {
       createSubscription: deps?.createSubscription ?? defaultCreateSubscription,
       getActiveSubscription: deps?.getActiveSubscription ?? defaultGetActiveSubscription,
+      getSubscriptionByExternalId: deps?.getSubscriptionByExternalId ?? defaultGetSubscriptionByExternalId,
       getPlanPriceCents: deps?.getPlanPriceCents ?? defaultGetPlanPriceCents,
       executeUpgrade: deps?.executeUpgrade ?? ((orgId, planType) => new PlanUpgrade().executeUpgrade(orgId, planType)),
     };
@@ -78,6 +82,19 @@ export class SubscriptionProvisioner {
     }
     if (verified.planType !== planType) {
       return { ok: false, code: 'PLAN_MISMATCH' };
+    }
+
+    // One order provisions AT MOST ONE org. If this order was already consumed,
+    // only the original org may (idempotently) re-activate it — any other org is
+    // rejected. This blocks a single paid order from provisioning paid tiers on
+    // arbitrarily many organizations.
+    const consumed = await this.deps.getSubscriptionByExternalId(orderId);
+    if (consumed) {
+      const consumedOrg = (consumed as { organization_id?: string }).organization_id;
+      if (consumedOrg && consumedOrg !== orgId) {
+        return { ok: false, code: 'ORDER_ALREADY_CONSUMED' };
+      }
+      return { ok: true, code: 'ALREADY_ACTIVE', subscription: consumed };
     }
 
     const existing = await this.deps.getActiveSubscription(orgId);
