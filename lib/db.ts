@@ -96,6 +96,12 @@ export async function ensureSubscriptionSchema(): Promise<void> {
 
   await client.execute(`CREATE INDEX IF NOT EXISTS subscription_plans_org_idx ON subscription_plans(organization_id)`);
   await client.execute(`CREATE INDEX IF NOT EXISTS subscription_plans_status_idx ON subscription_plans(status)`);
+  // One external order/payment id maps to at most one subscription — hard backstop
+  // for the application-level one-order-one-org guard. Partial index so multiple
+  // NULLs (free/seed subscriptions) remain allowed.
+  await client.execute(
+    `CREATE UNIQUE INDEX IF NOT EXISTS subscription_plans_external_subscription_id_uniq ON subscription_plans(external_subscription_id) WHERE external_subscription_id IS NOT NULL`,
+  );
 }
 
 export function nowIso(): string {

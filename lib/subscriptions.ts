@@ -137,6 +137,23 @@ export async function getActiveSubscription(organizationId: string): Promise<any
   return (res.rows as any[])[0] || null;
 }
 
+/**
+ * Look up any subscription that was provisioned from a given external order /
+ * payment id. Used to enforce one-order-one-subscription so a single paid order
+ * cannot provision paid tiers on multiple organizations.
+ */
+export async function getSubscriptionByExternalId(externalId: string): Promise<any | null> {
+  if (!externalId) return null;
+  const client = getDbClient();
+  await ensureSubscriptionSchema();
+
+  const res = await client.execute({
+    sql: `SELECT * FROM subscription_plans WHERE external_subscription_id = ? ORDER BY start_date DESC LIMIT 1`,
+    args: [externalId],
+  });
+  return (res.rows as any[])[0] || null;
+}
+
 export async function createSubscription(params: {
   organizationId: string;
   planType: PlanType;
