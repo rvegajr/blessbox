@@ -154,6 +154,60 @@ export async function getSubscriptionByExternalId(externalId: string): Promise<a
   return (res.rows as any[])[0] || null;
 }
 
+/**
+ * Consumed-orders ledger — the authoritative "this paid order has been used"
+ * record. Keyed by order_id so ONE paid order can grant a subscription to at most
+ * ONE organization, across create AND upgrade AND same-plan paths (the
+ * external_subscription_id approach missed the upgrade path).
+ */
+export async function getConsumedOrder(
+  orderId: string,
+): Promise<{ order_id: string; organization_id: string; subscription_id: string | null } | null> {
+  if (!orderId) return null;
+  const client = getDbClient();
+  await ensureSubscriptionSchema();
+  const res = await client.execute({
+    sql: `SELECT order_id, organization_id, subscription_id FROM consumed_orders WHERE order_id = ? LIMIT 1`,
+    args: [orderId],
+  });
+  return (res.rows as any[])[0] || null;
+}
+
+/**
+ * Record an order as consumed. The order_id PRIMARY KEY makes a duplicate insert
+ * throw, which the caller treats as "already consumed" (also closes the
+ * concurrent double-consume race).
+ */
+export async function recordConsumedOrder(params: {
+  orderId: string;
+  organizationId: string;
+  subscriptionId?: string;
+  planType?: string;
+  amountCents?: number;
+}): Promise<void> {
+  const client = getDbClient();
+  await ensureSubscriptionSchema();
+  await client.execute({
+    sql: `INSERT INTO consumed_orders (order_id, organization_id, subscription_id, plan_type, amount_cents, consumed_at)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    args: [
+      params.orderId,
+      params.organizationId,
+      params.subscriptionId ?? null,
+      params.planType ?? null,
+      params.amountCents ?? null,
+      nowIso(),
+    ],
+  });
+}
+
+/** Release a reservation when the grant that followed it failed, so the payer can retry. */
+export async function deleteConsumedOrder(orderId: string): Promise<void> {
+  if (!orderId) return;
+  const client = getDbClient();
+  await client.execute({ sql: `DELETE FROM consumed_orders WHERE order_id = ?`, args: [orderId] });
+}
+
 export async function createSubscription(params: {
   organizationId: string;
   planType: PlanType;

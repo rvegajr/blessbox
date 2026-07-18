@@ -102,6 +102,20 @@ export async function ensureSubscriptionSchema(): Promise<void> {
   await client.execute(
     `CREATE UNIQUE INDEX IF NOT EXISTS subscription_plans_external_subscription_id_uniq ON subscription_plans(external_subscription_id) WHERE external_subscription_id IS NOT NULL`,
   );
+
+  // Consumed-orders ledger: order_id PRIMARY KEY => one paid order grants a
+  // subscription to at most one org (across create/upgrade/same-plan paths).
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS consumed_orders (
+      order_id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL,
+      subscription_id TEXT,
+      plan_type TEXT,
+      amount_cents INTEGER,
+      consumed_at TEXT NOT NULL
+    )`,
+  );
+  await client.execute(`CREATE INDEX IF NOT EXISTS consumed_orders_org_idx ON consumed_orders(organization_id)`);
 }
 
 export function nowIso(): string {
