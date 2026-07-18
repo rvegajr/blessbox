@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/utils/env';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 
 /**
  * Proxy for the Traklet widget (QA testing tool).
@@ -9,18 +10,32 @@ import { getEnv } from '@/lib/utils/env';
  * widget and re-attach the server-side `TRAKLET_PAT` before forwarding to
  * `https://api.github.com`. The PAT is therefore never exposed to the browser.
  *
- * Available in production when NEXT_PUBLIC_TRAKLET_ENABLED and TRAKLET_PAT are
- * both explicitly set, enabling QA testing on live production site.
+ * SECURITY — this route re-attaches the server's GitHub PAT with NO caller
+ * authentication (the widget runs in the browser and cannot hold a secret), so
+ * it is a confused-deputy by design. To contain the blast radius we:
+ *   1. Only enable when NEXT_PUBLIC_TRAKLET_ENABLED === 'true'.
+ *   2. Scope every request to the single configured repo (TRAKLET_REPO), so the
+ *      PAT can never reach other repos or become a general api.github.com SSRF.
+ *   3. Allow only GET/POST/PATCH — PUT/DELETE (repo/issue deletion, collaborator
+ *      or branch-protection changes) are rejected.
+ *   4. Rate-limit per IP.
+ * The residual (anonymous, rate-limited issue/comment writes on one repo that is
+ * already public) is low. Consider disabling on public hosts per env.template,
+ * which documents this widget as DEVELOPMENT ONLY.
  */
 
 const GITHUB_API = 'https://api.github.com';
+const ALLOWED_METHODS = new Set(['GET', 'POST', 'PATCH']);
+const DEFAULT_REPO = 'rvegajr/blessbox';
+
+function notFound() {
+  return NextResponse.json({ error: 'Not found' }, { status: 404 });
+}
 
 async function handle(request: NextRequest, method: string): Promise<Response> {
-  // Off by default: this route re-attaches the server-side GitHub PAT, so it must
-  // only be reachable when Traklet is explicitly enabled (matches the documented
-  // contract). A 404 hides its existence otherwise.
+  // Off by default: a 404 hides the route's existence unless Traklet is enabled.
   if (getEnv('NEXT_PUBLIC_TRAKLET_ENABLED') !== 'true') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return notFound();
   }
 
   const token = getEnv('TRAKLET_PAT');
@@ -31,12 +46,32 @@ async function handle(request: NextRequest, method: string): Promise<Response> {
     );
   }
 
-  // Build upstream URL: everything after `/api/dev/traklet-proxy` is forwarded
-  // verbatim (including the query string) to `api.github.com`.
+  // Per-IP rate limit — the PAT has no per-caller auth, so throttle abuse.
+  const rl = rateLimit(request, { key: 'traklet-proxy:ip', limit: 30, windowMs: 60_000 });
+  if (!rl.allowed) return rateLimitResponse(rl.retryAfterSec);
+
+  if (!ALLOWED_METHODS.has(method)) {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+  }
+
+  // Build upstream path: everything after `/api/dev/traklet-proxy`.
   const url = new URL(request.url);
   const prefix = '/api/dev/traklet-proxy';
   const idx = url.pathname.indexOf(prefix);
   const subpath = idx >= 0 ? url.pathname.slice(idx + prefix.length) : '';
+
+  // Scope the PAT to the one configured repo. Reject anything else so the token
+  // cannot reach other repos or arbitrary api.github.com endpoints.
+  const repo = getEnv('TRAKLET_REPO', DEFAULT_REPO);
+  const repoPrefix = `/repos/${repo}`;
+  const allowedExact = new Set(['/rate_limit', repoPrefix]);
+  const scoped =
+    !subpath.includes('..') &&
+    (allowedExact.has(subpath) || subpath.startsWith(`${repoPrefix}/`));
+  if (!scoped) {
+    return NextResponse.json({ error: 'Forbidden: path is out of scope' }, { status: 403 });
+  }
+
   const upstream = `${GITHUB_API}${subpath}${url.search}`;
 
   // Forward only safe headers; replace Authorization with the server PAT.
@@ -72,9 +107,6 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   return handle(req, 'PATCH');
 }
-export async function PUT(req: NextRequest) {
-  return handle(req, 'PUT');
-}
-export async function DELETE(req: NextRequest) {
-  return handle(req, 'DELETE');
-}
+// PUT and DELETE are intentionally not exported: destructive GitHub operations
+// (repo/issue deletion, collaborator/branch-protection changes) must not be
+// reachable through an unauthenticated proxy. Next.js returns 405 for them.
