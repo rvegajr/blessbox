@@ -158,6 +158,23 @@ export const subscriptionPlans = sqliteTable('subscription_plans', {
   planTypeIdx: index('subscription_plans_plan_type_idx').on(t.planType),
   orgIdx2: index('subscription_plans_org_idx').on(t.organizationId),
   statusIdx: index('subscription_plans_status_idx').on(t.status),
+  // One external order/payment id → at most one subscription (partial: NULLs allowed).
+  externalSubIdUniq: uniqueIndex('subscription_plans_external_subscription_id_uniq')
+    .on(t.externalSubscriptionId)
+    .where(sql`${t.externalSubscriptionId} IS NOT NULL`),
+}));
+
+// Consumed-orders ledger — one paid order id grants at most one org a subscription
+// (create/upgrade/same-plan). Created at runtime by ensureSubscriptionSchema.
+export const consumedOrders = sqliteTable('consumed_orders', {
+  orderId: text('order_id').primaryKey(),
+  organizationId: text('organization_id').notNull(),
+  subscriptionId: text('subscription_id'),
+  planType: text('plan_type'),
+  amountCents: integer('amount_cents'),
+  consumedAt: text('consumed_at').notNull(),
+}, (t) => ({
+  orgIdx: index('consumed_orders_org_idx').on(t.organizationId),
 }));
 
 // Payment transactions

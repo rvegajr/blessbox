@@ -49,6 +49,32 @@ export default function SquarePaymentForm({
   const initializingRef = useRef(false);
   const cardRef = useRef<any>(null);
   const paymentsRef = useRef<any>(null);
+  // Stable idempotency key for THIS checkout attempt. Persisted in sessionStorage
+  // (keyed by plan+cycle) so it survives not only in-page retries/re-tokenizations
+  // but also a page RELOAD/crash between the charge and its response — otherwise a
+  // remount would mint a new key and charge the card twice. Cleared on success.
+  const purchaseNonceRef = useRef<string | null>(null);
+  const purchaseNonceKey = `bb_purchase_nonce:${planType}:${billingCycle}`;
+  const getPurchaseNonce = useCallback((): string => {
+    const gen = () =>
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `bb_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    if (purchaseNonceRef.current) return purchaseNonceRef.current;
+    if (typeof window === 'undefined') return (purchaseNonceRef.current = gen());
+    let n: string | null = null;
+    try {
+      n = window.sessionStorage.getItem(purchaseNonceKey);
+      if (!n) {
+        n = gen();
+        window.sessionStorage.setItem(purchaseNonceKey, n);
+      }
+    } catch {
+      n = n || gen();
+    }
+    purchaseNonceRef.current = n;
+    return n;
+  }, [purchaseNonceKey]);
 
   /** Re-creates the card form (after a failed payment or destroyed card) */
   const reinitializeCard = useCallback(async () => {
@@ -240,12 +266,19 @@ export default function SquarePaymentForm({
             planType,
             billingCycle,
             email,
+            purchaseNonce: getPurchaseNonce(),
           }),
         });
 
         const paymentResult = await response.json();
 
         if (paymentResult.success) {
+          // Charge succeeded — retire this nonce so a later, separate purchase
+          // gets a fresh idempotency key.
+          try {
+            if (typeof window !== 'undefined') window.sessionStorage.removeItem(purchaseNonceKey);
+          } catch { /* ignore */ }
+          purchaseNonceRef.current = null;
           onPaymentSuccess(paymentResult);
         } else {
           // Payment failed - reinitialize card for retry

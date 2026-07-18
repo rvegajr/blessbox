@@ -145,12 +145,15 @@ describe('Payment Process API', () => {
 
       expect(response.status).toBe(200);
       expect(data.chargedAmountCents).toBe(9900);
-      // SquarePaymentService.processPayment(token, amountCents, currency, orgId)
+      // SquarePaymentService.processPayment(token, amountCents, currency, orgId, idempotencyKey)
+      // A STABLE sha256 idempotency key is now derived and passed so a retry of the
+      // same charge intent cannot double-charge.
       expect(processPaymentMock).toHaveBeenCalledWith(
         'cnon:test-token',
         9900,
         'USD',
         'org_123',
+        expect.stringMatching(/^[a-f0-9]{64}$/),
       );
     });
 
