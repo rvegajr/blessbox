@@ -36,3 +36,15 @@ describe('VerificationService.generateCode', () => {
     expect(sawLow).toBe(true);
   });
 });
+
+describe('VerificationService.checkRateLimit', () => {
+  it('counts only PENDING (unverified) codes so verified cycles do not block the user', async () => {
+    mockDb.execute.mockResolvedValueOnce({ rows: [] });
+    const svc = new VerificationService();
+    const info = await svc.checkRateLimit('a@b.com');
+    expect(info.canSend).toBe(true);
+    // The query must exclude verified codes.
+    const call = mockDb.execute.mock.calls.at(-1)?.[0];
+    expect(String(call.sql)).toMatch(/verified\s*=\s*0/);
+  });
+});
