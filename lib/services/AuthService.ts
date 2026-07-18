@@ -74,26 +74,58 @@ export class AuthService implements IAuthService {
 
     // Get or create user
     const user = await this.getOrCreateUser(normalized);
-    
-    // If organizationId provided, create membership
+
+    // If organizationId provided, attach the user to that org — but ONLY when the
+    // verified email is authorized for it.
+    // SECURITY: never grant membership from a client-supplied org id alone. Doing
+    // so lets anyone become admin of any org just by passing its id (org-takeover).
+    // Authorized = the org's registered contact_email matches the verified email
+    // (self-service onboarding) OR the user is already a member of that org.
     if (options?.organizationId) {
-      await this.membershipService.ensureMembership(user.id, options.organizationId, 'admin');
-      
-      // Mark organization email as verified
-      const now = new Date().toISOString();
-      await this.db.execute({
-        sql: `UPDATE organizations SET email_verified = 1, updated_at = ? WHERE id = ? AND contact_email = ?`,
-        args: [now, options.organizationId, normalized],
-      });
-      
-      // Set active organization
-      user.organizationId = options.organizationId;
+      const orgId = options.organizationId;
+      if (await this.isEmailAuthorizedForOrg(normalized, user.id, orgId)) {
+        await this.membershipService.ensureMembership(user.id, orgId, 'admin');
+
+        // Mark organization email as verified
+        const now = new Date().toISOString();
+        await this.db.execute({
+          sql: `UPDATE organizations SET email_verified = 1, updated_at = ? WHERE id = ? AND contact_email = ?`,
+          args: [now, orgId, normalized],
+        });
+
+        // Set active organization
+        user.organizationId = orgId;
+      }
+      // else: silently ignore the org id — do not grant membership or set active org.
     }
 
     // Create session
     const session = await this.createSession(user);
-    
+
     return { success: true, session };
+  }
+
+  /**
+   * Whether a verified email may be attached (as admin) to an organization.
+   * SECURITY gate for org-takeover: a client-supplied org id alone is never
+   * enough. Authorized only when the email is the org's registered contact
+   * (self-service onboarding) or the user is already a member.
+   */
+  private async isEmailAuthorizedForOrg(email: string, userId: string, orgId: string): Promise<boolean> {
+    const normalized = normalizeEmail(email);
+    if (!normalized || !orgId) return false;
+
+    const orgRow = await this.db.execute({
+      sql: `SELECT contact_email FROM organizations WHERE id = ? LIMIT 1`,
+      args: [orgId],
+    });
+    if (!orgRow.rows || orgRow.rows.length === 0) return false; // org doesn't exist
+
+    const contactEmail = normalizeEmail(String((orgRow.rows[0] as any).contact_email || ''));
+    if (contactEmail && contactEmail === normalized) return true;
+
+    // Already a member? Allow re-selecting an org they legitimately belong to.
+    return this.membershipService.isMember(userId, orgId);
   }
 
   /**
@@ -177,10 +209,20 @@ export class AuthService implements IAuthService {
         return null;
       }
 
-      // Check for active organization override
+      // Check for active organization override.
+      // SECURITY: the bb_active_org_id cookie is attacker-controllable (HttpOnly
+      // only stops JS from reading it, not a client from *setting* it). Never
+      // trust it blindly — that is a cross-tenant IDOR. Only honor it when the
+      // user is actually a member of that org (super_admins may act anywhere).
+      // Otherwise fall back to the org embedded in the signed JWT.
       const activeOrgId = cookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value;
-      if (activeOrgId && session.user) {
-        session.user.organizationId = activeOrgId;
+      if (activeOrgId && session.user?.id) {
+        const isSuperAdmin = session.user.role === 'super_admin';
+        const allowed =
+          isSuperAdmin || (await this.membershipService.isMember(session.user.id, activeOrgId));
+        if (allowed) {
+          session.user.organizationId = activeOrgId;
+        }
       }
 
       return session;
