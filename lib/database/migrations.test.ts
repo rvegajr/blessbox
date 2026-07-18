@@ -34,7 +34,18 @@ describe('drizzle migrations', () => {
     expect(await appTables(client)).toEqual(EXPECTED_TABLES);
 
     const recorded = await client.execute(`SELECT COUNT(*) AS c FROM __drizzle_migrations`);
-    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(2); // baseline + add_coupon_fields
+    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(3); // baseline + add_coupon_fields + unique_external_subscription_id
+    client.close();
+  });
+
+  it('enforce one external order/payment id → at most one subscription (partial unique index)', async () => {
+    const { client, db } = await freshDb();
+    await migrate(db, { migrationsFolder: MIGRATIONS });
+
+    const idx = await client.execute(
+      `SELECT name FROM sqlite_master WHERE type='index' AND name='subscription_plans_external_subscription_id_uniq'`,
+    );
+    expect(idx.rows.length).toBe(1);
     client.close();
   });
 
@@ -55,7 +66,7 @@ describe('drizzle migrations', () => {
     await migrate(db, { migrationsFolder: MIGRATIONS }); // second run
 
     const recorded = await client.execute(`SELECT COUNT(*) AS c FROM __drizzle_migrations`);
-    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(2);
+    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(3);
     client.close();
   });
 });
