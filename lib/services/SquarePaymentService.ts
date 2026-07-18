@@ -1,8 +1,8 @@
 import { SquareClient, SquareError } from 'square';
 import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
 import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
-import { getRequiredEnv, getEnv } from '../utils/env';
-import { squareEnv, squareGatewayBaseUrl } from './gatewayConfig';
+import { getEnv } from '../utils/env';
+import { squareEnv, squareGatewayBaseUrl, gatewayAuthToken, hasGatewayAuth } from './gatewayConfig';
 
 export class SquarePaymentService implements IPaymentProcessor {
   private client: SquareClient;
@@ -11,16 +11,20 @@ export class SquarePaymentService implements IPaymentProcessor {
   constructor() {
     // All Square traffic is routed through the Noctusoft gateway (a Square API
     // drop-in proxy that holds the real Square credentials). The app authenticates
-    // to the gateway with NOCTUSOFT_DEPLOY_KEY only — it never holds a direct
-    // SQUARE_ACCESS_TOKEN. We keep the Square SDK but point its baseUrl at the proxy.
+    // with its Vercel OIDC identity (or the NOCTUSOFT_DEPLOY_KEY fallback) — it
+    // never holds a direct SQUARE_ACCESS_TOKEN. We keep the Square SDK but point
+    // its baseUrl at the proxy; token is a supplier so each request gets a fresh
+    // (unexpired) OIDC token.
     this.envLabel = squareEnv();
     const proxyBase = squareGatewayBaseUrl(this.envLabel);
 
-    const deployKey = getRequiredEnv('NOCTUSOFT_DEPLOY_KEY', 'Payment gateway not configured: NOCTUSOFT_DEPLOY_KEY is missing');
+    if (!hasGatewayAuth()) {
+      throw new Error('Payment gateway not configured: no Vercel OIDC identity and NOCTUSOFT_DEPLOY_KEY is missing');
+    }
 
     this.client = new SquareClient({
       baseUrl: proxyBase,
-      token: deployKey,
+      token: async () => (await gatewayAuthToken()) ?? undefined,
       headers: { 'X-Square-Env': this.envLabel, 'X-Test-Store': 'blessbox' },
     });
   }

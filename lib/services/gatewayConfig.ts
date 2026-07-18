@@ -40,3 +40,32 @@ export function sendgridRelayBaseUrl(): string {
 export function gatewayDeployKey(): string {
   return getEnv('NOCTUSOFT_DEPLOY_KEY');
 }
+
+/**
+ * Whether ANY gateway credential is available: a Vercel OIDC identity (present
+ * on every Vercel deployment once OIDC federation is enabled) or the static
+ * NOCTUSOFT_DEPLOY_KEY fallback. Use this for "is the gateway configured?"
+ * gating instead of checking the deploy key directly.
+ */
+export function hasGatewayAuth(): boolean {
+  return !!(process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL || gatewayDeployKey());
+}
+
+/**
+ * Bearer credential for the relay. Prefers the deployment's Vercel OIDC token
+ * (short-lived, never stored, nothing to leak or rotate) and falls back to
+ * NOCTUSOFT_DEPLOY_KEY for local dev and non-Vercel environments. The relay
+ * accepts both (OIDC is verified against the team's JWKS).
+ */
+export async function gatewayAuthToken(): Promise<string | null> {
+  if (process.env.VERCEL_OIDC_TOKEN || process.env.VERCEL) {
+    try {
+      const { getVercelOidcToken } = await import('@vercel/oidc');
+      const token = await getVercelOidcToken();
+      if (token) return token;
+    } catch {
+      // OIDC unavailable (federation disabled or token expired) — fall through.
+    }
+  }
+  return gatewayDeployKey() || null;
+}

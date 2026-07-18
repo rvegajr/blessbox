@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 import { getEnv } from '@/lib/utils/env';
+import { hasGatewayAuth } from '@/lib/services/gatewayConfig';
 
 /**
  * Debug endpoint to check email configuration.
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   const config = {
     nodeEnv: process.env.NODE_ENV,
-    hasGateway: !!getEnv('NOCTUSOFT_DEPLOY_KEY'),
+    hasGateway: hasGatewayAuth(),
     sendGridFromEmail: getEnv('SENDGRID_FROM_EMAIL', 'not set'),
     relayUrl: getEnv('SENDGRID_API_URL') || 'https://api.sendgrid.noctusoft.com (default)',
   };

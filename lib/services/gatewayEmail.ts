@@ -3,8 +3,7 @@
  * (a SendGrid /v3/mail/send drop-in that holds the real SendGrid key). The app
  * authenticates with the gateway deploy key only; it holds NO SENDGRID_API_KEY.
  */
-import { getEnv } from '../utils/env';
-import { sendgridRelayBaseUrl } from './gatewayConfig';
+import { sendgridRelayBaseUrl, gatewayAuthToken } from './gatewayConfig';
 
 export interface GatewayEmailFrom {
   email: string;
@@ -37,11 +36,11 @@ export interface GatewayEmailResult {
 
 export async function sendViaGatewayEmail(msg: GatewayEmailMessage): Promise<GatewayEmailResult> {
   const base = sendgridRelayBaseUrl();
-  // The Noctusoft gateway deploy key is the ONLY email credential — the relay
-  // holds the real SendGrid key. The app never holds a SendGrid key itself.
-  const key = getEnv('NOCTUSOFT_DEPLOY_KEY');
+  // The relay holds the real SendGrid key; the app authenticates with its
+  // Vercel OIDC identity (preferred) or the NOCTUSOFT_DEPLOY_KEY fallback.
+  const key = await gatewayAuthToken();
   if (!key) {
-    return { success: false, error: 'Email gateway not configured (NOCTUSOFT_DEPLOY_KEY missing)' };
+    return { success: false, error: 'Email gateway not configured (no Vercel OIDC identity and NOCTUSOFT_DEPLOY_KEY missing)' };
   }
 
   try {

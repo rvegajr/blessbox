@@ -10,6 +10,7 @@ import { PlanUpgrade } from '@/lib/services/PlanUpgrade';
 import { parseBody } from '@/lib/api/validate';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { getEnv, getEnvBoolean } from '@/lib/utils/env';
+import { hasGatewayAuth } from '@/lib/services/gatewayConfig';
 import { createHash } from 'crypto';
 
 // NOTE: We deliberately do NOT include `amount` in the schema — pricing is
@@ -155,14 +156,14 @@ export async function POST(req: NextRequest) {
     const forceRealSquare = getEnvBoolean('FORCE_REAL_SQUARE');
     const shouldMockPayment = !forceRealSquare && (
       process.env.NODE_ENV !== 'production' &&
-      (getEnv('TEST_ENV') === 'local' || !getEnv('NOCTUSOFT_DEPLOY_KEY'))
+      (getEnv('TEST_ENV') === 'local' || !hasGatewayAuth())
     );
 
     try {
       if (!shouldMockPayment) {
-        // Charges go through the Noctusoft gateway — the only required server
-        // credential is the gateway deploy key (no direct SQUARE_ACCESS_TOKEN).
-        if (!getEnv('NOCTUSOFT_DEPLOY_KEY')) {
+        // Charges go through the Noctusoft gateway — authenticated by Vercel
+        // OIDC identity or deploy key (no direct SQUARE_ACCESS_TOKEN).
+        if (!hasGatewayAuth()) {
           console.error('[PAYMENT] Missing Noctusoft gateway configuration');
           return json({
             success: false,

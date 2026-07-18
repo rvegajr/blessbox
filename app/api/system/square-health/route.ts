@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { getEnv } from '@/lib/utils/env';
-import { squareEnv, squareGatewayBaseUrl } from '@/lib/services/gatewayConfig';
+import { squareEnv, squareGatewayBaseUrl, hasGatewayAuth, gatewayAuthToken } from '@/lib/services/gatewayConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,25 +49,25 @@ export async function GET(req: NextRequest) {
   }
 
   const environment = squareEnv();
-  const deployKey = getEnv('NOCTUSOFT_DEPLOY_KEY');
   const locationId = getEnv('SQUARE_LOCATION_ID');
 
-  const enabled = !!deployKey;
+  const enabled = hasGatewayAuth();
   if (!enabled) {
     return NextResponse.json({
       success: true,
       ok: false,
       enabled: false,
       environment,
-      missing: { deployKey: true, locationId: !locationId },
-      message: 'Payment gateway is not configured (NOCTUSOFT_DEPLOY_KEY missing).',
+      missing: { gatewayAuth: true, locationId: !locationId },
+      message: 'Payment gateway is not configured (no Vercel OIDC identity and NOCTUSOFT_DEPLOY_KEY missing).',
     });
   }
 
-  // Probe Square through the Noctusoft gateway proxy with the deploy key.
+  // Probe Square through the Noctusoft gateway proxy (OIDC identity or deploy key).
   const base = squareGatewayBaseUrl(environment);
+  const authToken = await gatewayAuthToken();
   const headers = {
-    authorization: `Bearer ${deployKey}`,
+    authorization: `Bearer ${authToken}`,
     'content-type': 'application/json',
     'square-version': '2024-01-18',
     'x-square-env': environment,
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
     enabled: true,
     environment,
     configured: {
-      hasDeployKey: true,
+      hasGatewayAuth: true,
       hasLocationId: !!locationId,
     },
     merchant: {

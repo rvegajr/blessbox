@@ -1,6 +1,7 @@
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../utils/env';
+import { hasGatewayAuth } from './gatewayConfig';
 import { sendViaGatewayEmail } from './gatewayEmail';
 
 export type EmailTemplateType =
@@ -202,10 +203,11 @@ export class EmailService {
       emailLogId = created.id;
 
       // All email goes through the Noctusoft gateway relay (the relay holds the
-      // real SendGrid key; the app authenticates with NOCTUSOFT_DEPLOY_KEY only).
+      // real SendGrid key; the app authenticates with its Vercel OIDC identity
+      // or the NOCTUSOFT_DEPLOY_KEY fallback).
       let sendResult: { provider: 'sendgrid'; messageId?: string };
       const replyToFromEnv = getEnv('EMAIL_REPLY_TO') || undefined;
-      if (getEnv('NOCTUSOFT_DEPLOY_KEY')) {
+      if (hasGatewayAuth()) {
         sendResult = await this.sendViaSendGrid({
           to: recipientEmail,
           subject,
@@ -218,7 +220,7 @@ export class EmailService {
         // Dev/test: allow a "no-op" send so the app can still be exercised.
         sendResult = { provider: 'sendgrid' };
       } else {
-        throw new Error('No email provider configured (set NOCTUSOFT_DEPLOY_KEY)');
+        throw new Error('No email provider configured (no Vercel OIDC identity; set NOCTUSOFT_DEPLOY_KEY)');
       }
 
       logMeta.provider = sendResult.provider;
@@ -278,7 +280,7 @@ export class EmailService {
     const text = `Sign in to BlessBox: ${args.url}\n\nIf you did not request this email, you can ignore it.`;
     const replyTo = getEnv('EMAIL_REPLY_TO') || undefined;
 
-    if (getEnv('NOCTUSOFT_DEPLOY_KEY')) {
+    if (hasGatewayAuth()) {
       await this.sendViaSendGrid({ to: args.to, subject, html, text, replyTo });
       return;
     }
@@ -288,7 +290,7 @@ export class EmailService {
       return;
     }
 
-    throw new Error('No email provider configured (set NOCTUSOFT_DEPLOY_KEY)');
+    throw new Error('No email provider configured (no Vercel OIDC identity; set NOCTUSOFT_DEPLOY_KEY)');
   }
 
   // Default Templates

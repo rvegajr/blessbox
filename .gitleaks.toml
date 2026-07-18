@@ -17,6 +17,12 @@ description = "SendGrid API key"
 regex = '''SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}'''
 keywords = ["SG."]
 
+[[rules]]
+id = "noctusoft-relay-key"
+description = "Noctusoft relay admin/deploy key"
+regex = '''nsins_(sk|dk|test)_[A-Za-z0-9_-]{16,}'''
+keywords = ["nsins_"]
+
 [allowlist]
 description = "Placeholders, examples, and redaction markers — not real secrets"
 regexes = [
