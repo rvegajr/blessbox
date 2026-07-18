@@ -49,6 +49,14 @@ export default function SquarePaymentForm({
   const initializingRef = useRef(false);
   const cardRef = useRef<any>(null);
   const paymentsRef = useRef<any>(null);
+  // Stable idempotency key for THIS checkout attempt. Persists across retries /
+  // re-tokenizations (Square mints a fresh single-use token each tokenize()), so
+  // the server derives the same Square idempotency key and never double-charges.
+  const purchaseNonceRef = useRef<string | null>(null);
+  if (purchaseNonceRef.current === null) {
+    purchaseNonceRef.current =
+      (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `bb_${Date.now()}_${Math.random().toString(36).slice(2)}`);
+  }
 
   /** Re-creates the card form (after a failed payment or destroyed card) */
   const reinitializeCard = useCallback(async () => {
@@ -240,6 +248,7 @@ export default function SquarePaymentForm({
             planType,
             billingCycle,
             email,
+            purchaseNonce: purchaseNonceRef.current,
           }),
         });
 
