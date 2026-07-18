@@ -217,11 +217,15 @@ export class VerificationService implements IVerificationService {
   async checkRateLimit(email: string): Promise<RateLimitInfo> {
     const oneHourAgo = new Date(Date.now() - this.RATE_LIMIT_WINDOW_MS);
 
+    // Count only PENDING (unverified) codes: a successful send→verify cycle must
+    // not count against the user, or a legit high-frequency flow (kiosk / E2E)
+    // gets falsely blocked. Per-IP / per-email edge limits on the send routes are
+    // the primary anti-abuse control.
     const result = await this.db.execute({
       sql: `
-        SELECT id, created_at 
-        FROM verification_codes 
-        WHERE email = ? AND created_at > ?
+        SELECT id, created_at
+        FROM verification_codes
+        WHERE email = ? AND created_at > ? AND verified = 0
         ORDER BY created_at DESC
       `,
       args: [email, oneHourAgo.toISOString()]
