@@ -2,7 +2,9 @@ name: Pull Request Validation
 
 on:
   pull_request:
-    branches: [ main ]
+    # Gate PRs into the production line (main) AND the default/UAT branch (develop)
+    # with the same typecheck + lint + unit-test + build validation.
+    branches: [ main, develop ]
 
 permissions:
   contents: read
