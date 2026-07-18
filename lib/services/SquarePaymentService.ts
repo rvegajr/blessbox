@@ -53,7 +53,8 @@ export class SquarePaymentService implements IPaymentProcessor {
     sourceId: string,
     amount: number,
     currency: string,
-    customerId?: string
+    customerId?: string,
+    idempotencyKeyOverride?: string
   ): Promise<PaymentResult> {
     const startTime = Date.now();
     console.log('[SQUARE] processPayment called:', {
@@ -67,8 +68,13 @@ export class SquarePaymentService implements IPaymentProcessor {
     });
 
     try {
-      const idempotencyKey = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`) as string;
-      
+      // Prefer a caller-supplied STABLE key so a retry/double-submit of the same
+      // intended charge is de-duplicated by Square (no double-charge). Fall back
+      // to a random key only when the caller has none.
+      const idempotencyKey = (idempotencyKeyOverride && idempotencyKeyOverride.trim()
+        ? idempotencyKeyOverride.trim().slice(0, 45) // Square max length is 45
+        : (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`)) as string;
+
       console.log('[SQUARE] Creating payment request:', {
         idempotencyKey,
         amount,

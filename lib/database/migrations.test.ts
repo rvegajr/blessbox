@@ -34,7 +34,29 @@ describe('drizzle migrations', () => {
     expect(await appTables(client)).toEqual(EXPECTED_TABLES);
 
     const recorded = await client.execute(`SELECT COUNT(*) AS c FROM __drizzle_migrations`);
-    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(2); // baseline + add_coupon_fields
+    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(4); // baseline + coupon_fields + external_sub_uniq + enrollment/redemption uniq
+    client.close();
+  });
+
+  it('enforce one external order/payment id → at most one subscription (partial unique index)', async () => {
+    const { client, db } = await freshDb();
+    await migrate(db, { migrationsFolder: MIGRATIONS });
+
+    const idx = await client.execute(
+      `SELECT name FROM sqlite_master WHERE type='index' AND name='subscription_plans_external_subscription_id_uniq'`,
+    );
+    expect(idx.rows.length).toBe(1);
+    client.close();
+  });
+
+  it('enforce enrollment + coupon-redemption uniqueness (constraints promoted from bootstrap)', async () => {
+    const { client, db } = await freshDb();
+    await migrate(db, { migrationsFolder: MIGRATIONS });
+
+    const idx = await client.execute(
+      `SELECT name FROM sqlite_master WHERE type='index' AND name IN ('enrollments_class_participant_uniq','uq_redemptions_coupon_org') ORDER BY name`,
+    );
+    expect(idx.rows.map((r) => r.name as string)).toEqual(['enrollments_class_participant_uniq', 'uq_redemptions_coupon_org']);
     client.close();
   });
 
@@ -55,7 +77,7 @@ describe('drizzle migrations', () => {
     await migrate(db, { migrationsFolder: MIGRATIONS }); // second run
 
     const recorded = await client.execute(`SELECT COUNT(*) AS c FROM __drizzle_migrations`);
-    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(2);
+    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(4);
     client.close();
   });
 });
