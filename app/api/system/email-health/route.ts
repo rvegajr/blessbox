@@ -4,6 +4,7 @@ import { getDbClient } from '@/lib/db';
 import { getServerSession } from '@/lib/auth-helper';
 import { EmailService } from '@/lib/services/EmailService';
 import { getEnv } from '@/lib/utils/env';
+import { hasGatewayAuth } from '@/lib/services/gatewayConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -159,7 +160,7 @@ function providerStatus() {
   const hasSmtp = !!smtpHost && !!smtpUser && !!smtpPass;
   const hasGmail = !!gmailUser && !!gmailPass;
 
-  const hasGateway = !!getEnv('NOCTUSOFT_DEPLOY_KEY');
+  const hasGateway = hasGatewayAuth();
   // The Noctusoft gateway relay is the canonical (and only) email path; legacy
   // direct SendGrid/SMTP/Gmail are no longer used by the app.
   const provider = hasGateway ? 'noctusoft_gateway' : hasSendGrid ? 'sendgrid' : hasSmtp ? 'smtp' : hasGmail ? 'gmail_smtp' : 'none';

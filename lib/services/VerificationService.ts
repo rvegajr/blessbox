@@ -2,6 +2,7 @@ import { randomInt } from 'crypto';
 import { getDbClient } from '../db';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '../utils/env';
+import { hasGatewayAuth } from './gatewayConfig';
 import { sendViaGatewayEmail } from './gatewayEmail';
 import type {
   IVerificationService,
@@ -97,7 +98,7 @@ export class VerificationService implements IVerificationService {
     if (!emailSent) {
       console.error('❌ Failed to send verification email after retries:', lastError);
       console.error('Email configuration check:');
-      console.error('  NOCTUSOFT_DEPLOY_KEY:', getEnv('NOCTUSOFT_DEPLOY_KEY') ? 'SET' : 'NOT SET');
+      console.error('  gateway auth (OIDC or NOCTUSOFT_DEPLOY_KEY):', hasGatewayAuth() ? 'AVAILABLE' : 'NOT AVAILABLE');
 
       // Delete the code we just created since email failed
       await this.db.execute({
@@ -107,7 +108,7 @@ export class VerificationService implements IVerificationService {
 
       // Return error with helpful message
       const errorMessage = lastError?.message || 'Unknown error';
-      const hasGateway = !!getEnv('NOCTUSOFT_DEPLOY_KEY');
+      const hasGateway = hasGatewayAuth();
 
       if (!hasGateway) {
         return {
@@ -292,10 +293,10 @@ export class VerificationService implements IVerificationService {
   }
 
   private async sendVerificationEmailDirect(email: string, code: string): Promise<void> {
-    // All email goes through the Noctusoft gateway relay using the deploy key
-    // (the relay holds the real SendGrid key — the app holds no email secret).
-    const gatewayKey = getEnv('NOCTUSOFT_DEPLOY_KEY');
-    if (gatewayKey) {
+    // All email goes through the Noctusoft gateway relay, authenticated with
+    // the Vercel OIDC identity or the NOCTUSOFT_DEPLOY_KEY fallback (the relay
+    // holds the real SendGrid key — the app holds no email secret).
+    if (hasGatewayAuth()) {
       const fromEmail = getEnv('SENDGRID_FROM_EMAIL', 'noreply@blessbox.org');
       const fromName = getEnv('SENDGRID_FROM_NAME', 'BlessBox');
       const html = `
@@ -331,7 +332,7 @@ export class VerificationService implements IVerificationService {
     }
 
     // In production, this is an error.
-    const errorMsg = 'Email service not configured. Set NOCTUSOFT_DEPLOY_KEY (the Noctusoft gateway handles SendGrid).';
+    const errorMsg = 'Email service not configured. Enable Vercel OIDC or set NOCTUSOFT_DEPLOY_KEY (the Noctusoft gateway handles SendGrid).';
     console.error('❌', errorMsg);
     throw new Error(errorMsg);
   }

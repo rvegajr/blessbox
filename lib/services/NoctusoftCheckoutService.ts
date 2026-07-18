@@ -8,13 +8,13 @@
  *
  * Proxy docs: https://docs.api.noctusoft.com
  * Routing headers: X-Test-Store, X-Square-Env
- * Auth: NOCTUSOFT_DEPLOY_KEY env var (Bearer token)
+ * Auth: Vercel OIDC identity, falling back to NOCTUSOFT_DEPLOY_KEY (Bearer token)
  *
  * POST /checkout body: { userId, email, plan, redirectUrl, idempotencyKey }
  * Response:           { url, orderId }
  */
 
-import { squareEnv, squareGatewayBaseUrl } from '@/lib/services/gatewayConfig';
+import { squareEnv, squareGatewayBaseUrl, gatewayAuthToken } from '@/lib/services/gatewayConfig';
 
 const SQUARE_ENV = squareEnv();
 const PROXY_BASE = squareGatewayBaseUrl(SQUARE_ENV);
@@ -35,15 +35,15 @@ export interface NoctusoftCheckoutResult {
 export async function createNoctusoftCheckoutSession(
   params: NoctusoftCheckoutParams
 ): Promise<NoctusoftCheckoutResult> {
-  const deployKey = process.env.NOCTUSOFT_DEPLOY_KEY;
+  const authToken = await gatewayAuthToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-Test-Store': 'blessbox',
     'X-Square-Env': SQUARE_ENV,
   };
-  if (deployKey) {
-    headers['Authorization'] = `Bearer ${deployKey}`;
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
   }
 
   // P0 Fix: Stable idempotency key per (org, plan, session) — no timestamp

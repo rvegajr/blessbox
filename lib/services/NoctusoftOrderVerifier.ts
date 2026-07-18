@@ -3,7 +3,7 @@
  * (a Square API drop-in proxy that holds the upstream credentials/credits).
  *
  * Pull-verifies an order via the Square Retrieve Order endpoint through the proxy
- * using NOCTUSOFT_DEPLOY_KEY. Mirrors the base-URL/header pattern in
+ * using the Vercel OIDC identity (or NOCTUSOFT_DEPLOY_KEY fallback). Mirrors the base-URL/header pattern in
  * NoctusoftCheckoutService.ts.
  *
  * NOTE: the live docs (docs.api.noctusoft.com) are a JS-rendered SPA that could
@@ -12,7 +12,7 @@
  * payload. The interface (IOrderVerifier) is unchanged either way.
  */
 import type { IOrderVerifier, VerifiedOrder } from '@/lib/interfaces/IOrderVerifier';
-import { squareEnv, squareGatewayBaseUrl } from '@/lib/services/gatewayConfig';
+import { squareEnv, squareGatewayBaseUrl, gatewayAuthToken } from '@/lib/services/gatewayConfig';
 
 const SQUARE_ENV = squareEnv();
 const PROXY_BASE = squareGatewayBaseUrl(SQUARE_ENV);
@@ -34,13 +34,13 @@ function mapState(state: string | undefined): VerifiedOrder['status'] {
 
 export class NoctusoftOrderVerifier implements IOrderVerifier {
   async verifyOrder(orderId: string): Promise<VerifiedOrder | null> {
-    const deployKey = process.env.NOCTUSOFT_DEPLOY_KEY;
+    const authToken = await gatewayAuthToken();
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-Test-Store': 'blessbox',
       'X-Square-Env': SQUARE_ENV,
     };
-    if (deployKey) headers['Authorization'] = `Bearer ${deployKey}`;
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
     let res: Response;
     try {
