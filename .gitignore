@@ -156,6 +156,10 @@ playwright-report/
 .pre-commit-config.yaml
 .env.production
 .env.current.prod
+.env.sandbox
+
+# Scratch/mirror dir that has previously re-committed prod tokens — never track.
+documents/
 
 # Traklet
 .traklet/

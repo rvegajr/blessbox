@@ -1,24 +1,31 @@
-import { SquareClient, SquareEnvironment, SquareError } from 'square';
+import { SquareClient, SquareError } from 'square';
 import type { PaymentIntent, PaymentResult, RefundResult } from '../interfaces/IPaymentService';
 import type { IPaymentProcessor } from '../interfaces/IPaymentProcessor';
-import { getRequiredEnv, getEnv } from '../utils/env';
+import { getEnv } from '../utils/env';
+import { squareEnv, squareGatewayBaseUrl, gatewayAuthToken, hasGatewayAuth } from './gatewayConfig';
 
 export class SquarePaymentService implements IPaymentProcessor {
   private client: SquareClient;
-  private environment: SquareEnvironment;
+  private envLabel: 'production' | 'sandbox';
 
   constructor() {
-    // Initialize Square client with sanitized env vars
-    const env = getEnv('SQUARE_ENVIRONMENT', 'sandbox').toLowerCase();
-    this.environment = env === 'production' ? SquareEnvironment.Production : SquareEnvironment.Sandbox;
+    // All Square traffic is routed through the Noctusoft gateway (a Square API
+    // drop-in proxy that holds the real Square credentials). The app authenticates
+    // with its Vercel OIDC identity (or the NOCTUSOFT_DEPLOY_KEY fallback) — it
+    // never holds a direct SQUARE_ACCESS_TOKEN. We keep the Square SDK but point
+    // its baseUrl at the proxy; token is a supplier so each request gets a fresh
+    // (unexpired) OIDC token.
+    this.envLabel = squareEnv();
+    const proxyBase = squareGatewayBaseUrl(this.envLabel);
 
-    // Get access token with automatic sanitization (removes newlines, quotes, whitespace)
-    // Note: Square SDK v43+ uses "token" property, not "accessToken"
-    const token = getRequiredEnv('SQUARE_ACCESS_TOKEN', 'Square is not configured: SQUARE_ACCESS_TOKEN is missing');
-    
+    if (!hasGatewayAuth()) {
+      throw new Error('Payment gateway not configured: no Vercel OIDC identity and NOCTUSOFT_DEPLOY_KEY is missing');
+    }
+
     this.client = new SquareClient({
-      token,  // SDK v43 changed from "accessToken" to "token"
-      environment: this.environment,
+      baseUrl: proxyBase,
+      token: async () => (await gatewayAuthToken()) ?? undefined,
+      headers: { 'X-Square-Env': this.envLabel, 'X-Test-Store': 'blessbox' },
     });
   }
 
@@ -50,7 +57,8 @@ export class SquarePaymentService implements IPaymentProcessor {
     sourceId: string,
     amount: number,
     currency: string,
-    customerId?: string
+    customerId?: string,
+    idempotencyKeyOverride?: string
   ): Promise<PaymentResult> {
     const startTime = Date.now();
     console.log('[SQUARE] processPayment called:', {
@@ -60,12 +68,17 @@ export class SquarePaymentService implements IPaymentProcessor {
       amount,
       currency,
       customerId,
-      environment: this.environment === SquareEnvironment.Production ? 'production' : 'sandbox',
+      environment: this.envLabel,
     });
 
     try {
-      const idempotencyKey = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`) as string;
-      
+      // Prefer a caller-supplied STABLE key so a retry/double-submit of the same
+      // intended charge is de-duplicated by Square (no double-charge). Fall back
+      // to a random key only when the caller has none.
+      const idempotencyKey = (idempotencyKeyOverride && idempotencyKeyOverride.trim()
+        ? idempotencyKeyOverride.trim().slice(0, 45) // Square max length is 45
+        : (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`)) as string;
+
       console.log('[SQUARE] Creating payment request:', {
         idempotencyKey,
         amount,

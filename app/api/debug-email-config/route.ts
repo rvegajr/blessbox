@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireDiagnosticsSecret } from '@/lib/security/diagnosticsAuth';
 import { getEnv } from '@/lib/utils/env';
+import { hasGatewayAuth } from '@/lib/services/gatewayConfig';
 
 /**
  * Debug endpoint to check email configuration.
@@ -14,37 +15,29 @@ export async function GET(request: NextRequest) {
 
   const config = {
     nodeEnv: process.env.NODE_ENV,
-    emailProvider: getEnv('EMAIL_PROVIDER', 'not set'),
-    hasSendGrid: !!getEnv('SENDGRID_API_KEY'),
+    hasGateway: hasGatewayAuth(),
     sendGridFromEmail: getEnv('SENDGRID_FROM_EMAIL', 'not set'),
-    hasSmtp: !!(getEnv('SMTP_HOST') && getEnv('SMTP_USER') && getEnv('SMTP_PASS')),
-    smtpHost: getEnv('SMTP_HOST', 'not set'),
-    smtpUser: getEnv('SMTP_USER') ? '***set***' : 'not set',
-    smtpPort: getEnv('SMTP_PORT', 'not set'),
+    relayUrl: getEnv('SENDGRID_API_URL') || 'https://api.sendgrid.noctusoft.com (default)',
   };
 
-  // Determine which email service will be used
+  // All email goes through the Noctusoft gateway relay (NOCTUSOFT_DEPLOY_KEY).
   let activeService = 'none';
   let status = 'error';
   let message = '';
 
-  if (config.hasSendGrid) {
-    activeService = 'SendGrid';
+  if (config.hasGateway) {
+    activeService = 'Noctusoft gateway (SendGrid relay)';
     status = config.sendGridFromEmail !== 'not set' ? 'ready' : 'warning';
-    message = config.sendGridFromEmail !== 'not set' 
-      ? 'SendGrid is configured and ready'
-      : 'SendGrid API key found but FROM_EMAIL not set';
-  } else if (config.hasSmtp) {
-    activeService = 'SMTP';
-    status = 'ready';
-    message = 'SMTP is configured and ready';
+    message = config.sendGridFromEmail !== 'not set'
+      ? 'Email gateway is configured and ready'
+      : 'NOCTUSOFT_DEPLOY_KEY set but SENDGRID_FROM_EMAIL not set';
   } else if (isDev) {
     activeService = 'development (logging only)';
     status = 'warning';
-    message = 'No email service configured - emails will only be logged to console';
+    message = 'No email gateway configured - emails will only be logged to console';
   } else {
     status = 'error';
-    message = 'No email service configured! Emails will not be sent.';
+    message = 'No email gateway configured! Emails will not be sent.';
   }
 
   return NextResponse.json({
@@ -60,19 +53,12 @@ export async function GET(request: NextRequest) {
 function getRecommendations(config: any): string[] {
   const recommendations: string[] = [];
 
-  if (!config.hasSendGrid && !config.hasSmtp) {
-    recommendations.push('Set up either SendGrid or SMTP email service');
-    recommendations.push('For SendGrid: Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL in Vercel environment variables');
-    recommendations.push('For SMTP: Set SMTP_HOST, SMTP_USER, SMTP_PASS, and SMTP_PORT in Vercel environment variables');
+  if (!config.hasGateway) {
+    recommendations.push('Set NOCTUSOFT_DEPLOY_KEY — the Noctusoft gateway handles SendGrid for the app (the app holds no SendGrid key).');
   }
 
-  if (config.hasSendGrid && config.sendGridFromEmail === 'not set') {
-    recommendations.push('Set SENDGRID_FROM_EMAIL in Vercel environment variables');
-    recommendations.push('The FROM email must be verified in your SendGrid account');
-  }
-
-  if (config.hasSmtp && config.smtpPort === 'not set') {
-    recommendations.push('Set SMTP_PORT (usually 587 for TLS or 465 for SSL)');
+  if (config.hasGateway && config.sendGridFromEmail === 'not set') {
+    recommendations.push('Set SENDGRID_FROM_EMAIL (the from-address; not a secret). It must be a verified sender on the gateway.');
   }
 
   return recommendations;

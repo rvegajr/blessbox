@@ -2,7 +2,13 @@ name: Pull Request Validation
 
 on:
   pull_request:
-    branches: [ main ]
+    # Gate PRs into the production line (main) AND the default/UAT branch (develop)
+    # with the same typecheck + lint + unit-test + build validation.
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   validate:
@@ -33,8 +39,11 @@ jobs:
     - name: Build project
       run: npm run build
 
+    # Best-effort PR comment. Skipped for forked PRs (no write token) and never
+    # fails the job — the gate is tsc/lint/test/build above, not the comment.
     - name: Comment PR
-      if: success()
+      if: success() && github.event.pull_request.head.repo.full_name == github.repository
+      continue-on-error: true
       uses: actions/github-script@v7
       with:
         script: |
@@ -56,12 +65,54 @@ jobs:
       run: npm audit --audit-level=moderate
       continue-on-error: true
 
-    - name: Check for vulnerabilities
+    # Fail only on HIGH/CRITICAL (count from metadata, not all advisories). The
+    # residual ~9 moderate advisories are transitive axios via the square SDK;
+    # axios 1.18.1 is the latest published version (no upstream fix available).
+    - name: Check for high/critical vulnerabilities
       run: |
-        if npm audit --audit-level=high --json | jq '.vulnerabilities | length' | grep -q '^0$'; then
-          echo "No high-severity vulnerabilities found"
-        else
-          echo "High-severity vulnerabilities detected"
+        npm audit --json > audit.json || true
+        HIGH=$(jq '.metadata.vulnerabilities.high' audit.json)
+        CRIT=$(jq '.metadata.vulnerabilities.critical' audit.json)
+        echo "high=$HIGH critical=$CRIT  (moderate advisories are transitive axios via square SDK — axios 1.18.1 is latest)"
+        if [ "$HIGH" -gt 0 ] || [ "$CRIT" -gt 0 ]; then
+          echo "::error::High/critical vulnerabilities detected"
           npm audit --audit-level=high
           exit 1
         fi
+        echo "No high/critical vulnerabilities."
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browser
+      run: npx playwright install --with-deps chromium
+
+    # The dev server boots from this env; specs self-seed via /api/test/seed
+    # (non-prod). Traklet disabled so its dev overlay can't intercept clicks.
+    - name: Run smoke tests
+      run: npm run test:smoke:ci
+      env:
+        JWT_SECRET: ci-smoke-jwt-secret-do-not-use-in-prod-0123456789
+        NEXTAUTH_SECRET: ci-smoke-jwt-secret-do-not-use-in-prod-0123456789
+        NEXT_PUBLIC_APP_URL: http://localhost:7777
+        PUBLIC_APP_URL: http://localhost:7777
+
+    - name: Upload Playwright report
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 7
