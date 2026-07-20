@@ -225,18 +225,20 @@ Store in `scripts/` or `_Resources/scripts/`; ASK if absent.
 ## Environment Variables
 Required in `.env.local`:
 ```
-TURSO_DATABASE_URL    # Turso connection string
-TURSO_AUTH_TOKEN      # Turso auth token
-NEXTAUTH_SECRET       # Auth encryption key
-NEXTAUTH_URL          # http://localhost:7777 (dev)
-SENDGRID_API_KEY      # Email service
-SENDGRID_FROM_EMAIL   # Verified sender
-EMAIL_REPLY_TO        # Optional reply-to address
-SQUARE_ACCESS_TOKEN   # Payment processing
-SQUARE_LOCATION_ID    # Square location for checkout
-SQUARE_ENVIRONMENT    # sandbox|production
-DIAGNOSTICS_SECRET    # Protects /api/system/* in production
+TURSO_DATABASE_URL     # Turso connection string
+TURSO_AUTH_TOKEN       # Turso auth token
+NEXTAUTH_SECRET        # Auth encryption key
+NEXTAUTH_URL           # http://localhost:7777 (dev)
+SENDGRID_FROM_EMAIL    # Verified sender (relay holds the API key)
+EMAIL_REPLY_TO         # Optional reply-to address
+SQUARE_APPLICATION_ID  # Public — used by Web Payments SDK on the frontend
+SQUARE_LOCATION_ID     # Square location for checkout
+SQUARE_ENVIRONMENT     # sandbox|production — controls relay routing
+NOCTUSOFT_DEPLOY_KEY   # Bearer token for the Noctusoft Relay (Vercel OIDC preferred; deploy key is fallback)
+DIAGNOSTICS_SECRET     # Protects /api/system/* in production
 ```
+
+**Payments and email flow through the Noctusoft Relay** — the app does NOT hold `SQUARE_ACCESS_TOKEN` or `SENDGRID_API_KEY`. The relay holds the vendor keys and authenticates the app via Vercel OIDC (preferred) or `NOCTUSOFT_DEPLOY_KEY` (fallback).
 
 ROLE: engineer STRICT=true
 
