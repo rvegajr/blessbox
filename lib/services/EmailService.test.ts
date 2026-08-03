@@ -94,7 +94,7 @@ describe('EmailService', () => {
     delete process.env.SMTP_PASS;
 
     const fetchMock = vi.fn().mockResolvedValueOnce({
-      ok: true, status: 202, headers: { get: (k: string) => (k === 'x-message-id' ? 'm-1' : null) },
+      ok: true, status: 201, json: async () => ({ success: true, email: { messageId: 'm-1' } }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -108,7 +108,7 @@ describe('EmailService', () => {
     expect(res.success).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/email/send');
     expect(init.headers.Authorization).toBe('Bearer deploy-test');
     expect(sendgridSend).not.toHaveBeenCalled();
     expect(createTransport).not.toHaveBeenCalled();
@@ -126,7 +126,7 @@ describe('EmailService', () => {
     delete process.env.SMTP_PASS;
 
     const fetchMock = vi.fn().mockResolvedValueOnce({
-      ok: true, status: 202, headers: { get: () => 'm-2' },
+      ok: true, status: 201, json: async () => ({ success: true, email: { messageId: 'm-2' } }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -141,14 +141,14 @@ describe('EmailService', () => {
     const [, init] = fetchMock.mock.calls[0];
     expect(init.headers.Authorization).toBe('Bearer deploy-key-value');
     const body = JSON.parse(init.body);
-    expect(body.from.email).toBe('noreply@blessbox.org');
-    expect(body.from.name).toBe('BlessBox Support');
+    expect(body.from).toBe('noreply@blessbox.org');
+    expect(body.fromName).toBe('BlessBox Support');
   });
 
-  it('routes through SendGrid-compatible relay (v3 protocol + Bearer) when SENDGRID_API_URL is set', async () => {
-    // Production scenario: SendGrid key has IP-allowlist; Vercel egress isn't
-    // listed. The relay (api.sendgrid.noctusoft.com) is — its IP IS allowlisted.
-    // Same v3 protocol, same Bearer auth — only the host changes.
+  it('routes through the relay native /email/send + Bearer when SENDGRID_API_URL is set', async () => {
+    // Production scenario: the relay (api.sendgrid.noctusoft.com) holds the
+    // upstream email credential and picks the provider; the app posts the
+    // provider-agnostic /email/send body with Bearer auth — only the host changes.
     process.env.NOCTUSOFT_DEPLOY_KEY = 'SG-deploy-key';
     process.env.SENDGRID_FROM_EMAIL = 'noreply@blessbox.org';
     process.env.SENDGRID_FROM_NAME = 'BlessBox NoReply';
@@ -160,8 +160,8 @@ describe('EmailService', () => {
 
     const fetchMock = vi.fn().mockResolvedValueOnce({
       ok: true,
-      status: 202,
-      headers: { get: (k: string) => (k === 'x-message-id' ? 'm-relay' : null) },
+      status: 201,
+      json: async () => ({ success: true, email: { messageId: 'm-relay' } }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -178,12 +178,12 @@ describe('EmailService', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/email/send');
     expect(init.headers.Authorization).toBe('Bearer SG-deploy-key');
     const body = JSON.parse(init.body);
-    expect(body.from.email).toBe('noreply@blessbox.org');
-    expect(body.from.name).toBe('BlessBox NoReply');
-    expect(body.personalizations[0].to[0].email).toBe('to@example.com');
+    expect(body.from).toBe('noreply@blessbox.org');
+    expect(body.fromName).toBe('BlessBox NoReply');
+    expect(body.to).toBe('to@example.com');
 
     vi.unstubAllGlobals();
     delete process.env.SENDGRID_API_URL;
@@ -199,7 +199,7 @@ describe('EmailService', () => {
     delete process.env.SMTP_PASS;
 
     const fetchMock = vi.fn().mockResolvedValueOnce({
-      ok: true, status: 202, headers: { get: () => 'm-direct' },
+      ok: true, status: 201, json: async () => ({ success: true, email: { messageId: 'm-direct' } }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -211,7 +211,7 @@ describe('EmailService', () => {
     });
 
     const [url] = fetchMock.mock.calls[0];
-    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/email/send');
     expect(sendgridSend).not.toHaveBeenCalled();
   });
 

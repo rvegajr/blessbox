@@ -1,7 +1,10 @@
 /**
- * sendViaGatewayEmail — single email egress through the Noctusoft SendGrid relay
- * (a SendGrid /v3/mail/send drop-in that holds the real SendGrid key). The app
- * authenticates with the gateway deploy key only; it holds NO SENDGRID_API_KEY.
+ * sendViaGatewayEmail — single email egress through the Noctusoft relay's
+ * provider-agnostic native `/email/send` endpoint. The relay holds the upstream
+ * email credential and picks the provider (SendGrid/Resend) internally, so the
+ * app never learns which one sent the mail. The app authenticates with its
+ * Vercel OIDC identity (or the NOCTUSOFT_DEPLOY_KEY fallback) and holds no
+ * provider key.
  */
 import { sendgridRelayBaseUrl, gatewayAuthToken } from './gatewayConfig';
 
@@ -44,7 +47,7 @@ export async function sendViaGatewayEmail(msg: GatewayEmailMessage): Promise<Gat
   }
 
   try {
-    const res = await fetch(`${base}/v3/mail/send`, {
+    const res = await fetch(`${base}/email/send`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -52,32 +55,23 @@ export async function sendViaGatewayEmail(msg: GatewayEmailMessage): Promise<Gat
         'X-Test-Store': 'blessbox',
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: msg.to }] }],
-        from: msg.from,
-        ...(msg.replyTo ? { reply_to: { email: msg.replyTo } } : {}),
+        to: msg.to,
         subject: msg.subject,
-        content: [
-          ...(msg.text ? [{ type: 'text/plain', value: msg.text }] : []),
-          { type: 'text/html', value: msg.html },
-        ],
-        ...(msg.attachments?.length
-          ? {
-              attachments: msg.attachments.map((a) => ({
-                content: a.content,
-                filename: a.filename,
-                type: a.type,
-                ...(a.disposition ? { disposition: a.disposition } : {}),
-                ...(a.contentId ? { content_id: a.contentId } : {}),
-              })),
-            }
-          : {}),
+        html: msg.html,
+        ...(msg.text ? { text: msg.text } : {}),
+        from: msg.from.email,
+        fromName: msg.from.name,
+        ...(msg.replyTo ? { replyTo: msg.replyTo } : {}),
+        // Relay's native /email/send accepts the same attachment shape.
+        ...(msg.attachments?.length ? { attachments: msg.attachments } : {}),
       }),
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => '');
       return { success: false, error: `${res.status} ${res.statusText}${detail ? `: ${detail.slice(0, 300)}` : ''}` };
     }
-    return { success: true, messageId: res.headers.get('x-message-id') || undefined };
+    const data = (await res.json().catch(() => null)) as { email?: { messageId?: string } } | null;
+    return { success: true, messageId: data?.email?.messageId };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Email send failed' };
   }
