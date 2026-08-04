@@ -1,16 +1,22 @@
 /**
- * traklet-proxy security regression tests (Prod-readiness Phase 1).
+ * traklet-proxy security regression tests.
  *
- * The proxy re-attaches the server GitHub PAT with no caller auth. These tests
- * pin the containment guarantees: disabled by default, scoped to one repo, and
- * no destructive HTTP methods.
+ * The proxy no longer holds a GitHub PAT — it forwards to the Noctusoft relay's
+ * scoped /github endpoint, authenticating with the app's relay identity (Vercel
+ * OIDC / deploy key). These tests pin the containment guarantees: hard-off in
+ * production, off unless enabled, scoped to one repo, no destructive methods,
+ * and that in-scope requests forward to the relay with Bearer auth.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
+vi.mock('@/lib/services/gatewayConfig', () => ({
+  relayBaseUrl: () => 'https://api.sendgrid.noctusoft.com',
+  gatewayAuthToken: vi.fn(async () => 'relay-token-123'),
+}));
+
 import * as route from '@/app/api/dev/traklet-proxy/[...path]/route';
 
-const PAT = 'ghp_testtoken';
 const origEnv = { ...process.env };
 
 function req(path: string) {
@@ -19,8 +25,8 @@ function req(path: string) {
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  process.env.TRAKLET_PAT = PAT;
   delete process.env.TRAKLET_REPO; // exercise the rvegajr/blessbox default
+  process.env.NODE_ENV = 'development'; // not production
 });
 
 afterEach(() => {
@@ -35,6 +41,15 @@ describe('traklet-proxy — enablement', () => {
     expect(res.status).toBe(404);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
+
+  it('returns 404 in production even when enabled', async () => {
+    process.env.NEXT_PUBLIC_TRAKLET_ENABLED = 'true';
+    process.env.NODE_ENV = 'production';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const res = await route.GET(req('/api/dev/traklet-proxy/repos/rvegajr/blessbox/issues'));
+    expect(res.status).toBe(404);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe('traklet-proxy — scoping (enabled)', () => {
@@ -42,7 +57,7 @@ describe('traklet-proxy — scoping (enabled)', () => {
     process.env.NEXT_PUBLIC_TRAKLET_ENABLED = 'true';
   });
 
-  it('rejects a path targeting a different repo with 403 and never calls GitHub', async () => {
+  it('rejects a path targeting a different repo with 403 and never calls the relay', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const res = await route.GET(req('/api/dev/traklet-proxy/repos/someone/other-repo/issues'));
     expect(res.status).toBe(403);
@@ -56,7 +71,7 @@ describe('traklet-proxy — scoping (enabled)', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('forwards an in-scope request to GitHub with the server PAT attached', async () => {
+  it('forwards an in-scope request to the relay /github with Bearer auth (no PAT)', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(JSON.stringify([{ number: 1 }]), {
         status: 200,
@@ -69,8 +84,8 @@ describe('traklet-proxy — scoping (enabled)', () => {
     expect(res.status).toBe(200);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0];
-    expect(String(url)).toBe('https://api.github.com/repos/rvegajr/blessbox/issues?state=open');
-    expect((init as RequestInit).headers).toMatchObject({ Authorization: `token ${PAT}` });
+    expect(String(url)).toBe('https://api.sendgrid.noctusoft.com/github/repos/rvegajr/blessbox/issues?state=open');
+    expect((init as RequestInit).headers).toMatchObject({ Authorization: 'Bearer relay-token-123' });
   });
 });
 
