@@ -36,6 +36,15 @@ export function sendgridRelayBaseUrl(): string {
   return (getEnv('SENDGRID_API_URL') || SENDGRID_RELAY_DEFAULT).replace(/\/$/, '');
 }
 
+/**
+ * Base URL of the Noctusoft relay's native endpoints (/email/send, /github, …).
+ * The node relay serves all native paths on the same host, so this reuses the
+ * relay base (NOCTUSOFT_RELAY_URL override, else SENDGRID_API_URL, else default).
+ */
+export function relayBaseUrl(): string {
+  return (getEnv('NOCTUSOFT_RELAY_URL') || getEnv('SENDGRID_API_URL') || SENDGRID_RELAY_DEFAULT).replace(/\/$/, '');
+}
+
 /** The single gateway credential — the relay holds the upstream Square/SendGrid keys. */
 export function gatewayDeployKey(): string {
   return getEnv('NOCTUSOFT_DEPLOY_KEY');
