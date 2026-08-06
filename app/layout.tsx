@@ -9,6 +9,7 @@ import { TrakletDevWidget } from '@/components/dev/TrakletDevWidget'
 import { EnvChrome } from '@/lib/env-chrome/EnvChrome'
 import { badgeFor } from '@/lib/env-chrome/chrome'
 import { resolveServerEnv } from '@/lib/env-chrome/resolve'
+import { DEV_MAIL_URL } from '@/env-chrome.config'
 
 const BASE_TITLE = 'BlessBox - QR-Based Registration & Verification System'
 const BASE_DESCRIPTION = "Streamline your organization's registration and verification process with QR codes"
@@ -66,10 +67,13 @@ export default async function RootLayout({
   void nonce // available to pass to any <Script nonce={nonce} /> tags
   const showTraklet = process.env.NEXT_PUBLIC_TRAKLET_ENABLED?.trim() === 'true'
   const env = resolveServerEnv()
+  // Captured-mail link is dev-only: only on dev does the relay sink outbound
+  // mail (uat delivers real [UAT] mail; prod has no banner).
+  const mailUrl = env === 'dev' ? DEV_MAIL_URL : undefined
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} font-sans`}>
-        <EnvChrome env={env} />
+        <EnvChrome env={env} mailUrl={mailUrl} />
         <AuthProvider>
           {children}
           <TutorialSystemLoader />

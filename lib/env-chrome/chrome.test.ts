@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { badgeFor, envFromHost, faviconDataUri } from './chrome';
-import { HOST_RULES } from '../../env-chrome.config';
+import { applyEnvChrome, badgeFor, envFromHost, faviconDataUri } from './chrome';
+import { HOST_RULES, DEV_MAIL_URL } from '../../env-chrome.config';
 
 describe('envFromHost — BlessBox hostname rules', () => {
   it('maps the friendly domains to their environment', () => {
@@ -35,6 +35,35 @@ describe('badgeFor', () => {
     expect(badgeFor('dev')).toMatchObject({ short: 'DEV', color: '#4338ca', letter: 'D' });
     expect(badgeFor('local')).toMatchObject({ short: 'LOCAL', color: '#334155', letter: 'L' });
     expect(badgeFor('uat')?.label).toMatch(/not production/i);
+  });
+});
+
+describe('applyEnvChrome — captured-mail link', () => {
+  it('renders the mail link on dev when a mailUrl is given', () => {
+    applyEnvChrome('dev', DEV_MAIL_URL);
+    const a = document.getElementById('env-banner-mail') as HTMLAnchorElement | null;
+    expect(a).not.toBeNull();
+    expect(a?.getAttribute('href')).toBe(DEV_MAIL_URL);
+    expect(document.getElementById('env-banner')?.textContent).toMatch(/View captured mail/i);
+  });
+
+  it('shows a banner but NO mail link when mailUrl is omitted (uat)', () => {
+    applyEnvChrome('uat');
+    expect(document.getElementById('env-banner')).not.toBeNull();
+    expect(document.getElementById('env-banner-mail')).toBeNull();
+  });
+
+  it('drops the mail link when re-applied without a mailUrl (idempotent toggle)', () => {
+    applyEnvChrome('dev', DEV_MAIL_URL);
+    expect(document.getElementById('env-banner-mail')).not.toBeNull();
+    applyEnvChrome('dev');
+    expect(document.getElementById('env-banner-mail')).toBeNull();
+  });
+
+  it('renders no banner (and no link) on production', () => {
+    applyEnvChrome('production', DEV_MAIL_URL);
+    expect(document.getElementById('env-banner')).toBeNull();
+    expect(document.getElementById('env-banner-mail')).toBeNull();
   });
 });
 
