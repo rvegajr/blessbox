@@ -7,8 +7,9 @@ name: UAT CI
 on:
   push:
     branches: [ uat ]
-  pull_request:
-    branches: [ uat ]
+  # PR gating lives in pull-request.yml (validate/security-scan/smoke), shared
+  # across all env branches. This workflow is push-only: validate + migrate the
+  # uat DB after a merge lands on uat.
 
 jobs:
   test-and-build:
