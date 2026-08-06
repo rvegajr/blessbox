@@ -138,6 +138,10 @@ function isAuthorizedBySecret(req: NextRequest): boolean {
 }
 
 async function isAuthorized(req: NextRequest): Promise<boolean> {
+  // Intentionally NODE_ENV, NOT resolveServerEnv(): this open bypass is only
+  // safe on a truly local box. Vercel's dev/uat are internet-reachable and
+  // build with NODE_ENV=production, so they (correctly) fall through and must
+  // present the diagnostics secret — do not widen this to non-prod envs.
   if (getEnv('NODE_ENV') !== 'production') return true;
   if (isAuthorizedBySecret(req)) return true;
 

@@ -13,10 +13,10 @@ import { applyEnvChrome, type AppEnv } from './chrome';
  * which React cannot pass from a Server Component to a Client Component. The
  * hostname mapping (`envFromHost`) stays a server/build-time concern.
  */
-export function EnvChrome({ env }: { env: AppEnv }) {
+export function EnvChrome({ env, mailUrl }: { env: AppEnv; mailUrl?: string }) {
   useEffect(() => {
-    applyEnvChrome(env);
-  }, [env]);
+    applyEnvChrome(env, mailUrl);
+  }, [env, mailUrl]);
 
   return null;
 }
