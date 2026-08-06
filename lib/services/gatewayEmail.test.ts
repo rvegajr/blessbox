@@ -12,6 +12,7 @@ describe('sendViaGatewayEmail', () => {
   it('posts to the relay native /email/send using the gateway auth token as Bearer', async () => {
     vi.stubEnv('NOCTUSOFT_DEPLOY_KEY', 'deploy_123');
     vi.stubEnv('SENDGRID_API_URL', '');
+    vi.stubEnv('APP_ENV', 'uat');
     const fetchMock = vi.fn(async () =>
       new Response(JSON.stringify({ success: true, email: { messageId: 'm1' } }), {
         status: 201,
@@ -26,6 +27,9 @@ describe('sendViaGatewayEmail', () => {
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('https://api.sendgrid.noctusoft.com/email/send');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer deploy_123');
+    // environment signal so the relay routes dev/uat/prod (never emails real
+    // users from a non-prod env)
+    expect((init.headers as Record<string, string>)['X-App-Env']).toBe('uat');
     // native provider-agnostic body shape
     const body = JSON.parse(init.body as string);
     expect(body.to).toBe('a@b.com');
