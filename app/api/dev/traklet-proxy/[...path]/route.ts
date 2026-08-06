@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getEnv } from '@/lib/utils/env';
 import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
 import { relayBaseUrl, gatewayAuthToken } from '@/lib/services/gatewayConfig';
+import { isProductionEnv } from '@/lib/env-chrome/resolve';
 
 /**
  * Proxy for the Traklet widget (QA testing tool) — DEVELOPMENT ONLY.
@@ -27,9 +28,12 @@ function notFound() {
 }
 
 async function handle(request: NextRequest, method: string): Promise<Response> {
-  // Dev-only, off by default: a 404 hides the route's existence in production
-  // or whenever Traklet is not explicitly enabled.
-  if (getEnv('NODE_ENV') === 'production' || getEnv('NEXT_PUBLIC_TRAKLET_ENABLED') !== 'true') {
+  // Non-prod only, off by default: a 404 hides the route's existence in the
+  // production environment or whenever Traklet is not explicitly enabled.
+  // Gate on the resolved *environment* (APP_ENV), NOT NODE_ENV — Vercel builds
+  // dev/uat with NODE_ENV=production too, which would 404 the proxy on the very
+  // environments where Traklet is meant to run.
+  if (isProductionEnv() || getEnv('NEXT_PUBLIC_TRAKLET_ENABLED') !== 'true') {
     return notFound();
   }
 

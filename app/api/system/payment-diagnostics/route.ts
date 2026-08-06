@@ -11,6 +11,9 @@ import { SquarePaymentService } from '@/lib/services/SquarePaymentService';
 import { getEnv } from '@/lib/utils/env';
 
 function isAuthorized(req: NextRequest): boolean {
+  // Intentionally NODE_ENV (local-only bypass), NOT resolveServerEnv(): Vercel
+  // dev/uat are public + build as NODE_ENV=production, so they require the
+  // diagnostics secret. Do not widen this bypass to non-prod environments.
   if (process.env.NODE_ENV !== 'production') return true;
   
   const auth = req.headers.get('authorization') || '';
