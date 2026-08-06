@@ -9,7 +9,6 @@ import { TrakletDevWidget } from '@/components/dev/TrakletDevWidget'
 import { EnvChrome } from '@/lib/env-chrome/EnvChrome'
 import { badgeFor } from '@/lib/env-chrome/chrome'
 import { resolveServerEnv } from '@/lib/env-chrome/resolve'
-import { HOST_RULES } from '@/env-chrome.config'
 
 const BASE_TITLE = 'BlessBox - QR-Based Registration & Verification System'
 const BASE_DESCRIPTION = "Streamline your organization's registration and verification process with QR codes"
@@ -70,7 +69,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} font-sans`}>
-        <EnvChrome env={env} hostRules={HOST_RULES} />
+        <EnvChrome env={env} />
         <AuthProvider>
           {children}
           <TutorialSystemLoader />
