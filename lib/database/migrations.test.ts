@@ -5,9 +5,9 @@ import { migrate } from 'drizzle-orm/libsql/migrator';
 
 const MIGRATIONS = 'drizzle/migrations';
 
-// The 23 application tables the schema must produce (excludes __drizzle_migrations).
+// The 24 application tables the schema must produce (excludes __drizzle_migrations).
 const EXPECTED_TABLES = [
-  'class_sessions', 'classes', 'coupon_codes', 'coupon_redemptions', 'coupons',
+  'class_sessions', 'classes', 'consumed_orders', 'coupon_codes', 'coupon_redemptions', 'coupons',
   'email_logs', 'email_templates', 'enrollments', 'export_jobs', 'login_codes',
   'memberships', 'organizations', 'participants', 'payment_transactions', 'qr_code_sets',
   'registrations', 'saved_searches', 'subscription_plans', 'usage_alerts', 'usage_tracking',
@@ -27,14 +27,14 @@ async function freshDb(): Promise<{ client: Client; db: ReturnType<typeof drizzl
 }
 
 describe('drizzle migrations', () => {
-  it('apply cleanly to a fresh DB and produce the full 23-table schema', async () => {
+  it('apply cleanly to a fresh DB and produce the full 24-table schema', async () => {
     const { client, db } = await freshDb();
     await migrate(db, { migrationsFolder: MIGRATIONS });
 
     expect(await appTables(client)).toEqual(EXPECTED_TABLES);
 
     const recorded = await client.execute(`SELECT COUNT(*) AS c FROM __drizzle_migrations`);
-    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(4); // baseline + coupon_fields + external_sub_uniq + enrollment/redemption uniq
+    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(5); // baseline + coupon_fields + external_sub_uniq + enrollment/redemption uniq + consumed_orders
     client.close();
   });
 
@@ -77,7 +77,7 @@ describe('drizzle migrations', () => {
     await migrate(db, { migrationsFolder: MIGRATIONS }); // second run
 
     const recorded = await client.execute(`SELECT COUNT(*) AS c FROM __drizzle_migrations`);
-    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(4);
+    expect(Number((recorded.rows[0] as unknown as { c: number }).c)).toBe(5);
     client.close();
   });
 });

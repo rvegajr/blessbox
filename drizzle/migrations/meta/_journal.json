@@ -29,6 +29,13 @@
       "when": 1782418900000,
       "tag": "0003_enrollment_and_redemption_uniqueness",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1785991229598,
+      "tag": "0004_consumed_orders",
+      "breakpoints": true
     }
   ]
 }
