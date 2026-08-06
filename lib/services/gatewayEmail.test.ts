@@ -9,18 +9,32 @@ afterEach(() => {
 });
 
 describe('sendViaGatewayEmail', () => {
-  it('posts to the Noctusoft relay using the gateway deploy key as Bearer', async () => {
+  it('posts to the relay native /email/send using the gateway auth token as Bearer', async () => {
     vi.stubEnv('NOCTUSOFT_DEPLOY_KEY', 'deploy_123');
     vi.stubEnv('SENDGRID_API_URL', '');
-    const fetchMock = vi.fn(async () => new Response(null, { status: 202, headers: { 'x-message-id': 'm1' } }));
+    vi.stubEnv('APP_ENV', 'uat');
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ success: true, email: { messageId: 'm1' } }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     const res = await sendViaGatewayEmail({ to: 'a@b.com', subject: 'Hi', html: '<p>x</p>', from });
     expect(res.success).toBe(true);
     expect(res.messageId).toBe('m1');
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('https://api.sendgrid.noctusoft.com/v3/mail/send');
+    expect(url).toBe('https://api.sendgrid.noctusoft.com/email/send');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer deploy_123');
+    // environment signal so the relay routes dev/uat/prod (never emails real
+    // users from a non-prod env)
+    expect((init.headers as Record<string, string>)['X-App-Env']).toBe('uat');
+    // native provider-agnostic body shape
+    const body = JSON.parse(init.body as string);
+    expect(body.to).toBe('a@b.com');
+    expect(body.from).toBe('no-reply@blessbox.org');
+    expect(body.fromName).toBe('BlessBox');
   });
 
   it('returns an error (does not throw) when no gateway key is configured', async () => {
