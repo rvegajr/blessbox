@@ -127,9 +127,9 @@ describe('Payment Process API', () => {
 
       // Force the real Square path so we can inspect the amount it would charge.
       vi.stubEnv('NODE_ENV', 'production');
-      process.env.SQUARE_ACCESS_TOKEN = 'test-tok';
-      process.env.SQUARE_APPLICATION_ID = 'test-app';
-      process.env.SQUARE_LOCATION_ID = 'test-loc';
+      // Charges now route through the Noctusoft gateway — the deploy key is the
+      // only required server credential (SquarePaymentService is mocked here).
+      process.env.NOCTUSOFT_DEPLOY_KEY = 'test-deploy-key';
       process.env.FORCE_REAL_SQUARE = 'true';
 
       const mockRequest = {
@@ -145,12 +145,15 @@ describe('Payment Process API', () => {
 
       expect(response.status).toBe(200);
       expect(data.chargedAmountCents).toBe(9900);
-      // SquarePaymentService.processPayment(token, amountCents, currency, orgId)
+      // SquarePaymentService.processPayment(token, amountCents, currency, orgId, idempotencyKey)
+      // A STABLE sha256 idempotency key is now derived and passed so a retry of the
+      // same charge intent cannot double-charge.
       expect(processPaymentMock).toHaveBeenCalledWith(
         'cnon:test-token',
         9900,
         'USD',
         'org_123',
+        expect.stringMatching(/^[a-f0-9]{64}$/),
       );
     });
 

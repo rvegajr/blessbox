@@ -4,6 +4,7 @@ import { getDbClient } from '@/lib/db';
 import { getServerSession } from '@/lib/auth-helper';
 import { EmailService } from '@/lib/services/EmailService';
 import { getEnv } from '@/lib/utils/env';
+import { hasGatewayAuth } from '@/lib/services/gatewayConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -159,10 +160,14 @@ function providerStatus() {
   const hasSmtp = !!smtpHost && !!smtpUser && !!smtpPass;
   const hasGmail = !!gmailUser && !!gmailPass;
 
-  const provider = hasSendGrid ? 'sendgrid' : hasSmtp ? 'smtp' : hasGmail ? 'gmail_smtp' : 'none';
+  const hasGateway = hasGatewayAuth();
+  // The Noctusoft gateway relay is the canonical (and only) email path; legacy
+  // direct SendGrid/SMTP/Gmail are no longer used by the app.
+  const provider = hasGateway ? 'noctusoft_gateway' : hasSendGrid ? 'sendgrid' : hasSmtp ? 'smtp' : hasGmail ? 'gmail_smtp' : 'none';
   return {
     provider,
     configured: provider !== 'none',
+    gateway: { configured: hasGateway, hasDeployKey: hasGateway },
     sendgrid: {
       configured: hasSendGrid,
       hasApiKey: !!sendgridApiKey,
@@ -239,7 +244,7 @@ export async function GET(req: NextRequest) {
       provider.configured
         ? []
         : [
-            'Configure SendGrid (SENDGRID_API_KEY, SENDGRID_FROM_EMAIL) or SMTP (SMTP_HOST, SMTP_USER, SMTP_PASS).',
+            'Set NOCTUSOFT_DEPLOY_KEY — the Noctusoft gateway handles SendGrid for the app (no SendGrid key in the app).',
             'Optionally set DIAGNOSTICS_SECRET to protect this endpoint in production.',
           ],
   });

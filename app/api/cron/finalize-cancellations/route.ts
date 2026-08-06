@@ -32,11 +32,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // SECURITY: require the CRON_SECRET bearer. Vercel Cron automatically sends
+  // `Authorization: Bearer ${CRON_SECRET}` when CRON_SECRET is set, so this is the
+  // correct check. The `x-vercel-cron` header is client-spoofable and must NOT be
+  // accepted on its own — doing so let anyone trigger the job.
   const hasValidBearer = authHeader === `Bearer ${cronSecret}`;
-  const hasVercelCronHeader = vercelCronHeader === '1';
 
-  if (!hasValidBearer && !hasVercelCronHeader) {
-    console.warn('[Cron] Unauthorized cron request');
+  if (!hasValidBearer) {
+    console.warn('[Cron] Unauthorized cron request', { sawVercelCronHeader: vercelCronHeader === '1' });
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

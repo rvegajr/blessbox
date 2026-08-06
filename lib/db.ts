@@ -96,6 +96,26 @@ export async function ensureSubscriptionSchema(): Promise<void> {
 
   await client.execute(`CREATE INDEX IF NOT EXISTS subscription_plans_org_idx ON subscription_plans(organization_id)`);
   await client.execute(`CREATE INDEX IF NOT EXISTS subscription_plans_status_idx ON subscription_plans(status)`);
+  // One external order/payment id maps to at most one subscription — hard backstop
+  // for the application-level one-order-one-org guard. Partial index so multiple
+  // NULLs (free/seed subscriptions) remain allowed.
+  await client.execute(
+    `CREATE UNIQUE INDEX IF NOT EXISTS subscription_plans_external_subscription_id_uniq ON subscription_plans(external_subscription_id) WHERE external_subscription_id IS NOT NULL`,
+  );
+
+  // Consumed-orders ledger: order_id PRIMARY KEY => one paid order grants a
+  // subscription to at most one org (across create/upgrade/same-plan paths).
+  await client.execute(
+    `CREATE TABLE IF NOT EXISTS consumed_orders (
+      order_id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL,
+      subscription_id TEXT,
+      plan_type TEXT,
+      amount_cents INTEGER,
+      consumed_at TEXT NOT NULL
+    )`,
+  );
+  await client.execute(`CREATE INDEX IF NOT EXISTS consumed_orders_org_idx ON consumed_orders(organization_id)`);
 }
 
 export function nowIso(): string {

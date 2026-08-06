@@ -1,27 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
+import { NextResponse } from 'next/server';
+import { withSuperAdmin } from '@/lib/api/withAuth';
 import { CouponService } from '@/lib/coupons';
-import { isSuperAdminEmail } from '@/lib/auth';
+
+type Ctx = { params: Promise<{ id: string }> };
 
 /**
  * GET /api/admin/coupons/[id]
  * Get a specific coupon with detailed statistics
  */
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const params = await context.params;
+export const GET = withSuperAdmin(async (request, _auth, context) => {
+  const params = await (context as Ctx).params;
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const couponService = new CouponService();
     const couponId = params.id;
 
@@ -58,27 +47,15 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PUT /api/admin/coupons/[id]
  * Update a specific coupon
  */
-export async function PUT(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const params = await context.params;
+export const PUT = withSuperAdmin(async (request, _auth, context) => {
+  const params = await (context as Ctx).params;
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const couponService = new CouponService();
     const body = await request.json();
 
@@ -114,27 +91,15 @@ export async function PUT(
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * DELETE /api/admin/coupons/[id]
  * Delete a specific coupon
  */
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const params = await context.params;
+export const DELETE = withSuperAdmin(async (request, _auth, context) => {
+  const params = await (context as Ctx).params;
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const couponService = new CouponService();
 
     // Deactivate coupon (safer than deletion)
@@ -152,4 +117,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+});

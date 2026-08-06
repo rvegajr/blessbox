@@ -1,27 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
-import { isSuperAdminEmail } from '@/lib/auth';
+import { NextResponse } from 'next/server';
+import { withSuperAdmin } from '@/lib/api/withAuth';
 import { getDbClient } from '@/lib/db';
+
+type Ctx = { params: Promise<{ id: string }> };
 
 /**
  * GET /api/admin/organizations/[id]
  * Get detailed information about a specific organization
  */
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const GET = withSuperAdmin(async (request, _auth, context) => {
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const { id } = await context.params;
+    const { id } = await (context as Ctx).params;
     const db = getDbClient();
 
     // Get organization details
@@ -79,27 +68,15 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * PATCH /api/admin/organizations/[id]
  * Update organization (suspend, unsuspend, etc.)
  */
-export async function PATCH(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export const PATCH = withSuperAdmin(async (request, _auth, context) => {
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    const { id } = await context.params;
+    const { id } = await (context as Ctx).params;
     const body = await request.json();
     const { action } = body;
 
@@ -143,4 +120,4 @@ export async function PATCH(
       { status: 500 }
     );
   }
-}
+});

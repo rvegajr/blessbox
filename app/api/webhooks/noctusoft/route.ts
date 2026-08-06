@@ -12,60 +12,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbClient } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { verifyNoctusoftWebhook } from '@/lib/security/webhookSignature';
 
 export const runtime = 'nodejs';
 
-/**
- * Verify HMAC signature from Noctusoft relay
- */
-function verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
-  try {
-    const expectedSignature = createHmac('sha256', secret)
-      .update(payload)
-      .digest('hex');
-    
-    // Timing-safe comparison to prevent timing attacks
-    const signatureBuffer = Buffer.from(signature, 'hex');
-    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-    
-    if (signatureBuffer.length !== expectedBuffer.length) {
-      return false;
-    }
-    
-    return timingSafeEqual(signatureBuffer, expectedBuffer);
-  } catch {
-    return false;
-  }
-}
-
 export async function POST(request: NextRequest) {
-  // P0 Fix: Verify HMAC signature before processing
+  // Fail-closed HMAC verification — reject unless a secret is configured AND the
+  // signature verifies (previously this fail-OPEN'd when the secret was unset).
   const signature = request.headers.get('x-noctusoft-signature') || request.headers.get('x-webhook-signature');
-  const webhookSecret = process.env.NOCTUSOFT_WEBHOOK_SECRET;
-  
-  if (!webhookSecret) {
-    console.warn('[webhook/noctusoft] No NOCTUSOFT_WEBHOOK_SECRET configured, skipping HMAC verification');
-  } else if (!signature) {
-    console.error('[webhook/noctusoft] No signature header found');
-    return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+  const rawBody = await request.text();
+  const auth = verifyNoctusoftWebhook({ rawBody, signature, secret: process.env.NOCTUSOFT_WEBHOOK_SECRET });
+  if (!auth.ok) {
+    console.error(`[webhook/noctusoft] Rejected: ${auth.error}`);
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   let body: any;
-  let rawBody: string;
   try {
-    rawBody = await request.text();
     body = JSON.parse(rawBody);
-    
-    // Verify HMAC if secret is configured
-    if (webhookSecret && signature) {
-      const isValid = verifyWebhookSignature(rawBody, signature, webhookSecret);
-      if (!isValid) {
-        console.error('[webhook/noctusoft] Invalid HMAC signature');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
-      console.log('[webhook/noctusoft] HMAC signature verified successfully');
-    }
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
