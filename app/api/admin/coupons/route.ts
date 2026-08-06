@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from '@/lib/auth-helper';
+import { NextResponse } from 'next/server';
+import { withSuperAdmin } from '@/lib/api/withAuth';
 import { CouponService } from '@/lib/coupons';
-import { isSuperAdminEmail } from '@/lib/auth';
 import { createCouponSchema } from '@/lib/validation/coupon.schema';
 import { ZodError } from 'zod';
 
@@ -9,17 +8,8 @@ import { ZodError } from 'zod';
  * GET /api/admin/coupons
  * Get all coupons with OData support
  */
-export async function GET(request: NextRequest) {
+export const GET = withSuperAdmin(async (request) => {
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     const couponService = new CouponService();
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('$search') || '';
@@ -96,29 +86,14 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * POST /api/admin/coupons
  * Create a new coupon with Zod validation
  */
-export async function POST(request: NextRequest) {
+export const POST = withSuperAdmin(async (request, { session }) => {
   try {
-    // Check authentication and admin role
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ 
-        error: 'Not authenticated',
-        code: 'UNAUTHORIZED' 
-      }, { status: 401 });
-    }
-    if (!isSuperAdminEmail(session.user.email)) {
-      return NextResponse.json({ 
-        error: 'Not authorized to create coupons. Super admin access required.',
-        code: 'FORBIDDEN' 
-      }, { status: 403 });
-    }
-
     const couponService = new CouponService();
     const body = await request.json();
 
@@ -206,4 +181,4 @@ export async function POST(request: NextRequest) {
       code: 'INTERNAL_ERROR'
     }, { status: 500 });
   }
-}
+});

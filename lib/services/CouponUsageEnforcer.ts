@@ -63,9 +63,24 @@ export class CouponUsageEnforcer implements ICouponUsageEnforcer {
       throw new Error('Coupon not found');
     }
 
+    // Atomically claim a global usage slot FIRST. The conditional WHERE makes
+    // the increment a no-op (rowsAffected = 0) once max_uses is reached, closing
+    // the non-atomic SELECT-then-increment race. max_uses IS NULL = unlimited.
+    const claim = await this.db.execute({
+      sql: `UPDATE coupons
+            SET current_uses = current_uses + 1, updated_at = ?
+            WHERE id = ? AND (max_uses IS NULL OR current_uses < max_uses)`,
+      args: [nowIso(), coupon.id],
+    });
+    if ((claim.rowsAffected ?? 0) === 0) {
+      throw new Error('Coupon has reached maximum uses');
+    }
+
     const finalAmount = input.originalAmountCents - input.discountAppliedCents;
     const redemptionId = (globalThis.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)) as string;
 
+    // The uq_redemptions_coupon_org UNIQUE index (CouponService.ensureSchema)
+    // backstops per-org double-redemption at the DB layer.
     await this.db.execute({
       sql: `INSERT INTO coupon_redemptions (
               id, coupon_id, user_id, organization_id, subscription_id,
@@ -82,11 +97,6 @@ export class CouponUsageEnforcer implements ICouponUsageEnforcer {
         finalAmount,
         nowIso(),
       ],
-    });
-
-    await this.db.execute({
-      sql: `UPDATE coupons SET current_uses = current_uses + 1, updated_at = ? WHERE id = ?`,
-      args: [nowIso(), coupon.id],
     });
   }
 }

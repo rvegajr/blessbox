@@ -50,6 +50,15 @@ export class CouponService implements ICouponService {
     await this.db.execute(`CREATE INDEX IF NOT EXISTS idx_coupons_active ON coupons(active)`);
     await this.db.execute(`CREATE INDEX IF NOT EXISTS idx_redemptions_coupon ON coupon_redemptions(coupon_id)`);
     await this.db.execute(`CREATE INDEX IF NOT EXISTS idx_redemptions_user ON coupon_redemptions(user_id)`);
+
+    // Backstop per-org double-redemption at the DB layer (defence in depth for
+    // CouponUsageEnforcer). Wrapped: if legacy duplicate (coupon_id, org) rows
+    // exist the index creation throws — Track E's migration de-dupes first.
+    try {
+      await this.db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS uq_redemptions_coupon_org ON coupon_redemptions(coupon_id, organization_id)`);
+    } catch (err) {
+      console.warn('[CouponService] uq_redemptions_coupon_org not created (existing duplicates?):', err);
+    }
   }
 
   async validateCoupon(code: string): Promise<CouponValidationResult> {
@@ -107,19 +116,24 @@ export class CouponService implements ICouponService {
       }
     }
 
-    let discountedAmount = amount;
-
-    if (coupon.discountType === 'percentage') {
-      discountedAmount = amount * (1 - coupon.discountValue / 100);
-    } else {
-      discountedAmount = amount - coupon.discountValue;
+    // NOTE: `amount` is treated as cents (integer) throughout the app.
+    // Enforce the coupon's minimum order amount before applying any discount.
+    if (coupon.minAmount != null && amount < coupon.minAmount) {
+      throw new Error(`Order amount is below the coupon minimum of ${coupon.minAmount} cents`);
     }
 
+    // Compute the raw discount, then cap it at max_discount (if set).
+    const rawDiscount = coupon.discountType === 'percentage'
+      ? amount * (coupon.discountValue / 100)
+      : coupon.discountValue;
+    const discount = Math.min(rawDiscount, coupon.maxDiscount ?? Infinity);
+    const discountedAmount = amount - discount;
+
     // Ensure minimum $1 (100 cents) for paid plans, except true 100% coupons which can be $0.
-    // NOTE: `amount` is treated as cents throughout the app.
+    // Round to integer cents — a float (e.g. 899.1) later crashes BigInt() in the Square charge path.
     const isFreeCoupon = coupon.discountType === 'percentage' && coupon.discountValue >= 100;
     const minimumAmount = isFreeCoupon ? 0 : 100;
-    return Math.max(discountedAmount, minimumAmount);
+    return Math.max(Math.round(discountedAmount), minimumAmount);
   }
 
   async trackCouponUsage(

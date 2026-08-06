@@ -7,6 +7,16 @@ import { config } from 'dotenv';
 // Load environment variables with PURE JOY! 🌟
 config({ path: '.env.local' });
 
+// SECURITY: never run ad-hoc schema DDL against production (use scripts/migrate.ts).
+{
+  const dbUrl = process.env.TURSO_DATABASE_URL || '';
+  const allowProd = ['true', '1', 'yes'].includes((process.env.ALLOW_PROD_DB_SETUP || '').toLowerCase());
+  if (/prod/i.test(dbUrl) && !allowProd) {
+    console.error('[db-safety] Refusing to run schema DDL against a production-looking database (TURSO_DATABASE_URL contains "prod"). Set ALLOW_PROD_DB_SETUP=true to override.');
+    process.exit(1);
+  }
+}
+
 const tursoClient = createClient({
   url: process.env.TURSO_DATABASE_URL || 'libsql://blessbox-local-rvegajr.aws-us-east-2.turso.io',
   authToken: process.env.TURSO_AUTH_TOKEN,

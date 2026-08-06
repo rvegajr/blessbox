@@ -207,6 +207,39 @@ describe('CouponService', () => {
     });
   });
 
+  describe('applyCoupon — rounding and limits', () => {
+    const baseRow = (overrides: Record<string, unknown>) => ({
+      id: 'c1', code: 'X', discount_type: 'percentage', discount_value: 10,
+      currency: 'USD', active: 1, applicable_plans: JSON.stringify(['standard']),
+      max_uses: 100, current_uses: 0, expires_at: '2026-12-31T23:59:59Z',
+      created_at: '2024-01-01T00:00:00Z', created_by: 'admin', updated_at: '2024-01-01T00:00:00Z',
+      ...overrides,
+    });
+
+    it('rounds percentage discount to integer cents (no float into BigInt)', async () => {
+      const row = baseRow({ code: 'TEN', discount_value: 10 });
+      mockDb.execute.mockResolvedValueOnce({ rows: [row] }).mockResolvedValueOnce({ rows: [row] });
+      // 999 * 0.9 = 899.1 — must round to 899, never return the float 899.1
+      const result = await service.applyCoupon('TEN', 999, 'standard');
+      expect(result).toBe(899);
+      expect(Number.isInteger(result)).toBe(true);
+    });
+
+    it('caps the discount at max_discount', async () => {
+      const row = baseRow({ code: 'HALF', discount_value: 50, max_discount: 1000 });
+      mockDb.execute.mockResolvedValueOnce({ rows: [row] }).mockResolvedValueOnce({ rows: [row] });
+      // 50% of 10000 = 5000 off, but max_discount caps it to 1000 off → 9000
+      const result = await service.applyCoupon('HALF', 10000, 'standard');
+      expect(result).toBe(9000);
+    });
+
+    it('rejects when the amount is below min_amount', async () => {
+      const row = baseRow({ code: 'MIN50', discount_value: 10, min_amount: 5000 });
+      mockDb.execute.mockResolvedValueOnce({ rows: [row] }).mockResolvedValueOnce({ rows: [row] });
+      await expect(service.applyCoupon('MIN50', 3000, 'standard')).rejects.toThrow(/minimum/i);
+    });
+  });
+
   describe('createCoupon', () => {
     it('creates coupon and returns it', async () => {
       const couponData = {

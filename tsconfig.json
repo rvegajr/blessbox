@@ -52,6 +52,10 @@
     "src/pages/**/*",
     "src/pages-old-astro/**/*",
     "src/**/*.astro",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "qa-report/**/*",
+    "documents/**/*",
+    "bugs/**/*",
+    ".tmp/**/*"
   ]
 }

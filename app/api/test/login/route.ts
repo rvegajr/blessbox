@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
-import { isSuperAdminEmail } from '@/lib/auth';
 import { ensureDbReady } from '@/lib/db-ready';
 import { getDbClient } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { getEnv } from '@/lib/utils/env';
+import { rateLimit, rateLimitResponse } from '@/lib/security/rateLimit';
+import { decideTestLogin } from '@/lib/auth/testLoginPolicy';
 
 export const runtime = 'nodejs';
 
@@ -28,6 +29,10 @@ export const runtime = 'nodejs';
  *   - expiresAt: string (ISO date)
  */
 export async function POST(req: NextRequest) {
+  // Brute-force / abuse guard — this endpoint can mint a session.
+  const ipLimit = rateLimit(req, { key: 'test/login:ip', limit: 5, windowMs: 60_000 });
+  if (!ipLimit.allowed) return rateLimitResponse(ipLimit.retryAfterSec);
+
   const isProd = process.env.NODE_ENV === 'production';
   const secret = getEnv('PROD_TEST_LOGIN_SECRET');
   // NOTE: Some production CDNs/WAFs may strip headers containing the word "secret".
@@ -65,6 +70,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'email is required' }, { status: 400 });
     }
 
+    // Production policy: never mint superadmin/admin, restrict to an allow-list,
+    // and cap the session TTL. Pure decision in lib/auth/testLoginPolicy.
+    const allowList = (getEnv('QA_TEST_LOGIN_ALLOWED_EMAILS') || '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean);
+    const decision = decideTestLogin({ isProd, email, admin, allowList, requestedTtlSeconds: expiresInSeconds });
+    const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
+    console.warn('[AUDIT][test-login]', JSON.stringify({ email: email.toLowerCase(), admin, isProd, allowed: decision.allowed, role: decision.role, ip: clientIp }));
+    if (!decision.allowed) {
+      return NextResponse.json({ success: false, error: decision.error || 'Not permitted' }, { status: 403 });
+    }
+    const effectiveTtlSeconds = decision.ttlSeconds;
+
     await ensureDbReady();
     const db = getDbClient();
     const normalizedEmail = email.toLowerCase();
@@ -91,7 +110,7 @@ export async function POST(req: NextRequest) {
           VALUES (?, ?, ?, ?, ?, ?)
           ON CONFLICT(user_id, organization_id) DO UPDATE SET updated_at = excluded.updated_at
         `,
-        args: [uuidv4(), userId, organizationId, admin ? 'super_admin' : 'admin', now, now],
+        args: [uuidv4(), userId, organizationId, decision.role === 'superadmin' ? 'super_admin' : 'admin', now, now],
       });
     } else {
       // If not supplied, auto-pick only when the user has exactly one org.
@@ -104,9 +123,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Determine role. AuthService's AuthUser['role'] is 'superadmin' | 'user'.
-    const role = admin || isSuperAdminEmail(email) ? 'superadmin' : 'user';
-    const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
+    // Role + TTL come from the policy decision (never superadmin in production).
+    const role = decision.role;
+    const expiresAt = new Date(Date.now() + effectiveTtlSeconds * 1000);
 
     // Sign with jose to match how AuthService.validateToken() verifies (jose.jwtVerify).
     // Payload shape mirrors AuthService.createSession (sub, email, name,
@@ -130,7 +149,7 @@ export async function POST(req: NextRequest) {
       path: '/',
       httpOnly: true,
       sameSite: 'lax' as const,
-      maxAge: expiresInSeconds,
+      maxAge: effectiveTtlSeconds,
     };
     if (isProd) {
       cookieOptions.secure = true;
@@ -154,7 +173,7 @@ export async function POST(req: NextRequest) {
         path: '/',
         httpOnly: false, // client reads this to know the active org
         sameSite: 'lax' as const,
-        maxAge: expiresInSeconds,
+        maxAge: effectiveTtlSeconds,
         ...(isProd ? { secure: true } : {}),
       });
     }

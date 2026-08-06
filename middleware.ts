@@ -3,17 +3,20 @@ import { NextResponse, type NextRequest } from 'next/server'
 /**
  * Per-request CSP nonce middleware.
  *
- * Generates a cryptographic nonce per request, exposes it via the
- * `x-nonce` request header (so server components / app/layout.tsx can
- * read it through `headers()`), and rewrites the response
- * `Content-Security-Policy` header to replace `'unsafe-inline'` in
- * `script-src` with `'nonce-<nonce>' 'strict-dynamic'`.
+ * Generates a cryptographic nonce per request and exposes it via the `x-nonce`
+ * request header so server components / app/layout.tsx can read it through
+ * `headers()`.
  *
- * The static CSP defined in next.config.js's `headers()` is the
- * baseline; this middleware overwrites the script-src directive
- * per-request so Next.js Flight payload <script> tags carrying the
- * matching nonce are accepted while inline scripts without the nonce
- * are rejected.
+ * IMPORTANT (prod-readiness): we intentionally KEEP `'unsafe-inline'` in
+ * script-src and do NOT inject `'strict-dynamic'`. The previous version dropped
+ * `'unsafe-inline'` and added `'strict-dynamic'`, but the generated nonce is not
+ * actually applied to Next.js's framework/Flight `<script>` tags (app/layout.tsx
+ * reads the nonce but never passes it to a `<Script nonce>`), and Next's
+ * automatic nonce propagation only triggers when the CSP is set on the *request*
+ * header. The result was a latent site-wide client-JS break under strict-dynamic.
+ * The nonce plumbing is left in place; enabling strict-dynamic requires wiring the
+ * nonce onto every script per Next's official CSP pattern AND verifying hydration
+ * of /register + checkout in a real browser first.
  */
 export function middleware(request: NextRequest) {
   // crypto.randomUUID() is available in the Edge runtime.
@@ -26,39 +29,8 @@ export function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   })
 
-  // Read the baseline CSP set by next.config.js (if present) and
-  // replace 'unsafe-inline' inside script-src with the nonce + strict-dynamic.
-  const baselineCsp =
-    response.headers.get('content-security-policy') ||
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://web.squarecdn.com https://sandbox.web.squarecdn.com",
-      "style-src 'self' 'unsafe-inline' https://*.squarecdn.com",
-      "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.squareup.com https://*.squarecdn.com https://*.turso.io https://*.browser-intake-datadoghq.com wss:",
-      "frame-src https://*.squarecdn.com https://*.squareup.com",
-      "font-src 'self' data: https://*.squarecdn.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-      'upgrade-insecure-requests',
-    ].join('; ')
-
-  const tightened = baselineCsp
-    .split(';')
-    .map((directive) => {
-      const trimmed = directive.trim()
-      if (!trimmed.toLowerCase().startsWith('script-src')) return trimmed
-      // Drop 'unsafe-inline' and inject nonce + strict-dynamic.
-      const withoutUnsafeInline = trimmed.replace(/'unsafe-inline'/g, '').trim()
-      return `${withoutUnsafeInline} 'nonce-${nonce}' 'strict-dynamic'`.replace(/\s+/g, ' ')
-    })
-    .filter(Boolean)
-    .join('; ')
-
-  response.headers.set('content-security-policy', tightened)
-  // Also expose the nonce on the response for downstream consumers (debug aid).
+  // Expose the nonce for future strict-dynamic adoption. We do NOT tighten the
+  // baseline CSP from next.config.js here — see the note above.
   response.headers.set('x-nonce', nonce)
 
   return response

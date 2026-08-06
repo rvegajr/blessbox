@@ -12,11 +12,13 @@ export default defineConfig({
       'lib/**/*.spec.ts',
       'tests/components/**/*.test.{ts,tsx}',
       'tests/vanilla-js/**/*.test.ts',
+      // Previously-silent tiers — now collected so their tests actually gate CI.
+      'tests/api/**/*.test.{ts,tsx}',
+      'tests/services/**/*.test.ts',
     ],
     exclude: [
       'node_modules/**',
       'tests/e2e/**',
-      'tests/api/**',
       'src/**',
       'playwright-report/**',
       'test-results/**',
@@ -28,8 +30,8 @@ export default defineConfig({
     bail: 0,
     // Don't hang on errors
     testTimeout: 10000,
-    // Run tests once and exit
-    passWithNoTests: true,
+    // Fail (not silently pass) if a tier collects no tests — catches mis-globbing.
+    passWithNoTests: false,
     // tests/vanilla-js loads public/tutorials/tutorial-engine.js which schedules
     // a setTimeout that fires after teardown referencing window. Tests pass; this
     // keeps the run from exit-coding non-zero on cosmetic stray-timer errors.

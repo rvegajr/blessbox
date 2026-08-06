@@ -21,9 +21,20 @@ export async function POST(request: NextRequest) {
   if ('error' in parsed) return parsed.error;
   try {
     const { email } = parsed.data;
+    const normalized = normalizeEmail(email);
+
+    // Per-email rate limit: 8/hour — edge anti-abuse for onboarding code sends
+    // (parity with auth/send-code). Legit onboarding needs only 1-3.
+    const emailLimit = rateLimit(request, {
+      key: 'onboarding/send-verification:email',
+      identifier: normalized,
+      limit: 8,
+      windowMs: 60 * 60_000,
+    });
+    if (!emailLimit.allowed) return rateLimitResponse(emailLimit.retryAfterSec);
 
     // Use VerificationService to send code
-    const result = await verificationService.sendVerificationCode(normalizeEmail(email));
+    const result = await verificationService.sendVerificationCode(normalized);
 
     if (!result.success) {
       // Check if it's a rate limit error
