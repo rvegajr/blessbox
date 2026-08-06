@@ -7,6 +7,7 @@
  * provider key.
  */
 import { sendgridRelayBaseUrl, gatewayAuthToken } from './gatewayConfig';
+import { resolveServerEnv } from '../env-chrome/resolve';
 
 export interface GatewayEmailFrom {
   email: string;
@@ -53,6 +54,10 @@ export async function sendViaGatewayEmail(msg: GatewayEmailMessage): Promise<Gat
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
         'X-Test-Store': 'blessbox',
+        // Environment signal: the relay routes by this — dev→Mailpit capture,
+        // uat→[UAT]-tagged, prod→real delivery. Without it dev/UAT would email
+        // real recipients.
+        'X-App-Env': resolveServerEnv(),
       },
       body: JSON.stringify({
         to: msg.to,
