@@ -52,8 +52,12 @@ function faviconLink(): HTMLLinkElement {
   return link;
 }
 
-/** Apply (or clear, for production) the banner + title prefix + favicon tint. */
-export function applyEnvChrome(env: AppEnv): void {
+/**
+ * Apply (or clear, for production) the banner + title prefix + favicon tint.
+ * When `mailUrl` is given (dev only — where outbound mail is captured, not
+ * delivered) the banner gets a "View captured mail" link to the sink's UI.
+ */
+export function applyEnvChrome(env: AppEnv, mailUrl?: string): void {
   if (baseTitle === null) baseTitle = document.title.replace(/^\[[A-Z]+\]\s+/, '');
   const link = faviconLink();
   if (baseFavicon === null) baseFavicon = link.getAttribute('href') || '/favicon.ico';
@@ -71,7 +75,21 @@ export function applyEnvChrome(env: AppEnv): void {
   const banner = existing ?? document.createElement('div');
   banner.id = 'env-banner';
   banner.setAttribute('role', 'status');
-  banner.textContent = badge.label;
+  // Rebuild content each call so toggling mailUrl stays idempotent.
+  banner.textContent = '';
+  const labelSpan = document.createElement('span');
+  labelSpan.textContent = badge.label;
+  banner.appendChild(labelSpan);
+  if (mailUrl) {
+    const a = document.createElement('a');
+    a.id = 'env-banner-mail';
+    a.href = mailUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = '✉ View captured mail';
+    a.style.cssText = 'color:#fff;margin-left:14px;text-decoration:underline;font-weight:700';
+    banner.appendChild(a);
+  }
   banner.style.cssText = [
     `background:${badge.color}`,
     'color:#fff',

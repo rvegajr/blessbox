@@ -16,6 +16,10 @@ function slugify(input: string): string {
  * Accepts a "sessionData" payload and materializes it into the sqlite/libsql database.
  */
 export async function POST(request: NextRequest) {
+  // Intentionally NODE_ENV, NOT resolveServerEnv(): this endpoint is
+  // UNAUTHENTICATED and materializes arbitrary session/onboarding data, so it
+  // must stay local-only. Vercel dev/uat build as NODE_ENV=production and are
+  // public, so they (correctly) return 404 here — do not open it to non-prod.
   if (process.env.NODE_ENV === 'production') {
     return NextResponse.json({ success: false, error: 'Not available in production' }, { status: 404 });
   }

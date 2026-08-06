@@ -37,3 +37,14 @@ export function resolveServerEnv(): AppEnv {
   const normalized = normalizeEnv(raw);
   return normalized === 'unknown' ? 'local' : normalized;
 }
+
+/**
+ * True only in the production *environment*. Use this — NOT
+ * `NODE_ENV === 'production'` — to gate environment-specific behaviour:
+ * Vercel builds every deployment (dev, uat, prod) with `NODE_ENV=production`,
+ * so `NODE_ENV` cannot distinguish dev/uat from prod. `resolveServerEnv()`
+ * reads `APP_ENV` first and can.
+ */
+export function isProductionEnv(): boolean {
+  return resolveServerEnv() === 'production';
+}
