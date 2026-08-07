@@ -67,6 +67,8 @@
     "tc:sync": "npx traklet sync",
     "tc:scan": "npx traklet scan",
     "tc:validate": "npx traklet validate",
+    "promote": "bash scripts/promote.sh",
+    "promote:backsync": "bash scripts/promote.sh --backsync",
     "postinstall": "node -e \"const fs=require('fs');if(fs.existsSync('mcp-server/package.json')){require('child_process').execSync('npm --prefix mcp-server install --no-audit --no-fund',{stdio:'inherit'})}\""
   },
   "dependencies": {
