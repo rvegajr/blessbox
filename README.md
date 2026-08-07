@@ -2,6 +2,8 @@
 
 > Streamlined QR-based registration and verification system for organizations managing events like food distributions, seminar registrations, and volunteer sign-ups.
 
+**Deploying / promoting changes?** See [docs/PIPELINE.md](docs/PIPELINE.md) — the `develop → uat → main` promotion flow, gates, and hotfix back-sync.
+
 <!-- AUTO-INDEX-SECTION -->
 <!--
 🤖 AI ASSISTANT - PROJECT NAVIGATION GUIDE
