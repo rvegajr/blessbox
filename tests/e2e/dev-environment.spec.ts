@@ -52,6 +52,22 @@ test.describe('dev environment', () => {
     expect(res.status(), await res.text()).toBe(200);
   });
 
+  test('Traklet widget UX: mounts on the page and loads without error', async ({ page }) => {
+    await page.goto(BASE_URL);
+    // Traklet.init() appends a <traklet-widget> custom element (shadow DOM).
+    // Its presence proves the dynamic import + init succeeded end-to-end.
+    await expect(page.locator('traklet-widget')).toBeAttached({ timeout: 20_000 });
+    // The wrapper renders a fixed error toast only when init threw.
+    await expect(page.getByText(/Traklet failed to load/i)).toHaveCount(0);
+    // And the widget's data path works from the browser: same-origin proxy call
+    // (as the widget makes) answers 200, not 404/503.
+    const proxied = await page.evaluate(async () => {
+      const r = await fetch('/api/dev/traklet-proxy/rate_limit');
+      return r.status;
+    });
+    expect(proxied).toBe(200);
+  });
+
   test('full login works via the captured verification code', async ({ request }) => {
     const email = `bb-e2e-${Date.now()}@example.com`;
 
