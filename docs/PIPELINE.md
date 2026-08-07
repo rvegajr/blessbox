@@ -61,6 +61,22 @@ to open `main → uat` and `main → develop` PRs so the lower environments pick
 the fix and don't drift. In the normal forward flow these open nothing (the
 change already came from below).
 
+## Verifying an environment
+
+`tests/e2e/env-parity.spec.ts` is the executable version of the table above —
+it derives the expected contract (title prefix, banner, captured-mail link,
+Traklet on/off, health) from the target hostname:
+
+```
+npm run test:env:dev    # dev.blessbox.org  (+ dev-environment.spec.ts login flow)
+npm run test:env:uat    # uat.blessbox.org
+npm run test:env:prod   # www.blessbox.org
+npm run test:env:all    # all three
+```
+
+Run the relevant one after merging a promotion PR to confirm the environment
+still honours its contract.
+
 ## Branch protection
 
 `main`, `uat`, and `develop` each require PRs (no direct pushes) and the four
